@@ -1,0 +1,351 @@
+# UI & UX Patterns
+
+## Objetivo
+
+Consolidar os padrões de interface e experiência atualmente implementados no projeto para que novas mudanças preservem consistência visual, hierarquia de ações e comportamento esperado nas principais superfícies da loja e do admin.
+
+## Escopo
+
+Este documento descreve o estado atual da UI/UX em produção no repositório, com foco em:
+
+- storefront;
+- autenticação e cadastro;
+- carrinho e checkout;
+- conta do usuário;
+- superfícies administrativas.
+
+Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AUTH_SOCIAL_BUTTON_PATTERN.md).
+
+## Fontes canônicas do estado atual
+
+- `src/ui/auth/oauth-buttons.tsx`
+- `src/ui/auth/register-form.client.tsx`
+- `src/ui/auth/address-fields.client.tsx`
+- `src/ui/profile-editor.client.tsx`
+- `src/components/cart-sidebar.tsx`
+- `src/app/checkout/checkout-form.client.tsx`
+- `src/ui/products/product-list.tsx`
+- `src/app/(store)/product/[slug]/page.tsx`
+- `src/app/(store)/product/[slug]/product-image-gallery.client.tsx`
+- `src/ui/footer/footer.client.tsx`
+- `src/app/user/page.tsx`
+- `src/app/admin/promotions/page.tsx`
+- `src/app/admin/emails/_components/email-log-table.client.tsx`
+- `src/app/admin/webhooks/page.tsx`
+
+## Princípios globais
+
+### 1. Preservar a storefront por padrão
+
+- Não alterar layout, tipografia, cores, hierarquia visual ou copy pública sem necessidade explícita do requisito.
+- Mudanças técnicas devem reaproveitar a linguagem visual existente em vez de redesenhar a superfície.
+
+### 2. Cards e blocos com borda suave
+
+- O projeto usa com frequência containers com `rounded-xl` ou `rounded-2xl`, exceto nos cards de produto da storefront, que devem permanecer sem cantos arredondados.
+- Blocos informativos e formulários costumam usar borda discreta, fundo `bg-card`, `bg-card/60` ou `bg-muted/10`.
+- Estados secundários usam `text-muted-foreground` e mensagens curtas de apoio abaixo do campo ou da seção.
+
+### 3. Hierarquia de ação simples
+
+- Ação primária: botão sólido, geralmente preto ou usando o botão padrão do sistema.
+- Ações secundárias: `outline`, `secondary` ou links sublinhados.
+- Ações destrutivas: texto em vermelho, botão secundário com destaque sem competir com a CTA principal.
+
+### 4. Densidade controlada
+
+- Formulários longos devem ser quebrados em grupos ou seções.
+- Tabelas administrativas mostram só o essencial; detalhes densos devem abrir em modal, popup ou `details`.
+- Textos de ajuda devem explicar intenção, não repetir o label.
+
+### 5. Mobile-first com ganho progressivo
+
+- Listas e grids partem de uma coluna e ganham `sm`/`lg`/`xl` conforme o espaço.
+- Formulários usam uma coluna no mobile e duas colunas quando isso reduz altura sem prejudicar leitura.
+- Elementos críticos, como CTA e inputs, permanecem utilizáveis sem depender de hover.
+
+### 6. Idioma por superfície
+
+- Há convivência de inglês e pt-BR no produto atual.
+- Superfícies novas de promoção, favoritos administrativos e preferências de marketing já introduzem mais pt-BR.
+- Ao evoluir uma tela, manter o idioma dominante daquela superfície e evitar blocos mistos dentro do mesmo componente.
+- A storefront deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
+- Para QA, suporte e testes de localização, a storefront pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
+- Campos compartilhados com país, moeda, datas e checkout devem espelhar o locale resolvido daquela sessão, sem duplicar layouts ou criar variantes visuais por idioma.
+- Quando a pessoa usuária tiver uma moeda preferida salva, cadastro, perfil, favoritos, carrinho e checkout devem tentar refletir essa moeda de forma consistente; se a Stripe não oferecer aquela moeda no preço correspondente, a interface deve cair de forma silenciosa e coerente para a moeda padrão do produto, sem exibir mensagens técnicas.
+- Em `/checkout/processing`, o loading deve ser sempre temporário: a tela pode aguardar alguns segundos por confirmação autoritativa, mas deve redirecionar automaticamente para a área de pedidos após no máximo `15s` sem confirmação final; em estados autoritativos de disputa/análise, pode interromper o loading antes e orientar acompanhamento por e-mail e na área de pedidos.
+- Em dashboard, área de pedidos e modais associados, aliases técnicos de disputa ou revisão não devem aparecer crus para a pessoa usuária; a interface precisa consolidá-los em estados claros como `Disputed`, `Won` ou `Lost`.
+
+## Padrões por superfície
+
+## Autenticação e cadastro
+
+### Login social
+
+- Login por email e senha continua como fluxo primário.
+- OAuth aparece como grupo secundário centralizado abaixo da ação principal.
+- O trilho social usa coluna única, largura máxima de `22rem` e botões de `44px`.
+- Google mantém fundo claro e ícone oficial; demais provedores seguem a mesma estrutura visual do sistema.
+
+### Cadastro
+
+- O cadastro é dividido em cards/seções:
+  - `Account`
+  - `Delivery Address`
+  - `Security`
+- A seção `Account` pode incluir preferências primárias da conta, como moeda preferida, desde que isso não desloque a CTA principal nem quebre a leitura em mobile.
+- Campos de erro aparecem em banner superior com borda e fundo de erro.
+- Disponibilidade de email é validada de forma assíncrona com feedback curto.
+- A senha mostra checklist visual de força.
+- O opt-in de marketing aparece como card/checkbox explicativo, não como linha seca de formulário.
+
+### Telefone e endereço
+
+- Telefone usa campo compartilhado com país e DDI.
+- Endereço usa primitivas reutilizáveis com `CountrySelect`.
+- Para Brasil, o CEP dispara busca automática ao completar 8 dígitos.
+- `logradouro`, `bairro`, `cidade` e `estado` podem ser preenchidos automaticamente e bloqueados após sucesso do lookup.
+- Status do lookup fica fora do grid principal para não desalinha os campos.
+
+### Perfil
+
+- Preferências persistentes da conta, como marketing e moeda preferida, devem viver no editor de perfil, com ajuda curta logo abaixo do controle quando houver fallback funcional importante.
+
+## Catálogo e PDP
+
+### Footer da storefront
+
+- A faixa inferior do footer deve manter copyright e métodos de pagamento como conteúdo primário.
+- Créditos externos de desenvolvimento, quando existirem, devem aparecer na mesma faixa inferior, em formato inline, com link externo, ícone da marca e nome visível.
+- O crédito deve permanecer secundário, com wrap natural no mobile, sem competir com newsletter, navegação ou ícones de pagamento.
+
+### Listagem de produtos
+
+- Grade responsiva `1 -> 2 -> 3` colunas.
+- Card de produto usa imagem quadrada com fundo neutro, borda suave, cantos retos e hover sutil na mídia.
+- Todos os cards da listagem devem manter o mesmo formato e a mesma altura visual; nome, preço e área de variantes precisam reservar espaço consistente, e a imagem do produto é que deve se adaptar ao quadro.
+- O título do produto no card deve ter presença suficiente para leitura rápida, com escala acima do corpo de preço sem perder o limite de duas linhas.
+- Cards de produto devem expor uma camada de quick actions:
+  - favorito flutuante no canto superior direito;
+  - CTA primária compacta no canto inferior direito, em formato de cápsula/círculo com `+`, expandindo para `Add to cart` no hover e no foco por teclado com transição suave, contínua e de pelo menos `1s`; quando expandida sobre vermelho, o texto deve ficar preto;
+  - no mobile, a CTA deve permanecer visível sem depender de hover.
+- Quando houver múltiplas variantes, os chips abaixo do preço devem permitir seleção direta no card e atualizar o preço exibido e o item que será adicionado ao carrinho.
+- Preço promocional é o valor principal; preço-base aparece riscado em `muted`.
+- Variantes múltiplas aparecem como chips arredondados abaixo do preço; a opção ativa precisa ficar visualmente destacada, com sensação leve de expansão e rótulo escuro sobre o destaque vermelho.
+- O card inteiro continua navegável para a PDP, mas as quick actions precisam interceptar clique/toque sem disparar navegação acidental.
+
+### Página de produto
+
+- Breadcrumb curto e funcional no topo.
+- Título e favorito compartilham a primeira linha de destaque.
+- Preço promocional usa destaque principal; preço-base fica riscado logo abaixo.
+- Nome/label de promoção, quando existir, aparece em texto pequeno, vermelho e em caixa alta.
+- Variações usam `Badge`/chips com estado ativo claro.
+- CTA de compra fica isolada e visualmente forte.
+
+### Galeria de produto
+
+- Imagem principal com CTA implícita de zoom.
+- Navegação lateral quando há múltiplas imagens.
+- Faixa de miniaturas horizontal abaixo da imagem principal.
+- Modal ampliado com zoom interativo guiado pelo cursor e navegação anterior/próxima.
+
+## Carrinho e cupom
+
+### Sidebar
+
+- Carrinho abre em painel lateral fixo com overlay escurecido e blur.
+- Header compacto com contador e ação de fechar.
+- Estado vazio é centralizado com ícone e mensagem curta.
+- Linhas de item mostram:
+  - miniatura;
+  - nome;
+  - preço atual;
+  - preço-base riscado quando houver desconto;
+  - stepper de quantidade;
+  - remoção direta.
+
+### Cupom e resumo
+
+- O cupom vive em card próprio dentro do footer do carrinho.
+- Campo, botão `Aplicar`, estado ativo e ação `Remover` ficam no mesmo bloco.
+- Resumo mostra subtotal, desconto e total final.
+- O carrinho deve refletir imediatamente o snapshot retornado pela Server Action ao aplicar/remover cupom.
+
+## Checkout
+
+### Estrutura
+
+- Checkout usa card único com borda e sombra leve.
+- Quando existem cartões salvos, a escolha aparece antes do `PaymentElement`.
+- Métodos salvos usam cards clicáveis com `RadioGroup`.
+- A opção de novo método fica no mesmo conjunto visual dos cartões salvos.
+
+### Entrega
+
+- O checkout precisa perguntar explicitamente como a pessoa quer receber o pedido antes da etapa de pagamento.
+- A escolha principal deve ser um grupo claro com três caminhos:
+  - usar o endereço já salvo no cadastro;
+  - informar um novo endereço de entrega;
+  - retirar na loja.
+- O bloco de entrega deve aparecer acima do pagamento e antes do resumo final para evitar surpresa no total.
+- Ao escolher o endereço cadastrado, a interface deve mostrar um resumo curto do endereço e o prazo estimado da entrega.
+- Ao escolher um novo endereço, o formulário deve reaproveitar as primitivas de endereço já existentes no produto, sem criar campos paralelos.
+- Ao escolher retirada, a interface deve destacar prazo de preparo, valor estimado e o fato de que não haverá custo de frete de entrega.
+- As opções de entrega devem mostrar preço estimado e prazo ao lado do rótulo principal, sem mensagens técnicas.
+
+### Frete
+
+- Quando o frete estiver habilitado, o resumo do pedido deve exibir a cotação como bloco próprio, logo acima do total final.
+- As opções de frete devem aparecer como cards ou radios com `service`, `price` e `estimatedDays`, preservando leitura rápida no mobile.
+- A pessoa usuária deve conseguir ver quando o frete está disponível, indisponível ou expirado sem mensagens técnicas.
+- Se a cotação falhar, a interface deve manter o restante do checkout utilizável e orientar a atualização do endereço ou a nova tentativa.
+- A escolha de frete precisa ficar congelada junto do snapshot do pedido para evitar variação silenciosa depois da confirmação.
+
+### Feedback e confiança
+
+- Checkbox de salvar método de pagamento aparece em card explicativo.
+- Mensagens de erro aparecem em caixa com borda e fundo vermelho claro.
+- CTA muda de rótulo conforme o método escolhido:
+  - `Pay now`
+  - `Pay with saved card`
+- Rodapé de confiança informa que os dados são processados pela Stripe.
+
+## Conta do usuário
+
+### Estrutura
+
+- Página usa sidebar esquerda fixa/sticky com navegação por seções.
+- Conteúdo principal troca por `section` em query string.
+
+### Perfil
+
+- Editor reutiliza os mesmos primitivos de telefone e endereço do cadastro.
+- Email não verificado exibe banner amarelo com ação explícita de reenvio.
+- Opt-in de marketing também aparece no perfil para ajuste posterior.
+
+### Favoritos
+
+- Favoritos usam grade de cards.
+- Cada card mostra:
+  - nome;
+  - variante, se houver;
+  - preço atual;
+  - preço-base riscado quando houver promoção;
+  - toggle de favorito;
+  - link para o produto.
+
+### Métodos de pagamento
+
+- A conta possui seção dedicada para métodos salvos.
+- A comunicação reforça que os dados completos ficam na Stripe, não na aplicação.
+
+## Admin
+
+### Dashboard administrativo
+
+- O dashboard do admin deve funcionar como painel de decisão, não apenas como resumo decorativo de números.
+- A primeira dobra precisa responder rapidamente:
+  - quanto entrou;
+  - quantos pedidos exigem ação;
+  - onde está o gargalo operacional;
+  - se há risco técnico afetando a loja.
+- Cards de KPI devem ser curtos, comparáveis e semanticamente estáveis entre períodos.
+- Status de pagamento e status de fulfillment devem aparecer em blocos separados; misturar os dois no mesmo gráfico reduz clareza operacional.
+- Métricas com necessidade de ação, como disputas, falhas, webhooks pendentes ou pedidos pagos sem andamento, devem ter mais contraste visual do que métricas puramente históricas.
+- Toda métrica crítica do dashboard deve oferecer drilldown natural para a tela operacional correspondente, como pedidos, webhooks ou emails.
+- Séries temporais devem priorizar leitura de tendência real da loja, especialmente receita paga, descontos e variação por período, evitando gráficos redundantes que só repetem o total.
+
+### Produtos
+
+- O formulário administrativo de produto deve separar informações em blocos curtos e nomeados, como `Product details`, `First variant`, `Pricing` e `Availability`, para reduzir leitura linear excessiva.
+- O estado de ativação do produto ou da variante deve usar linguagem de negócio, como `Active`, `Inactive` e `Deactivate`, sem mencionar Stripe no texto visível.
+- A página de edição de produto deve manter uma visão geral das variantes na própria tela, com cards ou linhas resumidas mostrando status, preço, estoque e ordem.
+- Criação e edição de variante devem acontecer em modal focado, preservando o contexto do produto ao fundo e evitando abas longas para cada variante.
+- O modal de variante deve reforçar o que é herdado do grupo e o que é específico da variante, principalmente nome herdado, imagens herdadas, preço herdado versus preço customizado e disponibilidade.
+
+### Promoções e cupons
+
+- A página usa header simples com ação operacional secundária no topo.
+- Cards de campanha combinam:
+  - título e descrição;
+  - badges de status/tipo/escopo;
+  - mini-métricas em blocos;
+  - ações rápidas de status.
+- O formulário é longo, então deve ser agrupado em seções tipo sanfona:
+  - `Dados básicos`
+  - `Desconto e publicação`
+  - `Regras e validade`
+  - `Alvos e alertas`
+- Um resumo numérico do fluxo aparece antes das seções para orientar o usuário.
+- Edição inline deve reaproveitar a mesma estrutura do formulário de criação.
+
+### Frete
+
+- A administração de frete deve seguir a mesma lógica de blocos curtos, com lista de provedores, status de saúde e ação clara para ativar, desativar ou priorizar.
+- Credenciais e regras de frete devem ficar em seções separadas para evitar misturar configuração técnica com política comercial.
+- O admin de frete deve tratar `Correios`, `Jadlog`, `EasyPost` e `Custom HTTP` como famílias de provider distintas, exibindo apenas os campos técnicos esperados por cada API e mascarando credenciais já salvas.
+- Falhas recentes, último preço válido e serviços ativos precisam ser visíveis sem exigir navegação para uma tela de log cru.
+
+### Emails administrativos
+
+- A grade principal deve permanecer enxuta: data, status, tipo e destinatário.
+- Selecionar uma linha abre modal grande com duas áreas:
+  - metadados e ações na lateral;
+  - preview renderizado ou conteúdo textual na área principal.
+- Reenvio por `API` e `SMTP` fica visível no próprio modal.
+
+### Webhooks
+
+- A tabela principal mostra status, verificação, tipo, `eventId` e erro.
+- Payloads extensos não devem aparecer inline.
+- O detalhamento usa `details/summary` com `pre` scrollável para headers e payload.
+
+### Pedidos
+
+- A página administrativa de pedido deve manter o bloco operacional de fulfillment perto do resumo principal, para que a pessoa operadora entenda o contexto antes de alterar status ou rastreio.
+- O identificador principal visível de um pedido deve ser o id interno da aplicação, não um id técnico bruto da Stripe como `pi_...`.
+- Toda alteração manual relevante em pedido, especialmente fulfillment e tracking number, deve aparecer em um bloco próprio de histórico de edição logo abaixo do conteúdo operacional.
+- O histórico de pedido deve mostrar quem alterou, quando alterou e os valores anterior e novo de forma legível para auditoria rápida.
+- Após salvar fulfillment no admin, a tela do pedido deve refletir o novo histórico imediatamente, sem exigir recarga manual da página.
+
+### Papéis internos e navegação
+
+- O backoffice deve tratar `admin` e futuros papéis internos, como `vendor`, como operadores e não como compradores.
+- A navegação administrativa deve revelar apenas áreas compatíveis com as capacidades do papel logado, reduzindo ruído e evitando expor ações sem permissão.
+- A ausência de permissão deve preferir remoção da entrada de navegação e, como segunda linha de defesa, resposta `403` no servidor.
+- A storefront pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
+- Superfícies de gestão de usuários no admin devem separar claramente leitura de perfil, papel atual e estado de acesso; ações de promover, rebaixar, bloquear e desbloquear devem ficar agrupadas em um bloco operacional distinto e só aparecer para `admin`.
+- A página administrativa de produto deve expor histórico de edição em um bloco próprio abaixo da configuração principal e das variantes, mostrando quem alterou, quando alterou e um resumo técnico curto da mudança.
+
+## Padrões de disclosure e redução de ruído
+
+- Use `details/summary` para:
+  - edição contextual;
+  - payloads técnicos;
+  - grupos longos de formulário.
+- Use `Dialog` para:
+  - prévias renderizadas;
+  - inspeção detalhada com necessidade de foco;
+  - ações secundárias que exigem contexto lateral.
+
+## Padrões de feedback
+
+- Sucesso curto: texto verde simples ou toast.
+- Erro recuperável: banner ou bloco com borda/fundo do estado de erro.
+- Loading pequeno: texto curto ou label temporário no botão.
+- Estados vazios: borda tracejada ou bloco neutro com mensagem centralizada.
+
+## Checklist para novas telas
+
+- A superfície já existente pede preservação visual ou permite redesign?
+- O bloco pode ser dividido em grupos antes de virar uma sequência longa de inputs?
+- Os detalhes densos estão fora da grade principal?
+- A ação primária está clara e única?
+- O comportamento mobile continua legível?
+- O idioma da superfície permaneceu consistente?
+- O componente reutiliza primitives já existentes antes de criar um padrão novo?
+
+## Manutenção
+
+- Mudanças relevantes de UI/UX devem atualizar este arquivo, `AGENTS.md`, `CHANGELOG.md` e, quando aplicável, documentos especializados como `AUTH_SOCIAL_BUTTON_PATTERN.md`.

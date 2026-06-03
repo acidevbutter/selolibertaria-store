@@ -1,0 +1,67 @@
+"use client";
+
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { adminNavItems, type NavItem } from "@/app/admin/_components/nav-config";
+import { hasCapability, type UserRole } from "@/lib/authz";
+import { cn } from "@/lib/utils";
+
+type SidebarUser = { name?: string | null; email?: string | null; role?: UserRole };
+
+export function AdminSidebar({ user }: { user?: SidebarUser }) {
+	const pathname = usePathname();
+	const [navigating, setNavigating] = useState(false);
+	const visibleNavItems = adminNavItems.filter((item) => hasCapability(user?.role, item.capability));
+	useEffect(() => {
+		setNavigating(false);
+	}, [pathname]);
+	return (
+		<aside className="hidden md:flex md:w-60 lg:w-64 xl:w-72 flex-col border-r bg-background h-[calc(100dvh)] sticky top-0">
+			<div className="px-4 py-4 border-b">
+				<Link href="/admin" className="flex items-center gap-3 font-semibold text-foreground">
+					<Image src="/images/ratoeira77.svg" width={24} height={24} alt="ratoeira77" />
+					<span>Admin - ratoeira77.store</span>
+				</Link>
+			</div>
+			<nav className="p-2 space-y-1">
+				{visibleNavItems.map(({ href, label, icon: Icon }: NavItem) => {
+					const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+					return (
+						<Link
+							key={href}
+							href={href}
+							onClick={(e) => {
+								if (active) {
+									e.preventDefault();
+									return;
+								}
+								setNavigating(true);
+							}}
+							className={cn(
+								"flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+								active ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground",
+							)}
+						>
+							{Icon ? <Icon className="h-4 w-4" /> : null}
+							<span>{label}</span>
+						</Link>
+					);
+				})}
+			</nav>
+			<div className="mt-auto p-4 border-t">
+				<div className="text-xs text-muted-foreground">
+					<div className="font-medium text-foreground">{user?.name ?? user?.email ?? "Authenticated"}</div>
+					<div className="truncate">{user?.email ?? ""}</div>
+				</div>
+			</div>
+			{navigating && (
+				<div className="absolute inset-0 z-50 grid place-items-center bg-background/60">
+					<Loader2 className="h-6 w-6 animate-spin text-primary" />
+				</div>
+			)}
+		</aside>
+	);
+}

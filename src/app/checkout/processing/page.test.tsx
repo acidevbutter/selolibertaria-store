@@ -1,0 +1,215 @@
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import ProcessingPage from "@/app/checkout/processing/page";
+import { IntlClientProvider } from "@/i18n/client";
+import enMessages from "../../../../messages/en-US.json";
+
+const {
+	closeCartMock,
+	finalizeCheckoutCleanupMock,
+	recordPaymentIntentCheckoutMock,
+	recordSuccessfulCheckoutMock,
+	refreshCartMock,
+	replaceMock,
+	routerMock,
+	searchParamsState,
+} = vi.hoisted(() => ({
+	closeCartMock: vi.fn(),
+	finalizeCheckoutCleanupMock: vi.fn(),
+	recordPaymentIntentCheckoutMock: vi.fn(),
+	recordSuccessfulCheckoutMock: vi.fn(),
+	refreshCartMock: vi.fn(),
+	replaceMock: vi.fn(),
+	routerMock: { replace: vi.fn() },
+	searchParamsState: {
+		session_id: null as string | null,
+		order: "ord_123" as string | null,
+		payment_intent: "pi_123" as string | null,
+		checkout: "success" as string | null,
+	},
+}));
+
+routerMock.replace = replaceMock;
+
+vi.mock("next/navigation", () => ({
+	useRouter: () => routerMock,
+	useSearchParams: () => ({
+		get: (key: keyof typeof searchParamsState) => searchParamsState[key] ?? null,
+	}),
+}));
+
+vi.mock("@/actions/order-actions", () => ({
+	finalizeCheckoutCleanup: finalizeCheckoutCleanupMock,
+	recordPaymentIntentCheckout: recordPaymentIntentCheckoutMock,
+	recordSuccessfulCheckout: recordSuccessfulCheckoutMock,
+}));
+
+vi.mock("@/context/cart-context", () => ({
+	useCart: () => ({
+		refreshCart: refreshCartMock,
+		closeCart: closeCartMock,
+	}),
+}));
+
+describe("Checkout processing page", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		closeCartMock.mockReset();
+		finalizeCheckoutCleanupMock.mockReset();
+		recordPaymentIntentCheckoutMock.mockReset();
+		recordSuccessfulCheckoutMock.mockReset();
+		refreshCartMock.mockReset();
+		replaceMock.mockReset();
+		refreshCartMock.mockResolvedValue(undefined);
+		searchParamsState.session_id = null;
+		searchParamsState.order = "ord_123";
+		searchParamsState.payment_intent = "pi_123";
+		searchParamsState.checkout = "success";
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("redireciona para pedidos após 15s quando o pagamento segue em processing", async () => {
+		recordPaymentIntentCheckoutMock.mockResolvedValue({
+			ok: true,
+			status: "processing",
+			cartCleared: false,
+		});
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(screen.getByText("Order received")).toBeTruthy();
+
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(15000);
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(recordPaymentIntentCheckoutMock.mock.calls.length).toBeGreaterThan(1);
+	});
+
+	it("redireciona após 15s mesmo se a sincronização travar", async () => {
+		recordPaymentIntentCheckoutMock.mockImplementation(
+			() => new Promise(() => {}),
+		);
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+			await vi.advanceTimersByTimeAsync(15000);
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(screen.getByText("Order received")).toBeTruthy();
+	});
+
+	it("interrompe o loading quando o status autoritativo já está em disputa", async () => {
+		recordPaymentIntentCheckoutMock.mockResolvedValue({
+			ok: true,
+			status: "disputed",
+			cartCleared: false,
+		});
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(screen.getByText("Payment under review")).toBeTruthy();
+		expect(screen.getByText(/no longer needs to keep this page loading/i)).toBeTruthy();
+		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("finaliza rapidamente quando o pagamento já está confirmado", async () => {
+		recordPaymentIntentCheckoutMock.mockResolvedValue({
+			ok: true,
+			status: "succeeded",
+			cartCleared: false,
+		});
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(screen.getByText("Payment confirmed")).toBeTruthy();
+
+		await act(async () => {
+			await vi.runAllTimersAsync();
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("segue adiante quando o estado autoritativo do pedido já avançou no mongo", async () => {
+		recordPaymentIntentCheckoutMock.mockResolvedValue({
+			ok: true,
+			status: "producing",
+			cartCleared: false,
+		});
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(screen.getByText("Payment confirmed")).toBeTruthy();
+
+		await act(async () => {
+			await vi.runAllTimersAsync();
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("redireciona imediatamente quando entra sem order, intent ou session", async () => {
+		searchParamsState.order = null;
+		searchParamsState.payment_intent = null;
+		searchParamsState.session_id = null;
+
+		render(
+			<IntlClientProvider locale="en-US" messages={enMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(recordPaymentIntentCheckoutMock).not.toHaveBeenCalled();
+	});
+});

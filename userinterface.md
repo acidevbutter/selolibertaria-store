@@ -1,0 +1,57 @@
+# User Interface
+
+## Fonte canônica
+
+- O documento principal de padrões visuais continua sendo `UI_UX_PATTERNS.md`.
+- Este arquivo resume decisões de interface que precisam ser consultadas rapidamente durante mudanças de UI.
+
+## Footer da storefront
+
+- Manter a estrutura atual do footer, com newsletter, navegação auxiliar, copyright e métodos de pagamento.
+- Quando houver assinatura de desenvolvimento, usar lockup inline na faixa inferior com texto, ícone e nome visível da marca.
+- A assinatura deve ser discreta, legível e alinhada ao restante do footer, sem disputar atenção com CTAs ou pagamentos.
+
+## Checkout processing
+
+- A tela de processamento pós-checkout não deve aprisionar a pessoa usuária em loading infinito.
+- O spinner pode existir apenas durante uma espera curta por confirmação; depois disso, a interface deve trocar para um aviso estático e claro, sem mudar a estrutura visual principal da página.
+
+## Entrega no checkout
+
+- O checkout precisa pedir a escolha de entrega antes do pagamento.
+- A opção de endereço cadastrado, novo endereço e retirada na loja devem aparecer no mesmo bloco, com leitura comparável.
+- O resumo da entrega deve mostrar prazo e valor estimado ao lado da opção escolhida.
+- O formulário de novo endereço deve reaproveitar os campos já existentes no produto, sem duplicar padrões visuais.
+
+## Frete
+
+- Quando a cotação de frete entrar no checkout, o bloco deve ficar legível antes do total final e usar cards ou radios simples para comparação rápida.
+- A interface deve deixar claro quando o provedor está indisponível, sem expor erro técnico bruto na tela.
+
+## Cards de produto
+
+- Cards de produto da storefront devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
+- Todos os cards da storefront devem compartilhar o mesmo formato e a mesma altura visual.
+- A imagem do produto deve se adaptar ao quadro fixo do card, sem definir o tamanho externo do componente.
+- O título do produto no card deve ter mais destaque do que o preço-base e permanecer confortável para leitura em duas linhas.
+- O botão de favorito permanece flutuante no topo direito.
+- A CTA principal do card deve ser compacta e flutuante no canto inferior direito, usando somente `+` em repouso e expandindo para `Add to cart` no hover com animação suave de pelo menos `1s`; no estado expandido vermelho, o texto deve ficar preto.
+- Em telas com hover, a CTA expande com transição fluida; em telas por toque, ela deve permanecer visível o tempo todo.
+- Quando houver variantes, os chips abaixo do preço devem funcionar como seletor da opção que o `+` irá adicionar; o chip ativo pode expandir levemente e usar texto preto sobre vermelho.
+
+## Admin
+
+- A interface do backoffice deve esconder entradas e ações que o papel logado não pode usar, especialmente na futura diferenciação entre `admin` e `vendor`.
+- Perfis internos não devem receber affordances de compra na storefront por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
+- No dashboard administrativo, KPIs executivos devem aparecer primeiro em cards compactos e comparáveis, seguidos por blocos separados de pagamento, fulfillment e saúde operacional.
+- Estados que exigem atenção, como disputa, falha de email, webhook pendente ou pedido pago sem avanço operacional, devem receber destaque visual superior ao de métricas históricas neutras.
+- Em gestão de usuários, ações de papel e bloqueio devem aparecer como controles administrativos explícitos, separados dos dados de perfil e visíveis apenas para `admin`.
+- Em produtos do admin, o histórico de edição deve aparecer como uma seção separada e legível, abaixo do formulário principal, sem competir visualmente com a edição ativa.
+- Em produtos do admin, criação e edição devem quebrar o formulário em seções curtas com títulos claros, em vez de empilhar todos os campos numa única sequência longa.
+- O estado de disponibilidade em produto e variante deve usar rótulos de negócio como `Active` e `Deactivate`, sem termos internos como `Active in Stripe`.
+- A área de variantes deve mostrar um resumo escaneável na página e usar modal para criar ou editar uma variante, preservando o contexto do produto.
+- Em detalhes de pedido no admin, o histórico de auditoria deve aparecer como uma seção dedicada abaixo do resumo e dos itens, sem competir com a ação principal de fulfillment.
+- No histórico de pedido do admin, cada alteração deve privilegiar leitura de auditoria com blocos de `Before` e `After`, evitando visualização crua em JSON sempre que houver estrutura conhecida.
+- Em pedidos exibidos no admin e em superfícies do cliente, o identificador principal deve ser um `orderId` interno da aplicação, evitando expor `paymentIntentId` da Stripe como rótulo principal do pedido.
+- Em frete, o admin precisa mostrar provedores, prioridade, status e última cotação válida em blocos curtos, sem misturar a política comercial com os detalhes técnicos da integração.
+- No admin de frete, cada família de provider deve abrir apenas seus campos esperados, como token dos Correios, token da Jadlog ou API key da EasyPost, para reduzir erro de configuração.

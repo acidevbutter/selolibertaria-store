@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: ratoeira77-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ratoeira77
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Opcional: serviço da app se quiser orquestrar junto
+  # app:
+  #   build: .
+  #   depends_on:
+  #     mongo:
+  #       condition: service_healthy
+  #   environment:
+  #     MONGODB_URI: mongodb://mongo:27017
+  #     MONGODB_DB_NAME: ratoeira77
+  #     STRIPE_CURRENCY: usd
+  #     NEXT_PUBLIC_URL: http://localhost:3000
+  #     JWT_SECRET: dev_super_secret_change_me_please_123456
+  #   ports:
+  #     - "3000:3000"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ratoeira77-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - mailpit_data:/data
+    environment:
+      - MAILPIT_SMTP_LISTEN_ADDR=0.0.0.0:1025
+      - MAILPIT_WEB_LISTEN_ADDR=0.0.0.0:8025
+
+volumes:
+  mongo_data:
+    driver: local
+  mailpit_data:
+    driver: local
