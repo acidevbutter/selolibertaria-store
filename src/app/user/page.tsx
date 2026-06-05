@@ -259,7 +259,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 					<h1 className="text-xl font-bold">{t("title")}</h1>
 					<p className="text-xs text-muted-foreground">{t("sessionExpiry")}</p>
 				</div>
-				<nav className="flex flex-col gap-1" aria-label="Account navigation">
+				<nav className="flex flex-col gap-1" aria-label={t("nav.label")}>
 					{navItems.map((item) => {
 						const active = item.key === section;
 						return (

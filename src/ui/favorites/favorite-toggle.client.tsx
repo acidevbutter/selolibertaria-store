@@ -41,7 +41,7 @@ export function FavoriteToggle({
 				return;
 			}
 			if (!response.ok) {
-				throw new Error("Failed to update favorite");
+				throw new Error("Falha ao atualizar favorito");
 			}
 			const payload = (await response.json()) as { active?: boolean };
 			setActive(Boolean(payload.active));

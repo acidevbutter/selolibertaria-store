@@ -50,7 +50,7 @@ export function AdminSupportEmail() {
 				<input
 					value={email ?? ""}
 					onChange={(e) => setEmail(e.target.value)}
-					placeholder="contact@ratoeira77.store"
+					placeholder="contact@storefront.store"
 					className="flex-1 rounded border px-3 py-2 bg-background text-foreground"
 				/>
 				<button

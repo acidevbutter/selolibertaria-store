@@ -35,10 +35,24 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 ## Princípios globais
 
+### 0. Rebrand do Selo Libertária
+
+- O rebrand deve assumir linguagem adulta, quente e autoral, sem infantilização e sem estética de sex shop.
+- A referência prioritária de tom visual é uma livraria-editora cultural contemporânea.
+- Enquanto a direção final não for escolhida, usar `Editorial Noturno` como trilha preferencial de exploração.
+- `Editorial Noturno` significa: fundos profundos, acentos quentes, composição editorial, contraste alto e erotismo sugerido pela linguagem visual, não por clichês.
+- `Barroco Contemporâneo` e `Urbano Sensual Minimalista` podem servir como variantes de estudo, mas não devem ser misturados sem uma decisão explícita de direção de arte.
+
 ### 1. Preservar a storefront por padrão
 
 - Não alterar layout, tipografia, cores, hierarquia visual ou copy pública sem necessidade explícita do requisito.
 - Mudanças técnicas devem reaproveitar a linguagem visual existente em vez de redesenhar a superfície.
+
+### 1.1. Base visual genérica e rebrandable
+
+- A storefront atual deve funcionar como base genérica para uma futura marca.
+- Nome, ícone, imagens editoriais, emails, textos institucionais e metadata devem permanecer neutros e facilmente substituíveis.
+- Evitar elementos visuais excessivamente autorais, agressivos ou presos a uma identidade específica sem pedido explícito.
 
 ### 2. Cards e blocos com borda suave
 
@@ -48,7 +62,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 ### 3. Hierarquia de ação simples
 
-- Ação primária: botão sólido, geralmente preto ou usando o botão padrão do sistema.
+- Ação primária: botão sólido em tom neutro, geralmente escuro ou usando o botão padrão do sistema.
 - Ações secundárias: `outline`, `secondary` ou links sublinhados.
 - Ações destrutivas: texto em vermelho, botão secundário com destaque sem competir com a CTA principal.
 
@@ -118,10 +132,37 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - A faixa inferior do footer deve manter copyright e métodos de pagamento como conteúdo primário.
 - Créditos externos de desenvolvimento, quando existirem, devem aparecer na mesma faixa inferior, em formato inline, com link externo, ícone da marca e nome visível.
 - O crédito deve permanecer secundário, com wrap natural no mobile, sem competir com newsletter, navegação ou ícones de pagamento.
+- A identidade visual do footer deve permanecer neutra, sem depender de slogans ou estética exclusiva de uma marca anterior.
+
+### Home do Selo Libertária
+
+- A home do rebrand deve seguir a trilha `Editorial Noturno`.
+- A primeira dobra precisa unir posicionamento e ação comercial no mesmo quadro.
+- O título principal da home deve comunicar explicitamente literatura, livraria-editora ou proposta cultural adulta; evitar hero genérico de lifestyle.
+- A CTA primária da home deve levar para livros ou loja.
+- A CTA secundária deve abrir a camada cultural, como agenda, projetos ou Sarau Safado.
+- O miolo da home deve alternar ritmo entre:
+  - bloco de conversão;
+  - bloco de contexto;
+  - bloco de prova cultural ou visual.
+- Vitrines de produto na home do Selo Libertária devem usar microcopy curatorial curta abaixo ou ao lado do título, para parecerem seleção editorial e não grade promocional pura.
+- Se houver mosaico visual ou trecho literário, ele deve funcionar como respiração dramática entre blocos mais utilitários.
+- A home não deve terminar abruptamente em rodapé; precisa haver um fechamento com convite a acompanhar programação, contato ou newsletter.
+
+### Páginas institucionais do Selo Libertária
+
+- `events`, `projects` e `sarau-safado` não devem se resolver apenas como listas de cards homogêneos.
+- Cada página institucional precisa combinar pelo menos três ritmos:
+  - um hero ou bloco de entrada forte;
+  - um bloco de leitura editorial ou princípio curatorial;
+  - um bloco de continuidade com links claros para catálogo, agenda, contato ou páginas irmãs.
+- Em listagens editoriais, vale alternar resumo e descrição em duas colunas internas do card para evitar uma leitura longa e monótona.
+- Blocos laterais com “eixos”, “sinais” ou “ritmo da programação” ajudam a dar densidade cultural sem transformar a página em manifesto puro.
 
 ### Listagem de produtos
 
 - Grade responsiva `1 -> 2 -> 3` colunas.
+- Antes da grade, a listagem pode usar um bloco curto de leitura editorial para enquadrar o catálogo e quebrar a sensação de página puramente utilitária.
 - Card de produto usa imagem quadrada com fundo neutro, borda suave, cantos retos e hover sutil na mídia.
 - Todos os cards da listagem devem manter o mesmo formato e a mesma altura visual; nome, preço e área de variantes precisam reservar espaço consistente, e a imagem do produto é que deve se adaptar ao quadro.
 - O título do produto no card deve ter presença suficiente para leitura rápida, com escala acima do corpo de preço sem perder o limite de duas linhas.
@@ -133,6 +174,8 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Preço promocional é o valor principal; preço-base aparece riscado em `muted`.
 - Variantes múltiplas aparecem como chips arredondados abaixo do preço; a opção ativa precisa ficar visualmente destacada, com sensação leve de expansão e rótulo escuro sobre o destaque vermelho.
 - O card inteiro continua navegável para a PDP, mas as quick actions precisam interceptar clique/toque sem disparar navegação acidental.
+- No rebrand do Selo Libertária, a vitrine deve parecer mais editorial do que varejista: menos ruído promocional, mais espaço para capa, título e microcopy curatorial.
+- Sempre que possível, incluir microcopy curatorial curta no card ou na listagem para que a grade pareça seleção, não atacado.
 
 ### Página de produto
 
@@ -142,6 +185,8 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Nome/label de promoção, quando existir, aparece em texto pequeno, vermelho e em caixa alta.
 - Variações usam `Badge`/chips com estado ativo claro.
 - CTA de compra fica isolada e visualmente forte.
+- Em contexto Selo Libertária, a PDP deve combinar compra e atmosfera: trecho, contexto da obra, referências visuais ou críticas podem aparecer abaixo da dobra, sem disputar com a ação principal.
+- Abaixo da dobra, a PDP deve ter mais de um ritmo: contexto editorial, caminhos de continuidade e uma leitura curta sobre como aquela obra se insere no ecossistema do selo.
 
 ### Galeria de produto
 

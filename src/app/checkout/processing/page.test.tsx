@@ -99,9 +99,7 @@ describe("Checkout processing page", () => {
 	});
 
 	it("redireciona após 15s mesmo se a sincronização travar", async () => {
-		recordPaymentIntentCheckoutMock.mockImplementation(
-			() => new Promise(() => {}),
-		);
+		recordPaymentIntentCheckoutMock.mockImplementation(() => new Promise(() => {}));
 
 		render(
 			<IntlClientProvider locale="en-US" messages={enMessages}>

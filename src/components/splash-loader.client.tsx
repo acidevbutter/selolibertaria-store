@@ -20,7 +20,7 @@ export default function SplashLoader() {
 	useEffect(() => {
 		// Only run on first visit
 		try {
-			if (localStorage.getItem("ratoeira_splash_seen")) return;
+			if (localStorage.getItem("storefront_splash_seen")) return;
 		} catch (e) {
 			// ignore
 		}
@@ -46,17 +46,17 @@ export default function SplashLoader() {
 
 				// update pre-hydration overlay percent if present
 				try {
-					const pre = document.getElementById("ratoeira-splash-pre");
+					const pre = document.getElementById("storefront-splash-pre");
 					if (pre) {
-						pre.innerHTML = `<div class='ratoeira-splash-percent'>${next}%</div>`;
+						pre.innerHTML = `<div class='storefront-splash-percent'>${next}%</div>`;
 					}
 				} catch (e) {}
 
 				// once we reach 2% remove the pre-hydration placeholder (so client-controlled UI shows)
 				if (next >= 2 && !preRemovedRef.current) {
 					try {
-						const pre = document.getElementById("ratoeira-splash-pre");
-						const preStyle = document.getElementById("ratoeira-splash-style");
+						const pre = document.getElementById("storefront-splash-pre");
+						const preStyle = document.getElementById("storefront-splash-style");
 						if (pre) pre.remove();
 						if (preStyle) preStyle.remove();
 					} catch (e) {}
@@ -82,14 +82,14 @@ export default function SplashLoader() {
 					// hide the splash after the circle expands
 					setTimeout(() => {
 						try {
-							localStorage.setItem("ratoeira_splash_seen", "1");
+							localStorage.setItem("storefront_splash_seen", "1");
 						} catch (e) {
 							// ignore
 						}
 						// ensure pre elements removed
 						try {
-							const pre = document.getElementById("ratoeira-splash-pre");
-							const preStyle = document.getElementById("ratoeira-splash-style");
+							const pre = document.getElementById("storefront-splash-pre");
+							const preStyle = document.getElementById("storefront-splash-style");
 							if (pre) pre.remove();
 							if (preStyle) preStyle.remove();
 						} catch (e) {}
@@ -121,13 +121,10 @@ export default function SplashLoader() {
 	return (
 		<div
 			aria-hidden
-			className="fixed inset-0 z-[9999] flex items-center justify-center bg-red-700 text-black "
+			className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900 text-slate-50"
 		>
-			<div className="relative flex items-center justify-center glitch">
-				<div
-					className="lg:text-8xl sm:text-6xl font-vtks select-none z-10 glitch-text"
-					data-text={percent + "%"}
-				>
+			<div className="relative flex items-center justify-center">
+				<div className="z-10 select-none text-6xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
 					{percent}%
 				</div>
 

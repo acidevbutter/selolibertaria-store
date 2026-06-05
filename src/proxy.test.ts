@@ -10,7 +10,7 @@ describe("proxy public auth paths", () => {
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/");
-		expect(res.headers.get("set-cookie")).toContain("ratoeira_locale=pt-BR");
+		expect(res.headers.get("set-cookie")).toContain("storefront_locale=pt-BR");
 	});
 
 	it("stores the locale cookie and preserves the remaining pathname", async () => {
@@ -18,7 +18,7 @@ describe("proxy public auth paths", () => {
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/product/test-slug?ref=nav");
-		expect(res.headers.get("set-cookie")).toContain("ratoeira_locale=es-ES");
+		expect(res.headers.get("set-cookie")).toContain("storefront_locale=es-ES");
 	});
 
 	it("allows oauth start without an authenticated session", async () => {

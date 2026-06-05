@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -22,8 +21,10 @@ export function AdminSidebar({ user }: { user?: SidebarUser }) {
 		<aside className="hidden md:flex md:w-60 lg:w-64 xl:w-72 flex-col border-r bg-background h-[calc(100dvh)] sticky top-0">
 			<div className="px-4 py-4 border-b">
 				<Link href="/admin" className="flex items-center gap-3 font-semibold text-foreground">
-					<Image src="/images/ratoeira77.svg" width={24} height={24} alt="ratoeira77" />
-					<span>Admin - ratoeira77.store</span>
+					<span className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-xs">
+						S
+					</span>
+					<span>Admin - storefront.local</span>
 				</Link>
 			</div>
 			<nav className="p-2 space-y-1">

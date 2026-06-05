@@ -1,3 +1,5 @@
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
+
 type EmailShellOptions = {
 	title: string;
 	bodyHtml: string;
@@ -28,14 +30,12 @@ export function emailShellHtml({
 	footerNote,
 }: EmailShellOptions) {
 	const year = new Date().getFullYear();
-	const safeSupport = escapeEmailHtml(supportEmail ?? "contact@ratoeira77.store");
+	const safeSupport = escapeEmailHtml(supportEmail ?? seloSiteMeta.email);
 	const safeTitle = escapeEmailHtml(title);
-	const safeEyebrow = escapeEmailHtml(eyebrow ?? "Ratoeira77");
+	const safeEyebrow = escapeEmailHtml(eyebrow ?? seloSiteMeta.name);
 	const safeFooterNote = footerNote ? escapeEmailHtml(footerNote) : "";
 	const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-	const logoUrl = `${baseUrl}/images/ratoeira/ratoeira-red.jpg`;
-	const titleFontUrl = `${baseUrl}/fonts/VtksUrticaria-gx3wp.ttf`;
-	const grungeFontUrl = `${baseUrl}/fonts/SimpleGrunge-p7aDD.otf`;
+	const logoUrl = `${baseUrl}/images/selolibertaria.png`;
 	const preheaderHtml = preheader
 		? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">${escapeEmailHtml(preheader)}</div>`
 		: "";
@@ -46,29 +46,12 @@ export function emailShellHtml({
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<style>
-			@font-face {
-				font-family: "Vtks Urticaria";
-				src: url("${escapeEmailHtml(titleFontUrl)}") format("truetype");
-				font-weight: 400;
-				font-style: normal;
-				font-display: swap;
-			}
-			@font-face {
-				font-family: "SimpleGrunge";
-				src: url("${escapeEmailHtml(grungeFontUrl)}") format("opentype");
-				font-weight: 400;
-				font-style: normal;
-				font-display: swap;
-			}
 			body {
 				margin: 0;
 				padding: 24px 16px;
-				background:
-					radial-gradient(circle at top, rgba(185, 28, 28, 0.18), transparent 30%),
-					linear-gradient(180deg, #050505 0%, #0b0b0b 100%);
-				color: #f5f5f5;
-				font-family:
-					Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+				color: #0f172a;
+				font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 			}
 			a {
 				color: inherit;
@@ -77,24 +60,20 @@ export function emailShellHtml({
 			.container {
 				max-width: 680px;
 				margin: 0 auto;
-				background: linear-gradient(180deg, #101010 0%, #080808 100%);
-				border: 1px solid rgba(185, 28, 28, 0.35);
+				background: #ffffff;
+				border: 1px solid #dbe3ee;
 				border-radius: 22px;
 				overflow: hidden;
-				box-shadow:
-					0 20px 60px rgba(0, 0, 0, 0.55),
-					0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+				box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
 			}
 			.edge {
 				height: 10px;
-				background-image: repeating-linear-gradient(90deg, #b91c1c 0 18px, transparent 18px 32px);
+				background: linear-gradient(90deg, #111827 0%, #475569 100%);
 			}
 			.hero {
 				padding: 28px 28px 22px;
-				background:
-					radial-gradient(circle at top right, rgba(185, 28, 28, 0.35), transparent 34%),
-					linear-gradient(180deg, rgba(127, 29, 29, 0.22), transparent 75%);
-				border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+				background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+				border-bottom: 1px solid #e2e8f0;
 			}
 			.brand-row {
 				display: flex;
@@ -108,9 +87,9 @@ export function emailShellHtml({
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: linear-gradient(180deg, rgba(185, 28, 28, 0.2), rgba(255, 255, 255, 0.02));
-				border: 1px solid rgba(185, 28, 28, 0.45);
-				box-shadow: 0 8px 24px rgba(127, 29, 29, 0.28);
+				background: #ffffff;
+				border: 1px solid #dbe3ee;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 			}
 			.logo-wrap img {
 				width: 52px;
@@ -119,24 +98,23 @@ export function emailShellHtml({
 			}
 			.eyebrow {
 				margin: 0 0 6px;
-				color: #fca5a5;
+				color: #64748b;
 				font-size: 11px;
 				font-weight: 700;
-				letter-spacing: 0.28em;
+				letter-spacing: 0.18em;
 				text-transform: uppercase;
 			}
 			.hero-title {
 				margin: 0;
-				color: #fff7ed;
-				font-family:
-					"Vtks Urticaria", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+				color: #0f172a;
 				font-size: 34px;
-				line-height: 0.98;
-				letter-spacing: 0.02em;
+				font-weight: 700;
+				line-height: 1.05;
+				letter-spacing: -0.02em;
 			}
 			.content {
 				padding: 28px;
-				color: #f5f5f5;
+				color: #334155;
 				line-height: 1.7;
 				font-size: 15px;
 			}
@@ -144,7 +122,7 @@ export function emailShellHtml({
 				margin: 0 0 14px;
 			}
 			.lead {
-				color: #e7e5e4;
+				color: #0f172a;
 				font-size: 16px;
 			}
 			.note-card,
@@ -152,12 +130,12 @@ export function emailShellHtml({
 				margin: 18px 0;
 				padding: 18px;
 				border-radius: 18px;
-				background: rgba(255, 255, 255, 0.03);
-				border: 1px solid rgba(255, 255, 255, 0.08);
+				background: #f8fafc;
+				border: 1px solid #e2e8f0;
 			}
 			.note-card strong,
 			.info-card strong {
-				color: #fff7ed;
+				color: #0f172a;
 			}
 			.cta-wrap {
 				margin: 24px 0 18px;
@@ -166,21 +144,20 @@ export function emailShellHtml({
 				display: inline-block;
 				padding: 14px 24px;
 				border-radius: 999px;
-				background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
-				border: 1px solid rgba(254, 202, 202, 0.32);
-				color: #fff7ed !important;
+				background: #111827;
+				border: 1px solid #111827;
+				color: #f8fafc !important;
 				font-weight: 700;
-				letter-spacing: 0.04em;
-				text-transform: uppercase;
-				box-shadow: 0 12px 30px rgba(127, 29, 29, 0.35);
+				letter-spacing: 0.02em;
+				box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 			}
 			.link-block {
 				margin-top: 18px;
 				padding: 14px 16px;
 				border-radius: 14px;
-				background: rgba(255, 255, 255, 0.02);
-				border: 1px dashed rgba(252, 165, 165, 0.24);
-				color: #d6d3d1;
+				background: #f8fafc;
+				border: 1px dashed #cbd5e1;
+				color: #475569;
 				font-size: 13px;
 				word-break: break-word;
 			}
@@ -189,9 +166,9 @@ export function emailShellHtml({
 				margin: 8px 0 14px;
 				padding: 8px 12px;
 				border-radius: 999px;
-				background: rgba(185, 28, 28, 0.16);
-				border: 1px solid rgba(248, 113, 113, 0.22);
-				color: #fecaca;
+				background: #e2e8f0;
+				border: 1px solid #cbd5e1;
+				color: #334155;
 				font-size: 12px;
 				font-weight: 700;
 				letter-spacing: 0.08em;
@@ -206,27 +183,26 @@ export function emailShellHtml({
 			.meta-box {
 				padding: 14px 16px;
 				border-radius: 16px;
-				background: rgba(255, 255, 255, 0.03);
-				border: 1px solid rgba(255, 255, 255, 0.08);
+				background: #f8fafc;
+				border: 1px solid #e2e8f0;
 			}
 			.meta-label {
 				display: block;
 				margin-bottom: 6px;
-				color: #a8a29e;
+				color: #64748b;
 				font-size: 11px;
 				font-weight: 700;
 				letter-spacing: 0.12em;
 				text-transform: uppercase;
 			}
 			.meta-value {
-				color: #fff7ed;
+				color: #0f172a;
 				font-size: 16px;
 				font-weight: 700;
 			}
-			.meta-value.grunge {
-				font-family:
-					"SimpleGrunge", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-				letter-spacing: 0.04em;
+			.meta-value.price-emphasis {
+				font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				letter-spacing: 0;
 			}
 			.progress {
 				margin: 22px 0 20px;
@@ -234,20 +210,20 @@ export function emailShellHtml({
 			.progress-rail {
 				height: 10px;
 				border-radius: 999px;
-				background: rgba(255, 255, 255, 0.08);
+				background: #e2e8f0;
 				overflow: hidden;
 			}
 			.progress-fill {
 				height: 10px;
 				border-radius: 999px;
-				background: linear-gradient(90deg, #7f1d1d 0%, #dc2626 100%);
+				background: linear-gradient(90deg, #0f172a 0%, #475569 100%);
 			}
 			.progress-labels {
 				display: flex;
 				justify-content: space-between;
 				gap: 8px;
 				margin-top: 10px;
-				color: #a8a29e;
+				color: #64748b;
 				font-size: 12px;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
@@ -260,27 +236,27 @@ export function emailShellHtml({
 			}
 			.item-row td {
 				padding: 14px 16px;
-				background: rgba(255, 255, 255, 0.03);
-				border-top: 1px solid rgba(255, 255, 255, 0.06);
-				border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+				background: #f8fafc;
+				border-top: 1px solid #e2e8f0;
+				border-bottom: 1px solid #e2e8f0;
 			}
 			.item-row td:first-child {
-				border-left: 1px solid rgba(255, 255, 255, 0.06);
+				border-left: 1px solid #e2e8f0;
 				border-radius: 16px 0 0 16px;
 			}
 			.item-row td:last-child {
-				border-right: 1px solid rgba(255, 255, 255, 0.06);
+				border-right: 1px solid #e2e8f0;
 				border-radius: 0 16px 16px 0;
 				text-align: right;
 				white-space: nowrap;
 			}
 			.item-title {
-				color: #fff7ed;
+				color: #0f172a;
 				font-weight: 700;
 			}
 			.item-meta {
 				margin-top: 4px;
-				color: #a8a29e;
+				color: #64748b;
 				font-size: 12px;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
@@ -290,19 +266,19 @@ export function emailShellHtml({
 				height: 56px;
 				border-radius: 14px;
 				object-fit: cover;
-				border: 1px solid rgba(255, 255, 255, 0.08);
-				background: #111111;
+				border: 1px solid #e2e8f0;
+				background: #ffffff;
 			}
 			.total-box {
 				margin-top: 22px;
 				padding: 18px;
 				border-radius: 18px;
-				background: linear-gradient(180deg, rgba(185, 28, 28, 0.14), rgba(255, 255, 255, 0.02));
-				border: 1px solid rgba(185, 28, 28, 0.34);
+				background: #f8fafc;
+				border: 1px solid #e2e8f0;
 				text-align: right;
 			}
 			.total-label {
-				color: #fca5a5;
+				color: #64748b;
 				font-size: 11px;
 				font-weight: 700;
 				letter-spacing: 0.18em;
@@ -311,20 +287,19 @@ export function emailShellHtml({
 			.total-value {
 				display: block;
 				margin-top: 6px;
-				color: #fff7ed;
-				font-family:
-					"SimpleGrunge", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				color: #0f172a;
+				font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 				font-size: 28px;
 				line-height: 1;
 			}
 			.divider {
 				height: 1px;
 				margin: 0 28px;
-				background: linear-gradient(90deg, transparent 0%, rgba(185, 28, 28, 0.7) 50%, transparent 100%);
+				background: linear-gradient(90deg, transparent 0%, #cbd5e1 50%, transparent 100%);
 			}
 			.footer {
 				padding: 20px 28px 24px;
-				color: #a8a29e;
+				color: #64748b;
 				font-size: 12px;
 			}
 			.footer-row {
@@ -337,11 +312,11 @@ export function emailShellHtml({
 				letter-spacing: 0.12em;
 			}
 			.footer-link {
-				color: #fca5a5 !important;
+				color: #334155 !important;
 			}
 			.footer-note {
 				margin-top: 12px;
-				color: #78716c;
+				color: #64748b;
 				font-size: 12px;
 				line-height: 1.6;
 				text-transform: none;
@@ -390,7 +365,7 @@ export function emailShellHtml({
 			<div class="hero">
 				<div class="brand-row">
 					<div class="logo-wrap">
-						<img src="${escapeEmailHtml(logoUrl)}" alt="Ratoeira77" />
+						<img src="${escapeEmailHtml(logoUrl)}" alt="${escapeEmailHtml(seloSiteMeta.name)}" />
 					</div>
 					<div>
 						<p class="eyebrow">${safeEyebrow}</p>
@@ -402,7 +377,7 @@ export function emailShellHtml({
 			<div class="divider"></div>
 			<div class="footer">
 				<div class="footer-row">
-					<span>© ${year} Ratoeira77</span>
+					<span>© ${year} ${escapeEmailHtml(seloSiteMeta.name)}</span>
 					<a class="footer-link" href="mailto:${safeSupport}">${safeSupport}</a>
 				</div>
 				${safeFooterNote ? `<p class="footer-note">${safeFooterNote}</p>` : ""}

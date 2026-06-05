@@ -4,6 +4,7 @@ import { Loader2, Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { useTranslations } from "@/i18n/client";
 import type { ProductInfo } from "@/lib/commerce-types";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { cn } from "@/lib/utils";
@@ -58,6 +59,8 @@ export function ProductCard({
 	priority,
 }: ProductCardProps) {
 	const { openCart, optimisticAdd } = useCart();
+	const productT = useTranslations("/product.page");
+	const seloT = useTranslations("Selo");
 	const [isAdding, setIsAdding] = useState(false);
 	const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
 		() => variantOptions.find((variant) => variant.inStock)?.id ?? variantId ?? variantOptions[0]?.id ?? null,
@@ -92,7 +95,7 @@ export function ProductCard({
 	};
 
 	return (
-		<article className="group relative flex h-full flex-col overflow-hidden border border-border/60 bg-card/95 p-1.5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-red-500/30 hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)] focus-within:-translate-y-0.5 focus-within:border-red-500/30 focus-within:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)]">
+		<article className="group relative flex h-full flex-col overflow-hidden border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(247,243,238,0.98))] p-1.5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-red-500/30 hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)] focus-within:-translate-y-0.5 focus-within:border-red-500/30 focus-within:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)] dark:bg-[linear-gradient(180deg,rgba(24,19,18,0.98),rgba(15,12,12,1))]">
 			<div className="absolute right-5 top-5 z-20">
 				<FavoriteToggle
 					productSlug={productSlug}
@@ -123,7 +126,7 @@ export function ProductCard({
 						</>
 					) : (
 						<div className="flex aspect-square items-center justify-center bg-muted text-sm text-muted-foreground">
-							No image available
+							{productT("imagesTitle")}
 						</div>
 					)}
 				</YnsLink>
@@ -134,7 +137,7 @@ export function ProductCard({
 							type="button"
 							onClick={handleQuickAdd}
 							disabled={resolvedQuickAddDisabled || !resolvedVariantId || isAdding}
-							aria-label={resolvedQuickAddDisabled ? "Sold out" : "Add to cart"}
+							aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("addToCart")}
 							style={{
 								transitionDuration: "1000ms",
 								transitionProperty: "width, background-color, box-shadow, transform",
@@ -171,22 +174,29 @@ export function ProductCard({
 									resolvedQuickAddDisabled && "hidden",
 								)}
 							>
-								Add to cart
+								{productT("addToCart")}
 							</span>
 						</Button>
 					</div>
 				) : null}
 			</div>
 
-			<div className="flex flex-1 flex-col justify-between gap-2 px-1 pb-1.5 pt-2">
+			<div className="flex flex-1 flex-col justify-between gap-2 px-1 pb-1.5 pt-3">
 				<div className="space-y-1">
 					<YnsLink href={href} className="block">
-						<h2 className="line-clamp-2 min-h-[3.25rem] text-lg leading-tight font-medium tracking-tight text-card-foreground transition-colors group-hover:text-red-600 group-focus-within:text-red-600">
+						<h2 className="editorial-serif line-clamp-2 min-h-[3.5rem] text-[1.45rem] leading-[1.05] font-semibold tracking-tight text-card-foreground transition-colors group-hover:text-red-600 group-focus-within:text-red-600">
 							{name}
 						</h2>
 					</YnsLink>
+					<p className="line-clamp-2 min-h-[2.75rem] text-sm leading-6 text-muted-foreground">
+						{productInfo.summary ??
+							"Uma edição do catálogo do Selo Libertária pensada para leitura, presença e continuidade cultural."}
+					</p>
 					<div className="min-h-[3.75rem] space-y-0.5 text-card-foreground">
-						<p className="grunge-price text-base">{resolvedPriceLabel}</p>
+						<p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+							{seloT("product.selectedEdition")}
+						</p>
+						<p className="price-font text-base">{resolvedPriceLabel}</p>
 						{resolvedCompareAtLabel ? (
 							<p className="text-sm text-muted-foreground line-through">{resolvedCompareAtLabel}</p>
 						) : null}
@@ -200,7 +210,7 @@ export function ProductCard({
 
 				<div className="min-h-6">
 					{variantOptions.length > 1 ? (
-						<ul className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+						<ul className="flex flex-wrap gap-2 pt-1 text-xs text-muted-foreground">
 							{variantOptions.map((variant) => (
 								<li key={variant.id}>
 									<button

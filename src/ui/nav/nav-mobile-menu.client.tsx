@@ -23,11 +23,11 @@ export const NavMobileMenu = ({ children }: { children: ReactNode }) => {
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>
-					<DrawerTitle className="text-center font-vtks text-md">{t("title")}</DrawerTitle>
+					<DrawerTitle className="display-font text-center text-md">{t("title")}</DrawerTitle>
 					<DrawerDescription className="sr-only">{t("description")}</DrawerDescription>
 				</DrawerHeader>
 				<div
-					className="font-vtks"
+					className="display-font"
 					onClick={(e) => {
 						if (e.target instanceof HTMLElement && e.target.closest("a")) {
 							setIsOpen(false);

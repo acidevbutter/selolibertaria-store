@@ -13,7 +13,7 @@ const schema = z.object({
 export async function POST(req: Request) {
 	const pending = await readOAuthPendingCookie();
 	if (!pending || pending.kind !== "pending") {
-		return NextResponse.json({ error: "No pending OAuth signup found." }, { status: 400 });
+		return NextResponse.json({ error: "Nenhum cadastro OAuth pendente foi encontrado." }, { status: 400 });
 	}
 	try {
 		const body = schema.parse(await req.json());
@@ -48,6 +48,6 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: error.message }, { status: 403 });
 		}
 		console.error("[oauth complete]", error);
-		return NextResponse.json({ error: "Could not complete OAuth signup." }, { status: 500 });
+		return NextResponse.json({ error: "Não foi possível concluir o cadastro com OAuth." }, { status: 500 });
 	}
 }

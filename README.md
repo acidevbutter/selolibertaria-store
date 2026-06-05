@@ -1,6 +1,6 @@
-# Ratoeira77 Store
+# Storefront Starter
 
-Loja em Next.js 16 da Ratoeira77, com cat&aacute;logo integrado ao Stripe, autentica&ccedil;&atilde;o, &aacute;rea administrativa e suporte a imagens gerenciadas.
+Base de loja em Next.js 16 com cat&aacute;logo integrado ao Stripe, autentica&ccedil;&atilde;o, &aacute;rea administrativa e suporte a imagens gerenciadas.
 
 ## Stack
 

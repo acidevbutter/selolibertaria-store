@@ -192,7 +192,7 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 	);
 
 	if (user?.verified === false && Array.isArray(user.purchases) && user.purchases.length > 0) {
-		return { ok: false, error: "Email not verified. Please verify your email to make more purchases." };
+		return { ok: false, error: "E-mail não verificado. Confirme seu e-mail para realizar novas compras." };
 	}
 
 	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(user?.cart?.items || []));

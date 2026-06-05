@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getLocale } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { formatMoney } from "@/lib/utils";
 
 export const size = {
@@ -47,7 +48,7 @@ export default async function Image(props: { params: Promise<{ slug: string }> }
 				/>
 			</div>
 			<div tw="flex-1 flex flex-col items-center justify-center border-l border-neutral-200">
-				<div tw="w-full mt-8 text-left px-16 font-normal text-4xl">{"Ratoeira77"}</div>
+				<div tw="w-full mt-8 text-left px-16 font-normal text-4xl">{seloSiteMeta.name}</div>
 				<div tw="flex-1 -mt-8 flex flex-col items-start justify-center px-16">
 					<p tw="font-black text-5xl mb-0">{product.name}</p>
 					<p tw="font-normal text-neutral-800 mt-0 text-3xl">

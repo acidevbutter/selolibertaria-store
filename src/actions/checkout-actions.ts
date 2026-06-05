@@ -553,7 +553,7 @@ export async function createCheckoutSession(): Promise<
 	if (user && user.verified === false) {
 		const hasPurchases = Array.isArray(user.purchases) && user.purchases.length > 0;
 		if (hasPurchases)
-			return { error: "Email not verified. Please verify your email to make more purchases." };
+			return { error: "E-mail não verificado. Confirme seu e-mail para realizar novas compras." };
 	}
 	const minimal = user?.cart?.items || [];
 	if (minimal.length === 0) {

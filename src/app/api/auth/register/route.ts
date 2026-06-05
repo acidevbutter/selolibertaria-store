@@ -87,7 +87,7 @@ export async function POST(req: Request) {
 		const emailLower = data.email.toLowerCase();
 		const existing = await db.collection("users").findOne({ email: emailLower });
 		if (existing) {
-			return new Response(JSON.stringify({ error: "Email already registered" }), { status: 409 });
+			return new Response(JSON.stringify({ error: "E-mail já cadastrado" }), { status: 409 });
 		}
 
 		const passwordHash = await bcrypt.hash(data.password, 10);
@@ -186,8 +186,8 @@ export async function POST(req: Request) {
 			});
 			const sendResult = await sendEmail({
 				to: emailLower,
-				subject: "Confirm your email",
-				text: `Confirm your account: ${verifyUrl}?token=${verifyToken}`,
+				subject: "Confirme seu e-mail",
+				text: `Confirme sua conta: ${verifyUrl}?token=${verifyToken}`,
 				html,
 				log: {
 					kind: "email_confirmation",
@@ -215,6 +215,6 @@ export async function POST(req: Request) {
 			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
 		}
 		console.error("[POST /api/auth/register]", err);
-		return new Response(JSON.stringify({ error: "Failed to register" }), { status: 500 });
+		return new Response(JSON.stringify({ error: "Falha ao cadastrar" }), { status: 500 });
 	}
 }

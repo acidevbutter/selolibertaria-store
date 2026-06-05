@@ -131,7 +131,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 			);
 		if (!existingUser) {
 			const res = new Response(
-				JSON.stringify({ error: "Not found", code: "USER_NOT_FOUND_BEFORE_UPDATE", id: idRaw }),
+				JSON.stringify({ error: "Usuária não encontrada", code: "USER_NOT_FOUND_BEFORE_UPDATE", id: idRaw }),
 				{ status: 404 },
 			);
 			res.headers.set("x-route-hit", "users/[id]/PUT");
@@ -140,7 +140,9 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 		// If the user exists but is not verified, block profile updates
 		if (existingUser && existingUser.verified === false) {
 			const res = new Response(
-				JSON.stringify({ error: "Email not verified. Cannot edit profile until email is confirmed." }),
+				JSON.stringify({
+					error: "E-mail não verificado. Não é possível editar o perfil antes da confirmação.",
+				}),
 				{
 					status: 403,
 				},
@@ -173,7 +175,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 				.collection("users")
 				.findOne({ email: emailLower, _id: { $ne: parsed.value } });
 			if (existing) {
-				return new Response(JSON.stringify({ error: "Email already in use" }), { status: 409 });
+				return new Response(JSON.stringify({ error: "E-mail já está em uso" }), { status: 409 });
 			}
 			update.email = emailLower;
 		}
@@ -203,7 +205,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 		}
 		if (!updated) {
 			const res = new Response(
-				JSON.stringify({ error: "Not found", code: "NOT_FOUND_AFTER_UPDATE_FALLBACK" }),
+				JSON.stringify({ error: "Usuária não encontrada", code: "NOT_FOUND_AFTER_UPDATE_FALLBACK" }),
 				{ status: 404 },
 			);
 			res.headers.set("x-route-hit", "users/[id]/PUT");
@@ -224,7 +226,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
 		}
 		console.error("[PUT /api/users/:id]", err);
-		return new Response(JSON.stringify({ error: "Failed to update" }), { status: 500 });
+		return new Response(JSON.stringify({ error: "Falha ao atualizar" }), { status: 500 });
 	}
 }
 
@@ -236,6 +238,7 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
 	if ("error" in parsed) return parsed.error;
 	const db = await getDb();
 	const res = await db.collection("users").deleteOne({ _id: parsed.value });
-	if (!res.deletedCount) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+	if (!res.deletedCount)
+		return new Response(JSON.stringify({ error: "Usuária não encontrada" }), { status: 404 });
 	return new Response(null, { status: 204 });
 }

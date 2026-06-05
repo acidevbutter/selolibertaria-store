@@ -42,7 +42,10 @@ function getAuditChanges(entry: OrderAuditEntry) {
 		});
 	}
 
-	if (entry.action === "order_payment_status_webhook_updated" && details.previousStatus !== details.nextStatus) {
+	if (
+		entry.action === "order_payment_status_webhook_updated" &&
+		details.previousStatus !== details.nextStatus
+	) {
 		changes.push({
 			label: "Payment status",
 			previous: formatAuditValue(details.previousStatus),
@@ -50,7 +53,10 @@ function getAuditChanges(entry: OrderAuditEntry) {
 		});
 	}
 
-	if (entry.action === "order_fulfillment_updated" && details.previousTrackingNumber !== details.nextTrackingNumber) {
+	if (
+		entry.action === "order_fulfillment_updated" &&
+		details.previousTrackingNumber !== details.nextTrackingNumber
+	) {
 		changes.push({
 			label: "Tracking number",
 			previous: formatAuditValue(details.previousTrackingNumber),
@@ -190,7 +196,9 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 											<Badge variant="outline">{entry.actorRole}</Badge>
 										</div>
 										<div className="text-sm text-muted-foreground">
-											{entry.actorRole === "system" ? "Webhook automation" : entry.actorEmail || entry.actorId}
+											{entry.actorRole === "system"
+												? "Webhook automation"
+												: entry.actorEmail || entry.actorId}
 										</div>
 										{entry.action === "order_payment_status_webhook_updated" ? (
 											<div className="text-xs text-muted-foreground">

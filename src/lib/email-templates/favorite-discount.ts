@@ -27,7 +27,7 @@ export function favoriteDiscountEmailHtml({
 		: "";
 	const bodyHtml = `
 		<p class="lead">${greeting}</p>
-		<p>An item from your favorites list just went on sale at Ratoeira77 Store.</p>
+		<p>An item from your favorites list just went on sale at Selo Libertaria.</p>
 		<span class="status-pill">${escapeEmailHtml(promotionLabel)}</span>
 		<div class="meta-grid">
 			<div class="meta-box">
@@ -36,7 +36,7 @@ export function favoriteDiscountEmailHtml({
 			</div>
 			<div class="meta-box">
 				<span class="meta-label">New price</span>
-				<span class="meta-value grunge">${escapeEmailHtml(effectivePrice)}</span>
+				<span class="meta-value price-emphasis">${escapeEmailHtml(effectivePrice)}</span>
 			</div>
 		</div>
 		<div class="info-card">

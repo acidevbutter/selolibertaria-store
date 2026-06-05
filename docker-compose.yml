@@ -3,10 +3,10 @@ version: "3.9"
 services:
   mongo:
     image: mongo:7.0
-    container_name: ratoeira77-mongo
+    container_name: selolibertaria-mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_DATABASE: ratoeira77
+      MONGO_INITDB_DATABASE: selolibertaria
     ports:
       - "27017:27017"
     volumes:
@@ -26,7 +26,7 @@ services:
   #       condition: service_healthy
   #   environment:
   #     MONGODB_URI: mongodb://mongo:27017
-  #     MONGODB_DB_NAME: ratoeira77
+  #     MONGODB_DB_NAME: storefront
   #     STRIPE_CURRENCY: usd
   #     NEXT_PUBLIC_URL: http://localhost:3000
   #     JWT_SECRET: dev_super_secret_change_me_please_123456
@@ -35,7 +35,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: ratoeira77-mailpit
+    container_name: storefront-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"

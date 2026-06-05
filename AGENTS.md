@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-Ratoeira77 Store is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
+Storefront is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
 
 ## Development Commands
 
@@ -52,7 +52,11 @@ yarn docker:run             # Run Docker container
 ## AI Patterns
 
 - Prefer Yarn Classic (`yarn@1.22.22`) for dependency management and scripts.
-- Metadata and storefront brand copy must describe Ratoeira77 as a Sao Paulo punk chains and accessories store, never as a fine-art or New Orleans painting brand.
+- Treat the repository as a reusable storefront starter: keep brand copy, visuals, icons, contact data, and metadata generic unless a task explicitly introduces a new store identity.
+- The default placeholder brand is `Storefront`; prefer neutral descriptions, neutral assets, and replaceable examples over niche editorial narratives.
+- When a task explicitly targets the Selo Libertaria rebrand, implement it as a hybrid editorial storefront: preserve the current store architecture, cart, checkout, account, and admin flows while layering institutional pages, cultural programming, and author-driven content on top instead of replacing commerce with a brochure site.
+- When a task explicitly targets the Selo Libertária rebrand, prefer an `Editorial Noturno` direction by default: warm deep tones, adult editorial tension, cultural sophistication, and modern bookstore energy without sex-shop clichés or childish cues.
+- Alternative visual studies for the Selo Libertária rebrand may use `Barroco Contemporâneo` or `Urbano Sensual Minimalista`, but do not blend multiple art directions in the same surface without an explicit decision.
 - Keep `packageManager` pinned to `yarn@1.22.22`, but keep `engines.yarn` broad enough for Vercel's Yarn Classic `1.22.19` installer (`>=1.22.19 <2`) so deploys do not fail before install.
 - Target Node.js 24 locally via `.nvmrc`; the repo also accepts Node.js 25 through `engines`.
 - Keep `yarn build` on `next build --webpack` until the custom `webpack` configuration is migrated away.
@@ -63,12 +67,13 @@ yarn docker:run             # Run Docker container
 - Shipping provider settings must preserve typed presets for `Correios`, `Jadlog`, `EasyPost`, and `Custom HTTP`, with masked credentials at rest, provider-specific endpoint fields in admin, and server-side request/auth builders isolated from checkout UI.
 - Admin settings must expose a global `shippingEnabled` switch that disables all shipping calculations, including manual flat-rate providers and API-backed providers, before cart or checkout attempt any quote resolution.
 - User-facing copy should default to English across storefront, admin, transactional emails, and i18n fallbacks unless a task explicitly requires another locale; when normalizing mixed-language UI, also update related email templates, placeholders, and status messages in the same pass.
+- For the Selo Libertária rebrand, `pt-BR` is the primary public storefront language; new public-facing copy must go through the existing i18n layer and keep `en-US` as a secondary translation instead of leaving hardcoded English in the UI.
 - Storefront locale resolution must remain route-stable: prefer request-aware fallback order of explicit locale override, supported browser/device language, admin-configured default locale, then `NEXT_PUBLIC_LANGUAGE`; optional locale-prefixed entry URLs such as `/en`, `/pt-br`, or `/es` may be used only as a cookie-setting shortcut and must redirect immediately to the canonical unprefixed URL.
 - Admin regional settings should own the default storefront locale and default country, while account/login/checkout/cart surfaces, product pricing, and user-facing dates must format from the resolved request locale.
 - Customer-facing currency should resolve from the authenticated user's saved `preferredCurrency` when present, otherwise from a guest preference cookie or locale-derived fallback; storefront pricing and Stripe checkout/payment intent amounts may switch to that currency only when the underlying Stripe Price supports the target currency via `currency_options`, otherwise they must fall back safely to the product's default currency.
 - Public build surfaces that depend on Mongo-backed catalog metadata, such as `sitemap.xml` category URLs, should also degrade gracefully to empty lists instead of failing the build when Mongo is unavailable.
 - For favicon or branding icon updates, configure `icons` in `src/app/layout.tsx` to point at the canonical asset in `public/` and remove conflicting App Router icon files when needed.
-- The canonical favicon, Apple touch icon, and deployment-facing site icon must all resolve from the `ratoeira-red` asset family in `public/images/ratoeira/`; prefer a raster PNG for primary `icon`/`shortcut`/`apple` metadata so platforms like Vercel that ignore SVG favicons still show the brand mark reliably.
+- The canonical favicon, Apple touch icon, and deployment-facing site icon must resolve from the generic `public/images/storefront-mark.svg` placeholder until a real brand asset replaces it.
 - Admin product management must write to Stripe only from server-only code paths; storefront products are grouped by `metadata.slug`, and variants remain separate Stripe Products/Prices with matching `metadata.slug` plus `metadata.variant` and `metadata.variant_order`.
 - Admin bootstrap and reseed flows should use `yarn seed:admin`, sourcing `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`, `ADMIN_PHONE`, and `ADMIN_VERIFIED` from `.env`, and the script must stay idempotent by upserting the user and preserving unrelated profile data.
 - Admin product screens should render Stripe image URLs through a shared preview component in both catalog listings and edit forms, with a visible empty-state fallback when a product or variant has no images.
@@ -120,8 +125,7 @@ yarn docker:run             # Run Docker container
 - Saved payment methods must be manageable from the user account menu, with authenticated list/remove flows that detach Stripe PaymentMethods from the current user's Stripe Customer and never expose full card data.
 - Checkout and cart Server Components must treat cookies as read-only during render; any guest-cart merge or cart-cookie cleanup that calls `cookies().set`, `cookies().delete`, or helpers such as `clearCartId()` must run inside a Route Handler or a client-invoked Server Action.
 - Customer transactional emails for orders must map raw Stripe/admin statuses into customer-facing phases, avoid duplicate sends for equivalent payment transitions such as `paid` and `succeeded`, and persist the last sent notification metadata on the purchase for auditability.
-- Customer-facing email templates should share a single branded shell that mirrors the storefront mood: near-black backgrounds, red Ratoeira accents, aggressive headings, jagged dividers, and the canonical red logo from `public/images/ratoeira/ratoeira-red.svg`.
-- Customer-facing email previews and sent HTML should prefer a raster logo asset over external SVG when compatibility is at risk, because browsers such as Brave and some email clients are more reliable with the red `public/images/ratoeira/ratoeira-red.jpg` branding image.
+- Customer-facing email templates should use a neutral branded shell that can be re-skinned later without structural rewrites; prefer simple typography, light surfaces, and the generic placeholder mark until a real brand is provided.
 - Todo email transacional persistido em Mongo deve registrar assunto, destinatário, status, tipo/template e contexto útil de auditoria, e o admin deve expor uma tela dedicada para consultar esse histórico com filtros e vínculo para usuário ou pedido quando houver.
 - A listagem administrativa de emails deve permitir selecionar um registro e abrir um popup com a prévia renderizada do conteúdo, preservando no modal os metadados principais do envio para auditoria rápida.
 - A grade administrativa de emails deve permanecer enxuta; detalhes extensos, incluindo erro de envio, tentativas e contexto técnico, devem aparecer prioritariamente dentro do popup do registro selecionado.

@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 					const { sendEmail } = await import("@/lib/email");
 					await sendEmail({
 						to: user.email,
-						subject: "Reset your password",
+						subject: "Redefina sua senha",
 						text: `${resetUrl}?token=${token}`,
 						html,
 						log: {

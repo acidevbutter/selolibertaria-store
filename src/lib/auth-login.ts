@@ -31,11 +31,13 @@ export async function authenticateAndCreateSession({
 			{ email: email.toLowerCase() },
 			{ projection: { email: 1, passwordHash: 1, name: 1, role: 1, access: 1, preferredCurrency: 1 } },
 		);
-		if (!user?.passwordHash) return { ok: false, error: "Invalid credentials" };
-		if (isUserBlocked(user)) return { ok: false, error: "This account has been blocked. Contact support." };
+		if (!user?.passwordHash) return { ok: false, error: "Credenciais inválidas" };
+		if (isUserBlocked(user)) {
+			return { ok: false, error: "Esta conta foi bloqueada. Entre em contato com o suporte." };
+		}
 
 		const ok = await bcrypt.compare(password, user.passwordHash);
-		if (!ok) return { ok: false, error: "Invalid credentials" };
+		if (!ok) return { ok: false, error: "Credenciais inválidas" };
 
 		let overrideApplied = false;
 		if (typeof cartRaw === "string" && cartRaw.trim()) {
@@ -103,6 +105,6 @@ export async function authenticateAndCreateSession({
 		return { ok: true, preferredCurrency: user.preferredCurrency ?? null };
 	} catch (error) {
 		console.error("[login auth]", error);
-		return { ok: false, error: "Authentication error" };
+		return { ok: false, error: "Erro de autenticação" };
 	}
 }

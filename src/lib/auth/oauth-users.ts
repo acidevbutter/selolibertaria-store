@@ -70,7 +70,7 @@ export async function findOrCreateOAuthUser(input: OAuthIdentityInput) {
 
 	if (byIdentity) {
 		if (isUserBlocked(byIdentity)) {
-			throw new Error("This account has been blocked. Contact support.");
+			throw new Error("Esta conta foi bloqueada. Entre em contato com o suporte.");
 		}
 		const identities = mergeIdentity(byIdentity.identities, input, now);
 		await users.updateOne(
@@ -107,7 +107,7 @@ export async function findOrCreateOAuthUser(input: OAuthIdentityInput) {
 		}>({ email: emailLower });
 		if (byEmail) {
 			if (isUserBlocked(byEmail)) {
-				throw new Error("This account has been blocked. Contact support.");
+				throw new Error("Esta conta foi bloqueada. Entre em contato com o suporte.");
 			}
 			const identities = mergeIdentity(byEmail.identities, input, now);
 			await users.updateOne(

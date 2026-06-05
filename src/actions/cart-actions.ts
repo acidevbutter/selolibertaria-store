@@ -280,11 +280,11 @@ export async function clearCartAction(): Promise<void> {
 
 export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Cart | null; error?: string }> {
 	const code = normalizeCouponCode(rawCode);
-	if (!code) return { cart: null, error: "Enter a valid coupon code." };
+	if (!code) return { cart: null, error: "Digite um cupom válido." };
 
 	const authContext = await getStorefrontAuthContext();
 	if (authContext.kind === "blocked") {
-		return { cart: null, error: "Backoffice users cannot apply coupons or purchase items." };
+		return { cart: null, error: "Usuárias do backoffice não podem aplicar cupons nem realizar compras." };
 	}
 
 	if (authContext.kind === "buyer") {
@@ -297,7 +297,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 				{ projection: { cart: 1 } },
 			);
 		const items = user?.cart?.items ?? [];
-		if (items.length === 0) return { cart: null, error: "Your cart is empty." };
+		if (items.length === 0) return { cart: null, error: "Seu carrinho está vazio." };
 		try {
 			const { cart } = await buildPricedCartPayload({
 				cartId: "user-cart",
@@ -314,7 +314,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 				);
 			return { cart };
 		} catch (error) {
-			return { cart: null, error: error instanceof Error ? error.message : "Invalid coupon code." };
+			return { cart: null, error: error instanceof Error ? error.message : "Cupom inválido." };
 		}
 	}
 
@@ -325,7 +325,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 			: cartId
 				? toMinimalItems((commerce.cart.get({ cartId })?.items ?? []) as MinimalItem[])
 				: [];
-	if (minimal.length === 0) return { cart: null, error: "Your cart is empty." };
+	if (minimal.length === 0) return { cart: null, error: "Seu carrinho está vazio." };
 	const nextCartId = cartId || "guest-cookie";
 	try {
 		const { cart } = await buildPricedCartPayload({
@@ -337,7 +337,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 		await setCartId(nextCartId, minimal, code);
 		return { cart };
 	} catch (error) {
-		return { cart: null, error: error instanceof Error ? error.message : "Invalid coupon code." };
+		return { cart: null, error: error instanceof Error ? error.message : "Cupom inválido." };
 	}
 }
 

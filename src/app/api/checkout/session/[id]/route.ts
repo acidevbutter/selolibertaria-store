@@ -23,7 +23,7 @@ function extractId(value: RouteParams["id"]): string | undefined {
 
 export async function GET(_req: Request, ctx: RouteContext) {
 	if (!env.STRIPE_SECRET_KEY) {
-		return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
 	const auth = await requireStorefrontBuyer();
 	if ("error" in auth) return auth.error; // 401
@@ -31,7 +31,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
 	const params = await resolveParams(ctx);
 	const id = extractId(params.id);
 	if (!id || !id.startsWith("cs_")) {
-		return NextResponse.json({ error: "Invalid session id" }, { status: 400 });
+		return NextResponse.json({ error: "ID de sessão inválido" }, { status: 400 });
 	}
 
 	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
@@ -41,7 +41,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
 		});
 
 		if (session.metadata?.userId && session.metadata.userId !== String(auth.session.sub)) {
-			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
 		}
 
 		const items = (session.line_items?.data || []).map((li) => {

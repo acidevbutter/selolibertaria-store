@@ -14,10 +14,10 @@
 - Permissões de catálogo ampliadas para `vendor`, com criação e edição de produtos/variantes no admin e histórico auditável de mutações de catálogo por produto.
 - Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
 - Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
-- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `ratoeira_locale` antes de redirecionar para a rota canônica sem prefixo.
+- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
-- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `ratoeira_locale` antes de redirecionar para a rota canônica sem prefixo.
+- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
 - Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
 - Planejamento técnico para implementação de checkout transparente Stripe com PaymentIntent, Stripe Elements, webhooks idempotentes e critérios de segurança em `spec.md`.
@@ -36,6 +36,7 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- A base da loja foi desmarcada para um estado genérico e reaproveitável, removendo referências da identidade anterior em documentação, metadata, textos institucionais, exemplos de email, identificadores técnicos visíveis e elementos principais de UI.
 - O histórico de `Order details` no admin agora atualiza logo após salvar fulfillment e trocou a visualização crua em JSON por blocos mais amigáveis de `Before` e `After` para auditoria.
 - O admin de produtos agora organiza criação e edição em seções mais claras, substitui `Active in Stripe` por controles de disponibilidade orientados ao negócio e troca a edição de variantes em abas por uma visão resumida com modais de criação e edição.
 - `/checkout/processing` no longer shows a false validation error after a successful `payment_intent` return when the immediate browser sync fails; success-like return states now stay in processing and defer to the Stripe webhook as source of truth.

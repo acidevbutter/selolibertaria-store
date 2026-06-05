@@ -1,13 +1,13 @@
 {
 	"$schema": "https://json.schemastore.org/package",
-	"name": "ratoeira77-store",
+	"name": "storefront-starter",
 	"version": "1.12.0",
 	"license": "AGPL-3.0-only",
 	"private": true,
 	"type": "module",
 	"packageManager": "yarn@1.22.22",
 	"scripts": {
-		"dev": "next dev",
+		"dev": "next dev --webpack -p 3001",
 		"build": "node scripts/vercel-build.mjs",
 		"start": "next start",
 		"seed:admin": "node scripts/seed-admin.mjs",
@@ -16,8 +16,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"prepare": "husky",
-		"docker:build": "docker build -t ratoeira77-store .",
-		"docker:run": "docker run -d -p 3000:3000 ratoeira77-store"
+		"docker:build": "docker build -t storefront-starter .",
+		"docker:run": "docker run -d -p 3000:3000 storefront-starter"
 	},
 	"dependencies": {
 		"@next/mdx": "16.2.4",
