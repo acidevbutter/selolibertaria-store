@@ -70,11 +70,22 @@ async function resolveImageField({
 	captionField: string;
 }) {
 	const fileEntry = formData.get(`${srcField}File`);
+	const existingSrc = firstNonEmptyString(formData.getAll(srcField));
 	const uploadedSrc =
 		fileEntry instanceof File && fileEntry.size > 0
 			? (await uploadImageFileToCloudinary(fileEntry)).secure_url
 			: null;
-	const src = uploadedSrc ?? firstNonEmptyString(formData.getAll(srcField));
+	const src = uploadedSrc ?? existingSrc;
+	if (process.env.NODE_ENV !== "production") {
+		console.info("[editorial image field]", {
+			srcField,
+			hasFile: fileEntry instanceof File && fileEntry.size > 0,
+			fileName: fileEntry instanceof File ? fileEntry.name : null,
+			fileSize: fileEntry instanceof File ? fileEntry.size : null,
+			existingSrc,
+			resolvedSrc: src,
+		});
+	}
 	if (!src) return null;
 	return {
 		src,

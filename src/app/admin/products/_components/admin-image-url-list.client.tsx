@@ -30,6 +30,7 @@ export function AdminImageUrlList({
 	const [hasConfirmedPendingSelection, setHasConfirmedPendingSelection] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const preservePendingSelectionRef = useRef(false);
 	const inputId = `${name}-file-input`;
 	const previewValues = values.map((value) => value.trim()).filter(Boolean);
 
@@ -41,6 +42,7 @@ export function AdminImageUrlList({
 	};
 
 	const clearPendingSelection = () => {
+		preservePendingSelectionRef.current = false;
 		setHasConfirmedPendingSelection(false);
 		setPendingFiles([]);
 		setPendingPreviewUrls((current) => {
@@ -75,6 +77,7 @@ export function AdminImageUrlList({
 			}
 			return nextFiles.map((file) => URL.createObjectURL(file));
 		});
+		preservePendingSelectionRef.current = false;
 		setPendingFiles(nextFiles);
 		setHasConfirmedPendingSelection(false);
 		setUploadError("");
@@ -148,11 +151,10 @@ export function AdminImageUrlList({
 			return;
 		}
 
+		preservePendingSelectionRef.current = true;
 		setIsSelectionModalOpen(false);
 		setHasConfirmedPendingSelection(true);
-		if (uploadMode === "instant") {
-			await uploadFiles(pendingFiles);
-		}
+		await uploadFiles(pendingFiles);
 	};
 
 	const deleteSelectedImage = async () => {
@@ -192,7 +194,7 @@ export function AdminImageUrlList({
 					<p className="text-sm font-medium">Upload de imagem</p>
 					<p className="text-xs text-muted-foreground">
 						{uploadMode === "on-submit"
-							? "Escolha a imagem, revise a prévia e depois salve o formulário para concluir o envio."
+							? "Escolha a imagem e revise a prévia antes de confirmar."
 							: "Escolha uma ou mais imagens do computador."}
 					</p>
 				</div>
@@ -239,9 +241,7 @@ export function AdminImageUrlList({
 						{pendingFiles.map((file) => file.name).join(", ")}
 					</p>
 					{uploadMode === "on-submit" ? (
-						<p className="text-xs font-medium text-foreground">
-							Prévia confirmada. A imagem será enviada quando você clicar em salvar.
-						</p>
+						<p className="text-xs font-medium text-foreground">Prévia confirmada.</p>
 					) : null}
 				</div>
 			) : null}
@@ -249,18 +249,12 @@ export function AdminImageUrlList({
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				{previewValues.length ? (
 					previewValues.map((src, index) => (
-						<div
+						<button
 							key={`${src}-${index}`}
-							className="relative overflow-hidden rounded-md border bg-muted"
-							role="button"
-							tabIndex={0}
+							type="button"
+							className="relative overflow-hidden rounded-md border bg-muted text-left"
+							aria-label={`Visualizar imagem ${index + 1}`}
 							onClick={() => setSelectedImage(src)}
-							onKeyDown={(event) => {
-								if (event.key === "Enter" || event.key === " ") {
-									event.preventDefault();
-									setSelectedImage(src);
-								}
-							}}
 						>
 							<Image
 								src={src}
@@ -271,7 +265,7 @@ export function AdminImageUrlList({
 								sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
 								{...getProductImageOptimizationProps(src)}
 							/>
-						</div>
+						</button>
 					))
 				) : (
 					<div className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground">
@@ -293,7 +287,7 @@ export function AdminImageUrlList({
 							unoptimized
 						/>
 						<div className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2 text-xs text-white">
-							Prévia local. Salve para enviar.
+							Prévia local.
 						</div>
 					</div>
 				))}
@@ -302,18 +296,18 @@ export function AdminImageUrlList({
 				open={isSelectionModalOpen}
 				onOpenChange={(open) => {
 					setIsSelectionModalOpen(open);
-					if (!open && !isUploading && !hasConfirmedPendingSelection) {
+					if (!open && !isUploading && !preservePendingSelectionRef.current) {
 						clearPendingSelection();
+					}
+					if (open) {
+						preservePendingSelectionRef.current = false;
 					}
 				}}
 			>
 				<DialogContent className="max-w-3xl">
 					<DialogHeader>
 						<DialogTitle>Revisar imagem selecionada</DialogTitle>
-						<DialogDescription>
-							Confira a prévia antes de{" "}
-							{uploadMode === "on-submit" ? "manter a imagem pronta para salvar" : "enviar o upload"}.
-						</DialogDescription>
+						<DialogDescription>Confira a prévia antes de confirmar.</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4">
 						{pendingPreviewUrls[0] ? (
@@ -348,11 +342,7 @@ export function AdminImageUrlList({
 								Descartar
 							</Button>
 							<Button type="button" onClick={() => void confirmPendingSelection()} disabled={isUploading}>
-								{uploadMode === "on-submit"
-									? "Salvar seleção"
-									: isUploading
-										? "Enviando..."
-										: "Salvar e enviar"}
+								{isUploading ? "Enviando..." : "Salvar e enviar"}
 							</Button>
 						</div>
 					</div>

@@ -1,3 +1,5 @@
+import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
+
 export const seloSiteMeta = {
 	name: "Selo Libertaria",
 	title: "Selo Libertaria",
@@ -11,13 +13,13 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Home", href: "/" },
-	{ label: "Shop", href: "/products" },
-	{ label: "Projects", href: "/projects" },
-	{ label: "Events", href: "/events" },
-	{ label: "Sarau Safado", href: "/sarau-safado" },
-	{ label: "About", href: "/about" },
-	{ label: "Contact", href: "/contact" },
+	{ label: "Home", href: PUBLIC_NAVIGATION.home },
+	{ label: "Shop", href: PUBLIC_NAVIGATION.shop },
+	{ label: "Projects", href: PUBLIC_NAVIGATION.projects },
+	{ label: "Events", href: PUBLIC_NAVIGATION.events },
+	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
+	{ label: "About", href: PUBLIC_NAVIGATION.about },
+	{ label: "Contact", href: PUBLIC_NAVIGATION.contact },
 ];
 
 export const seloSocialLinks = [
@@ -50,7 +52,7 @@ export const seloHomeEditorialCtas = [
 		title: "Books stay at the center of the experience.",
 		description:
 			"The current site keeps its cart, checkout, and product flow while gaining stronger editorial context around each release.",
-		href: "/products",
+		href: PUBLIC_NAVIGATION.shop,
 		label: "Browse books",
 	},
 	{
@@ -58,7 +60,7 @@ export const seloHomeEditorialCtas = [
 		title: "Events, workshops, and projects build the world around the books.",
 		description:
 			"Public programming should not feel detached from the catalogue. It should extend the same voice into readings, labs, and performances.",
-		href: "/events",
+		href: PUBLIC_NAVIGATION.events,
 		label: "See events",
 	},
 ];
@@ -74,7 +76,7 @@ export const seloHomeHero = {
 		"Selo Libertaria brings together books, cultural projects, salons, and author-led publishing inside one experience of reading, presence, and desire.",
 	primaryCta: {
 		label: "Browse books",
-		href: "/products",
+		href: PUBLIC_NAVIGATION.shop,
 	},
 	secondaryCta: {
 		label: "Explore the agenda",
@@ -103,7 +105,7 @@ export const seloHomeManifesto = {
 	title: "Literature to set language, city, and imagination on fire.",
 	body: "Between publications, live encounters, and performance, Selo Libertaria builds an authorial catalogue for adults where the book operates as work, gesture, and cultural presence at once.",
 	linkLabel: "Meet the selo",
-	linkHref: "/about",
+	linkHref: PUBLIC_NAVIGATION.about,
 };
 
 export const seloHomeAgenda = {
@@ -111,14 +113,14 @@ export const seloHomeAgenda = {
 	title: "Upcoming encounters, readings, and public appearances from the selo.",
 	archiveTitle: "Archive of encounters and cultural interventions",
 	linkLabel: "See all events",
-	linkHref: "/events",
+	linkHref: PUBLIC_NAVIGATION.events,
 };
 
 export const seloHomeProjectsIntro = {
 	eyebrow: "Projects",
 	title: "A practice that moves through books, stage, and formation.",
 	linkLabel: "View projects",
-	linkHref: "/projects",
+	linkHref: PUBLIC_NAVIGATION.projects,
 };
 
 export const seloHomeImmersiveGallery = {
@@ -139,11 +141,11 @@ export const seloHomeAuthorSpotlight = {
 		"The new site should let readers move naturally from a title to the artistic and cultural context that surrounds it.",
 	primaryCta: {
 		label: "About the author",
-		href: "/about",
+		href: PUBLIC_NAVIGATION.about,
 	},
 	secondaryCta: {
 		label: "Discover Sarau Safado",
-		href: "/sarau-safado",
+		href: PUBLIC_NAVIGATION.sarau,
 	},
 	imageSrc: "/yns-cover.jpg",
 	imageAlt: "Editorial portrait composition for Selo Libertaria",
@@ -154,7 +156,7 @@ export const seloHomeCommunityCta = {
 	body: "Receive updates, follow the networks, and get in touch for invitations, partnerships, and programming.",
 	primaryCta: {
 		label: "Get in touch",
-		href: "/contact",
+		href: PUBLIC_NAVIGATION.contact,
 	},
 	secondaryLinks: [
 		{ label: "Instagram", href: seloSiteMeta.instagram },
