@@ -14,6 +14,7 @@ import {
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/components/ui/hooks/use-media-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useTranslations } from "@/i18n/client";
 import { countries, findMatchingCountry } from "@/lib/countries";
 import { ElWithErrors, type ElWithErrorsProps } from "@/ui/input-errors";
 
@@ -26,6 +27,7 @@ export function CountrySelect({
 }: ElWithErrorsProps & { onChangeValue?: (value: string) => void }) {
 	const [open, setOpen] = useState(false);
 	const isDesktop = useMediaQuery("(min-width: 768px)");
+	const t = useTranslations("Address");
 
 	const selectedCountry = findMatchingCountry(value) ?? null;
 
@@ -37,7 +39,7 @@ export function CountrySelect({
 						<Popover open={open} onOpenChange={setOpen}>
 							<PopoverTrigger asChild>
 								<Button variant="outline" className="mt-3 w-full justify-between text-base">
-									{selectedCountry ? <>{selectedCountry.label}</> : "Select country…"}
+									{selectedCountry ? <>{selectedCountry.label}</> : t("selectCountry")}
 									<CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 								</Button>
 							</PopoverTrigger>
@@ -52,7 +54,7 @@ export function CountrySelect({
 					<Drawer open={open} onOpenChange={setOpen}>
 						<DrawerTrigger asChild>
 							<Button variant="outline" className="w-[150px] justify-start">
-								{selectedCountry ? <>{selectedCountry.label}</> : <>+ Set status</>}
+								{selectedCountry ? <>{selectedCountry.label}</> : t("selectCountry")}
 							</Button>
 						</DrawerTrigger>
 						<DrawerContent>
@@ -74,6 +76,7 @@ function CountryList({
 	setOpen: (open: boolean) => void;
 	setSelectedCountry: (country: ListItem | null) => void;
 }) {
+	const t = useTranslations("Address");
 	return (
 		<Command
 			filter={(value, search) => {
@@ -82,11 +85,11 @@ function CountryList({
 			}}
 		>
 			<CommandInput
-				placeholder="Find country…"
+				placeholder={t("searchCountry")}
 				className="my-2 h-8 border border-neutral-200 py-0 focus:border-neutral-300 focus:outline-hidden focus:ring-3 focus:ring-neutral-100"
 			/>
 			<CommandList>
-				<CommandEmpty>No results found.</CommandEmpty>
+				<CommandEmpty>{t("noResults")}</CommandEmpty>
 				<CommandGroup>
 					{countries.map((country) => (
 						<CommandItem

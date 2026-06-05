@@ -1,5 +1,6 @@
 import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
+import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialHomePage } from "@/lib/editorial-content-store";
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-	const homeContent = await getEditorialHomePage();
+	const [homeContent, t] = await Promise.all([getEditorialHomePage(), getTranslations("Selo.home.fallback")]);
 	try {
 		const result = await commerce.product.browse({ first: 6, currency: await getRequestPreferredCurrency() });
 		const products = result.data || [];
@@ -40,16 +41,16 @@ export default async function Home() {
 			<div className="space-y-8 pb-8 md:space-y-10">
 				<HomeHero content={homeContent.hero} />
 				<section className="border border-red-500/30 bg-red-500/8 p-4 text-center text-sm text-red-700 dark:text-red-300">
-					The editorial home is available, but the live catalogue could not be loaded right now.
+					{t("catalogUnavailable")}
 					<br />
-					<small>{error instanceof Error ? error.message : "Unknown product loading error"}</small>
+					<small>{error instanceof Error ? error.message : t("unknownError")}</small>
 				</section>
 				<div className="flex justify-center">
 					<YnsLink
 						className="inline-flex h-11 items-center justify-center rounded-full border border-border px-6 text-sm font-medium transition-colors hover:bg-accent"
 						href="/projects"
 					>
-						View projects
+						{t("viewProjects")}
 					</YnsLink>
 				</div>
 				<HomeManifesto content={homeContent.manifesto} />

@@ -83,6 +83,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Há convivência de inglês e pt-BR no produto atual.
 - Superfícies novas de promoção, favoritos administrativos e preferências de marketing já introduzem mais pt-BR.
 - Ao evoluir uma tela, manter o idioma dominante daquela superfície e evitar blocos mistos dentro do mesmo componente.
+- Ao corrigir localização pública em `pt-BR`, incluir também `aria-label`, placeholders, mensagens transitórias e estados vazios na mesma passada; textos autorais ou operacionais cadastrados pelo admin ficam fora dessa normalização e devem permanecer como conteúdo-fonte.
 - A storefront deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
 - Para QA, suporte e testes de localização, a storefront pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
 - Campos compartilhados com país, moeda, datas e checkout devem espelhar o locale resolvido daquela sessão, sem duplicar layouts ou criar variantes visuais por idioma.

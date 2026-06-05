@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { finalizeCheckoutCleanup, recordSuccessfulCheckout } from "@/actions/order-actions";
 import { useCart } from "@/context/cart-context";
+import { useTranslations } from "@/i18n/client";
 
 type CheckoutStatus =
 	| "success"
@@ -28,6 +29,7 @@ export function CheckoutSuccessHandler() {
 	const router = useRouter();
 	const { closeCart, refreshCart } = useCart();
 	const [ran, setRan] = useState(false);
+	const t = useTranslations("Checkout.statusToast");
 
 	useEffect(() => {
 		const statusParam = searchParams.get("checkout");
@@ -37,7 +39,7 @@ export function CheckoutSuccessHandler() {
 		if (ran || !statusParam || paymentIntentId || orderId) return;
 		setRan(true);
 		const status = normalizeStatus(statusParam);
-		const message = statusMessages[status];
+		const message = getStatusMessage(t, status);
 		(async () => {
 			try {
 				if (successLikeStatuses.includes(status) && sessionId) {
@@ -63,7 +65,7 @@ export function CheckoutSuccessHandler() {
 				}
 			} catch (e) {
 				console.error("Failed to cleanup after checkout", e);
-				showToast(statusMessages.error);
+				showToast(getStatusMessage(t, "error"));
 			} finally {
 				// Remove the query parameters from the URL
 				const sp = new URLSearchParams(Array.from(searchParams.entries()));
@@ -73,7 +75,7 @@ export function CheckoutSuccessHandler() {
 				router.replace(newQs ? `/?${newQs}` : "/");
 			}
 		})();
-	}, [searchParams, router, ran, closeCart, refreshCart]);
+	}, [searchParams, router, ran, closeCart, refreshCart, t]);
 
 	return null;
 }
@@ -102,75 +104,31 @@ function normalizeStatus(raw: string): CheckoutStatus {
 	}
 }
 
-const statusMessages: Record<
-	CheckoutStatus | "error",
-	{ type: "success" | "error" | "info" | "warning"; title: string; description?: string }
-> = {
-	success: {
-		type: "success",
-		title: "Payment confirmed",
-		description: "Thank you for your purchase!",
-	},
-	processing: {
-		type: "info",
-		title: "Payment processing",
-		description: "We'll update your order status as soon as the bank confirms.",
-	},
-	requires_payment_method: {
-		type: "error",
-		title: "Payment not authorized",
-		description: "Review your payment details or try another method.",
-	},
-	failed: {
-		type: "error",
-		title: "Payment not completed",
-		description: "No charges were made and the cart is still available.",
-	},
-	open: {
-		type: "info",
-		title: "Checkout still open",
-		description: "Complete the payment to finish your order.",
-	},
-	expired: {
-		type: "warning",
-		title: "Session expired",
-		description: "Restart the checkout to try again.",
-	},
-	cancel: {
-		type: "warning",
-		title: "Checkout canceled",
-		description: "Your items remain in the cart if you'd like to try again.",
-	},
-	forbidden: {
-		type: "error",
-		title: "Checkout blocked",
-		description: "This payment could not be matched to your account.",
-	},
-	invalid_payment_intent: {
-		type: "error",
-		title: "Invalid payment",
-		description: "Start a new checkout and try again.",
-	},
-	missing_session: {
-		type: "error",
-		title: "Checkout session not found",
-		description: "Try starting a new checkout.",
-	},
-	stripe_not_configured: {
-		type: "error",
-		title: "Stripe not configured",
-		description: "Check the server environment variables.",
-	},
-	error: {
-		type: "error",
-		title: "Error validating payment",
-		description: "Try again or contact support if it persists.",
-	},
-	unknown: {
-		type: "info",
-		title: "Unknown checkout status",
-		description: "We're looking into it. Please try again if needed.",
-	},
+function getStatusMessage(
+	t: ReturnType<typeof useTranslations<"Checkout.statusToast">>,
+	status: CheckoutStatus | "error",
+) {
+	return {
+		type: statusToastTypes[status],
+		title: t(`${status}.title`),
+		description: t(`${status}.description`),
+	};
+}
+
+const statusToastTypes: Record<CheckoutStatus | "error", "success" | "error" | "info" | "warning"> = {
+	success: "success",
+	processing: "info",
+	requires_payment_method: "error",
+	failed: "error",
+	open: "info",
+	expired: "warning",
+	cancel: "warning",
+	forbidden: "error",
+	invalid_payment_intent: "error",
+	missing_session: "error",
+	stripe_not_configured: "error",
+	error: "error",
+	unknown: "info",
 };
 
 function showToast(message: {

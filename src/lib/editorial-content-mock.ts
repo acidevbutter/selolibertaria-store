@@ -151,22 +151,24 @@ const buildMockAboutPage = (): EditorialAboutPage => ({
 const buildMockContactPage = (): EditorialContactPage => ({
 	type: "page_contact",
 	slug: "contact",
-	title: seloContactPage.title,
-	summary: seloContactPage.description,
+	title: "Fale com o selo sobre livros, convites, parcerias e programação.",
+	summary:
+		"Use este espaço para falar sobre livros, convites culturais, oficinas, imprensa, colaborações ou programação.",
 	published: true,
 	order: 1,
 	hero: {
-		eyebrow: seloContactPage.eyebrow,
-		title: seloContactPage.title,
-		body: seloContactPage.description,
+		eyebrow: "Contato",
+		title: "Fale com o selo sobre livros, convites, parcerias e programação.",
+		body: "Use este espaço para falar sobre livros, convites culturais, oficinas, imprensa, colaborações ou programação.",
 	},
 	form: {
-		title: seloContactPage.formTitle,
-		description: seloContactPage.formDescription,
+		title: "Enviar mensagem",
+		description:
+			"Vamos encaminhar sua mensagem para o caminho certo dentro de livros, eventos, parcerias ou suporte.",
 	},
 	direct: {
-		title: seloContactPage.directTitle,
-		description: seloContactPage.directDescription,
+		title: "Canais diretos",
+		description: "Fale com o selo pelos principais pontos de contato editoriais e sociais.",
 		links: [
 			{ label: "E-mail", href: `mailto:${seloSiteMeta.email}`, text: seloSiteMeta.email },
 			{ label: "Instagram", href: seloSiteMeta.instagram, text: "@selolibertaria" },
@@ -174,8 +176,8 @@ const buildMockContactPage = (): EditorialContactPage => ({
 		],
 	},
 	paths: {
-		title: seloContactPage.pathsTitle,
-		description: seloContactPage.pathsDescription,
+		title: "Caminhos comuns",
+		description: "Navegue rapidamente entre catálogo, programação e páginas institucionais.",
 		links: [
 			{ label: "Projetos", href: "/projects" },
 			{ label: "Eventos", href: "/events" },
@@ -192,42 +194,47 @@ const buildMockContactPage = (): EditorialContactPage => ({
 const buildMockHomePage = (): EditorialHomePage => ({
 	type: "page_home",
 	slug: "home",
-	title: seloHomeHero.title,
-	summary: seloHomeHero.description,
+	title: "Uma livraria-editora para quem lê com o corpo inteiro.",
+	summary:
+		"O Selo Libertária reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
 	published: true,
 	order: 1,
 	hero: {
-		eyebrow: seloHomeHero.eyebrow,
-		title: seloHomeHero.title,
-		description: seloHomeHero.description,
-		primaryCtaLabel: seloHomeHero.primaryCta.label,
+		eyebrow: "Livros, performance e literatura erótica",
+		title: "Uma livraria-editora para quem lê com o corpo inteiro.",
+		description:
+			"O Selo Libertária reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
+		primaryCtaLabel: "Ver livros",
 		primaryCtaHref: seloHomeHero.primaryCta.href,
-		secondaryCtaLabel: seloHomeHero.secondaryCta.label,
+		secondaryCtaLabel: "Explorar agenda",
 		secondaryCtaHref: seloHomeHero.secondaryCta.href,
-		supportingLine: seloHomeHero.supportingLine,
-		featureEyebrow: seloHomeHero.featureEyebrow,
-		featureTitle: seloHomeHero.featureTitle,
-		featureBody: seloHomeHero.featureBody,
-		featureQuote: seloHomeHero.featureQuote,
+		supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
+		featureEyebrow: "Site editorial",
+		featureTitle:
+			"Uma home híbrida onde catálogo, programação cultural e contexto autoral convivem sem fricção.",
+		featureBody:
+			"Uma home híbrida onde catálogo, programação cultural e contexto autoral convivem sem fricção.",
+		featureQuote: "Ler também pode ser uma forma de acender presença.",
 		featureImage: {
 			src: seloHomeHero.featureImage.src,
 			alt: seloHomeHero.featureImage.alt,
 		},
 	},
 	manifesto: {
-		title: seloHomeManifesto.title,
-		body: seloHomeManifesto.body,
-		linkLabel: seloHomeManifesto.linkLabel,
+		title: "Literatura para incendiar linguagem, cidade e imaginação.",
+		body: "Entre publicações, encontros e performance, o Selo Libertária constrói um catálogo autoral para adultos, em que o livro opera ao mesmo tempo como obra, gesto e presença cultural.",
+		linkLabel: "Conheça o selo",
 		linkHref: seloHomeManifesto.linkHref,
 	},
 	author: {
-		eyebrow: seloHomeAuthorSpotlight.eyebrow,
-		title: seloHomeAuthorSpotlight.title,
-		body: seloHomeAuthorSpotlight.body,
-		secondaryBody: seloHomeAuthorSpotlight.secondaryBody,
-		primaryCtaLabel: seloHomeAuthorSpotlight.primaryCta.label,
+		eyebrow: "Autora e curadoria",
+		title: "Natália Nolli Sasso e a órbita do Selo Libertária",
+		body: "Os livros seguem no centro, mas o catálogo cresce em diálogo com programas públicos, oficinas, saraus e trabalho cultural colaborativo.",
+		secondaryBody:
+			"O site deve permitir que a pessoa leitora passe naturalmente de um título para o contexto artístico e cultural que o cerca.",
+		primaryCtaLabel: "Sobre a autora",
 		primaryCtaHref: seloHomeAuthorSpotlight.primaryCta.href,
-		secondaryCtaLabel: seloHomeAuthorSpotlight.secondaryCta.label,
+		secondaryCtaLabel: "Conhecer o Sarau Safado",
 		secondaryCtaHref: seloHomeAuthorSpotlight.secondaryCta.href,
 		image: {
 			src: seloHomeAuthorSpotlight.imageSrc,
@@ -235,11 +242,15 @@ const buildMockHomePage = (): EditorialHomePage => ({
 		},
 	},
 	community: {
-		title: seloHomeCommunityCta.title,
-		body: seloHomeCommunityCta.body,
-		primaryCtaLabel: seloHomeCommunityCta.primaryCta.label,
+		title: "Acompanhe os próximos livros, saraus e projetos culturais.",
+		body: "Receba atualizações, acompanhe as redes e entre em contato para convites, parcerias e programação.",
+		primaryCtaLabel: "Entrar em contato",
 		primaryCtaHref: seloHomeCommunityCta.primaryCta.href,
-		secondaryLinks: seloHomeCommunityCta.secondaryLinks,
+		secondaryLinks: [
+			{ label: "Instagram", href: seloSiteMeta.instagram },
+			{ label: "YouTube", href: seloSiteMeta.youtube },
+			{ label: "Facebook", href: seloSiteMeta.facebook },
+		],
 	},
 	createdBy: "system:mock",
 	updatedBy: "system:mock",
