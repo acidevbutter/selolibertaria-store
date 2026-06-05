@@ -38,8 +38,8 @@ export async function decrypt(input: string): Promise<SessionData | null | undef
 	try {
 		const r = await jwtVerify(input, key, { algorithms: ["HS256"] });
 		return r.payload as SessionData;
-	} catch (e) {
-		if (e instanceof Error) console.log(e.message);
+	} catch {
+		return null;
 	}
 }
 

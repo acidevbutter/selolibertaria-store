@@ -2,6 +2,7 @@ import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { getEditorialHomePage } from "@/lib/editorial-content-store";
 import { HomeAuthorSpotlight } from "@/ui/home/home-author-spotlight";
 import { HomeCommunityCta } from "@/ui/home/home-community-cta";
 import { HomeFeaturedBooks } from "@/ui/home/home-featured-books";
@@ -18,25 +19,26 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+	const homeContent = await getEditorialHomePage();
 	try {
 		const result = await commerce.product.browse({ first: 6, currency: await getRequestPreferredCurrency() });
 		const products = result.data || [];
 
 		return (
 			<div className="space-y-8 pb-8 md:space-y-10">
-				<HomeHero />
+				<HomeHero content={homeContent.hero} />
 				<HomeFeaturedBooks products={products} />
-				<HomeManifesto />
+				<HomeManifesto content={homeContent.manifesto} />
 				<HomeProgramGrid />
 				<HomeImmersiveGallery />
-				<HomeAuthorSpotlight />
-				<HomeCommunityCta />
+				<HomeAuthorSpotlight content={homeContent.author} />
+				<HomeCommunityCta content={homeContent.community} />
 			</div>
 		);
 	} catch (error) {
 		return (
 			<div className="space-y-8 pb-8 md:space-y-10">
-				<HomeHero />
+				<HomeHero content={homeContent.hero} />
 				<section className="border border-red-500/30 bg-red-500/8 p-4 text-center text-sm text-red-700 dark:text-red-300">
 					The editorial home is available, but the live catalogue could not be loaded right now.
 					<br />
@@ -50,11 +52,11 @@ export default async function Home() {
 						View projects
 					</YnsLink>
 				</div>
-				<HomeManifesto />
+				<HomeManifesto content={homeContent.manifesto} />
 				<HomeProgramGrid />
 				<HomeImmersiveGallery />
-				<HomeAuthorSpotlight />
-				<HomeCommunityCta />
+				<HomeAuthorSpotlight content={homeContent.author} />
+				<HomeCommunityCta content={homeContent.community} />
 			</div>
 		);
 	}

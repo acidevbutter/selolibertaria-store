@@ -11,6 +11,7 @@
 		"build": "node scripts/vercel-build.mjs",
 		"start": "next start",
 		"seed:admin": "node scripts/seed-admin.mjs",
+		"seed:editorial": "tsx scripts/migrate-selo-editorial-content.ts",
 		"migrate:product-images": "node scripts/migrate-stripe-product-images-to-cloudinary.mjs",
 		"lint": "biome check --write",
 		"test": "vitest run",

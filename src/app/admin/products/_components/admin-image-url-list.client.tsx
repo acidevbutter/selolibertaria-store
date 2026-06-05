@@ -1,8 +1,8 @@
 "use client";
 
-import { ImagePlus, Trash2 } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { Button } from "@/ui/shadcn/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
@@ -11,18 +11,75 @@ export function AdminImageUrlList({
 	name = "images",
 	initialValues = [],
 	autoSubmitOnUpload = false,
+	uploadMode = "instant",
 }: {
 	name?: string;
 	initialValues?: string[];
 	autoSubmitOnUpload?: boolean;
+	uploadMode?: "instant" | "on-submit";
 }) {
 	const [values, setValues] = useState<string[]>(initialValues.length > 0 ? initialValues : [""]);
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadError, setUploadError] = useState("");
 	const [selectedImage, setSelectedImage] = useState<string | null>(null);
+	const [isDeletingImage, setIsDeletingImage] = useState(false);
+	const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+	const [pendingPreviewUrls, setPendingPreviewUrls] = useState<string[]>([]);
+	const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+	const [hasConfirmedPendingSelection, setHasConfirmedPendingSelection] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const inputId = `${name}-file-input`;
 	const previewValues = values.map((value) => value.trim()).filter(Boolean);
+
+	const toFileArray = (value: File[] | FileList | Event | null | undefined) => {
+		if (!value) return [];
+		if (value instanceof FileList) return Array.from(value);
+		if (Array.isArray(value)) return value.filter((item): item is File => item instanceof File);
+		return [];
+	};
+
+	const clearPendingSelection = () => {
+		setHasConfirmedPendingSelection(false);
+		setPendingFiles([]);
+		setPendingPreviewUrls((current) => {
+			for (const previewUrl of current) {
+				URL.revokeObjectURL(previewUrl);
+			}
+			return [];
+		});
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
+	};
+
+	useEffect(() => {
+		return () => {
+			for (const previewUrl of pendingPreviewUrls) {
+				URL.revokeObjectURL(previewUrl);
+			}
+		};
+	}, [pendingPreviewUrls]);
+
+	const handleFiles = (files: FileList | null) => {
+		const nextFiles = toFileArray(files);
+		if (nextFiles.length === 0) {
+			clearPendingSelection();
+			return;
+		}
+
+		setPendingPreviewUrls((current) => {
+			for (const previewUrl of current) {
+				URL.revokeObjectURL(previewUrl);
+			}
+			return nextFiles.map((file) => URL.createObjectURL(file));
+		});
+		setPendingFiles(nextFiles);
+		setHasConfirmedPendingSelection(false);
+		setUploadError("");
+		setIsSelectionModalOpen(true);
+	};
 
 	const appendValue = (nextValue: string) => {
 		setValues((current) => {
@@ -35,9 +92,9 @@ export function AdminImageUrlList({
 		});
 	};
 
-	const removeValue = (index: number) => {
+	const removeValueByUrl = (imageUrl: string) => {
 		setValues((current) => {
-			const nextValues = current.filter((_, itemIndex) => itemIndex !== index);
+			const nextValues = current.filter((item) => item.trim() !== imageUrl.trim());
 			return nextValues.length > 0 ? nextValues : [""];
 		});
 	};
@@ -59,25 +116,69 @@ export function AdminImageUrlList({
 		appendValue(payload.url);
 	};
 
-	const uploadFiles = async (files: FileList) => {
+	const uploadFiles = async (files: File[] | FileList | Event | null | undefined) => {
+		const nextFiles = toFileArray(files);
+		if (nextFiles.length === 0) {
+			setUploadError("Nenhum arquivo de imagem foi selecionado.");
+			return;
+		}
+
 		setIsUploading(true);
 		setUploadError("");
 
 		try {
-			for (const file of Array.from(files)) {
+			for (const file of nextFiles) {
 				await uploadFile(file);
 			}
+			clearPendingSelection();
 
 			if (autoSubmitOnUpload) {
 				containerRef.current?.closest("form")?.requestSubmit();
 			}
 		} catch (error) {
-			setUploadError(error instanceof Error ? error.message : "Could not upload the image.");
+			setUploadError(error instanceof Error ? error.message : "Não foi possível enviar a imagem.");
 		} finally {
 			setIsUploading(false);
-			if (fileInputRef.current) {
-				fileInputRef.current.value = "";
+		}
+	};
+
+	const confirmPendingSelection = async () => {
+		if (pendingFiles.length === 0) {
+			setIsSelectionModalOpen(false);
+			return;
+		}
+
+		setIsSelectionModalOpen(false);
+		setHasConfirmedPendingSelection(true);
+		if (uploadMode === "instant") {
+			await uploadFiles(pendingFiles);
+		}
+	};
+
+	const deleteSelectedImage = async () => {
+		if (!selectedImage) return;
+
+		setIsDeletingImage(true);
+		setUploadError("");
+
+		try {
+			const response = await fetch("/api/admin/media/delete", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ url: selectedImage }),
+			});
+			const payload = (await response.json()) as { error?: string };
+			if (!response.ok) {
+				throw new Error(payload.error || "Não foi possível excluir a imagem.");
 			}
+
+			removeValueByUrl(selectedImage);
+			setSelectedImage(null);
+			setIsDeleteConfirmOpen(false);
+		} catch (error) {
+			setUploadError(error instanceof Error ? error.message : "Não foi possível excluir a imagem.");
+		} finally {
+			setIsDeletingImage(false);
 		}
 	};
 
@@ -89,40 +190,68 @@ export function AdminImageUrlList({
 			<div className="flex flex-col gap-3 rounded-md border border-dashed p-3 md:flex-row md:items-center md:justify-between">
 				<div className="space-y-1">
 					<p className="text-sm font-medium">Upload de imagem</p>
-					<p className="text-xs text-muted-foreground">Escolha uma ou mais imagens do computador.</p>
+					<p className="text-xs text-muted-foreground">
+						{uploadMode === "on-submit"
+							? "Escolha a imagem, revise a prévia e depois salve o formulário para concluir o envio."
+							: "Escolha uma ou mais imagens do computador."}
+					</p>
 				</div>
 				<div className="flex items-center gap-2">
 					<input
+						id={inputId}
+						name={`${name}File`}
 						ref={fileInputRef}
 						type="file"
 						accept="image/*"
 						multiple
-						className="hidden"
+						className="sr-only"
+						onClick={(event) => {
+							event.currentTarget.value = "";
+						}}
+						onInput={(event) => {
+							handleFiles(event.currentTarget.files);
+						}}
 						onChange={(event) => {
-							const files = event.target.files;
-							if (files?.length) {
-								void uploadFiles(files);
-							}
+							handleFiles(event.currentTarget.files);
 						}}
 					/>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => fileInputRef.current?.click()}
-						disabled={isUploading}
+					<label
+						htmlFor={inputId}
+						className={[
+							"inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground",
+							isUploading ? "pointer-events-none opacity-50" : "",
+						].join(" ")}
 					>
 						<ImagePlus className="h-4 w-4" />
-						{isUploading ? "Uploading..." : "Select images"}
-					</Button>
+						{isUploading ? "Enviando..." : "Selecionar imagens"}
+					</label>
+					{uploadMode === "instant" && pendingFiles.length > 0 && !isUploading ? (
+						<Button type="button" variant="outline" onClick={() => void uploadFiles(pendingFiles)}>
+							Enviar agora
+						</Button>
+					) : null}
 				</div>
 			</div>
+			{pendingFiles.length > 0 ? (
+				<div className="space-y-2">
+					<p className="text-xs text-muted-foreground">
+						{pendingFiles.length} arquivo(s) selecionado(s):{" "}
+						{pendingFiles.map((file) => file.name).join(", ")}
+					</p>
+					{uploadMode === "on-submit" ? (
+						<p className="text-xs font-medium text-foreground">
+							Prévia confirmada. A imagem será enviada quando você clicar em salvar.
+						</p>
+					) : null}
+				</div>
+			) : null}
 			{uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				{previewValues.length ? (
 					previewValues.map((src, index) => (
 						<div
 							key={`${src}-${index}`}
-							className="group relative overflow-hidden rounded-md border bg-muted"
+							className="relative overflow-hidden rounded-md border bg-muted"
 							role="button"
 							tabIndex={0}
 							onClick={() => setSelectedImage(src)}
@@ -142,51 +271,174 @@ export function AdminImageUrlList({
 								sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
 								{...getProductImageOptimizationProps(src)}
 							/>
-							<Button
-								type="button"
-								variant="secondary"
-								size="icon"
-								className="absolute right-2 top-2 opacity-100 shadow-sm sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100"
-								onClick={(event) => {
-									event.stopPropagation();
-									removeValue(index);
-								}}
-								aria-label={`Remove image ${index + 1}`}
-							>
-								<Trash2 className="h-4 w-4" />
-							</Button>
 						</div>
 					))
 				) : (
 					<div className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground">
-						No image
+						Sem imagem
 					</div>
 				)}
+				{pendingPreviewUrls.map((src, index) => (
+					<div
+						key={`${src}-${index}`}
+						className="relative overflow-hidden rounded-md border border-dashed border-primary/40 bg-muted/60"
+					>
+						<Image
+							src={src}
+							alt={`Prévia ${index + 1}`}
+							width={320}
+							height={320}
+							className="aspect-square h-full w-full object-cover opacity-80"
+							sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+							unoptimized
+						/>
+						<div className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2 text-xs text-white">
+							Prévia local. Salve para enviar.
+						</div>
+					</div>
+				))}
 			</div>
+			<Dialog
+				open={isSelectionModalOpen}
+				onOpenChange={(open) => {
+					setIsSelectionModalOpen(open);
+					if (!open && !isUploading && !hasConfirmedPendingSelection) {
+						clearPendingSelection();
+					}
+				}}
+			>
+				<DialogContent className="max-w-3xl">
+					<DialogHeader>
+						<DialogTitle>Revisar imagem selecionada</DialogTitle>
+						<DialogDescription>
+							Confira a prévia antes de{" "}
+							{uploadMode === "on-submit" ? "manter a imagem pronta para salvar" : "enviar o upload"}.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4">
+						{pendingPreviewUrls[0] ? (
+							<div className="overflow-hidden rounded-lg border bg-muted/40">
+								<Image
+									src={pendingPreviewUrls[0]}
+									alt={pendingFiles[0]?.name || "Prévia da imagem selecionada"}
+									width={1200}
+									height={1200}
+									className="max-h-[65vh] w-full object-contain"
+									sizes="90vw"
+									unoptimized
+								/>
+							</div>
+						) : null}
+						<div className="space-y-1 text-sm text-muted-foreground">
+							<p>{pendingFiles[0]?.name ?? "Arquivo sem nome"}</p>
+							{pendingFiles.length > 1 ? (
+								<p>{pendingFiles.length} arquivos serão processados neste envio.</p>
+							) : null}
+						</div>
+						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => {
+									setIsSelectionModalOpen(false);
+									clearPendingSelection();
+								}}
+								disabled={isUploading}
+							>
+								Descartar
+							</Button>
+							<Button type="button" onClick={() => void confirmPendingSelection()} disabled={isUploading}>
+								{uploadMode === "on-submit"
+									? "Salvar seleção"
+									: isUploading
+										? "Enviando..."
+										: "Salvar e enviar"}
+							</Button>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
 			<Dialog
 				open={Boolean(selectedImage)}
 				onOpenChange={(open) => {
-					if (!open) setSelectedImage(null);
+					if (!open) {
+						setSelectedImage(null);
+						setIsDeleteConfirmOpen(false);
+					}
 				}}
 			>
-				<DialogContent className="max-w-5xl border-none bg-transparent p-0 shadow-none">
-					<DialogHeader className="sr-only">
-						<DialogTitle>Image preview</DialogTitle>
-						<DialogDescription>Expanded product image preview.</DialogDescription>
+				<DialogContent className="max-w-5xl">
+					<DialogHeader>
+						<DialogTitle>Prévia da imagem</DialogTitle>
+						<DialogDescription>
+							Revise a imagem selecionada. Você também pode excluí-la do formulário e do storage.
+						</DialogDescription>
 					</DialogHeader>
 					{selectedImage ? (
-						<div className="overflow-hidden rounded-lg bg-background">
-							<Image
-								src={selectedImage}
-								alt="Expanded image"
-								width={1600}
-								height={1600}
-								className="max-h-[85vh] w-full object-contain"
-								sizes="90vw"
-								{...getProductImageOptimizationProps(selectedImage)}
-							/>
+						<div className="space-y-4">
+							<div className="overflow-hidden rounded-lg bg-background">
+								<Image
+									src={selectedImage}
+									alt="Expanded image"
+									width={1600}
+									height={1600}
+									className="max-h-[75vh] w-full object-contain"
+									sizes="90vw"
+									{...getProductImageOptimizationProps(selectedImage)}
+								/>
+							</div>
+							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => {
+										setSelectedImage(null);
+										setIsDeleteConfirmOpen(false);
+									}}
+									disabled={isDeletingImage}
+								>
+									Fechar
+								</Button>
+								<Button
+									type="button"
+									variant="destructive"
+									onClick={() => setIsDeleteConfirmOpen(true)}
+									disabled={isDeletingImage}
+								>
+									Excluir
+								</Button>
+							</div>
 						</div>
 					) : null}
+				</DialogContent>
+			</Dialog>
+			<Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>Excluir imagem?</DialogTitle>
+						<DialogDescription>
+							Tem certeza que quer excluir esta imagem? Essa ação remove a mídia do formulário e também da API
+							de storage.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setIsDeleteConfirmOpen(false)}
+							disabled={isDeletingImage}
+						>
+							Cancelar
+						</Button>
+						<Button
+							type="button"
+							variant="destructive"
+							onClick={() => void deleteSelectedImage()}
+							disabled={isDeletingImage}
+						>
+							{isDeletingImage ? "Excluindo..." : "Sim, excluir"}
+						</Button>
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>

@@ -70,6 +70,14 @@
 ## Catálogo e PDP do Selo Libertária
 
 - A listagem deve abrir com um enquadramento editorial curto antes da grade.
+- No backoffice editorial, a interface deve reutilizar o idioma visual dos formulários de produto: cards claros, seções curtas, upload-first para imagem e blocos repetíveis simples para preservar velocidade de edição.
+- O editorial admin também deve oferecer um ponto de entrada central e uma sidebar curta de metadados operacionais, para que edição e contexto coexistam sem parecer uma tela técnica excessiva.
+- Em páginas institucionais editáveis, a UI de admin deve espelhar a composição pública por blocos: hero, conteúdo principal, cards, links e fechamento. Isso torna a manutenção mais intuitiva do que um editor textual genérico.
+- Na home editável, a interface de admin deve deixar claro o limite entre blocos institucionais e blocos dinâmicos do produto: hero, manifesto, autora e CTA final são editáveis ali; vitrine, eventos e projetos continuam respondendo às suas próprias fontes.
+- Em uploads do admin editorial, o campo deve comunicar o estado sem ambiguidade: botão de seleção, prévia local e aviso curto de que o arquivo será enviado ao salvar, em vez de depender de upload silencioso logo após a escolha.
+- Em uploads administrativos por arquivo, a prévia principal deve abrir em modal de confirmação com ações claras de `Salvar` e `Descartar`, para que a pessoa valide visualmente a mídia antes de mantê-la no formulário ou iniciar o envio.
+- Em `/admin` e `/login`, nenhuma camada global transitória deve ficar por cima dos controles. Backoffice e autenticação precisam estar clicáveis assim que a rota renderizar.
+- Em listas editoriais com ordenação, a interface deve expor controles pequenos e diretos de subir/descer na própria linha do item, para que a pessoa operadora ajuste sequência sem abrir a tela de edição.
 - A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
 
 ## Admin

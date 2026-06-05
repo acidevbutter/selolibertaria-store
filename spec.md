@@ -4,6 +4,13 @@
 
 Implementar as funcionalidades e a identidade de conteúdo do Selo Libertária dentro do site deste repositório, preservando a arquitetura de loja já existente e mesclando e-commerce com camadas institucionais, editoriais e culturais.
 
+## Ajuste técnico em andamento
+
+- O fluxo de autenticação por senha deve continuar compatível com contas legadas cujo `email` foi persistido com letras maiúsculas ou casing misto.
+- O login precisa localizar essas contas de forma case-insensitive, e após autenticação bem-sucedida deve normalizar o valor salvo para minúsculas.
+- Cookies de sessão inválidos ou legados devem ser descartados silenciosamente durante a checagem de autenticação para evitar loops de erro e ruído de `Invalid Compact JWS`.
+- Uploads administrativos por seleção de arquivo devem incluir uma etapa explícita de revisão em modal com prévia ampliada e ações `Salvar`/`Descartar`, preservando a diferença entre modos `instant` e `on-submit`.
+
 O resultado desejado não é trocar a loja por um site institucional, e sim transformar a storefront atual em uma plataforma híbrida:
 
 - loja de livros e produtos;
@@ -116,6 +123,462 @@ A direção mais alinhada ao Selo Libertária neste momento é `Editorial Noturn
 - espaço para livros, eventos, autora e Sarau Safado coexistirem no mesmo sistema.
 
 ## Escopo funcional
+
+## Planejamento técnico para conteúdo editorial editável no admin
+
+### Objetivo
+
+Permitir que as seções públicas de `livros`, `projetos`, `eventos` e `Sarau Safado` sejam mantidas pelo admin sem editar código, preservando fallback seguro para o conteúdo atual até a migração estar concluída.
+
+### Estado atual
+
+- `livros` já são editáveis pelo admin via Stripe + telas em `src/app/admin/products`.
+- `projetos`, `eventos`, `Sarau Safado`, parte de `about`, `contact` e blocos da home ainda saem de `src/lib/selolibertaria-content.ts`.
+- O admin já possui padrões maduros para:
+  - CRUD com páginas server-side e componentes client-side;
+  - persistência em Mongo;
+  - `settings` versionados em documento único;
+  - navegação e permissões por capability.
+
+### Decisão de arquitetura
+
+O conteúdo editorial não deve entrar no documento global de `settings`.
+
+Motivos:
+
+- `settings` já concentra configuração operacional, regional, OAuth e frete;
+- `events` e `projects` têm natureza de coleção/listagem, não de preferência global;
+- `Sarau Safado` e páginas institucionais pedem versionamento e estrutura de blocos;
+- a separação facilita paginação futura, publicação, auditoria e evolução de schema.
+
+### Coleção proposta
+
+Criar uma coleção Mongo dedicada, por exemplo `editorialContent`.
+
+#### Modelo-base
+
+Cada documento deve ter:
+
+- `_id`
+- `type`
+- `slug`
+- `title`
+- `eyebrow`
+- `summary`
+- `body`
+- `published`
+- `order`
+- `seo`
+- `createdAt`
+- `updatedAt`
+- `createdBy`
+- `updatedBy`
+
+#### Tipos iniciais
+
+1. `event`
+2. `project`
+3. `page_sarau`
+4. `page_about`
+5. `page_contact`
+6. `home_block`
+
+### Schemas recomendados
+
+#### `event`
+
+- `type: "event"`
+- `slug`
+- `title`
+- `status`
+- `period`
+- `location`
+- `summary`
+- `description`
+- `published`
+- `order`
+- `featured`
+- `image`
+  - `src`
+  - `alt`
+  - `caption`
+- `seo`
+- `meta.relatedProductSlugs[]`
+- `meta.relatedProjectSlugs[]`
+
+#### `project`
+
+- `type: "project"`
+- `slug`
+- `title`
+- `period`
+- `location`
+- `summary`
+- `description`
+- `published`
+- `order`
+- `featured`
+- `image`
+  - `src`
+  - `alt`
+  - `caption`
+- `seo`
+- `meta.relatedProductSlugs[]`
+- `meta.relatedEventSlugs[]`
+
+#### `page_sarau`
+
+Documento único para a página `Sarau Safado`:
+
+- `type: "page_sarau"`
+- `slug: "sarau-safado"`
+- `hero`
+  - `eyebrow`
+  - `title`
+  - `body`
+  - `image`
+    - `src`
+    - `alt`
+    - `caption`
+- `why`
+  - `title`
+  - `body`
+- `signals[]`
+- `programNotes[]`
+  - `title`
+  - `body`
+- `continueLinks[]`
+  - `label`
+  - `href`
+- `published`
+- `seo`
+
+#### Conteúdo editorial ligado a livros
+
+Os livros continuam no fluxo atual do Stripe/admin. O ganho aqui é adicionar, em camada Mongo complementar:
+
+- `editorialExcerpt`
+- `relatedEventSlugs[]`
+- `relatedProjectSlugs[]`
+- `featuredInSarau`
+
+Essa relação pode ficar:
+
+1. em uma coleção separada `editorialRelations`; ou
+2. em `metadata` do produto, se o vínculo for muito simples.
+
+Recomendação inicial: usar Mongo separado para não acoplar demais conteúdo editorial ao catálogo Stripe.
+
+### Camada de leitura no storefront
+
+Criar um loader dedicado, por exemplo:
+
+- `src/lib/editorial-content.ts`
+- `src/lib/editorial-content-store.ts`
+
+#### Comportamento esperado
+
+1. tentar ler do Mongo;
+2. se não houver documento publicado ou o Mongo estiver indisponível, cair no conteúdo atual de `src/lib/selolibertaria-content.ts`;
+3. manter o site público resiliente durante toda a migração.
+
+### Camada de admin
+
+Criar uma nova área:
+
+- `/admin/editorial`
+
+#### Subáreas da fase 1
+
+- `/admin/editorial/events`
+- `/admin/editorial/projects`
+- `/admin/editorial/sarau-safado`
+
+#### Estrutura recomendada
+
+Cada subárea deve ter:
+
+1. listagem
+2. criar
+3. editar
+4. publicar/despublicar
+5. ordenar
+
+#### Padrão de UI
+
+Reaproveitar o padrão já usado em `admin/products`:
+
+- página server-side para carregar dados;
+- ações server-only para mutação;
+- componentes client-side para formulários dinâmicos;
+- seções curtas em vez de um formulário único longo.
+
+### Permissões
+
+Adicionar capabilities explícitas:
+
+- `editorial.read`
+- `editorial.write`
+
+Recomendação inicial:
+
+- `admin`: ambas
+- `vendor`: `editorial.read` e, se o projeto quiser operação compartilhada, também `editorial.write`
+
+### API e actions
+
+#### Opção recomendada
+
+Usar server actions para criar/editar/publicar/reordenar, seguindo o padrão do admin atual.
+
+#### Rotas opcionais
+
+Se houver preview assíncrono, autosave ou drag-and-drop mais rico, considerar:
+
+- `GET /api/admin/editorial`
+- `PATCH /api/admin/editorial`
+
+Mas isso não precisa ser a primeira etapa.
+
+### Auditoria
+
+Todo documento editorial deve persistir:
+
+- `updatedAt`
+- `updatedBy`
+
+Opcionalmente, para segunda fase:
+
+- `history[]`
+  - `date`
+  - `userId`
+  - `changes`
+
+Se o projeto quiser consistência máxima com `settings`, esse histórico pode ser adicionado desde a fase 1.
+
+### Estratégia de migração
+
+#### Fase 1
+
+- `events`
+- `projects`
+- `sarau-safado`
+
+#### Fase 2
+
+- `about`
+- `contact`
+- blocos da home
+
+#### Fase 3
+
+- vínculos editoriais entre livros e conteúdo institucional
+- destaque manual de livros em home/eventos/projetos
+
+### Step explícito de migração inicial a partir do mock atual
+
+Antes de ligar as páginas públicas ao Mongo como fonte primária, deve existir um passo de bootstrap que carregue os dados já disponíveis em `src/lib/selolibertaria-content.ts`.
+
+#### Objetivo
+
+Evitar que:
+
+- o admin editorial nasça vazio;
+- as páginas públicas dependam de cadastro manual inicial;
+- a troca de fonte estática para dinâmica cause perda de conteúdo durante a fase 1.
+
+#### Origem dos dados
+
+Usar como fonte inicial:
+
+- `seloProjects`
+- `seloEvents`
+- `seloSarauSafado`
+- opcionalmente depois:
+  - `seloAbout`
+  - `seloContactPage`
+  - blocos da home
+
+#### Forma recomendada
+
+Criar um script idempotente, por exemplo:
+
+- `scripts/migrate-selo-editorial-content.mjs`
+
+ou, se a equipe preferir manter tudo no mesmo fluxo de bootstrap:
+
+- chamar esse migrador dentro de um comando dedicado como `yarn seed:editorial`
+
+#### Regras do migrador
+
+1. Ler o mock atual de `src/lib/selolibertaria-content.ts`.
+2. Transformar cada item no schema novo de `editorialContent`.
+3. Fazer `upsert` por chave estável:
+   - `type + slug` para `events` e `projects`
+   - `type + slug` com `slug: "sarau-safado"` para a página do sarau
+4. Preencher campos mínimos de publicação:
+   - `published: true`
+   - `order` respeitando a ordem atual do array
+   - `createdAt` / `updatedAt`
+   - `createdBy` / `updatedBy` como marcador técnico, por exemplo `system:migration`
+5. Não sobrescrever conteúdo já editado manualmente no admin sem uma flag explícita.
+
+#### Flags recomendadas
+
+O script pode aceitar dois modos:
+
+1. modo padrão
+   - cria registros ausentes
+   - atualiza apenas campos técnicos ou vazios
+2. modo `--force`
+   - reescreve o conteúdo a partir do mock
+   - útil só em ambiente local ou reset inicial
+
+#### Estratégia de segurança
+
+Enquanto o migrador não rodar, o storefront continua lendo do fallback estático.
+
+Depois que o migrador rodar com sucesso:
+
+1. o admin já exibe conteúdo preenchido;
+2. as páginas públicas podem começar a preferir Mongo;
+3. se houver falha, o fallback para `selolibertaria-content.ts` continua garantindo funcionamento.
+
+#### Migração de imagens já existentes no mock
+
+Quando os mocks atuais já trouxerem imagem, o migrador deve preencher a estrutura nova de mídia usando esses valores como bootstrap inicial.
+
+Exemplo:
+
+- `image.src`
+- `image.alt`
+- `image.caption`
+
+Se o mock não tiver imagem:
+
+- manter `image` vazio;
+- permitir preenchimento posterior via admin.
+
+### Upload de fotos para posts e páginas editoriais
+
+O conteúdo editorial deve aceitar upload de fotos sem depender de URL manual como fluxo principal.
+
+#### Objetivo
+
+Permitir que o admin envie imagens para:
+
+- posts de `events`
+- posts de `projects`
+- hero ou blocos do `Sarau Safado`
+- futuras áreas como `about`, `home` e destaques editoriais
+
+#### Diretriz de implementação
+
+Reutilizar a mesma estrutura já adotada para imagens de produto:
+
+- seleção de arquivo;
+- preview local;
+- upload para o provedor atual;
+- persistência da URL final no documento Mongo editorial.
+
+#### Regra importante
+
+O fluxo principal deve ser `upload-first`, não `URL-first`.
+
+Campo manual de URL pode existir como fallback técnico, mas não deve ser a experiência principal do admin editorial.
+
+#### Reuso técnico recomendado
+
+Partir do padrão já usado em `admin/products`, especialmente:
+
+- previews de imagem;
+- fluxo de upload orientado a arquivo;
+- persistência da URL final;
+- componentes de lista de imagens já carregadas.
+
+Se for útil, extrair uma primitiva compartilhada para algo como:
+
+- `src/app/admin/_components/editorial-image-upload.client.tsx`
+
+ou uma abstração genérica reutilizável entre `products` e `editorial`.
+
+#### Estrutura sugerida no schema editorial
+
+Para qualquer entidade editorial com mídia principal:
+
+- `image.src`
+- `image.alt`
+- `image.caption`
+
+Opcionalmente, para fase futura:
+
+- `gallery[]`
+  - `src`
+  - `alt`
+  - `caption`
+  - `order`
+
+#### Ordem recomendada com esse novo step
+
+1. criar tipos TS do conteúdo editorial
+2. criar store Mongo + funções de leitura/escrita
+3. criar `scripts/migrate-selo-editorial-content.mjs`
+4. extrair ou reutilizar o pipeline de upload de imagem dos produtos
+5. rodar a migração inicial a partir do mock atual
+6. criar listagem admin de `events`
+7. criar formulário de evento com upload de imagem
+8. criar listagem admin de `projects`
+9. criar formulário de projeto com upload de imagem
+10. criar editor de `Sarau Safado` com imagem de hero
+11. trocar páginas públicas para leitura pelo store com fallback
+12. adicionar auditoria e ordenação refinada
+
+#### Status atual da fase 1
+
+- `events` já leem do store editorial em Mongo com fallback para mock.
+- `projects` já leem do store editorial em Mongo com fallback para mock.
+- `sarau-safado` já lê do store editorial em Mongo com fallback para mock.
+- O admin já possui CRUD inicial para `events` e `projects`.
+- O admin já possui editor dedicado para `Sarau Safado`, com hero, sinais curatoriais, blocos editoriais e reuso do upload de imagem de produtos.
+- O admin agora também possui um hub em `/admin/editorial` e cards operacionais simples com publicação, ordem e última atualização nas telas de detalhe.
+- `about` e `contact` agora também já possuem documentos de página em Mongo, seed bootstrap a partir dos mocks atuais, leitura pública com fallback e edição dedicada no admin.
+- A home agora também já possui documento `page_home/home` em Mongo para os blocos institucionais principais (`hero`, `manifesto`, `autora` e `CTA final`), com edição dedicada no admin e fallback para os mocks existentes.
+- `events` e `projects` agora já possuem reordenação operacional simples no admin por mover para cima/baixo, persistindo a ordem em Mongo e refletindo isso nas leituras públicas.
+- Upload de imagem no admin editorial agora deve aceitar um modo operacional mais robusto: seleção do arquivo com prévia local e envio efetivo no `Salvar`, reaproveitando o mesmo pipeline de Cloudinary e persistência já usado no upload imediato de produtos.
+- O splash global foi explicitamente retirado de `/admin` e `/login`, porque essas rotas não podem sofrer bloqueio transitório sobre botões, campos ou seletores de arquivo.
+
+### Ordem de implementação recomendada
+
+1. criar tipos TS do conteúdo editorial
+2. criar store Mongo + funções de leitura/escrita
+3. criar script ou rotina de seed inicial a partir de `selolibertaria-content.ts`
+4. extrair ou reutilizar o pipeline de upload de imagem dos produtos
+5. rodar a migração bootstrap dos mocks atuais
+6. criar listagem admin de `events`
+7. criar formulário de evento com upload de imagem
+8. criar listagem admin de `projects`
+9. criar formulário de projeto com upload de imagem
+10. criar editor de `Sarau Safado`
+11. trocar páginas públicas para leitura pelo store com fallback
+12. adicionar auditoria e ordenação refinada
+
+### Riscos e cuidados
+
+1. não quebrar build se Mongo estiver indisponível
+2. não mover tudo para `settings`, para evitar documento inchado e sem semântica
+3. não misturar conteúdo editorial com produto Stripe como fonte canônica
+4. manter fallback estático enquanto não houver migração inicial validada
+5. preservar SSR e páginas públicas rápidas, evitando fetch client-side desnecessário
+
+### Próximo passo técnico recomendado
+
+O próximo passo de implementação deve ser:
+
+1. criar `src/lib/editorial-content.ts` com tipos;
+2. criar `src/lib/editorial-content-store.ts` com fallback;
+3. criar `scripts/migrate-selo-editorial-content.mjs`;
+4. definir ou extrair a primitiva de upload de imagem compartilhada com `admin/products`;
+5. criar a primeira superfície administrativa em `/admin/editorial/events`.
 
 ### 1. Rebranding do storefront para Selo Libertária
 

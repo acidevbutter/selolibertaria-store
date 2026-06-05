@@ -187,6 +187,14 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - CTA de compra fica isolada e visualmente forte.
 - Em contexto Selo Libertária, a PDP deve combinar compra e atmosfera: trecho, contexto da obra, referências visuais ou críticas podem aparecer abaixo da dobra, sem disputar com a ação principal.
 - Abaixo da dobra, a PDP deve ter mais de um ritmo: contexto editorial, caminhos de continuidade e uma leitura curta sobre como aquela obra se insere no ecossistema do selo.
+- No admin editorial do Selo Libertária, formulários longos devem seguir o mesmo padrão de seções curtas já usado em produtos: blocos separados para identidade, texto, mídia, publicação e itens repetíveis, reduzindo carga cognitiva mesmo quando a superfície for institucional, como `Sarau Safado`.
+- Em uploads de imagem do admin editorial, o comportamento preferencial deve ser explícito: selecionar arquivo, ver prévia local e concluir o envio ao salvar o formulário. O sistema não deve depender visualmente de upload automático silencioso para transmitir confiança.
+- Em uploads por arquivo no admin, a revisão da imagem deve acontecer em modal antes da confirmação final. O padrão esperado é: selecionar arquivo, abrir prévia ampliada, escolher entre `Salvar` ou `Descartar` e só então manter a seleção ou disparar o upload.
+- Quando uma área administrativa tiver mais de uma superfície editorial relacionada, o padrão deve prever um hub simples de entrada e um card lateral de resumo operacional; isso ajuda a pessoa operadora a se orientar sem transformar o fluxo em dashboard pesado.
+- Páginas institucionais administráveis, como `about` e `contact`, devem ser modeladas no admin como blocos nomeados e editáveis por seção (`hero`, bloco principal, cards, links), em vez de um campo único de texto longo; isso preserva intenção visual e reduz risco de quebrar a composição pública.
+- Na home administrável, editar conteúdo não deve capturar seções cuja fonte já é outra, como catálogo, eventos e projetos; o padrão ideal é uma home híbrida, em que os blocos institucionais ficam em um documento de página e os blocos programáticos continuam ligados às suas coleções próprias.
+- Em listagens editoriais administrativas, ordenação recorrente deve aparecer como affordance explícita e de baixa fricção. Botões de subir/descer perto da linha atual resolvem bem a fase inicial sem introduzir a complexidade visual de drag-and-drop.
+- Em `/admin` e `/login`, overlays globais de loading não podem bloquear clique, seleção de arquivo ou submit. Qualquer splash deve ser ignorado nessas rotas para preservar resposta imediata de backoffice e autenticação.
 
 ### Galeria de produto
 

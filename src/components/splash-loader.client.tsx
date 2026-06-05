@@ -1,8 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function SplashLoader() {
+	const pathname = usePathname();
 	const [visible, setVisible] = useState(false);
 	const [percent, setPercent] = useState(0);
 	const [circle, setCircle] = useState(false);
@@ -18,6 +20,18 @@ export default function SplashLoader() {
 	const prevOverflowRef = useRef<{ html: string; body: string } | null>(null);
 
 	useEffect(() => {
+		if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+			try {
+				const pre = document.getElementById("storefront-splash-pre");
+				const preStyle = document.getElementById("storefront-splash-style");
+				if (pre) pre.remove();
+				if (preStyle) preStyle.remove();
+			} catch (e) {
+				// ignore
+			}
+			return;
+		}
+
 		// Only run on first visit
 		try {
 			if (localStorage.getItem("storefront_splash_seen")) return;
@@ -114,7 +128,7 @@ export default function SplashLoader() {
 		}, 20);
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [pathname]);
 
 	if (!visible) return null;
 

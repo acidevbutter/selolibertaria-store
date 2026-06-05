@@ -33,21 +33,23 @@ async function run() {
 		const db = client.db(dbName);
 		const users = db.collection("users");
 		await users.createIndex({ email: 1 }, { unique: true });
-		const existingAdmin = await users.findOne({ role: "admin" }, { projection: { email: 1 } });
-
-		if (existingAdmin?.email) {
-			console.log(`[admin-seed] skipped: existing admin ${existingAdmin.email}`);
-			return;
-		}
 
 		const adminEmail = getRequiredEnv("ADMIN_EMAIL").toLowerCase();
 		const adminPassword = getRequiredEnv("ADMIN_PASSWORD");
 		const adminName = process.env.ADMIN_NAME?.trim() || "Administrador";
 		const adminPhone = process.env.ADMIN_PHONE?.trim() || undefined;
 		const adminVerified = parseBoolean(process.env.ADMIN_VERIFIED, true);
+		const existingAdmin = await users.findOne({ role: "admin" }, { projection: { email: 1 } });
 
-		if (adminPassword.length < 10) {
-			throw new Error("ADMIN_PASSWORD deve ter pelo menos 10 caracteres.");
+		if (adminPassword.length < 6) {
+			throw new Error("ADMIN_PASSWORD deve ter pelo menos 6 caracteres.");
+		}
+
+		if (existingAdmin?.email && existingAdmin.email.toLowerCase() !== adminEmail) {
+			console.log(
+				`[admin-seed] skipped: existing admin ${existingAdmin.email} differs from requested ${adminEmail}`,
+			);
+			return;
 		}
 
 		const now = new Date();
@@ -82,7 +84,7 @@ async function run() {
 			return;
 		}
 
-		console.log(`[admin-seed] completed: ${adminEmail}`);
+		console.log(`[admin-seed] updated: ${adminEmail}`);
 	} finally {
 		await client.close();
 	}

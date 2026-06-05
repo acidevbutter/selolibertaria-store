@@ -36,9 +36,18 @@ async function verifyAuth(request: NextRequest) {
 	const session = request.cookies.get("session")?.value;
 	if (session) {
 		const data = await coreDecrypt(session);
-		if (data && data.expires > Date.now()) return true;
+		if (data && data.expires > Date.now()) return { ok: true as const };
+		return { ok: false as const, clearSession: true as const };
 	}
-	return false;
+	return { ok: false as const, clearSession: false as const };
+}
+
+function withUnauthorizedSessionCleared(response: NextResponse | Response, shouldClearSession: boolean) {
+	if (!shouldClearSession || !(response instanceof NextResponse)) {
+		return response;
+	}
+	response.cookies.delete("session");
+	return response;
 }
 
 function getLocaleRedirect(request: NextRequest) {
@@ -69,21 +78,31 @@ export async function proxy(request: NextRequest) {
 	const isAdmin = pathname.startsWith("/admin");
 
 	if (isApi && !isPublicApiPath(pathname)) {
-		const ok = await verifyAuth(request);
-		if (!ok) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+		const authResult = await verifyAuth(request);
+		if (!authResult.ok) {
+			const response = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			return withUnauthorizedSessionCleared(response, authResult.clearSession);
+		}
 		return NextResponse.next();
 	}
 
 	if (pageProtected) {
-		const ok = await verifyAuth(request);
-		if (!ok) return NextResponse.redirect(new URL("/login", request.url));
+		const authResult = await verifyAuth(request);
+		if (!authResult.ok) {
+			const response = NextResponse.redirect(new URL("/login", request.url));
+			return withUnauthorizedSessionCleared(response, authResult.clearSession);
+		}
 		return NextResponse.next();
 	}
 	if (isAdmin) {
 		const session = request.cookies.get("session")?.value;
 		if (!session) return NextResponse.redirect(new URL("/login", request.url));
 		const data = await coreDecrypt(session);
-		if (!data || data.expires <= Date.now()) return NextResponse.redirect(new URL("/login", request.url));
+		if (!data || data.expires <= Date.now()) {
+			const response = NextResponse.redirect(new URL("/login", request.url));
+			response.cookies.delete("session");
+			return response;
+		}
 		if (!isBackofficeRole(data.user.role)) return NextResponse.redirect(new URL("/forbidden", request.url));
 		return NextResponse.next();
 	}

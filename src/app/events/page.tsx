@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
-import { seloEvents, seloSiteMeta } from "@/lib/selolibertaria-content";
+import { listEditorialEvents } from "@/lib/editorial-content-store";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
@@ -15,6 +16,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function EventsPage() {
 	const t = await getTranslations("Selo");
+	const events = (await listEditorialEvents()).filter((event) => event.published);
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
@@ -74,7 +76,7 @@ export default async function EventsPage() {
 					</aside>
 
 					<div className="grid gap-6">
-						{seloEvents.map((event, index) => (
+						{events.map((event, index) => (
 							<article
 								key={event.slug}
 								className="border border-border/60 bg-card/60 p-6 backdrop-blur supports-[backdrop-filter]:bg-card/70"

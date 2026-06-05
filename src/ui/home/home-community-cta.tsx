@@ -1,28 +1,30 @@
 import { getTranslations } from "@/i18n/server";
+import type { EditorialHomePage } from "@/lib/editorial-content";
 import { seloHomeCommunityCta } from "@/lib/selolibertaria-content";
 import { Newsletter } from "@/ui/footer/newsletter.client";
 import { YnsLink } from "@/ui/yns-link";
 
-export async function HomeCommunityCta() {
+export async function HomeCommunityCta({ content }: { content?: EditorialHomePage["community"] | null }) {
 	const t = await getTranslations("Selo");
+	const community = content ?? null;
 	return (
 		<section className="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.4),transparent_42%),linear-gradient(180deg,#220607_0%,#050203_100%)] p-6 text-primary-foreground sm:p-8">
 			<div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
 				<div className="space-y-4">
 					<h2 className="editorial-serif max-w-2xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-						{t("home.community.title")}
+						{community?.title || t("home.community.title")}
 					</h2>
 					<p className="max-w-xl text-base leading-8 text-primary-foreground/72">
-						{t("home.community.body")}
+						{community?.body || t("home.community.body")}
 					</p>
 					<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 						<YnsLink
-							href={seloHomeCommunityCta.primaryCta.href}
+							href={community?.primaryCtaHref || seloHomeCommunityCta.primaryCta.href}
 							className="inline-flex h-11 items-center justify-center rounded-full bg-red-600 px-5 text-sm font-medium text-black transition-colors hover:bg-red-500"
 						>
-							{t("home.community.primaryCta")}
+							{community?.primaryCtaLabel || t("home.community.primaryCta")}
 						</YnsLink>
-						{seloHomeCommunityCta.secondaryLinks.map((link) => (
+						{(community?.secondaryLinks ?? seloHomeCommunityCta.secondaryLinks).map((link) => (
 							<YnsLink
 								key={link.label}
 								href={link.href}

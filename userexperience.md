@@ -35,6 +35,14 @@
 - Nessas páginas, a pessoa usuária deve entender rápido por que aquela área existe dentro do ecossistema do selo e como ela se conecta aos livros.
 - A experiência não deve parecer uma sequência uniforme de cartões com mesmo peso visual; precisa haver entrada, aprofundamento e saída.
 - Links de continuidade para catálogo, agenda, projetos, contato ou Sarau Safado devem aparecer de forma natural para evitar becos sem saída.
+- No admin, a edição editorial precisa ser direta e pouco ansiosa: a pessoa deve entender rapidamente o que controla hero, texto principal, blocos curatoriais, imagem e publicação sem depender de conhecimento técnico.
+- Para manutenção recorrente, a área editorial precisa dar senso de localização: hub inicial, links entre superfícies vizinhas e resumo de última atualização ajudam a reduzir retrabalho e dúvida operacional.
+- Quando a página pública tem blocos com funções diferentes, como `about` e `contact`, a experiência de edição precisa preservar esse mapa mental no admin; a pessoa operadora deve reconhecer facilmente o que altera hero, texto institucional, canais diretos ou caminhos de navegação.
+- Na home, a experiência de edição precisa respeitar a natureza híbrida da página: o admin deve conseguir ajustar a voz institucional sem a sensação de estar editando também o catálogo, os eventos ou os projetos, que possuem cadastros próprios.
+- Em manutenção editorial cotidiana, mudar a ordem de uma agenda ou de uma lista de projetos deve ser uma ação rápida e local. Controles de subir/descer diminuem atrito e transmitem previsibilidade melhor do que exigir edição manual de números.
+- Em uploads editoriais, a pessoa operadora não deve depender de um efeito implícito para saber se a imagem entrou. Selecionar, enxergar a prévia e salvar é uma sequência mais confiável e menos ansiosa para esse backoffice.
+- Em uploads por arquivo no admin, abrir uma prévia em modal antes da confirmação reduz ansiedade operacional e evita salvar mídia errada; `Salvar` deve confirmar a escolha, e `Descartar` deve limpar a seleção sem efeitos colaterais.
+- Em rotas de admin e login, qualquer splash global que bloqueie interação degrada a confiança do produto. Essas superfícies devem responder imediatamente a clique, digitação e seleção de arquivo.
 
 ## Footer da storefront
 

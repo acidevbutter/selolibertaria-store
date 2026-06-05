@@ -42,6 +42,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 					dangerouslySetInnerHTML={{
 						__html:
 							"(() => {\n" +
+							"  var path = window.location.pathname || '/';\n" +
+							"  if (path.startsWith('/admin') || path.startsWith('/login')) return;\n" +
 							"  try {\n" +
 							"    if (localStorage.getItem('storefront_splash_seen')) return;\n" +
 							"  } catch (e) {}\n" +
@@ -51,7 +53,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 							"  document.head.appendChild(style);\n" +
 							"  var div = document.createElement('div');\n" +
 							"  div.id = 'storefront-splash-pre';\n" +
-							"  div.innerHTML = '<div class=\'storefront-splash-percent\'>0%</div>';\n" +
+							"  var percent = document.createElement('div');\n" +
+							"  percent.className = 'storefront-splash-percent';\n" +
+							"  percent.textContent = '0%';\n" +
+							"  div.appendChild(percent);\n" +
 							"  document.documentElement.appendChild(div);\n" +
 							"})();",
 					}}

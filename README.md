@@ -39,3 +39,4 @@ Vari&aacute;veis principais:
 - O servidor de desenvolvimento costuma ser mantido rodando em segundo plano no ambiente local deste projeto.
 - O build de produ&ccedil;&atilde;o passa por `scripts/vercel-build.mjs`.
 - O bootstrap do admin pode ser feito com `yarn seed:admin`.
+- O seed do admin espera `MONGODB_URI`, `MONGODB_DB_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`; a senha precisa ter pelo menos `6` caracteres.
