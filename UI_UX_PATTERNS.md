@@ -157,6 +157,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
   - um hero ou bloco de entrada forte;
   - um bloco de leitura editorial ou princípio curatorial;
   - um bloco de continuidade com links claros para catálogo, agenda, contato ou páginas irmãs.
+- Quando `sarau-safado` receber imagem no hero via admin, essa mídia deve ocupar o fundo da abertura principal e o texto precisa ficar sobreposto em um bloco de leitura protegido por contraste, para que a imagem funcione como capa e não como card lateral.
 - Em listagens editoriais, vale alternar resumo e descrição em duas colunas internas do card para evitar uma leitura longa e monótona.
 - Blocos laterais com “eixos”, “sinais” ou “ritmo da programação” ajudam a dar densidade cultural sem transformar a página em manifesto puro.
 

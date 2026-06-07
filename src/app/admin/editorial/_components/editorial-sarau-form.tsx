@@ -117,6 +117,7 @@ export function EditorialSarauForm({
 								name="heroImageSrc"
 								initialValues={page.hero?.image?.src ? [page.hero.image.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">

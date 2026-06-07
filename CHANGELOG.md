@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.
 - Escolha de entrega no checkout, com opção de usar o endereço salvo, informar um novo endereço ou retirar na loja, além de recálculo server-side do frete antes do pagamento.
 - Sistema de cálculo de fretes por provedor com contrato interno único, fallback seguro e administração de prioridade, credenciais e serviços no painel de settings.
 - Presets de provider para `Correios`, `Jadlog`, `EasyPost` e `Custom HTTP`, com adapters server-side específicos, credenciais mascaradas por campo e configuração administrativa guiada por tipo de API.

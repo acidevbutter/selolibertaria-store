@@ -6,6 +6,8 @@ import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
 
+export const dynamic = "force-dynamic";
+
 export const generateMetadata = async (): Promise<Metadata> => {
 	const t = await getTranslations("Selo");
 	return {
@@ -49,16 +51,40 @@ export default async function SarauSafadoPage() {
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
 			<main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
-				<section className="border border-red-950/80 bg-[radial-gradient(circle_at_top,rgba(220,38,38,0.4),transparent_46%),linear-gradient(180deg,#220607,#050203)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
-					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/65 sm:text-sm">
-						{sarau.hero?.eyebrow || t("nav.sarau")}
-					</p>
-					<h1 className="editorial-serif mt-4 max-w-4xl text-5xl font-semibold tracking-[-0.04em] sm:text-6xl">
-						{sarau.hero?.title || t("sarau.heroTitle")}
-					</h1>
-					<p className="mt-6 max-w-3xl text-base leading-8 text-primary-foreground/82">
-						{sarau.hero?.body || t("sarau.heroBody")}
-					</p>
+				<section
+					className="relative overflow-hidden border border-red-950/80 bg-[radial-gradient(circle_at_top,rgba(220,38,38,0.4),transparent_46%),linear-gradient(180deg,#220607,#050203)] text-primary-foreground"
+					style={
+						sarau.hero?.image?.src
+							? {
+									backgroundImage: `linear-gradient(120deg, rgba(5,2,3,0.82) 0%, rgba(5,2,3,0.46) 48%, rgba(5,2,3,0.74) 100%), url(${sarau.hero.image.src})`,
+									backgroundPosition: "center",
+									backgroundRepeat: "no-repeat",
+									backgroundSize: "cover",
+								}
+							: undefined
+					}
+				>
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.3),transparent_32%),linear-gradient(180deg,rgba(5,2,3,0.16),rgba(5,2,3,0.54))]" />
+					<div className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
+						<div className="max-w-3xl">
+							<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/74 sm:text-sm">
+								{sarau.hero?.eyebrow || t("nav.sarau")}
+							</p>
+							<h1 className="editorial-serif mt-4 max-w-4xl text-5xl font-semibold tracking-[0.08em] text-primary-foreground drop-shadow-[0_3px_14px_rgba(0,0,0,0.55)] sm:text-6xl">
+								{sarau.hero?.title || t("sarau.heroTitle")}
+							</h1>
+						</div>
+						<div className="ml-auto max-w-xl text-right">
+							<p className="text-base leading-8 text-primary-foreground/88 drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)] sm:text-lg">
+								{sarau.hero?.body || t("sarau.heroBody")}
+							</p>
+							{sarau.hero?.image?.caption ? (
+								<p className="mt-4 text-xs uppercase tracking-[0.22em] text-primary-foreground/62">
+									{sarau.hero.image.caption}
+								</p>
+							) : null}
+						</div>
+					</div>
 				</section>
 
 				<section className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">

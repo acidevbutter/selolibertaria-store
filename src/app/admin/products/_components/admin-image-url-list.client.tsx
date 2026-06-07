@@ -12,13 +12,18 @@ export function AdminImageUrlList({
 	initialValues = [],
 	autoSubmitOnUpload = false,
 	uploadMode = "instant",
+	maxItems,
 }: {
 	name?: string;
 	initialValues?: string[];
 	autoSubmitOnUpload?: boolean;
 	uploadMode?: "instant" | "on-submit";
+	maxItems?: number;
 }) {
-	const [values, setValues] = useState<string[]>(initialValues.length > 0 ? initialValues : [""]);
+	const normalizedInitialValues = maxItems && maxItems > 0 ? initialValues.slice(0, maxItems) : initialValues;
+	const [values, setValues] = useState<string[]>(
+		normalizedInitialValues.length > 0 ? normalizedInitialValues : [""],
+	);
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadError, setUploadError] = useState("");
 	const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -27,12 +32,13 @@ export function AdminImageUrlList({
 	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 	const [pendingPreviewUrls, setPendingPreviewUrls] = useState<string[]>([]);
 	const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
-	const [hasConfirmedPendingSelection, setHasConfirmedPendingSelection] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const preservePendingSelectionRef = useRef(false);
 	const inputId = `${name}-file-input`;
 	const previewValues = values.map((value) => value.trim()).filter(Boolean);
+	const isSingleImage = maxItems === 1;
+	const displayedPreviewValues = isSingleImage && pendingPreviewUrls.length > 0 ? [] : previewValues;
 
 	const toFileArray = (value: File[] | FileList | Event | null | undefined) => {
 		if (!value) return [];
@@ -43,7 +49,6 @@ export function AdminImageUrlList({
 
 	const clearPendingSelection = () => {
 		preservePendingSelectionRef.current = false;
-		setHasConfirmedPendingSelection(false);
 		setPendingFiles([]);
 		setPendingPreviewUrls((current) => {
 			for (const previewUrl of current) {
@@ -65,7 +70,7 @@ export function AdminImageUrlList({
 	}, [pendingPreviewUrls]);
 
 	const handleFiles = (files: FileList | null) => {
-		const nextFiles = toFileArray(files);
+		const nextFiles = isSingleImage ? toFileArray(files).slice(0, 1) : toFileArray(files);
 		if (nextFiles.length === 0) {
 			clearPendingSelection();
 			return;
@@ -79,19 +84,23 @@ export function AdminImageUrlList({
 		});
 		preservePendingSelectionRef.current = false;
 		setPendingFiles(nextFiles);
-		setHasConfirmedPendingSelection(false);
 		setUploadError("");
 		setIsSelectionModalOpen(true);
 	};
 
 	const appendValue = (nextValue: string) => {
 		setValues((current) => {
+			if (isSingleImage) {
+				return [nextValue];
+			}
+
 			const emptyIndex = current.findIndex((item) => item.trim() === "");
 			if (emptyIndex >= 0) {
 				return current.map((item, itemIndex) => (itemIndex === emptyIndex ? nextValue : item));
 			}
 
-			return [...current, nextValue];
+			const appendedValues = [...current, nextValue];
+			return maxItems && maxItems > 0 ? appendedValues.slice(0, maxItems) : appendedValues;
 		});
 	};
 
@@ -153,8 +162,9 @@ export function AdminImageUrlList({
 
 		preservePendingSelectionRef.current = true;
 		setIsSelectionModalOpen(false);
-		setHasConfirmedPendingSelection(true);
-		await uploadFiles(pendingFiles);
+		if (uploadMode === "instant") {
+			await uploadFiles(pendingFiles);
+		}
 	};
 
 	const deleteSelectedImage = async () => {
@@ -194,8 +204,10 @@ export function AdminImageUrlList({
 					<p className="text-sm font-medium">Upload de imagem</p>
 					<p className="text-xs text-muted-foreground">
 						{uploadMode === "on-submit"
-							? "Escolha a imagem e revise a prévia antes de confirmar."
-							: "Escolha uma ou mais imagens do computador."}
+							? "Escolha a imagem, revise a prévia e conclua o envio ao salvar o formulário."
+							: isSingleImage
+								? "Escolha uma imagem do computador."
+								: "Escolha uma ou mais imagens do computador."}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -205,7 +217,7 @@ export function AdminImageUrlList({
 						ref={fileInputRef}
 						type="file"
 						accept="image/*"
-						multiple
+						multiple={!isSingleImage}
 						className="sr-only"
 						onClick={(event) => {
 							event.currentTarget.value = "";
@@ -225,7 +237,7 @@ export function AdminImageUrlList({
 						].join(" ")}
 					>
 						<ImagePlus className="h-4 w-4" />
-						{isUploading ? "Enviando..." : "Selecionar imagens"}
+						{isUploading ? "Enviando..." : isSingleImage ? "Selecionar imagem" : "Selecionar imagens"}
 					</label>
 					{uploadMode === "instant" && pendingFiles.length > 0 && !isUploading ? (
 						<Button type="button" variant="outline" onClick={() => void uploadFiles(pendingFiles)}>
@@ -241,14 +253,16 @@ export function AdminImageUrlList({
 						{pendingFiles.map((file) => file.name).join(", ")}
 					</p>
 					{uploadMode === "on-submit" ? (
-						<p className="text-xs font-medium text-foreground">Prévia confirmada.</p>
+						<p className="text-xs font-medium text-foreground">
+							Prévia confirmada. A imagem será enviada ao salvar a página.
+						</p>
 					) : null}
 				</div>
 			) : null}
 			{uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-				{previewValues.length ? (
-					previewValues.map((src, index) => (
+				{displayedPreviewValues.length ? (
+					displayedPreviewValues.map((src, index) => (
 						<button
 							key={`${src}-${index}`}
 							type="button"
@@ -267,11 +281,11 @@ export function AdminImageUrlList({
 							/>
 						</button>
 					))
-				) : (
+				) : pendingPreviewUrls.length === 0 ? (
 					<div className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground">
 						Sem imagem
 					</div>
-				)}
+				) : null}
 				{pendingPreviewUrls.map((src, index) => (
 					<div
 						key={`${src}-${index}`}
@@ -328,6 +342,9 @@ export function AdminImageUrlList({
 							{pendingFiles.length > 1 ? (
 								<p>{pendingFiles.length} arquivos serão processados neste envio.</p>
 							) : null}
+							{uploadMode === "on-submit" ? (
+								<p>Ao confirmar, a imagem fica pendente e só será enviada ao salvar o formulário.</p>
+							) : null}
 						</div>
 						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 							<Button
@@ -342,7 +359,11 @@ export function AdminImageUrlList({
 								Descartar
 							</Button>
 							<Button type="button" onClick={() => void confirmPendingSelection()} disabled={isUploading}>
-								{isUploading ? "Enviando..." : "Salvar e enviar"}
+								{isUploading
+									? "Enviando..."
+									: uploadMode === "on-submit"
+										? "Manter seleção"
+										: "Salvar e enviar"}
 							</Button>
 						</div>
 					</div>
