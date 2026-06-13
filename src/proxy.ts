@@ -28,7 +28,7 @@ async function verifyAuth(request: NextRequest) {
 		try {
 			const secret = new TextEncoder().encode(env.JWT_SECRET);
 			await jwtVerify(token, secret, { algorithms: ["HS256"] });
-			return true;
+			return { ok: true as const, clearSession: false as const };
 		} catch {
 			/* ignore */
 		}
@@ -36,7 +36,7 @@ async function verifyAuth(request: NextRequest) {
 	const session = request.cookies.get("session")?.value;
 	if (session) {
 		const data = await coreDecrypt(session);
-		if (data && data.expires > Date.now()) return { ok: true as const };
+		if (data && data.expires > Date.now()) return { ok: true as const, clearSession: false as const };
 		return { ok: false as const, clearSession: true as const };
 	}
 	return { ok: false as const, clearSession: false as const };
