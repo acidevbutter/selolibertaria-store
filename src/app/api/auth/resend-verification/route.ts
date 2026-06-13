@@ -10,11 +10,11 @@ export async function POST(req: Request) {
 	try {
 		const db = await getDb();
 		const userId = auth.session?.sub;
-		if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+		if (!userId) return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 401 });
 		const oid = new ObjectId(String(userId));
 		const user = await db.collection("users").findOne({ _id: oid });
-		if (!user) return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-		if (user.verified) return new Response(JSON.stringify({ ok: true, message: "Already verified" }));
+		if (!user) return new Response(JSON.stringify({ error: "Usuária não encontrada" }), { status: 404 });
+		if (user.verified) return new Response(JSON.stringify({ ok: true, message: "E-mail já verificado" }));
 
 		const now = new Date();
 		let token = user.verification?.token;
@@ -41,8 +41,8 @@ export async function POST(req: Request) {
 			const { sendEmail } = await import("@/lib/email");
 			const result = await sendEmail({
 				to: user.email,
-				subject: "Confirm your email",
-				text: `Confirm: ${verifyUrl}?token=${token}`,
+				subject: "Confirme seu e-mail",
+				text: `Confirme sua conta: ${verifyUrl}?token=${token}`,
 				html,
 				log: {
 					kind: "email_confirmation",
@@ -69,12 +69,12 @@ export async function POST(req: Request) {
 			}
 		} catch (err) {
 			console.error("Failed to send verification email", err);
-			return new Response(JSON.stringify({ error: "Failed to send email" }), { status: 500 });
+			return new Response(JSON.stringify({ error: "Falha ao enviar o e-mail" }), { status: 500 });
 		}
 
 		return new Response(JSON.stringify({ ok: true }));
 	} catch (err) {
 		console.error(err);
-		return new Response(JSON.stringify({ error: "Server error" }), { status: 500 });
+		return new Response(JSON.stringify({ error: "Erro no servidor" }), { status: 500 });
 	}
 }

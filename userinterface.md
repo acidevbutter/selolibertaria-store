@@ -4,6 +4,33 @@
 
 - O documento principal de padrões visuais continua sendo `UI_UX_PATTERNS.md`.
 - Este arquivo resume decisões de interface que precisam ser consultadas rapidamente durante mudanças de UI.
+- A baseline atual da marca é propositalmente genérica, com placeholder visual neutro e fácil substituição posterior.
+
+## Direção visual do rebrand Selo Libertária
+
+- A direção preferencial atual é `Editorial Noturno`.
+- Isso pede paleta quente e profunda, contraste alto, composição editorial e sensação adulta.
+- Evitar visual infantil, fofo, pop colorido, excesso de brilho ou referência explícita de sex shop.
+- Tipografia deve combinar uma serifada marcante para títulos com uma sans limpa para navegação, ficha técnica e compra.
+- O site deve parecer uma livraria-editora cultural contemporânea antes de parecer um template de e-commerce.
+
+## Home do rebrand
+
+- A home deve começar com uma dobra de alto impacto visual e copy curta.
+- A primeira CTA é comercial; a segunda CTA é cultural.
+- Blocos da home devem alternar produto, manifesto, agenda/projetos e prova visual.
+- Capas, retratos e fotos de performance devem receber mais protagonismo do que ícones ou ilustrações genéricas.
+- O wireframe-base da home é: header editorial, hero híbrido, vitrine de livros, manifesto, agenda/projetos, seção visual, bloco autora/selo, fechamento comunitário e footer.
+- No desktop, o hero deve se comportar como uma capa editorial ampla; no mobile, como uma pilha elegante de copy, CTA e imagem.
+- A densidade da home deve variar intencionalmente: hero forte, vitrine curada, manifesto respirado, agenda/projetos médios, mosaico imersivo e fechamento leve.
+- A implementação ideal da home deve ser modularizada em componentes próprios de `src/ui/home/`, deixando `src/app/(store)/page.tsx` como composição limpa de seções.
+
+## Páginas institucionais do Selo Libertária
+
+- `events`, `projects` e `sarau-safado` devem parecer capítulos editoriais, não somente repositórios de cards.
+- O padrão preferencial é: entrada forte, bloco curatorial de apoio, listagem principal com melhor hierarquia interna e fechamento com links de continuidade.
+- No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
+- Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 
 ## Footer da storefront
 
@@ -38,6 +65,21 @@
 - A CTA principal do card deve ser compacta e flutuante no canto inferior direito, usando somente `+` em repouso e expandindo para `Add to cart` no hover com animação suave de pelo menos `1s`; no estado expandido vermelho, o texto deve ficar preto.
 - Em telas com hover, a CTA expande com transição fluida; em telas por toque, ela deve permanecer visível o tempo todo.
 - Quando houver variantes, os chips abaixo do preço devem funcionar como seletor da opção que o `+` irá adicionar; o chip ativo pode expandir levemente e usar texto preto sobre vermelho.
+- Enquanto a loja estiver em modo genérico, evitar elementos visuais altamente temáticos em logos, capas e blocos institucionais.
+- No rebrand do Selo Libertária, o card pode usar uma linha curta de microcopy abaixo do título para aproximar a vitrine de uma prateleira curada.
+
+## Catálogo e PDP do Selo Libertária
+
+- A listagem deve abrir com um enquadramento editorial curto antes da grade.
+- No backoffice editorial, a interface deve reutilizar o idioma visual dos formulários de produto: cards claros, seções curtas, upload-first para imagem e blocos repetíveis simples para preservar velocidade de edição.
+- O editorial admin também deve oferecer um ponto de entrada central e uma sidebar curta de metadados operacionais, para que edição e contexto coexistam sem parecer uma tela técnica excessiva.
+- Em páginas institucionais editáveis, a UI de admin deve espelhar a composição pública por blocos: hero, conteúdo principal, cards, links e fechamento. Isso torna a manutenção mais intuitiva do que um editor textual genérico.
+- Na home editável, a interface de admin deve deixar claro o limite entre blocos institucionais e blocos dinâmicos do produto: hero, manifesto, autora e CTA final são editáveis ali; vitrine, eventos e projetos continuam respondendo às suas próprias fontes.
+- Em uploads do admin editorial, o campo deve comunicar o estado sem ambiguidade: botão de seleção, prévia local e aviso curto de que o arquivo será enviado ao salvar, em vez de depender de upload silencioso logo após a escolha.
+- Em uploads administrativos por arquivo, a prévia principal deve abrir em modal de confirmação com ações claras de `Salvar` e `Descartar`, para que a pessoa valide visualmente a mídia antes de mantê-la no formulário ou iniciar o envio.
+- Em `/admin` e `/login`, nenhuma camada global transitória deve ficar por cima dos controles. Backoffice e autenticação precisam estar clicáveis assim que a rota renderizar.
+- Em listas editoriais com ordenação, a interface deve expor controles pequenos e diretos de subir/descer na própria linha do item, para que a pessoa operadora ajuste sequência sem abrir a tela de edição.
+- A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
 
 ## Admin
 

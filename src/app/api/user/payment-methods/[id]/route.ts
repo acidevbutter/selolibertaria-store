@@ -15,7 +15,7 @@ function extractId(value?: string | string[]) {
 
 export async function DELETE(_req: Request, ctx: RouteContext) {
 	if (!env.STRIPE_SECRET_KEY) {
-		return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
 
 	const auth = await requireStorefrontBuyer();
@@ -24,7 +24,7 @@ export async function DELETE(_req: Request, ctx: RouteContext) {
 	const params = await ctx.params;
 	const paymentMethodId = extractId(params?.id);
 	if (!paymentMethodId || !paymentMethodId.startsWith("pm_")) {
-		return NextResponse.json({ error: "Invalid payment method id" }, { status: 400 });
+		return NextResponse.json({ error: "ID de forma de pagamento inválido" }, { status: 400 });
 	}
 
 	const db = await getDb();
@@ -36,13 +36,13 @@ export async function DELETE(_req: Request, ctx: RouteContext) {
 		);
 
 	if (!user?.stripeCustomerId) {
-		return NextResponse.json({ error: "No Stripe customer found" }, { status: 404 });
+		return NextResponse.json({ error: "Nenhum cliente Stripe encontrado" }, { status: 404 });
 	}
 
 	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
 	const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
 	if (paymentMethod.customer !== user.stripeCustomerId) {
-		return NextResponse.json({ error: "Payment method not found" }, { status: 404 });
+		return NextResponse.json({ error: "Forma de pagamento não encontrada" }, { status: 404 });
 	}
 
 	await stripe.paymentMethods.detach(paymentMethodId);

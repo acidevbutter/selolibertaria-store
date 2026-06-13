@@ -182,6 +182,12 @@ export async function ensureIndexes() {
 		await db.collection("promotions").createIndex({ status: 1, kind: 1, priority: -1, updatedAt: -1 });
 	} catch {}
 	try {
+		await db.collection("editorialContent").createIndex({ type: 1, slug: 1 }, { unique: true });
+	} catch {}
+	try {
+		await db.collection("editorialContent").createIndex({ type: 1, published: 1, order: 1, updatedAt: -1 });
+	} catch {}
+	try {
 		await db.collection("promotions").createIndex({ "schedule.startsAt": 1, "schedule.endsAt": 1 });
 	} catch {}
 	try {

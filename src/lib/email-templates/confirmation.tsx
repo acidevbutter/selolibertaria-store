@@ -8,26 +8,26 @@ type Props = {
 
 export function confirmationEmailHtml({ name, verifyUrl, supportEmail }: Props) {
 	const safeName = name ? ` ${escapeEmailHtml(name)}` : "";
-	const button = emailButtonHtml({ href: verifyUrl, label: "Verify email" });
+	const button = emailButtonHtml({ href: verifyUrl, label: "Confirmar e-mail" });
 	const bodyHtml = `
-		<p class="lead">Hello${safeName},</p>
-		<p>Thanks for joining Ratoeira77. Confirm your email address to activate your account and receive order updates.</p>
+		<p class="lead">Olá${safeName},</p>
+		<p>Obrigada por entrar no Selo Libertária. Confirme seu endereço de e-mail para ativar sua conta e receber atualizações sobre pedidos.</p>
 		<div class="note-card">
-			<strong>Why this matters</strong>
-			<p style="margin:8px 0 0">Your account stays protected and we can keep you informed about orders, payments and shipping updates.</p>
+			<strong>Por que isso importa</strong>
+			<p style="margin:8px 0 0">Sua conta fica protegida e nós conseguimos manter você informada sobre pedidos, pagamentos e atualizações de envio.</p>
 		</div>
 		<p class="cta-wrap">${button}</p>
-		<p>If the button does not work, copy and paste this link into your browser:</p>
+		<p>Se o botão não funcionar, copie e cole este link no seu navegador:</p>
 		<div class="link-block">${escapeEmailHtml(verifyUrl)}</div>
-		<p style="margin-top:18px">If you did not create an account, you can ignore this message.</p>
+		<p style="margin-top:18px">Se você não criou uma conta, pode ignorar esta mensagem.</p>
 	`;
 
 	return emailShellHtml({
-		title: "Confirm your email",
-		eyebrow: "Account access",
-		preheader: "Confirm your email to activate your Ratoeira77 account.",
+		title: "Confirme seu e-mail",
+		eyebrow: "Acesso à conta",
+		preheader: "Confirme seu e-mail para ativar sua conta do Selo Libertária.",
 		bodyHtml,
 		supportEmail,
-		footerNote: "Automated security message sent by Ratoeira77 to protect your account.",
+		footerNote: "Mensagem automática de segurança enviada pelo Selo Libertária para proteger sua conta.",
 	});
 }

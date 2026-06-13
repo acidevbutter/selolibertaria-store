@@ -12,21 +12,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/cart-context";
 import { env, publicUrl } from "@/env.mjs";
 import { IntlClientProvider } from "@/i18n/client";
-import { getLocale, getMessages, getTranslations } from "@/i18n/server";
+import { getLocale, getMessages } from "@/i18n/server";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 
 export const generateMetadata = async (): Promise<Metadata> => {
-	const t = await getTranslations("Global.metadata");
 	return {
-		title: t("title"),
-		description: t("description"),
+		title: seloSiteMeta.title,
+		description: seloSiteMeta.description,
 		metadataBase: new URL(publicUrl),
 		icons: {
-			icon: [
-				{ url: "/images/ratoeira/ratoeira-red.png", type: "image/png", sizes: "1080x1080" },
-				{ url: "/images/ratoeira/ratoeira-red.svg", type: "image/svg+xml" },
-			],
-			shortcut: ["/images/ratoeira/ratoeira-red.png"],
-			apple: [{ url: "/images/ratoeira/ratoeira-red.png", sizes: "180x180", type: "image/png" }],
+			icon: [{ url: "/images/selolibertaria.png", type: "image/png", sizes: "512x512" }],
+			shortcut: ["/images/selolibertaria.png"],
+			apple: [{ url: "/images/selolibertaria.png", sizes: "512x512", type: "image/png" }],
 		},
 	};
 };
@@ -36,25 +33,30 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	const messages = await getMessages();
 
 	return (
-		<html lang={locale} className="h-full antialiased dark">
+		<html lang={locale} className="h-full antialiased light">
 			<body className="flex min-h-full flex-col bg-background text-foreground">
-				{/* Pre-hydration splash: insert a red overlay before React hydrates to avoid FOUC */}
+				{/* Pre-hydration splash: insert a neutral overlay before React hydrates to avoid FOUC */}
 				<Script
 					id="splash-preinit"
 					strategy="beforeInteractive"
 					dangerouslySetInnerHTML={{
 						__html:
 							"(() => {\n" +
+							"  var path = window.location.pathname || '/';\n" +
+							"  if (path.startsWith('/admin') || path.startsWith('/login')) return;\n" +
 							"  try {\n" +
-							"    if (localStorage.getItem('ratoeira_splash_seen')) return;\n" +
+							"    if (localStorage.getItem('storefront_splash_seen')) return;\n" +
 							"  } catch (e) {}\n" +
 							"  var style = document.createElement('style');\n" +
-							"  style.id = 'ratoeira-splash-style';\n" +
-							"  style.textContent = '#ratoeira-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#b91c1c;color:#fff;font-family:Vtks Urticaria,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.ratoeira-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
+							"  style.id = 'storefront-splash-style';\n" +
+							"  style.textContent = '#storefront-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#111827;color:#f9fafb;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.storefront-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
 							"  document.head.appendChild(style);\n" +
 							"  var div = document.createElement('div');\n" +
-							"  div.id = 'ratoeira-splash-pre';\n" +
-							"  div.innerHTML = '<div class=\'ratoeira-splash-percent\'>0%</div>';\n" +
+							"  div.id = 'storefront-splash-pre';\n" +
+							"  var percent = document.createElement('div');\n" +
+							"  percent.className = 'storefront-splash-percent';\n" +
+							"  percent.textContent = '0%';\n" +
+							"  div.appendChild(percent);\n" +
 							"  document.documentElement.appendChild(div);\n" +
 							"})();",
 					}}
@@ -70,11 +72,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 							try {
 								const key = 'theme';
 								const stored = localStorage.getItem(key);
-								const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-								if (stored === 'dark' || (!stored && prefersDark)) {
+								if (stored === 'dark') {
+									document.documentElement.classList.remove('light');
 									document.documentElement.classList.add('dark');
 								} else {
 									document.documentElement.classList.remove('dark');
+									document.documentElement.classList.add('light');
 								}
 							} catch (e) {
 								// ignore

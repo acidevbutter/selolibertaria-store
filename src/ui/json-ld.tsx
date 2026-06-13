@@ -2,6 +2,7 @@ import type { ItemList, Product, Thing, WebSite, WithContext } from "schema-dts"
 import type Stripe from "stripe";
 import { publicUrl } from "@/env.mjs";
 import type { Product as CommerceProduct } from "@/lib/commerce-types";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 
 export const JsonLd = <T extends Thing>({ jsonLd }: { jsonLd: WithContext<T> }) => {
 	return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
@@ -48,7 +49,7 @@ export const accountToWebsiteJsonLd = ({
 	return {
 		"@context": "https://schema.org",
 		"@type": "WebSite",
-		name: account?.business_profile?.name ?? "Ratoeira77",
+		name: account?.business_profile?.name ?? seloSiteMeta.name,
 		url: websiteUrl,
 		mainEntityOfPage: {
 			"@type": "WebPage",
@@ -62,7 +63,7 @@ export const accountToWebsiteJsonLd = ({
 		}),
 		publisher: {
 			"@type": "Organization",
-			name: account?.business_profile?.name ?? "Ratoeira77",
+			name: account?.business_profile?.name ?? seloSiteMeta.name,
 			url: websiteUrl,
 		},
 	};

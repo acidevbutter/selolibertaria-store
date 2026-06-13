@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "@/i18n/client";
 
 export default function ResetPasswordPage() {
+	const t = useTranslations("Register");
 	const search = useSearchParams();
 	const token = search.get("token") || "";
 	const [status, setStatus] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function ResetPasswordPage() {
 			} catch (err) {
 				if (mounted) {
 					setTokenValid(false);
-					setStatus("Unable to validate token");
+					setStatus("Não foi possível validar o token");
 					setValidating(false);
 				}
 			}
@@ -61,15 +63,15 @@ export default function ResetPasswordPage() {
 
 	return (
 		<div className="max-w-md mx-auto p-6">
-			<h2 className="text-xl font-semibold mb-4">Reset your password</h2>
+			<h2 className="text-xl font-semibold mb-4">Redefinir senha</h2>
 			{validating ? (
-				<p className="text-sm text-muted-foreground">Validating token...</p>
+				<p className="text-sm text-muted-foreground">Validando token...</p>
 			) : tokenValid === false ? (
 				<div>
-					<p className="text-sm text-red-500">{status || "Invalid or expired token."}</p>
+					<p className="text-sm text-red-500">{status || "Token inválido ou expirado."}</p>
 					<div className="mt-3">
 						<Button variant="secondary" onClick={() => router.push("/login")}>
-							Back to login
+							Voltar para o login
 						</Button>
 					</div>
 				</div>
@@ -78,8 +80,8 @@ export default function ResetPasswordPage() {
 					onSubmit={async (e) => {
 						e.preventDefault();
 						setStatus(null);
-						if (!isStrong) return setStatus("Password does not meet strength requirements");
-						if (passwordValue !== confirmValue) return setStatus("Passwords do not match");
+						if (!isStrong) return setStatus("A senha não atende aos requisitos de segurança");
+						if (passwordValue !== confirmValue) return setStatus("As senhas não coincidem");
 						try {
 							const res = await fetch("/api/auth/reset-password", {
 								method: "POST",
@@ -92,22 +94,22 @@ export default function ResetPasswordPage() {
 								return;
 							} else {
 								const data = (await res.json()) as { error?: string };
-								setStatus(data?.error || "Failed to reset password");
+								setStatus(data?.error || "Falha ao redefinir a senha");
 							}
 						} catch (err) {
-							setStatus("Unexpected error");
+							setStatus("Erro inesperado");
 						}
 					}}
 				>
 					<div className="grid gap-2">
-						<Label htmlFor="password">New password</Label>
+						<Label htmlFor="password">Nova senha</Label>
 						<Input
 							name="password"
 							type="password"
 							value={passwordValue}
 							onChange={(e) => setPasswordValue((e.target as HTMLInputElement).value)}
 						/>
-						<Label htmlFor="confirm">Confirm password</Label>
+						<Label htmlFor="confirm">Confirmar senha</Label>
 						<Input
 							name="confirm"
 							type="password"
@@ -115,20 +117,28 @@ export default function ResetPasswordPage() {
 							onChange={(e) => setConfirmValue((e.target as HTMLInputElement).value)}
 						/>
 						<div className="text-sm text-muted-foreground">
-							<div>Password strength:</div>
+							<div>{t("passwordStrength.title")}</div>
 							<ul className="list-disc ml-5">
 								<li className={strength.length ? "text-green-500" : "text-red-500"}>
-									At least 10 characters
+									{t("passwordStrength.rules.length")}
 								</li>
-								<li className={strength.upper ? "text-green-500" : "text-red-500"}>Uppercase letter</li>
-								<li className={strength.lower ? "text-green-500" : "text-red-500"}>Lowercase letter</li>
-								<li className={strength.digit ? "text-green-500" : "text-red-500"}>Digit</li>
-								<li className={strength.special ? "text-green-500" : "text-red-500"}>Special character</li>
+								<li className={strength.upper ? "text-green-500" : "text-red-500"}>
+									{t("passwordStrength.rules.upper")}
+								</li>
+								<li className={strength.lower ? "text-green-500" : "text-red-500"}>
+									{t("passwordStrength.rules.lower")}
+								</li>
+								<li className={strength.digit ? "text-green-500" : "text-red-500"}>
+									{t("passwordStrength.rules.digit")}
+								</li>
+								<li className={strength.special ? "text-green-500" : "text-red-500"}>
+									{t("passwordStrength.rules.special")}
+								</li>
 							</ul>
 						</div>
 						<div className="flex gap-2 mt-2">
 							<Button type="submit" disabled={!isStrong || passwordValue !== confirmValue}>
-								Set new password
+								Definir nova senha
 							</Button>
 						</div>
 						{status && <p className="text-sm mt-2">{status}</p>}

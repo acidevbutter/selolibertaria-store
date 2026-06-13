@@ -9,7 +9,15 @@ export default async function NotFound() {
 	return (
 		<main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
 			<div className="mx-auto mb-6 flex justify-center">
-				<Image src="/images/ratoeira77.svg" alt="Ratoeira77" width={100} height={100} />
+				<div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-white/10 bg-black/40">
+					<Image
+						src="/images/selolibertaria.png"
+						alt="Selo Libertária"
+						width={72}
+						height={72}
+						className="h-16 w-16 object-contain"
+					/>
+				</div>
 			</div>
 			<Card>
 				<CardHeader className="text-center">

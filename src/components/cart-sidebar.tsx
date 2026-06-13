@@ -100,7 +100,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 								<ShoppingBag className="h-12 w-12 text-gray-300 dark:text-neutral-600 hover:text-red-600 dark:hover:text-red-400" />
 								<div>
 									<h3 className="font-medium text-gray-900 dark:text-neutral-100">{t("empty.title")}</h3>
-									<p className="text-sm text-gray-500 dark:text-neutral-400 grunge-font">
+									<p className="display-font text-sm text-gray-500 dark:text-neutral-400">
 										{t("empty.description")}
 									</p>
 								</div>
@@ -138,10 +138,10 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 											{/* Product Info */}
 											<div className="flex-1 min-w-0">
 												<h3 className="font-medium text-sm text-gray-900 dark:text-neutral-100 truncate hover:text-red-600 dark:hover:text-red-400">
-													{product?.name || `Product ${item.productId}`}
+													{product?.name || t("fallback.product")}
 												</h3>
 												<div className="mt-1 space-y-1">
-													<p className="text-sm text-gray-600 dark:text-neutral-400 grunge-price">
+													<p className="price-font text-sm text-gray-600 dark:text-neutral-400">
 														{formatMoney({
 															amount: price,
 															currency: cart.currency || "USD",
@@ -276,7 +276,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 							) : null}
 							<div className="flex items-center justify-between text-lg font-semibold text-gray-900 dark:text-neutral-100">
 								<span>{t("summary.total")}</span>
-								<span className="grunge-price">
+								<span className="price-font">
 									{formatMoney({
 										amount: cart.total || 0,
 										currency: cart.currency || "USD",

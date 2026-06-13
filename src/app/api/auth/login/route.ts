@@ -31,16 +31,19 @@ export async function POST(req: NextRequest) {
 			email: email.toLowerCase(),
 		});
 		if (!user || !user.passwordHash) {
-			return new Response(JSON.stringify({ error: "Invalid credentials" }), { status: 401 });
+			return new Response(JSON.stringify({ error: "Credenciais inválidas" }), { status: 401 });
 		}
 		if (isUserBlocked(user)) {
-			return new Response(JSON.stringify({ error: "This account has been blocked. Contact support." }), {
-				status: 403,
-			});
+			return new Response(
+				JSON.stringify({ error: "Esta conta foi bloqueada. Entre em contato com o suporte." }),
+				{
+					status: 403,
+				},
+			);
 		}
 		const ok = await bcrypt.compare(password, user.passwordHash);
 		if (!ok) {
-			return new Response(JSON.stringify({ error: "Invalid credentials" }), { status: 401 });
+			return new Response(JSON.stringify({ error: "Credenciais inválidas" }), { status: 401 });
 		}
 		const role = normalizeUserRole(user.role);
 
@@ -62,6 +65,6 @@ export async function POST(req: NextRequest) {
 			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
 		}
 		console.error("[POST /api/auth/login]", err);
-		return new Response(JSON.stringify({ error: "Login error" }), { status: 500 });
+		return new Response(JSON.stringify({ error: "Erro ao entrar" }), { status: 500 });
 	}
 }

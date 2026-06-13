@@ -1,4 +1,4 @@
-export const LOCALE_COOKIE_NAME = "ratoeira_locale";
+export const LOCALE_COOKIE_NAME = "storefront_locale";
 
 export const LOCALE_OPTIONS = [
 	{
@@ -63,7 +63,7 @@ export type AppLocale = (typeof LOCALE_OPTIONS)[number]["code"];
 
 export const APP_LOCALES = LOCALE_OPTIONS.map((option) => option.code) as [AppLocale, ...AppLocale[]];
 
-export const DEFAULT_LOCALE: AppLocale = "en-US";
+export const DEFAULT_LOCALE: AppLocale = "pt-BR";
 
 const localeByLowerCode = new Map(
 	LOCALE_OPTIONS.map((option) => [option.code.toLowerCase(), option] as const),

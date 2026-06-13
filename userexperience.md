@@ -4,6 +4,46 @@
 
 - O documento principal de experiência continua sendo `UI_UX_PATTERNS.md`.
 - Este arquivo destaca intenções de uso e comportamento para mudanças rápidas em UI/UX.
+- A experiência atual deve transmitir uma loja-base confiável e reutilizável, sem depender de narrativa ou identidade herdada.
+
+## Rebrand Selo Libertária
+
+- A experiência deve comunicar, já na primeira dobra, que se trata de uma livraria para adultos com proposta literária e cultural.
+- O calor da marca deve vir de curadoria, atmosfera, tipografia, imagem e ritmo, não de apelos gráficos óbvios.
+- A pessoa usuária deve sentir ao mesmo tempo desejo de explorar e confiança para comprar.
+- Conteúdo editorial, autora, livros, eventos e Sarau Safado precisam coexistir como partes do mesmo universo, e não como áreas desconectadas.
+
+## Home do rebrand
+
+- A home precisa responder rapidamente três perguntas:
+  - o que é o Selo Libertária;
+  - o que posso comprar ou explorar aqui;
+  - por que esse universo é diferente.
+- A experiência da home deve oscilar entre descoberta e conversão sem parecer uma colagem de páginas.
+- Depois da primeira dobra, a pessoa usuária deve encontrar livros cedo o bastante para comprar sem esforço, mas também contexto suficiente para perceber valor cultural e autoria.
+- A sequência ideal de entendimento é:
+  - primeiro a proposta;
+  - depois o catálogo;
+  - depois a densidade cultural;
+  - por fim o relacionamento contínuo com agenda, redes e contato.
+- Em desktop, a experiência deve parecer uma capa editorial navegável; em mobile, uma narrativa curta e quente em camadas bem espaçadas.
+- O ritmo ideal alterna tensão e respiro: impacto, compra, contexto, prova cultural, intimidade e continuidade.
+- A arquitetura da página deve refletir esse ritmo também no código: uma seção por intenção de experiência, evitando componentes gigantes com responsabilidades misturadas.
+
+## Páginas institucionais do Selo Libertária
+
+- Nessas páginas, a pessoa usuária deve entender rápido por que aquela área existe dentro do ecossistema do selo e como ela se conecta aos livros.
+- A experiência não deve parecer uma sequência uniforme de cartões com mesmo peso visual; precisa haver entrada, aprofundamento e saída.
+- No `Sarau Safado`, a primeira dobra deve se comportar como uma capa legível: a imagem de fundo atrai e contextualiza, enquanto o texto sobreposto precisa permanecer fácil de ler sem competir com a fotografia.
+- Links de continuidade para catálogo, agenda, projetos, contato ou Sarau Safado devem aparecer de forma natural para evitar becos sem saída.
+- No admin, a edição editorial precisa ser direta e pouco ansiosa: a pessoa deve entender rapidamente o que controla hero, texto principal, blocos curatoriais, imagem e publicação sem depender de conhecimento técnico.
+- Para manutenção recorrente, a área editorial precisa dar senso de localização: hub inicial, links entre superfícies vizinhas e resumo de última atualização ajudam a reduzir retrabalho e dúvida operacional.
+- Quando a página pública tem blocos com funções diferentes, como `about` e `contact`, a experiência de edição precisa preservar esse mapa mental no admin; a pessoa operadora deve reconhecer facilmente o que altera hero, texto institucional, canais diretos ou caminhos de navegação.
+- Na home, a experiência de edição precisa respeitar a natureza híbrida da página: o admin deve conseguir ajustar a voz institucional sem a sensação de estar editando também o catálogo, os eventos ou os projetos, que possuem cadastros próprios.
+- Em manutenção editorial cotidiana, mudar a ordem de uma agenda ou de uma lista de projetos deve ser uma ação rápida e local. Controles de subir/descer diminuem atrito e transmitem previsibilidade melhor do que exigir edição manual de números.
+- Em uploads editoriais, a pessoa operadora não deve depender de um efeito implícito para saber se a imagem entrou. Selecionar, enxergar a prévia e salvar é uma sequência mais confiável e menos ansiosa para esse backoffice.
+- Em uploads por arquivo no admin, abrir uma prévia em modal antes da confirmação reduz ansiedade operacional e evita salvar mídia errada; `Salvar` deve confirmar a escolha, e `Descartar` deve limpar a seleção sem efeitos colaterais.
+- Em rotas de admin e login, qualquer splash global que bloqueie interação degrada a confiança do produto. Essas superfícies devem responder imediatamente a clique, digitação e seleção de arquivo.
 
 ## Footer da storefront
 
@@ -39,6 +79,11 @@
 - A ação de compra rápida deve parecer leve e desejável: um controle compacto com `+` comunica velocidade sem cobrir demais a foto do produto, e o texto completo só aparece na expansão com uma transição fluida de pelo menos `1s`.
 - A interação precisa funcionar com mouse, teclado e toque, então hover nunca pode ser o único caminho para a ação principal.
 - Quando houver variantes, a pessoa usuária deve conseguir selecionar a opção no próprio card antes de adicionar ao carrinho, com feedback visual claro da opção ativa e leitura imediata do rótulo selecionado.
+
+## Catálogo e PDP do Selo Libertária
+
+- Antes de entrar na grade, a pessoa usuária deve receber um enquadramento curto que explique como ler aquele catálogo.
+- Na PDP, a compra vem primeiro, mas a página deve continuar convidando a circular entre livro, programação e contexto cultural.
 
 ## Backoffice
 

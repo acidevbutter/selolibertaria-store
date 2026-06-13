@@ -50,18 +50,18 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 			<div className="flex w-full max-w-sm flex-col gap-6 md:max-w-4xl xl:max-w-5xl">
 				<Link
 					href="/"
-					className="flex items-center gap-2 self-center text-3xl font-extrabold hover:opacity-90 transition"
+					className="flex items-center gap-3 self-center text-3xl font-extrabold transition hover:opacity-90"
 				>
-					<div className="flex h-35 w-35 items-center justify-center rounded-md">
+					<div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-black/30 shadow-sm">
 						<Image
-							src="/images/ratoeira/ratoeira-red.svg"
-							alt="Ratoeira77 logo"
-							width={200}
-							height={200}
-							className="object-contain"
+							src="/images/selolibertaria.png"
+							alt={metadataT("title")}
+							width={64}
+							height={64}
+							className="h-14 w-14 object-contain"
 						/>
 					</div>
-					<span className="font-vtks text-red-700 text-4xl">{metadataT("title")}</span>
+					<span className="text-4xl font-semibold tracking-tight text-foreground">{metadataT("title")}</span>
 				</Link>
 				<LoginForm defaultCountry={defaultCountry} defaultCurrency={defaultCurrency} providers={providers} />
 				{flash && (

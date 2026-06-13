@@ -9,6 +9,6 @@ export function transactionalEmailHtml({ title, bodyHtml, supportEmail }: Props)
 		preheader: title,
 		bodyHtml,
 		supportEmail,
-		footerNote: "Official transactional message from Ratoeira77.",
+		footerNote: "Official transactional message from Selo Libertaria.",
 	});
 }

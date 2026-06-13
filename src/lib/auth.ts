@@ -26,7 +26,7 @@ export async function login(_state: unknown, formData: FormData): Promise<{ erro
 	const emailRaw = formData.get("email");
 	const passwordRaw = formData.get("password");
 	if (typeof emailRaw !== "string" || typeof passwordRaw !== "string") {
-		return { error: "Invalid data" };
+		return { error: "Dados inválidos" };
 	}
 	const email = emailRaw.toLowerCase();
 	const password = passwordRaw;
@@ -49,7 +49,7 @@ export async function login(_state: unknown, formData: FormData): Promise<{ erro
 			throw err;
 		}
 		console.error("[login action]", err);
-		return { error: "Authentication error" };
+		return { error: "Erro de autenticação" };
 	}
 }
 

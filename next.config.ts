@@ -5,6 +5,7 @@ import type { NextConfig } from "next/types";
 
 const withMDX = MDX();
 const projectRoot = dirname(fileURLToPath(import.meta.url));
+const isProductionBuild = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
@@ -13,7 +14,7 @@ const nextConfig: NextConfig = {
 	outputFileTracingRoot: projectRoot,
 	logging: {
 		fetches: {
-			fullUrl: true,
+			fullUrl: isProductionBuild,
 		},
 	},
 	images: {
@@ -30,8 +31,8 @@ const nextConfig: NextConfig = {
 		scrollRestoration: true,
 		ppr: false,
 		cpus: 1,
-		mdxRs: true,
-		inlineCss: true,
+		mdxRs: isProductionBuild,
+		inlineCss: isProductionBuild,
 	},
 	webpack: (config) => {
 		return {

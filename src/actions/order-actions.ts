@@ -25,8 +25,8 @@ import {
  */
 export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
 	const auth = await requireAuth();
-	if ("error" in auth) return { error: "Unauthorized" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Forbidden" };
+	if ("error" in auth) return { error: "Não autorizado" };
+	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
 
 	const userId = auth.session.sub as string;
 
@@ -49,7 +49,7 @@ export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error:
 		return { ok: true };
 	} catch (err) {
 		console.error("[finalizeCheckoutCleanup]", err);
-		return { error: "Failed to cleanup cart" };
+		return { error: "Falha ao limpar o carrinho" };
 	}
 }
 
@@ -58,14 +58,14 @@ export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error:
  * This doesn't replace the webhook (source of truth), but it allows immediate recording.
  */
 export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok: true } | { error: string }> {
-	if (!sessionId || !sessionId.startsWith("cs_")) return { error: "Invalid session id" };
-	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe not configured" };
+	if (!sessionId || !sessionId.startsWith("cs_")) return { error: "ID de sessão inválido" };
+	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
 
 	const auth = await requireAuth();
 	let userId: string | null = null;
 
 	if (!("error" in auth)) {
-		if (!canBuyOnStorefront(auth.session.role)) return { error: "Forbidden" };
+		if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
 		userId = auth.session.sub as string;
 	}
 
@@ -77,11 +77,11 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 
 		if (session.metadata?.userId) {
 			const metaUserId = String(session.metadata.userId);
-			if (userId && metaUserId !== userId) return { error: "Session does not belong to user" };
+			if (userId && metaUserId !== userId) return { error: "A sessão não pertence a esta pessoa usuária" };
 			if (!userId) userId = metaUserId;
 		}
 
-		if (!userId) return { error: "Unauthorized" };
+		if (!userId) return { error: "Não autorizado" };
 
 		const items = (session.line_items?.data || []).map((li) => {
 			const prod = typeof li.price?.product === "object" ? (li.price?.product as Stripe.Product) : undefined;
@@ -135,7 +135,7 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 		return { ok: true };
 	} catch (e) {
 		console.error("[recordSuccessfulCheckout]", e);
-		return { error: "Failed to record purchase" };
+		return { error: "Falha ao registrar a compra" };
 	}
 }
 
@@ -163,14 +163,15 @@ interface BrowserSyncPurchaseDoc {
 	};
 }
 
-export async function recordPaymentIntentCheckout(
-	input: { paymentIntentId?: string | null; orderId?: string | null },
-): Promise<{ ok: true; status: string; cartCleared: boolean } | { error: string; status?: string }> {
-	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe not configured" };
+export async function recordPaymentIntentCheckout(input: {
+	paymentIntentId?: string | null;
+	orderId?: string | null;
+}): Promise<{ ok: true; status: string; cartCleared: boolean } | { error: string; status?: string }> {
+	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
 
 	const auth = await requireAuth();
-	if ("error" in auth) return { error: "Unauthorized" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Forbidden" };
+	if ("error" in auth) return { error: "Não autorizado" };
+	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
 
 	const userId = auth.session.sub as string;
 
@@ -188,7 +189,7 @@ export async function recordPaymentIntentCheckout(
 		const resolvedPaymentIntentId = paymentIntentIdFromInput || draftByOrder?.paymentIntentId || null;
 
 		if (!resolvedPaymentIntentId || !resolvedPaymentIntentId.startsWith("pi_")) {
-			return { error: "Invalid payment intent id" };
+			return { error: "ID de intenção de pagamento inválido" };
 		}
 
 		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
@@ -197,7 +198,7 @@ export async function recordPaymentIntentCheckout(
 		});
 
 		if (paymentIntent.metadata?.userId && paymentIntent.metadata.userId !== userId) {
-			return { error: "Payment intent does not belong to user" };
+			return { error: "A intenção de pagamento não pertence a esta pessoa usuária" };
 		}
 
 		const usersCol = db.collection("users");
@@ -206,14 +207,16 @@ export async function recordPaymentIntentCheckout(
 		};
 		const draft =
 			draftByOrder ||
-			(await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId: resolvedPaymentIntentId }));
+			(await db
+				.collection<OrderDraftDoc>("orderDrafts")
+				.findOne({ paymentIntentId: resolvedPaymentIntentId }));
 		const userDoc = await usersCol.findOne<{ purchases?: BrowserSyncPurchaseDoc[] }>(
 			{ _id: new ObjectId(userId) },
 			{ projection: { purchases: 1 } },
 		);
 
 		if (draft?.userId && draft.userId !== userId) {
-			return { error: "Payment intent does not belong to user" };
+			return { error: "A intenção de pagamento não pertence a esta pessoa usuária" };
 		}
 
 		const status = paymentIntent.status;
@@ -223,13 +226,14 @@ export async function recordPaymentIntentCheckout(
 			(purchase) =>
 				matchesOrderIdentifier(purchase, orderId) || matchesOrderIdentifier(purchase, paymentIntent.id),
 		);
-			const existingAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(existingPurchase?.status)
-				? existingPurchase?.status
-				: undefined;
-			const draftAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(draft?.status)
-				? draft?.status
-				: undefined;
-			const authoritativeStatus = existingAuthoritativeStatus || draftAuthoritativeStatus || clientVisibleStatus;
+		const existingAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(existingPurchase?.status)
+			? existingPurchase?.status
+			: undefined;
+		const draftAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(draft?.status)
+			? draft?.status
+			: undefined;
+		const authoritativeStatus =
+			existingAuthoritativeStatus || draftAuthoritativeStatus || clientVisibleStatus;
 
 		await db.collection("orderDrafts").updateOne(
 			{ paymentIntentId: resolvedPaymentIntentId },
@@ -242,7 +246,7 @@ export async function recordPaymentIntentCheckout(
 		);
 
 		if (status !== "succeeded" && status !== "processing") {
-			return { error: "Payment is not complete", status };
+			return { error: "O pagamento ainda não foi concluído", status };
 		}
 
 		const items = (draft?.items || []).map((item) => ({
@@ -357,7 +361,7 @@ export async function recordPaymentIntentCheckout(
 		};
 	} catch (error) {
 		console.error("[recordPaymentIntentCheckout]", error);
-		return { error: "Failed to record payment" };
+		return { error: "Falha ao registrar o pagamento" };
 	}
 }
 
@@ -380,10 +384,10 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 			fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
 	  }
 > {
-	if (!purchaseId) return { error: "Missing purchase id" };
+	if (!purchaseId) return { error: "ID do pedido ausente" };
 	const auth = await requireAuth();
-	if ("error" in auth) return { error: "Unauthorized" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Forbidden" };
+	if ("error" in auth) return { error: "Não autorizado" };
+	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
 	try {
 		const db = await getDb();
 		const userId = new ObjectId(auth.session.sub as string);
@@ -416,7 +420,7 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 			{ projection: { purchases: 1 } },
 		);
 		const purchase = userDoc?.purchases?.find((p) => matchesOrderIdentifier(p, purchaseId));
-		if (!purchase) return { error: "Not found" };
+		if (!purchase) return { error: "Pedido não encontrado" };
 		let enrichedItems: Array<{
 			name: string | null;
 			quantity: number;
@@ -476,6 +480,6 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 		};
 	} catch (e) {
 		console.error("[getPurchaseDetails]", e);
-		return { error: "Failed" };
+		return { error: "Falha ao carregar os detalhes do pedido" };
 	}
 }

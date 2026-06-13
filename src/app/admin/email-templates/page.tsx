@@ -15,8 +15,8 @@ export default function EmailTemplatesPage() {
 			render: () =>
 				confirmationEmailHtml({
 					name: "Customer",
-					verifyUrl: "https://ratoeira77.store/verify?token=abc123",
-					supportEmail: "contact@ratoeira77.store",
+					verifyUrl: "https://storefront.local/verify?token=abc123",
+					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
 		{
@@ -25,8 +25,8 @@ export default function EmailTemplatesPage() {
 			render: () =>
 				passwordResetEmailHtml({
 					name: "Customer",
-					resetUrl: "https://ratoeira77.store/reset-password?token=xyz",
-					supportEmail: "contact@ratoeira77.store",
+					resetUrl: "https://storefront.local/reset-password?token=xyz",
+					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
 		{
@@ -45,11 +45,11 @@ export default function EmailTemplatesPage() {
 					currency: "BRL",
 					fulfillment: { status: "shipped", trackingNumber: "BR123456789" },
 					items: [
-						{ name: "T-shirt", qty: 2, unitAmount: 2000, image: "/images/ratoeira/ratoeira-red.jpg" },
-						{ name: "Poster", qty: 1, unitAmount: 1500, image: "/images/ratoeira/ratoeira-loja.jpeg" },
+						{ name: "T-shirt", qty: 2, unitAmount: 2000, image: "/images/storefront-mark.svg" },
+						{ name: "Poster", qty: 1, unitAmount: 1500, image: "/yns-cover.jpg" },
 					],
 					totalCents: 5500,
-					supportEmail: "contact@ratoeira77.store",
+					supportEmail: "natalianolli@selolibertaria.page",
 				});
 			},
 		},
@@ -59,13 +59,13 @@ export default function EmailTemplatesPage() {
 			render: () =>
 				favoriteDiscountEmailHtml({
 					name: "Customer",
-					productName: "Ratoeira77 T-shirt",
+					productName: "Essential T-shirt",
 					variantLabel: "Black / M",
-					productUrl: "https://ratoeira77.store/product/camiseta-ratoeira77",
+					productUrl: "https://storefront.local/product/essential-t-shirt",
 					basePrice: "$129.90",
 					effectivePrice: "$99.90",
 					promotionLabel: "Flash sale",
-					supportEmail: "contact@ratoeira77.store",
+					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
 		{
@@ -73,9 +73,9 @@ export default function EmailTemplatesPage() {
 			label: "Transactional (custom)",
 			render: () =>
 				transactionalEmailHtml({
-					title: "Welcome to Ratoeira77",
-					bodyHtml: `<p>Hello, <strong>Customer</strong>.</p><p>Thanks for following the store.</p>`,
-					supportEmail: "contact@ratoeira77.store",
+					title: "Welcome to Selo Libertaria",
+					bodyHtml: `<p>Hello, <strong>Customer</strong>.</p><p>Thanks for following the selo.</p>`,
+					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
 	];

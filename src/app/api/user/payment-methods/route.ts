@@ -8,7 +8,7 @@ import { listSavedCardPaymentMethods } from "@/lib/saved-payment-methods";
 
 export async function GET() {
 	if (!env.STRIPE_SECRET_KEY) {
-		return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
 
 	const auth = await requireStorefrontBuyer();

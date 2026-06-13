@@ -1,6 +1,6 @@
-# Ratoeira77 Store
+# Storefront Starter
 
-Loja em Next.js 16 da Ratoeira77, com cat&aacute;logo integrado ao Stripe, autentica&ccedil;&atilde;o, &aacute;rea administrativa e suporte a imagens gerenciadas.
+Base de loja em Next.js 16 com cat&aacute;logo integrado ao Stripe, autentica&ccedil;&atilde;o, &aacute;rea administrativa e suporte a imagens gerenciadas.
 
 ## Stack
 
@@ -39,3 +39,4 @@ Vari&aacute;veis principais:
 - O servidor de desenvolvimento costuma ser mantido rodando em segundo plano no ambiente local deste projeto.
 - O build de produ&ccedil;&atilde;o passa por `scripts/vercel-build.mjs`.
 - O bootstrap do admin pode ser feito com `yarn seed:admin`.
+- O seed do admin espera `MONGODB_URI`, `MONGODB_DB_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`; a senha precisa ter pelo menos `6` caracteres.

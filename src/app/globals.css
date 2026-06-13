@@ -1,36 +1,18 @@
 @import "tailwindcss";
 @import "../styles/glitch.css";
 
-/* Register the Vtks Urticaria display font used for titles. */
-@font-face {
-	font-family: "Vtks Urticaria";
-	src: url("/fonts/VtksUrticaria-gx3wp.ttf") format("truetype");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+/* Neutral typography helpers for the generic storefront baseline. */
+.display-font {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
-/* SimpleGrunge used for prices and selected UI elements */
-@font-face {
-	font-family: "SimpleGrunge";
-	src: url("/fonts/SimpleGrunge-p7aDD.otf") format("opentype");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-/* Utility classes to apply the grunge display font in selected places */
-.grunge-font {
-	font-family:
-		"SimpleGrunge", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-		sans-serif;
-}
-
-.grunge-price {
-	font-family:
-		"SimpleGrunge", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-		sans-serif;
+.price-font {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 	/* Keep price sizing and weight inherited unless explicitly set */
+}
+
+.editorial-serif {
+	font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -125,11 +107,12 @@
 	text-wrap: pretty;
 }
 
-/* Utility for the Vtks Urticaria display font used in headings; use on menu items to match header style */
-@utility font-vtks {
-	font-family:
-		"Vtks Urticaria", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-		sans-serif;
+@utility display-font {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+@utility editorial-serif {
+	font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
 }
 
 @utility animation-fade-in {
@@ -214,15 +197,13 @@
 		@apply bg-background text-foreground;
 	}
 
-	/* Apply the Vtks Urticaria font to main headings only to minimize
-	   global impact. Use safe fallbacks for systems that don't load the font. */
+	/* Use a neutral sans-serif baseline for headings in the generic storefront starter. */
 	h1,
 	h2,
 	h3,
 	.seo-h1 {
 		font-family:
-			"Vtks Urticaria", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-			sans-serif;
+			system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 	}
 
 	/* Slightly increase title sizes where the custom font is used.

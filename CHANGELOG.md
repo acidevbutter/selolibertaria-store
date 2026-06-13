@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.
 - Escolha de entrega no checkout, com opção de usar o endereço salvo, informar um novo endereço ou retirar na loja, além de recálculo server-side do frete antes do pagamento.
 - Sistema de cálculo de fretes por provedor com contrato interno único, fallback seguro e administração de prioridade, credenciais e serviços no painel de settings.
 - Presets de provider para `Correios`, `Jadlog`, `EasyPost` e `Custom HTTP`, com adapters server-side específicos, credenciais mascaradas por campo e configuração administrativa guiada por tipo de API.
@@ -14,10 +15,10 @@
 - Permissões de catálogo ampliadas para `vendor`, com criação e edição de produtos/variantes no admin e histórico auditável de mutações de catálogo por produto.
 - Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
 - Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
-- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `ratoeira_locale` antes de redirecionar para a rota canônica sem prefixo.
+- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
-- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `ratoeira_locale` antes de redirecionar para a rota canônica sem prefixo.
+- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
 - Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
 - Planejamento técnico para implementação de checkout transparente Stripe com PaymentIntent, Stripe Elements, webhooks idempotentes e critérios de segurança em `spec.md`.
@@ -36,6 +37,7 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- A base da loja foi desmarcada para um estado genérico e reaproveitável, removendo referências da identidade anterior em documentação, metadata, textos institucionais, exemplos de email, identificadores técnicos visíveis e elementos principais de UI.
 - O histórico de `Order details` no admin agora atualiza logo após salvar fulfillment e trocou a visualização crua em JSON por blocos mais amigáveis de `Before` e `After` para auditoria.
 - O admin de produtos agora organiza criação e edição em seções mais claras, substitui `Active in Stripe` por controles de disponibilidade orientados ao negócio e troca a edição de variantes em abas por uma visão resumida com modais de criação e edição.
 - `/checkout/processing` no longer shows a false validation error after a successful `payment_intent` return when the immediate browser sync fails; success-like return states now stay in processing and defer to the Stripe webhook as source of truth.
@@ -74,6 +76,7 @@
 - `AUTH_SOCIAL_BUTTON_PATTERN.md` alinhado ao estado atual do cluster social e referenciando a nova documentação canônica de UI/UX.
 
 ### Fixed
+- Login por senha agora encontra contas legadas com email salvo em maiúsculas ou casing misto, normaliza o email para minúsculas após autenticação e limpa cookies de sessão inválidos sem poluir o fluxo com `Invalid Compact JWS`.
 - Transparent checkout processing no longer shows `unknown status` because the legacy global checkout handler now ignores `payment_intent` URLs and the client normalizes PaymentIntent return statuses.
 - Stripe webhook status reconciliation now prefers semantic event mappings for `checkout.session`, `payment_intent`, `charge`, and `refund` events instead of persisting misleading raw object statuses like `complete`.
 - Checkout cleanup no longer runs from root query parameters unless a legacy `session_id` is present.

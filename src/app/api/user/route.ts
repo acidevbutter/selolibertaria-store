@@ -15,7 +15,7 @@ export async function GET() {
 			} catch {}
 		}
 	}
-	if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+	if (!userId) return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 401 });
 	const db = await getDb();
 	const user = await db
 		.collection("users")
@@ -33,7 +33,7 @@ export async function GET() {
 				return null;
 			}
 		});
-	if (!user) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+	if (!user) return new Response(JSON.stringify({ error: "Usuária não encontrada" }), { status: 404 });
 	const idValue = (user as { _id: unknown })._id;
 	return Response.json({ ...user, _id: String(idValue) });
 }

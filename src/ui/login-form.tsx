@@ -58,7 +58,7 @@ export function LoginForm({
 		if (!email || !password) return;
 		try {
 			window.sessionStorage.setItem(
-				"ratoeira_login_draft",
+				"storefront_login_draft",
 				JSON.stringify({
 					email,
 					password,
@@ -80,7 +80,7 @@ export function LoginForm({
 		>
 			<Card className={cn(mode === "register" ? "border-border/70 shadow-lg" : "")}>
 				<CardHeader>
-					<CardTitle className="font-vtks text-red-700 text-3xl ">
+					<CardTitle className="display-font text-3xl text-foreground">
 						{mode === "login" ? t("card.loginTitle") : t("card.registerTitle")}
 					</CardTitle>
 					<CardDescription>
@@ -122,7 +122,7 @@ export function LoginForm({
 											id="login-email"
 											name="username"
 											type="text"
-											placeholder="m@example.com"
+											placeholder={t("fields.emailPlaceholder")}
 											autoComplete="username"
 											inputMode="email"
 											autoCapitalize="none"

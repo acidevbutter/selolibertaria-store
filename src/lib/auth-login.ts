@@ -10,6 +10,48 @@ type LoginInput = {
 	cartRaw?: string | null;
 };
 
+async function findUserForLogin(
+	db: Awaited<ReturnType<typeof import("@/lib/mongodb")["getDb"]>>,
+	email: string,
+) {
+	const normalizedEmail = email.trim().toLowerCase();
+	const projection = {
+		email: 1,
+		passwordHash: 1,
+		name: 1,
+		role: 1,
+		access: 1,
+		preferredCurrency: 1,
+	} as const;
+
+	const exact = await db.collection("users").findOne<{
+		_id: unknown;
+		email: string;
+		passwordHash?: string;
+		name?: string;
+		role?: string;
+		access?: { blockedAt?: Date | string | null } | null;
+		preferredCurrency?: string | null;
+	}>({ email: normalizedEmail }, { projection });
+	if (exact) {
+		return exact;
+	}
+
+	// Keep legacy accounts with mixed-case emails able to log in, then normalize the record.
+	return db.collection("users").findOne<{
+		_id: unknown;
+		email: string;
+		passwordHash?: string;
+		name?: string;
+		role?: string;
+		access?: { blockedAt?: Date | string | null } | null;
+		preferredCurrency?: string | null;
+	}>(
+		{ email: { $regex: `^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+		{ projection },
+	);
+}
+
 export async function authenticateAndCreateSession({
 	email,
 	password,
@@ -19,23 +61,24 @@ export async function authenticateAndCreateSession({
 		const [{ getDb }, bcryptjs] = await Promise.all([import("@/lib/mongodb"), import("bcryptjs")]);
 		const bcrypt = (bcryptjs as typeof import("bcryptjs")).default;
 		const db = await getDb();
-		const user = await db.collection("users").findOne<{
-			_id: unknown;
-			email: string;
-			passwordHash?: string;
-			name?: string;
-			role?: string;
-			access?: { blockedAt?: Date | string | null } | null;
-			preferredCurrency?: string | null;
-		}>(
-			{ email: email.toLowerCase() },
-			{ projection: { email: 1, passwordHash: 1, name: 1, role: 1, access: 1, preferredCurrency: 1 } },
-		);
-		if (!user?.passwordHash) return { ok: false, error: "Invalid credentials" };
-		if (isUserBlocked(user)) return { ok: false, error: "This account has been blocked. Contact support." };
+		const normalizedEmail = email.trim().toLowerCase();
+		const user = await findUserForLogin(db, normalizedEmail);
+		if (!user?.passwordHash) return { ok: false, error: "Credenciais inválidas" };
+		if (isUserBlocked(user)) {
+			return { ok: false, error: "Esta conta foi bloqueada. Entre em contato com o suporte." };
+		}
 
 		const ok = await bcrypt.compare(password, user.passwordHash);
-		if (!ok) return { ok: false, error: "Invalid credentials" };
+		if (!ok) return { ok: false, error: "Credenciais inválidas" };
+		if (user.email !== normalizedEmail) {
+			await db
+				.collection("users")
+				.updateOne(
+					{ _id: new ObjectId(String(user._id)) },
+					{ $set: { email: normalizedEmail, updatedAt: new Date() } },
+				);
+			user.email = normalizedEmail;
+		}
 
 		let overrideApplied = false;
 		if (typeof cartRaw === "string" && cartRaw.trim()) {
@@ -96,13 +139,13 @@ export async function authenticateAndCreateSession({
 
 		await createPersistentSession({
 			id: String(user._id),
-			email: user.email,
+			email: normalizedEmail,
 			name: user.name,
 			role: normalizeUserRole(user.role),
 		});
 		return { ok: true, preferredCurrency: user.preferredCurrency ?? null };
 	} catch (error) {
 		console.error("[login auth]", error);
-		return { ok: false, error: "Authentication error" };
+		return { ok: false, error: "Erro de autenticação" };
 	}
 }

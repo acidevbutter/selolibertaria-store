@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 	});
 
 	if (!result.ok) {
-		const query = result.error === "Invalid credentials" ? "?login_error=invalid" : "?login_error=server";
+		const query = result.error === "Credenciais inválidas" ? "?login_error=invalid" : "?login_error=server";
 		return buildLoginRedirect(req, query);
 	}
 

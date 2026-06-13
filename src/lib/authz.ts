@@ -4,6 +4,8 @@ export type Capability =
 	| "admin.access"
 	| "catalog.read"
 	| "catalog.write"
+	| "editorial.read"
+	| "editorial.write"
 	| "orders.read"
 	| "orders.update_status"
 	| "customers.read"
@@ -22,6 +24,8 @@ const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
 		"admin.access",
 		"catalog.read",
 		"catalog.write",
+		"editorial.read",
+		"editorial.write",
 		"orders.read",
 		"orders.update_status",
 		"customers.read",
@@ -38,6 +42,8 @@ const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
 		"admin.access",
 		"catalog.read",
 		"catalog.write",
+		"editorial.read",
+		"editorial.write",
 		"orders.read",
 		"orders.update_status",
 		"customers.read",

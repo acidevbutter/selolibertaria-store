@@ -34,7 +34,7 @@ export async function requireAuth() {
 			if (payload?.sub) {
 				const sub = String(payload.sub);
 				if (await getBlockedState(sub)) {
-					return { error: new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 }) };
+					return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 				}
 				return {
 					session: {
@@ -54,7 +54,7 @@ export async function requireAuth() {
 		const data = await coreDecrypt(sessionToken);
 		if (data && data.expires > Date.now()) {
 			if (await getBlockedState(data.user.id)) {
-				return { error: new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 }) };
+				return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 			}
 			return {
 				session: {
@@ -65,7 +65,7 @@ export async function requireAuth() {
 			};
 		}
 	}
-	return { error: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 }) };
+	return { error: new Response(JSON.stringify({ error: "Não autorizado" }), { status: 401 }) };
 }
 
 export async function requireAdmin() {
@@ -79,14 +79,14 @@ export async function requireAdmin() {
 		}
 	}
 	// Fallback: Authorization header won't carry role; reject to avoid privilege escalation
-	return { error: new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 }) };
+	return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 }
 
 export async function requireCapability(capability: Capability) {
 	const auth = await requireAuth();
 	if ("error" in auth) return auth;
 	if (!hasCapability(auth.session.role, capability)) {
-		return { error: new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 }) };
+		return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 	}
 	return auth;
 }
@@ -95,7 +95,7 @@ export async function requireStorefrontBuyer() {
 	const auth = await requireAuth();
 	if ("error" in auth) return auth;
 	if (!canBuyOnStorefront(auth.session.role)) {
-		return { error: new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 }) };
+		return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 	}
 	return auth;
 }

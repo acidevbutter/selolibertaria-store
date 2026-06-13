@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
 		const existing = await db.collection("users").findOne({ email: data.email.toLowerCase() });
 		if (existing) {
-			return new Response(JSON.stringify({ error: "Email already registered" }), { status: 409 });
+			return new Response(JSON.stringify({ error: "E-mail já cadastrado" }), { status: 409 });
 		}
 
 		const now = new Date();
@@ -121,6 +121,6 @@ export async function POST(req: NextRequest) {
 			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
 		}
 		console.error("[POST /api/users]", err);
-		return new Response(JSON.stringify({ error: "Failed to create user" }), { status: 500 });
+		return new Response(JSON.stringify({ error: "Falha ao criar a pessoa usuária" }), { status: 500 });
 	}
 }

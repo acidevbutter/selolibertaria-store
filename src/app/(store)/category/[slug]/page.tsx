@@ -44,15 +44,23 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 	const products = result.data;
 
 	const t = await getTranslations("/category.page");
+	const seloT = await getTranslations("Selo");
 
 	return (
-		<main className="pb-8">
-			<h1 className="text-3xl font-bold leading-none tracking-tight text-foreground">
-				{deslugify(params.slug)}
-				<div className="text-lg font-semibold text-muted-foreground">
-					{t("title", { categoryName: deslugify(params.slug) })}
+		<main className="space-y-8 pb-8">
+			<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
+				<div className="max-w-4xl space-y-5">
+					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
+						{seloT("category.eyebrow")}
+					</p>
+					<h1 className="editorial-serif max-w-4xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
+						{deslugify(params.slug)}
+					</h1>
+					<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
+						{t("title", { categoryName: deslugify(params.slug) })}
+					</p>
 				</div>
-			</h1>
+			</section>
 			<ProductList products={products} />
 		</main>
 	);
