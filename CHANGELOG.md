@@ -76,6 +76,7 @@
 - `AUTH_SOCIAL_BUTTON_PATTERN.md` alinhado ao estado atual do cluster social e referenciando a nova documentação canônica de UI/UX.
 
 ### Fixed
+- Corrigido o predicado de tipagem na ação editorial de `about`, preservando `eyebrow` como `string | null | undefined` durante o `filter` e destravando o `yarn build` no mesmo ponto que falhava na Vercel.
 - Login por senha agora encontra contas legadas com email salvo em maiúsculas ou casing misto, normaliza o email para minúsculas após autenticação e limpa cookies de sessão inválidos sem poluir o fluxo com `Invalid Compact JWS`.
 - Transparent checkout processing no longer shows `unknown status` because the legacy global checkout handler now ignores `payment_intent` URLs and the client normalizes PaymentIntent return statuses.
 - Stripe webhook status reconciliation now prefers semantic event mappings for `checkout.session`, `payment_intent`, `charge`, and `refund` events instead of persisting misleading raw object statuses like `complete`.

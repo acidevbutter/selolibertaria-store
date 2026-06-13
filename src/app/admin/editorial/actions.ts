@@ -549,7 +549,7 @@ export async function updateEditorialAboutAction(formData: FormData) {
 			title: optionalString(formData.get(`card${index}Title`)),
 			body: optionalString(formData.get(`card${index}Body`)),
 		}))
-		.filter((card): card is { eyebrow?: string | null; title: string; body: string } =>
+		.filter((card): card is { eyebrow: string | null; title: string; body: string } =>
 			Boolean(card.title?.trim() && card.body?.trim()),
 		);
 

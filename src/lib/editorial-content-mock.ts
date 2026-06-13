@@ -9,7 +9,6 @@ import type {
 } from "@/lib/editorial-content";
 import {
 	seloAbout,
-	seloContactPage,
 	seloEvents,
 	seloHomeAuthorSpotlight,
 	seloHomeCommunityCta,

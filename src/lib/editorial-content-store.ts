@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Filter } from "mongodb";
 import type {
 	EditorialAboutPage,
 	EditorialContactPage,
@@ -10,7 +11,6 @@ import type {
 import {
 	getMockEditorialAboutPage,
 	getMockEditorialContactPage,
-	getMockEditorialDocuments,
 	getMockEditorialEvents,
 	getMockEditorialHomePage,
 	getMockEditorialProjects,
@@ -22,9 +22,12 @@ const COLLECTION = "editorialContent";
 
 async function listEditorialFromDb<T extends EditorialDocument["type"]>(type: T) {
 	const db = await getDb();
+	const filter: Filter<Extract<EditorialDocument, { type: T }>> = { type } as Filter<
+		Extract<EditorialDocument, { type: T }>
+	>;
 	return await db
 		.collection<Extract<EditorialDocument, { type: T }>>(COLLECTION)
-		.find({ type })
+		.find(filter)
 		.sort({ order: 1, updatedAt: -1 })
 		.toArray();
 }

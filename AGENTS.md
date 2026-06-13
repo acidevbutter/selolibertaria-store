@@ -52,6 +52,7 @@ yarn docker:run             # Run Docker container
 ## AI Patterns
 
 - Prefer Yarn Classic (`yarn@1.22.22`) for dependency management and scripts.
+- Ao estreitar coleções derivadas de `FormData` com type predicates, preserve exatamente as uniões opcionais e anuláveis do objeto de entrada, ou normalize os valores antes do `filter`, para manter o `yarn build` e a checagem de TypeScript consistentes localmente e na Vercel.
 - Treat the repository as a reusable storefront starter: keep brand copy, visuals, icons, contact data, and metadata generic unless a task explicitly introduces a new store identity.
 - The default placeholder brand is `Storefront`; prefer neutral descriptions, neutral assets, and replaceable examples over niche editorial narratives.
 - When a task explicitly targets the Selo Libertaria rebrand, implement it as a hybrid editorial storefront: preserve the current store architecture, cart, checkout, account, and admin flows while layering institutional pages, cultural programming, and author-driven content on top instead of replacing commerce with a brochure site.
