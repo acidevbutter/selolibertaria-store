@@ -1855,6 +1855,17 @@ Conectar melhor narrativa e conversão.
 
 O redesign não deve transformar a loja em um site de festival sem compra clara, nem transformar o selo em um e-commerce frio sem contexto cultural.
 
+## Diretriz ativa de redesign
+
+O redesign em andamento segue a direção `Editorial V2` como interpretação clara de `Editorial Noturno`.
+
+- preservar todas as funcionalidades, rotas, menus e links atuais;
+- reconstruir a UI com componentes reutilizáveis e sem copiar código absoluto do Figma;
+- priorizar Home, catálogo, PDP, `sarau-safado` e admin de produtos;
+- usar fundo papel `#F7F4EF`, preto `#0B0B0B`, vinho seco `#7A1E22` e bege envelhecido `#D8D0C4`;
+- reforçar tipografia editorial, capas grandes e whitespace forte;
+- manter responsividade completa em mobile e desktop.
+
 ## Riscos e decisões importantes
 
 ### 1. Hardcode excessivo

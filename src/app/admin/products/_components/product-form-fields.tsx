@@ -21,7 +21,12 @@ export function Field({
 }) {
 	return (
 		<div className="space-y-2">
-			<Label htmlFor={name}>{label}</Label>
+			<Label
+				htmlFor={name}
+				className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+			>
+				{label}
+			</Label>
 			{children}
 			{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 		</div>
@@ -46,14 +51,14 @@ export function Textarea({
 			defaultValue={defaultValue}
 			rows={rows}
 			placeholder={placeholder}
-			className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+			className="flex min-h-24 w-full border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 		/>
 	);
 }
 
 export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boolean }) {
 	return (
-		<div className="space-y-3 rounded-lg border p-4">
+		<div className="space-y-3 border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)] p-5">
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium">Availability</h3>
 				<p className="text-xs text-muted-foreground">
@@ -61,7 +66,7 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 				</p>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2">
-				<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
+				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
 					<input type="radio" name="active" value="true" defaultChecked={defaultChecked} className="mt-0.5" />
 					<span className="space-y-1">
 						<span className="block font-medium">Active</span>
@@ -70,7 +75,7 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 						</span>
 					</span>
 				</label>
-				<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
+				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
 					<input
 						type="radio"
 						name="active"
@@ -100,10 +105,12 @@ export function FormSection({
 	children: ReactNode;
 }) {
 	return (
-		<section className="space-y-4 rounded-lg border p-5">
+		<section className="space-y-4 border border-[color:var(--editorial-border)] bg-[color:rgba(255,251,245,0.74)] p-5">
 			<div className="space-y-1">
-				<h2 className="text-base font-semibold">{title}</h2>
-				{description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+				<h2 className="editorial-serif text-2xl font-semibold">{title}</h2>
+				{description ? (
+					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">{description}</p>
+				) : null}
 			</div>
 			{children}
 		</section>

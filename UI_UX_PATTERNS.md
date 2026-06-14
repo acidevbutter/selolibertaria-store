@@ -138,6 +138,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Home do Selo Libertária
 
 - A home do rebrand deve seguir a trilha `Editorial Noturno`.
+- Em redesigns aprovados como `Editorial V2`, aplicar a versão clara dessa linguagem: fundo papel `#F7F4EF`, texto `#0B0B0B`, acento vinho `#7A1E22`, apoio bege `#D8D0C4`, ritmo de revista e hero com respiro mais amplo.
 - A primeira dobra precisa unir posicionamento e ação comercial no mesmo quadro.
 - O título principal da home deve comunicar explicitamente literatura, livraria-editora ou proposta cultural adulta; evitar hero genérico de lifestyle.
 - A CTA primária da home deve levar para livros ou loja.
@@ -164,6 +165,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Listagem de produtos
 
 - Grade responsiva `1 -> 2 -> 3` colunas.
+- Em `Editorial V2`, a imagem/capa deve ganhar quadro mais alto e mais área útil do que no card comercial genérico, preservando cantos externos retos e quick actions discretas sobre a mídia.
 - Antes da grade, a listagem pode usar um bloco curto de leitura editorial para enquadrar o catálogo e quebrar a sensação de página puramente utilitária.
 - Card de produto usa imagem quadrada com fundo neutro, borda suave, cantos retos e hover sutil na mídia.
 - Todos os cards da listagem devem manter o mesmo formato e a mesma altura visual; nome, preço e área de variantes precisam reservar espaço consistente, e a imagem do produto é que deve se adaptar ao quadro.

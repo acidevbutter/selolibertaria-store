@@ -23,12 +23,12 @@ export const NavMenu = async () => {
 	return (
 		<>
 			<div className="hidden lg:block">
-				<ul className="flex flex-row items-center justify-center gap-x-0.5">
+				<ul className="flex flex-row items-center justify-end gap-x-5">
 					{desktopLinks.map((link) => (
 						<li key={link.href}>
 							<YnsLink
 								href={link.href}
-								className="nav-link group inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-2.5 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-hidden xl:px-3"
+								className="nav-link group inline-flex h-9 w-max items-center justify-center bg-transparent py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)] focus:text-[color:var(--editorial-ink)] focus:outline-hidden"
 							>
 								{link.label}
 							</YnsLink>
@@ -38,17 +38,25 @@ export const NavMenu = async () => {
 			</div>
 			<div className="flex items-center lg:hidden">
 				<NavMobileMenu>
-					<ul className="flex flex-col items-stretch justify-center gap-x-1 pb-8 text-2xl">
+					<ul className="flex flex-col items-stretch justify-center gap-2 pb-8 text-2xl">
 						{mobileLinks.map((link) => (
 							<li key={link.href}>
 								<YnsLink
 									href={link.href}
-									className="nav-link display-font group inline-flex h-9 w-full items-center justify-center rounded-md bg-transparent px-4 py-2 font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-hidden text-2xl"
+									className="nav-link group inline-flex w-full items-center justify-start border-b border-[color:var(--editorial-border)] px-0 py-3 text-xl font-black uppercase tracking-[0.08em] text-[color:var(--editorial-ink)] transition-colors hover:text-[color:var(--editorial-accent)] focus:text-[color:var(--editorial-accent)] focus:outline-hidden"
 								>
 									{link.label}
 								</YnsLink>
 							</li>
 						))}
+						<li className="pt-3">
+							<YnsLink
+								href={PUBLIC_NAVIGATION.shop}
+								className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+							>
+								Comprar
+							</YnsLink>
+						</li>
 					</ul>
 				</NavMobileMenu>
 			</div>

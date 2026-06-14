@@ -10,6 +10,7 @@
 ## Rebrand Selo Libertária
 
 - A experiência deve comunicar, já na primeira dobra, que se trata de uma livraria para adultos com proposta literária e cultural.
+- No redesign `Editorial V2`, a experiência deve parecer mais curada e calma: menos ruído visual, mais hierarquia tipográfica, capas maiores e blocos com leitura em cadência de revista, sem esconder compra, busca, favoritos, carrinho ou admin.
 - O calor da marca deve vir de curadoria, atmosfera, tipografia, imagem e ritmo, não de apelos gráficos óbvios.
 - A pessoa usuária deve sentir ao mesmo tempo desejo de explorar e confiança para comprar.
 - Conteúdo editorial, autora, livros, eventos e Sarau Safado precisam coexistir como partes do mesmo universo, e não como áreas desconectadas.

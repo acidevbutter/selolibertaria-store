@@ -19,8 +19,9 @@ import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listProductAuditEntries } from "@/lib/product-audit";
 import { listSystemCategories } from "@/lib/product-categories";
+import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	const orderOptions = Array.from({ length: orderCount }, (_, index) => index + 1);
 
 	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 			<div className="space-y-3">
 				<Link
 					href="/admin/products"
@@ -54,8 +55,9 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				</Link>
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<h1 className="text-2xl font-semibold">{group.name}</h1>
-						<p className="font-mono text-xs text-muted-foreground">{group.slug}</p>
+						<EditorialEyebrow>Product editor</EditorialEyebrow>
+						<h1 className="editorial-serif text-3xl font-semibold">{group.name}</h1>
+						<p className="font-mono text-xs text-[color:var(--editorial-muted)]">{group.slug}</p>
 					</div>
 					<Badge variant={group.active ? "secondary" : "outline"}>
 						{group.active ? "Active" : "Inactive"}
@@ -63,7 +65,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				</div>
 			</div>
 
-			<Card>
+			<EditorialPanel>
 				<CardHeader>
 					<CardTitle>Product settings</CardTitle>
 				</CardHeader>
@@ -91,7 +93,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 						<SubmitButton>Save group</SubmitButton>
 					</form>
 				</CardContent>
-			</Card>
+			</EditorialPanel>
 
 			<AdminVariantsPanel
 				group={group}
@@ -100,7 +102,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				archiveStripeVariantAction={archiveStripeVariantAction}
 			/>
 
-			<Card>
+			<EditorialPanel>
 				<CardHeader>
 					<CardTitle>Edit history</CardTitle>
 				</CardHeader>
@@ -129,7 +131,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 						) : null}
 					</ul>
 				</CardContent>
-			</Card>
+			</EditorialPanel>
 		</main>
 	);
 }

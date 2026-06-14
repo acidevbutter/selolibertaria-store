@@ -4,6 +4,7 @@ import { canBuyOnStorefront } from "@/lib/authz";
 import type { Product } from "@/lib/commerce-types";
 import { buildFavoriteKey, listFavoriteKeysForUser } from "@/lib/favorites";
 import { deslugify, formatMoney } from "@/lib/utils";
+import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { JsonLd, mappedProductsToJsonLd } from "@/ui/json-ld";
 import { ProductCard } from "@/ui/products/product-card.client";
 
@@ -15,22 +16,22 @@ export const ProductList = async ({ products }: { products: Product[] }) => {
 	return (
 		<>
 			<section className="space-y-6">
-				<div className="grid gap-5 border border-border/60 bg-background/70 p-6 sm:grid-cols-3">
+				<EditorialPanel className="grid gap-5 sm:grid-cols-3">
 					<div>
-						<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Seleção</p>
+						<EditorialEyebrow>Seleção</EditorialEyebrow>
 						<p className="editorial-serif mt-3 text-2xl font-semibold sm:text-3xl">
 							Capas, edições e presença autoral.
 						</p>
 					</div>
-					<p className="text-sm leading-7 text-muted-foreground">
+					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
 						A vitrine privilegia leitura rápida, capa em destaque e acesso direto à compra.
 					</p>
-					<p className="text-sm leading-7 text-muted-foreground">
+					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
 						Quando houver variantes, a escolha já acontece na grade para manter o fluxo leve.
 					</p>
-				</div>
+				</EditorialPanel>
 
-				<ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+				<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{products.map((product, idx) => {
 						const defaultVariant = product.variants?.[0];
 						const preferredVariant =

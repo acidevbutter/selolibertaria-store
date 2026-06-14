@@ -95,7 +95,7 @@ export function ProductCard({
 	};
 
 	return (
-		<article className="group relative flex h-full flex-col overflow-hidden border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(247,243,238,0.98))] p-1.5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-red-500/30 hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)] focus-within:-translate-y-0.5 focus-within:border-red-500/30 focus-within:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.65)] dark:bg-[linear-gradient(180deg,rgba(24,19,18,0.98),rgba(15,12,12,1))]">
+		<article className="group relative flex h-full flex-col overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-surface)] p-2 shadow-[0_22px_80px_-58px_rgba(11,11,11,0.45)] transition duration-300 hover:-translate-y-1 hover:border-[color:rgba(122,30,34,0.34)] hover:shadow-[0_34px_100px_-60px_rgba(11,11,11,0.62)] focus-within:-translate-y-1 focus-within:border-[color:rgba(122,30,34,0.34)] focus-within:shadow-[0_34px_100px_-60px_rgba(11,11,11,0.62)]">
 			<div className="absolute right-5 top-5 z-20">
 				<FavoriteToggle
 					productSlug={productSlug}
@@ -105,14 +105,14 @@ export function ProductCard({
 				/>
 			</div>
 
-			<div className="relative overflow-hidden bg-muted">
+			<div className="relative overflow-hidden bg-[color:rgba(216,208,196,0.28)]">
 				<YnsLink href={href} className="block">
 					{imageUrl ? (
 						<>
 							<div className="absolute inset-0 z-10 bg-linear-to-t from-black/60 via-black/10 to-transparent opacity-0 transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100" />
-							<div className="aspect-square w-full overflow-hidden bg-background">
+							<div className="aspect-[0.9] w-full overflow-hidden bg-[color:rgba(247,244,239,0.72)]">
 								<Image
-									className="h-full w-full object-contain object-center p-3 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-80 group-focus-within:scale-[1.04] group-focus-within:opacity-80"
+									className="h-full w-full object-contain object-center p-4 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-82 group-focus-within:scale-[1.03] group-focus-within:opacity-82 sm:p-6"
 									src={imageUrl}
 									width={768}
 									height={768}
@@ -181,27 +181,27 @@ export function ProductCard({
 				) : null}
 			</div>
 
-			<div className="flex flex-1 flex-col justify-between gap-2 px-1 pb-1.5 pt-3">
+			<div className="flex flex-1 flex-col justify-between gap-3 px-2 pb-2 pt-4">
 				<div className="space-y-1">
 					<YnsLink href={href} className="block">
-						<h2 className="editorial-serif line-clamp-2 min-h-[3.5rem] text-[1.45rem] leading-[1.05] font-semibold tracking-tight text-card-foreground transition-colors group-hover:text-red-600 group-focus-within:text-red-600">
+						<h2 className="editorial-serif line-clamp-2 min-h-[3.8rem] text-[1.6rem] leading-[0.98] font-semibold tracking-[-0.04em] text-[color:var(--editorial-ink)] transition-colors group-hover:text-[color:var(--editorial-accent)] group-focus-within:text-[color:var(--editorial-accent)]">
 							{name}
 						</h2>
 					</YnsLink>
-					<p className="line-clamp-2 min-h-[2.75rem] text-sm leading-6 text-muted-foreground">
+					<p className="line-clamp-2 min-h-[3rem] text-sm leading-6 text-[color:var(--editorial-muted)]">
 						{productInfo.summary ??
 							"Uma edição do catálogo do Selo Libertária pensada para leitura, presença e continuidade cultural."}
 					</p>
 					<div className="min-h-[3.75rem] space-y-0.5 text-card-foreground">
-						<p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+						<p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]">
 							{seloT("product.selectedEdition")}
 						</p>
-						<p className="price-font text-base">{resolvedPriceLabel}</p>
+						<p className="price-font text-base text-[color:var(--editorial-ink)]">{resolvedPriceLabel}</p>
 						{resolvedCompareAtLabel ? (
 							<p className="text-sm text-muted-foreground line-through">{resolvedCompareAtLabel}</p>
 						) : null}
 						{resolvedPromotionLabel ? (
-							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-600">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 								{resolvedPromotionLabel}
 							</p>
 						) : null}

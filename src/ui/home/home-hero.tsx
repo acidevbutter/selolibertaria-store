@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
 import { seloHomeHero } from "@/lib/selolibertaria-content";
+import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeHero({ content }: { content?: EditorialHomePage["hero"] | null }) {
@@ -9,77 +10,72 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 	const hero = content ?? null;
 
 	return (
-		<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.52),transparent_36%),radial-gradient(circle_at_85%_15%,rgba(239,68,68,0.3),transparent_28%),linear-gradient(180deg,#220607_0%,#050203_100%)] text-primary-foreground shadow-[0_34px_120px_-48px_rgba(0,0,0,0.9)]">
-			<div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 py-8 sm:px-10 sm:py-10 lg:grid-cols-[1.08fr_0.92fr] lg:px-12 lg:py-14">
+		<section className="overflow-hidden bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]">
+			<EditorialShell className="grid grid-cols-1 gap-10 py-8 sm:py-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:py-14">
 				<div className="flex max-w-2xl flex-col justify-center space-y-6 lg:space-y-8">
-					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/60 sm:text-sm">
+					<EditorialEyebrow className="sm:text-sm">
 						{hero?.eyebrow || t("home.hero.eyebrow")}
-					</p>
-					<h1 className="editorial-serif max-w-3xl text-balance text-5xl leading-[0.92] font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+					</EditorialEyebrow>
+					<h1 className="max-w-4xl text-balance text-[3.2rem] leading-[0.9] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] uppercase sm:text-[4.5rem] lg:text-[5.6rem]">
 						{hero?.title || t("home.hero.title")}
 					</h1>
-					<p className="max-w-xl text-pretty text-base leading-8 text-primary-foreground/78 sm:text-lg">
+					<p className="max-w-xl text-pretty text-base leading-8 text-[color:var(--editorial-muted)] sm:text-lg">
 						{hero?.description || t("home.hero.description")}
 					</p>
 					<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 						<YnsLink
 							href={hero?.primaryCtaHref || seloHomeHero.primaryCta.href}
-							className="inline-flex h-12 items-center justify-center rounded-full bg-red-600 px-6 text-sm font-medium text-black transition-colors hover:bg-red-500"
+							className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-6 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
 						>
 							{hero?.primaryCtaLabel || t("home.hero.primaryCta")}
 						</YnsLink>
 						<YnsLink
 							href={hero?.secondaryCtaHref || seloHomeHero.secondaryCta.href}
-							className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/10"
+							className="inline-flex h-12 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:var(--editorial-beige)]"
 						>
 							{hero?.secondaryCtaLabel || t("home.hero.secondaryCta")}
 						</YnsLink>
 					</div>
-					<p className="text-sm leading-7 text-primary-foreground/56">
+					<p className="max-w-lg border-t border-[color:var(--editorial-border)] pt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
 						{hero?.supportingLine || t("home.hero.supportingLine")}
 					</p>
 				</div>
 
-				<div className="grid gap-4 lg:gap-5">
-					<div className="rounded-[2rem] border border-white/10 bg-black/30 p-6 backdrop-blur-sm">
-						<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/50 sm:text-sm">
-							{hero?.featureEyebrow || t("home.hero.featureEyebrow")}
-						</p>
-						<p className="editorial-serif mt-4 text-2xl leading-tight font-semibold sm:text-[2rem]">
-							{hero?.featureTitle || t("home.hero.featureTitle")}
-						</p>
-						<p className="mt-4 max-w-md text-sm leading-7 text-primary-foreground/72">
-							{hero?.featureBody || t("home.hero.featureBody")}
-						</p>
+				<div className="grid gap-5 lg:grid-cols-[0.68fr_0.32fr]">
+					<div className="relative overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)]">
+						<Image
+							src={hero?.featureImage?.src || seloHomeHero.featureImage.src}
+							alt={hero?.featureImage?.alt || seloHomeHero.featureImage.alt}
+							width={720}
+							height={840}
+							priority
+							className="h-full min-h-[420px] w-full object-cover object-center"
+							sizes="(max-width: 1024px) 100vw, 620px"
+						/>
 					</div>
-
-					<div className="grid gap-4 md:grid-cols-[0.7fr_0.3fr]">
-						<div className="relative overflow-hidden border border-white/10 bg-[#120d0d]">
-							<div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
-							<Image
-								src={hero?.featureImage?.src || seloHomeHero.featureImage.src}
-								alt={hero?.featureImage?.alt || seloHomeHero.featureImage.alt}
-								width={720}
-								height={840}
-								priority
-								className="h-full min-h-[320px] w-full object-cover object-center"
-								sizes="(max-width: 1024px) 100vw, 620px"
-							/>
-						</div>
-						<div className="flex min-h-[320px] flex-col justify-between border border-white/10 bg-[linear-gradient(180deg,rgba(127,29,29,0.88),rgba(17,3,3,0.96))] p-5 text-primary-foreground/78">
-							<div className="space-y-3">
-								<div className="h-px w-12 bg-red-500" />
-								<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/46">
-									{t("home.hero.nightEdit")}
-								</p>
-							</div>
-							<p className="editorial-serif text-xl leading-tight font-medium sm:text-2xl">
+					<div className="flex flex-col gap-5">
+						<EditorialPanel className="bg-[color:var(--editorial-beige)]">
+							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-accent)] sm:text-sm">
+								{hero?.featureEyebrow || t("home.hero.featureEyebrow")}
+							</p>
+							<p className="mt-4 text-3xl font-black leading-[0.92] tracking-[-0.05em] uppercase">
+								{hero?.featureTitle || t("home.hero.featureTitle")}
+							</p>
+							<p className="mt-4 max-w-md text-sm leading-7 text-[color:var(--editorial-muted)]">
+								{hero?.featureBody || t("home.hero.featureBody")}
+							</p>
+						</EditorialPanel>
+						<div className="border-l-[10px] border-[color:var(--editorial-accent)] pl-5">
+							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
+								{t("home.hero.nightEdit")}
+							</p>
+							<p className="mt-4 text-xl leading-tight font-medium sm:text-2xl">
 								{hero?.featureQuote || t("home.hero.featureQuote")}
 							</p>
 						</div>
 					</div>
 				</div>
-			</div>
+			</EditorialShell>
 		</section>
 	);
 }

@@ -14,7 +14,8 @@ import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listSystemCategories } from "@/lib/product-categories";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function NewAdminProductPage() {
 	const orderOptions = Array.from({ length: groups.length + 1 }, (_, index) => index + 1);
 
 	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 			<div className="space-y-3">
 				<Link
 					href="/admin/products"
@@ -36,15 +37,16 @@ export default async function NewAdminProductPage() {
 					Products
 				</Link>
 				<div>
-					<h1 className="text-2xl font-semibold">New product</h1>
-					<p className="text-sm text-muted-foreground">
+					<EditorialEyebrow>Product editor</EditorialEyebrow>
+					<h1 className="editorial-serif text-3xl font-semibold">New product</h1>
+					<p className="max-w-2xl text-sm leading-7 text-[color:var(--editorial-muted)]">
 						Create a product group, define its first variant and publish it with clearer availability
 						controls.
 					</p>
 				</div>
 			</div>
 
-			<Card>
+			<EditorialPanel>
 				<CardHeader>
 					<CardTitle>Create product</CardTitle>
 				</CardHeader>
@@ -72,7 +74,7 @@ export default async function NewAdminProductPage() {
 						<SubmitButton>Create product</SubmitButton>
 					</form>
 				</CardContent>
-			</Card>
+			</EditorialPanel>
 		</main>
 	);
 }

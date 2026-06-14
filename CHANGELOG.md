@@ -37,6 +37,8 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.
+- Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.
 - A base da loja foi desmarcada para um estado genérico e reaproveitável, removendo referências da identidade anterior em documentação, metadata, textos institucionais, exemplos de email, identificadores técnicos visíveis e elementos principais de UI.
 - O histórico de `Order details` no admin agora atualiza logo após salvar fulfillment e trocou a visualização crua em JSON por blocos mais amigáveis de `Before` e `After` para auditoria.
 - O admin de produtos agora organiza criação e edição em seções mais claras, substitui `Active in Stripe` por controles de disponibilidade orientados ao negócio e troca a edição de variantes em abas por uma visão resumida com modais de criação e edição.

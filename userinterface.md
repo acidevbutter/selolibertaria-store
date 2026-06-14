@@ -10,6 +10,7 @@
 ## Direção visual do rebrand Selo Libertária
 
 - A direção preferencial atual é `Editorial Noturno`.
+- A variante em implementação para este redesign é `Editorial V2`, mais clara e tátil: papel `#F7F4EF`, preto `#0B0B0B`, vinho seco `#7A1E22`, bege envelhecido `#D8D0C4`, serifas editoriais, cards com borda reta e mais espaço em branco.
 - Isso pede paleta quente e profunda, contraste alto, composição editorial e sensação adulta.
 - Evitar visual infantil, fofo, pop colorido, excesso de brilho ou referência explícita de sex shop.
 - Tipografia deve combinar uma serifada marcante para títulos com uma sans limpa para navegação, ficha técnica e compra.

@@ -1,60 +1,47 @@
 import { UserIcon } from "lucide-react";
-import Image from "next/image";
 import { CartIcon } from "@/components/cart-icon";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { HomeTopBar } from "@/ui/home/home-top-bar";
 import { NavMenu } from "@/ui/nav/nav-menu";
-import { SearchNav } from "@/ui/nav/search-nav";
 // import ThemeToggle from "@/ui/theme-toggle.client";
 import { YnsLink } from "@/ui/yns-link";
 
 export const Nav = async () => {
 	const session = await auth();
 	return (
-		<header className="sticky top-0 z-50 border-b border-border/60 bg-background/92 backdrop-blur-xs nav-border-reveal">
-			<HomeTopBar />
-			<div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:px-6 lg:px-8">
+		<header className="sticky top-0 z-50 border-b border-[color:var(--editorial-ink)] bg-[color:rgba(247,244,239,0.96)] backdrop-blur-xs">
+			<div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
 				<YnsLink
 					href="/"
-					className="flex min-w-0 shrink-0 items-center gap-3 lg:max-w-[17rem] xl:max-w-[19rem]"
+					className="min-w-0 shrink-0 text-sm font-black uppercase tracking-[0.14em] text-[color:var(--editorial-ink)]"
 				>
-					<Image
-						src="/images/selolibertaria.png"
-						alt={`${seloSiteMeta.name} mark`}
-						width={48}
-						height={48}
-						className="h-12 w-12 object-contain"
-					/>
-					<span className="min-w-0">
-						<span className="editorial-serif block truncate text-lg font-semibold tracking-tight text-foreground">
-							{seloSiteMeta.name}
-						</span>
-						<span className="hidden text-xs text-muted-foreground xl:block">{seloSiteMeta.tagline}</span>
-					</span>
+					{seloSiteMeta.name}
 				</YnsLink>
 
-				<div className="min-w-0 flex-1 lg:flex lg:justify-center">
+				<div className="min-w-0 flex-1 lg:flex lg:justify-end">
 					<NavMenu />
 				</div>
-
-				<div className="ml-auto hidden min-w-0 lg:block lg:w-full lg:max-w-[11rem] xl:max-w-[14rem]">
-					<SearchNav />
-				</div>
-				<div className="ml-auto lg:hidden">
-					<SearchNav />
-				</div>
-				{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
-				<div className="mx-1">{/* <ThemeToggle /> */}</div>
-				{isBackofficeRole(session?.user.role) && (
-					<YnsLink href="/admin" className="mr-1 text-sm font-medium hover:underline">
-						Admin
+				<div className="flex items-center gap-2">
+					{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
+					{isBackofficeRole(session?.user.role) && (
+						<YnsLink href="/admin" className="text-xs font-bold uppercase tracking-[0.14em] hover:underline">
+							Admin
+						</YnsLink>
+					)}
+					<YnsLink
+						href={session ? "/user" : "/login"}
+						className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:var(--editorial-ink)] hover:text-[color:var(--editorial-paper)]"
+					>
+						<UserIcon className="h-4 w-4" />
 					</YnsLink>
-				)}
-				<YnsLink href={session ? "/user" : "/login"}>
-					<UserIcon className="hover:text-red-700" />
-				</YnsLink>
+					<YnsLink
+						href="/products"
+						className="hidden h-10 items-center justify-center bg-[color:var(--editorial-ink)] px-4 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] lg:inline-flex"
+					>
+						Comprar
+					</YnsLink>
+				</div>
 			</div>
 		</header>
 	);

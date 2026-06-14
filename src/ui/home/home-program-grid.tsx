@@ -1,75 +1,39 @@
 import { getTranslations } from "@/i18n/server";
-import { seloEvents, seloProjects } from "@/lib/selolibertaria-content";
+import { seloEvents } from "@/lib/selolibertaria-content";
+import { EditorialEyebrow } from "@/ui/editorial/editorial-primitives";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeProgramGrid() {
 	const t = await getTranslations("Selo");
-	const featuredEvents = seloEvents.slice(0, 3);
-	const featuredProjects = seloProjects.slice(0, 3);
+	const featuredEvent = seloEvents[0];
 
 	return (
-		<section className="grid gap-6 lg:grid-cols-2">
-			<article className="border border-border/60 bg-card/70 p-6 sm:p-8">
-				<div className="space-y-2">
-					<p className="text-xs uppercase tracking-[0.3em] text-muted-foreground sm:text-sm">
-						{t("home.agenda.eyebrow")}
-					</p>
-					<h2 className="max-w-xl text-balance text-3xl font-semibold tracking-tight">
-						{t("home.agenda.title")}
+		<section className="border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)] p-8 sm:p-10">
+			<div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+				<div className="space-y-5">
+					<EditorialEyebrow>Projetos / eventos</EditorialEyebrow>
+					<h2 className="text-5xl leading-[0.9] font-black uppercase tracking-[-0.06em] sm:text-6xl">
+						Sarau
+						<br />
+						Safado
 					</h2>
-				</div>
-
-				<ul className="mt-8 space-y-4">
-					{featuredEvents.map((event) => (
-						<li key={event.slug} className="border-t border-border/50 pt-4 first:border-t-0 first:pt-0">
-							<div className="space-y-2">
-								<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-									{event.period} · {event.location}
-								</p>
-								<h3 className="text-xl font-medium tracking-tight">{event.title}</h3>
-								<p className="text-sm leading-7 text-muted-foreground">{event.summary}</p>
-								<YnsLink
-									href="/events"
-									className="inline-flex text-sm font-medium underline underline-offset-4"
-								>
-									{t("home.agenda.link")}
-								</YnsLink>
-							</div>
-						</li>
-					))}
-				</ul>
-			</article>
-
-			<article className="border border-border/60 bg-card/70 p-6 sm:p-8">
-				<div className="space-y-2">
-					<p className="text-xs uppercase tracking-[0.3em] text-muted-foreground sm:text-sm">
-						{t("home.projects.eyebrow")}
+					<p className="max-w-xl text-base leading-8 text-[color:var(--editorial-muted)]">
+						{featuredEvent?.summary ??
+							"Poesia, performance, corpo e encontro. A página de eventos deve ter agenda simples, memória visual e formulário de interesse."}
 					</p>
-					<h2 className="max-w-xl text-balance text-3xl font-semibold tracking-tight">
-						{t("home.projects.title")}
-					</h2>
+					<YnsLink
+						href="/events"
+						className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+					>
+						{t("home.agenda.link")}
+					</YnsLink>
 				</div>
-
-				<ul className="mt-8 space-y-4">
-					{featuredProjects.map((project) => (
-						<li key={project.slug} className="border-t border-border/50 pt-4 first:border-t-0 first:pt-0">
-							<div className="space-y-2">
-								<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-									{project.period} · {project.location}
-								</p>
-								<h3 className="text-xl font-medium tracking-tight">{project.title}</h3>
-								<p className="text-sm leading-7 text-muted-foreground">{project.summary}</p>
-								<YnsLink
-									href="/projects"
-									className="inline-flex text-sm font-medium underline underline-offset-4"
-								>
-									{t("home.projects.link")}
-								</YnsLink>
-							</div>
-						</li>
-					))}
-				</ul>
-			</article>
+				<div className="flex min-h-[280px] items-center justify-center bg-[color:var(--editorial-ink)] p-8 text-[color:var(--editorial-paper)]">
+					<p className="max-w-[240px] text-3xl leading-[1.05] font-bold uppercase tracking-[-0.04em]">
+						Foto / video / cartaz do evento
+					</p>
+				</div>
+			</div>
 		</section>
 	);
 }
