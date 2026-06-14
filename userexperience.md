@@ -3,6 +3,7 @@
 ## Fonte canônica
 
 - O documento principal de experiência continua sendo `UI_UX_PATTERNS.md`.
+- O inventário funcional que deve orientar briefings de UI/UX fica em `spec.md`.
 - Este arquivo destaca intenções de uso e comportamento para mudanças rápidas em UI/UX.
 - A experiência atual deve transmitir uma loja-base confiável e reutilizável, sem depender de narrativa ou identidade herdada.
 

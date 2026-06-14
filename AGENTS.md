@@ -52,6 +52,9 @@ yarn docker:run             # Run Docker container
 ## AI Patterns
 
 - Prefer Yarn Classic (`yarn@1.22.22`) for dependency management and scripts.
+- When a workflow needs local productivity context and no native connector is available, prefer small AppleScript-backed helpers in `scripts/` plus a concise repo note such as `MAC_AUTOMATIONS.md`; they must degrade gracefully when macOS Calendar or Reminders permissions are unavailable.
+- For personal automation flows that coordinate multiple repositories, keep the source of truth in a parent-level `projects.json`, read it through a repo script instead of hardcoding one project path, and rank active work by deadline pressure plus explicit priority before generating daily briefs or focus blocks.
+- Quando a tarefa pedir um briefing de UI/UX ou uma descrição funcional ampla do produto, consolidar o inventário de funcionalidades em `spec.md` e manter `UI_UX_PATTERNS.md`, `userinterface.md` e `userexperience.md` alinhados com esse retrato.
 - Ao estreitar coleções derivadas de `FormData` com type predicates, preserve exatamente as uniões opcionais e anuláveis do objeto de entrada, ou normalize os valores antes do `filter`, para manter o `yarn build` e a checagem de TypeScript consistentes localmente e na Vercel.
 - Treat the repository as a reusable storefront starter: keep brand copy, visuals, icons, contact data, and metadata generic unless a task explicitly introduces a new store identity.
 - The default placeholder brand is `Storefront`; prefer neutral descriptions, neutral assets, and replaceable examples over niche editorial narratives.

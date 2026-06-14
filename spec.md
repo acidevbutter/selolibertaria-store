@@ -26,6 +26,19 @@ O resultado desejado não é trocar a loja por um site institucional, e sim tran
 - padrões atuais de interface e experiência: [UI_UX_PATTERNS.md](./UI_UX_PATTERNS.md)
 - resumo rápido de UI: [userinterface.md](./userinterface.md)
 - resumo rápido de UX: [userexperience.md](./userexperience.md)
+- automações locais de produtividade: [MAC_AUTOMATIONS.md](./MAC_AUTOMATIONS.md)
+
+## Automação pessoal de apoio
+
+Além do produto principal, este repositório também mantém pequenos utilitários locais para briefing operacional no macOS.
+
+Esse fluxo deve seguir estes princípios:
+
+- usar o calendário e os lembretes locais como contexto auxiliar;
+- centralizar projetos ativos externos em um `projects.json` localizado na pasta-mãe de projetos;
+- classificar urgência por `deadline`, `priority` e `status`;
+- sugerir blocos de foco sem acoplar a automação a um único repositório;
+- degradar com segurança quando permissões locais do macOS não estiverem disponíveis.
 
 ## Princípio central
 
@@ -123,6 +136,86 @@ A direção mais alinhada ao Selo Libertária neste momento é `Editorial Noturn
 - espaço para livros, eventos, autora e Sarau Safado coexistirem no mesmo sistema.
 
 ## Escopo funcional
+
+## Inventário funcional para briefing de UI/UX
+
+Este produto é uma plataforma híbrida que combina e-commerce, conteúdo editorial e backoffice operacional. Para trabalho de UI/UX, o GPT deve tratar o site como um ecossistema com quatro camadas principais.
+
+### 1. Storefront pública
+
+- Home com posicionamento editorial, vitrine de catálogo, blocos institucionais e CTAs para compra e descoberta cultural.
+- Catálogo de produtos com listagem por grade, microcopy curatorial, preço promocional, seleção de variantes no card, ação rápida de adicionar ao carrinho e favoritar.
+- Busca de produtos.
+- Navegação por categorias.
+- Página de produto com galeria de imagens, zoom, variantes, preço base e promocional, favorito e compra.
+- Carrinho lateral com edição de quantidade, remoção de itens, resumo financeiro, cupons e atualização imediata de totais.
+- Checkout transparente com Stripe Elements/Payment Element dentro do próprio site.
+- Escolha de entrega no checkout: usar endereço salvo, informar novo endereço ou retirar na loja.
+- Cotação de frete com múltiplos provedores via camada interna de shipping.
+- Tela de processamento pós-pagamento com estados intermediários e redirecionamento automático para pedidos.
+- Área de pedidos do cliente.
+- Conta do usuário com edição de perfil, endereço, preferências, moeda e consentimento de marketing.
+- Gestão de métodos de pagamento salvos.
+- Favoritos persistidos fora do carrinho.
+- Login, cadastro, recuperação e redefinição de senha.
+- Login social via OAuth com provedores configuráveis.
+- Resolução de idioma e moeda por sessão, preferências da conta e contexto regional.
+
+### 2. Camada editorial pública
+
+- Página `About` institucional.
+- Página `Contact`.
+- Página `Events` para agenda e acervo de eventos.
+- Página `Projects` para portfólio de projetos culturais.
+- Página `Sarau Safado` como superfície editorial dedicada.
+- FAQ, termos e privacidade.
+- Blocos editoriais na home, incluindo hero, manifesto, autora e CTA final.
+- Conteúdo editorial com fallback seguro para mocks enquanto a origem dinâmica em Mongo coexistir.
+- Relação entre conteúdo cultural e catálogo, para que páginas editoriais levem à compra e a loja leve ao universo do selo.
+
+### 3. Backoffice administrativo
+
+- Dashboard administrativo com KPIs de vendas, pagamentos, fulfillment e saúde operacional.
+- Gestão de produtos com criação, edição, variantes, disponibilidade, preço, imagens e categorias.
+- Gestão de categorias sincronizadas com catálogo.
+- Upload administrativo de imagens com fluxo file-picker-first, prévia e persistência por URL.
+- Gestão de pedidos com detalhe operacional, atualização de fulfillment e histórico de auditoria.
+- Gestão de usuários com papéis, bloqueios e dados de conta.
+- Gestão de promoções automáticas e cupons, incluindo regras de elegibilidade, limites e acúmulo.
+- Gestão de conteúdo editorial em hub próprio `/admin/editorial`.
+- Edição administrativa das superfícies `home`, `about`, `contact`, `events`, `projects` e `sarau-safado`.
+- Ordenação simples de coleções editoriais.
+- Configurações gerais do sistema.
+- Configurações regionais, locale e país padrão.
+- Configuração de provedores OAuth com credenciais mascaradas.
+- Configuração de provedores de frete e ordem de fallback.
+- Tela administrativa de webhooks para inspeção de eventos Stripe recebidos.
+- Tela administrativa de emails transacionais com preview, filtros e retentativa manual.
+- Tela de templates de email.
+
+### 4. Serviços e fluxos sistêmicos que impactam UX
+
+- Stripe como fonte de catálogo base, preços base e pagamento.
+- Mongo como camada de conteúdo editorial, promoções, configurações, auditoria, logs e estado complementar.
+- Promoções automáticas no catálogo e cupons exclusivos de carrinho e checkout.
+- Webhooks Stripe como fonte de verdade para confirmação final de pedidos e transições de pagamento.
+- Persistência de snapshots de pedido antes da confirmação do pagamento.
+- Emails transacionais de pedido, confirmação, mudança de status e alertas promocionais.
+- Persistência e auditoria de tentativas de webhook e envio de email.
+- Busca interna de catálogo.
+- Revalidação pública após mudanças administrativas em conteúdo e superfícies operacionais.
+
+### Orientação de UX para o GPT
+
+Ao propor UI/UX para este site, o GPT deve assumir que o produto precisa atender simultaneamente:
+
+- descoberta e desejo de marca;
+- navegação editorial e institucional;
+- conversão de catálogo;
+- checkout confiável;
+- operação diária de backoffice.
+
+O desenho não deve tratar o projeto como loja pura nem como site institucional puro. A solução ideal equilibra narrativa cultural, compra rápida e manutenção administrativa sem atrito.
 
 ## Planejamento técnico para conteúdo editorial editável no admin
 

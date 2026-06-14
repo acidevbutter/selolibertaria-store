@@ -3,6 +3,7 @@
 ## Fonte canônica
 
 - O documento principal de padrões visuais continua sendo `UI_UX_PATTERNS.md`.
+- O inventário funcional que deve orientar briefings de UI/UX fica em `spec.md`.
 - Este arquivo resume decisões de interface que precisam ser consultadas rapidamente durante mudanças de UI.
 - A baseline atual da marca é propositalmente genérica, com placeholder visual neutro e fácil substituição posterior.
 
