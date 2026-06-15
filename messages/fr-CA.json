@@ -31,7 +31,7 @@
 	"Global.deliveryEstimates.month": "{count, plural, =1 {# mois} other {# mois}}",
 	"Global.deliveryEstimates.week": "{count, plural, =1 {# semaine} other {# semaines}}",
 	"Global.actions.shopNow": "Magasinez maintenant",
-	"/.hero.title": "STOREFRONT",
+	"/.hero.title": "DevButterStore",
 	"/.hero.description": "Explorez nos produits soigneusement sélectionnés pour votre maison et votre style de vie.",
 	"/.hero.action": "Magasiner maintenant",
 	"/.hero.link": "/category/accessoires",

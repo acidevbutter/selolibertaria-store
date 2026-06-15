@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-Storefront is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
+DevButterStore is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
 
 ## Development Commands
 

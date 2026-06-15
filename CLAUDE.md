@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Storefront is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It's built with React 19, TypeScript, and uses Yarn Classic with Node.js 24 as the default development stack.
+DevButterStore is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It's built with React 19, TypeScript, and uses Yarn Classic with Node.js 24 as the default development stack.
 
 ## Development Commands
 

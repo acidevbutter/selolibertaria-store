@@ -8,7 +8,7 @@ Consolidar os padrões de interface e experiência atualmente implementados no p
 
 Este documento descreve o estado atual da UI/UX em produção no repositório, com foco em:
 
-- storefront;
+- devbutterstore;
 - autenticação e cadastro;
 - carrinho e checkout;
 - conta do usuário;
@@ -43,14 +43,14 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - `Editorial Noturno` significa: fundos profundos, acentos quentes, composição editorial, contraste alto e erotismo sugerido pela linguagem visual, não por clichês.
 - `Barroco Contemporâneo` e `Urbano Sensual Minimalista` podem servir como variantes de estudo, mas não devem ser misturados sem uma decisão explícita de direção de arte.
 
-### 1. Preservar a storefront por padrão
+### 1. Preservar a DevButterStore por padrão
 
 - Não alterar layout, tipografia, cores, hierarquia visual ou copy pública sem necessidade explícita do requisito.
 - Mudanças técnicas devem reaproveitar a linguagem visual existente em vez de redesenhar a superfície.
 
 ### 1.1. Base visual genérica e rebrandable
 
-- A storefront atual deve funcionar como base genérica para uma futura marca.
+- A DevButterStore atual deve funcionar como base genérica para uma futura marca.
 - Nome, ícone, imagens editoriais, emails, textos institucionais e metadata devem permanecer neutros e facilmente substituíveis.
 - Evitar elementos visuais excessivamente autorais, agressivos ou presos a uma identidade específica sem pedido explícito.
 
@@ -84,7 +84,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Superfícies novas de promoção, favoritos administrativos e preferências de marketing já introduzem mais pt-BR.
 - Ao evoluir uma tela, manter o idioma dominante daquela superfície e evitar blocos mistos dentro do mesmo componente.
 - Ao corrigir localização pública em `pt-BR`, incluir também `aria-label`, placeholders, mensagens transitórias e estados vazios na mesma passada; textos autorais ou operacionais cadastrados pelo admin ficam fora dessa normalização e devem permanecer como conteúdo-fonte.
-- A storefront deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
+- A DevButterStore deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
 - Para QA, suporte e testes de localização, a storefront pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
 - Campos compartilhados com país, moeda, datas e checkout devem espelhar o locale resolvido daquela sessão, sem duplicar layouts ou criar variantes visuais por idioma.
 - Quando a pessoa usuária tiver uma moeda preferida salva, cadastro, perfil, favoritos, carrinho e checkout devem tentar refletir essa moeda de forma consistente; se a Stripe não oferecer aquela moeda no preço correspondente, a interface deve cair de forma silenciosa e coerente para a moeda padrão do produto, sem exibir mensagens técnicas.

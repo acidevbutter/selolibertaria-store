@@ -34,7 +34,7 @@
 - No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
 - Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 
-## Footer da storefront
+## Footer da DevButterStore
 
 - Manter a estrutura atual do footer, com newsletter, navegação auxiliar, copyright e métodos de pagamento.
 - Quando houver assinatura de desenvolvimento, usar lockup inline na faixa inferior com texto, ícone e nome visível da marca.
@@ -59,7 +59,7 @@
 
 ## Cards de produto
 
-- Cards de produto da storefront devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
+- Cards de produto da DevButterStore devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
 - Todos os cards da storefront devem compartilhar o mesmo formato e a mesma altura visual.
 - A imagem do produto deve se adaptar ao quadro fixo do card, sem definir o tamanho externo do componente.
 - O título do produto no card deve ter mais destaque do que o preço-base e permanecer confortável para leitura em duas linhas.
@@ -84,7 +84,7 @@
 
 ## Login do Selo Libertária
 
-- A tela de login deve seguir a linguagem `Editorial V2` do restante da storefront, com header editorial, superfície de papel e protagonista visual ligado a livro/capa.
+- A tela de login deve seguir a linguagem `Editorial V2` do restante da DevButterStore, com header editorial, superfície de papel e protagonista visual ligado a livro/capa.
 - Evitar o padrão de card centralizado isolado sobre fundo neutro; a página inteira deve compor o enquadramento do login.
 - O layout preferencial no desktop é assimétrico em duas colunas: texto e formulário à esquerda, capa/livro em painel escuro à direita.
 - Inputs e botões devem usar cantos retos e bordas discretas, com a CTA principal em preto profundo e trilho social alinhado logo abaixo.

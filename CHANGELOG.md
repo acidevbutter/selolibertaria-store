@@ -13,9 +13,9 @@
 - Planejamento técnico para RBAC de backoffice com bloqueio de compra para perfis internos, papel global de `admin` e introdução futura de `vendor`, documentado em `spec.md`, `AGENTS.md` e guias auxiliares de UI/UX.
 - Gestão administrativa de acesso de usuários, com promoção e rebaixamento de papéis por `admin`, bloqueio e desbloqueio de conta, revogação imediata de sessões e negação de login para contas bloqueadas.
 - Permissões de catálogo ampliadas para `vendor`, com criação e edição de produtos/variantes no admin e histórico auditável de mutações de catálogo por produto.
-- Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
-- Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
-- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
+- Infraestrutura de locale por requisição para DevButterStore com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
+- Configuração administrativa de idioma padrão da DevButterStore em `settings`, integrada às configurações regionais já existentes.
+- Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `devbutterstore_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
 - Preferência de moeda por usuário no cadastro e no perfil, com persistência em `users.preferredCurrency`, cookie de apoio para convidado e catálogo de moedas suportadas (`USD`, `BRL`, `EUR`).
 - Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
@@ -44,7 +44,7 @@
 - O admin de produtos agora organiza criação e edição em seções mais claras, substitui `Active in Stripe` por controles de disponibilidade orientados ao negócio e troca a edição de variantes em abas por uma visão resumida com modais de criação e edição.
 - `/checkout/processing` no longer shows a false validation error after a successful `payment_intent` return when the immediate browser sync fails; success-like return states now stay in processing and defer to the Stripe webhook as source of truth.
 - Webhook and legacy purchase upsert flows now send the transactional `Order received` / processing email before any payment-confirmed email for the same order, preventing inverted customer notifications.
-- O footer da storefront agora exibe o crédito de desenvolvimento da DevButter com link externo e `devbutter.svg`, preservando a linha inferior com copyright e métodos de pagamento.
+- O footer da DevButterStore agora exibe o crédito de desenvolvimento da DevButter com link externo e `devbutter.svg`, preservando a linha inferior com copyright e métodos de pagamento.
 - Formatação de moeda, datas e textos do cliente agora respeita o locale resolvido por navegador/dispositivo com fallback ao idioma padrão configurado pelo admin, sem introduzir prefixos de rota.
 - O proxy global agora também intercepta entradas públicas sem arquivo estático para suportar override de idioma por prefixo de rota sem alterar a estrutura real das páginas.
 - Catálogo, favoritos, carrinho e checkout transparente agora tentam usar `currency_options` da Stripe para refletir a moeda preferida do cliente; quando a moeda desejada não existe em todos os itens necessários, o fluxo volta com segurança para a moeda padrão do catálogo.

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json.schemastore.org/package",
-	"name": "storefront-starter",
+	"name": "selolibertaria",
 	"version": "1.12.0",
 	"license": "AGPL-3.0-only",
 	"private": true,
@@ -17,8 +17,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"prepare": "husky",
-		"docker:build": "docker build -t storefront-starter .",
-		"docker:run": "docker run -d -p 3000:3000 storefront-starter"
+		"docker:build": "docker build -t selolibertaria .",
+		"docker:run": "docker run -d -p 3000:3000 selolibertaria"
 	},
 	"dependencies": {
 		"@next/mdx": "16.2.4",

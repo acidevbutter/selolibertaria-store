@@ -1,4 +1,4 @@
-# Storefront Starter
+# DevButterStore Starter
 
 Base de loja em Next.js 16 com cat&aacute;logo integrado ao Stripe, autentica&ccedil;&atilde;o, &aacute;rea administrativa e suporte a imagens gerenciadas.
 

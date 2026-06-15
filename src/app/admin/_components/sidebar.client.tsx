@@ -24,7 +24,7 @@ export function AdminSidebar({ user }: { user?: SidebarUser }) {
 					<span className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-xs">
 						S
 					</span>
-					<span>Admin - storefront.local</span>
+					<span>Admin - devbutterstore.local</span>
 				</Link>
 			</div>
 			<nav className="p-2 space-y-1">
