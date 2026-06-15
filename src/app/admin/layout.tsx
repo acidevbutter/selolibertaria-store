@@ -26,20 +26,19 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
 	return (
 		<AdminThemeProvider initialTheme={initialTheme}>
-			{/* Ensure admin pages inherit background/foreground for light/dark from the provider */}
-			<div className="min-h-dvh bg-background text-foreground">
-				<div className="mx-auto max-w-full sm:max-w-screen-md lg:max-w-5xl">
+			<div className="min-h-dvh bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]">
+				<div className="max-w-none">
 					<AdminTopbar role={role} />
-					<div className="flex gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8">
+					<div className="flex min-h-dvh items-start">
 						<AdminSidebar user={{ name: session.user.name, email: session.user.email, role }} />
-						<div className="flex-1 py-4 sm:py-6 min-h-screen">
-							<div className="mb-3">
+						<div className="min-h-dvh flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8 xl:px-12">
+							<div className="mb-4">
 								<Link
 									href="/"
-									className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+									className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
 								>
 									<ArrowLeft className="h-4 w-4" />
-									Back to home
+									Voltar ao site
 								</Link>
 							</div>
 							{children}

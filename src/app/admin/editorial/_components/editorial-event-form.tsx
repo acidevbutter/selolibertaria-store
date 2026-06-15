@@ -138,7 +138,7 @@ export function EditorialEventForm({
 								<span className="space-y-1">
 									<span className="block font-medium">Publicado</span>
 									<span className="block text-xs text-muted-foreground">
-										O evento pode aparecer como fonte primária no storefront.
+										O evento pode aparecer como fonte primária no selolibertaria.
 									</span>
 								</span>
 							</label>

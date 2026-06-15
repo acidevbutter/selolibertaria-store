@@ -3,6 +3,7 @@ import { getTranslations } from "@/i18n/server";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloAbout, seloSiteMeta } from "@/lib/selolibertaria-content";
 import { AboutSection } from "@/ui/about-section";
+import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 
@@ -21,16 +22,16 @@ export default async function AboutPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-				<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
+			<EditorialShell className="flex flex-1 flex-col gap-8 py-8">
+				<section className="overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] px-6 py-10 sm:px-10 sm:py-14">
 					<div className="max-w-4xl space-y-5">
-						<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
+						<EditorialEyebrow className="sm:text-sm">
 							{about.hero?.eyebrow || t("about.heroEyebrow")}
-						</p>
-						<h1 className="editorial-serif max-w-3xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
+						</EditorialEyebrow>
+						<h1 className="max-w-3xl text-balance text-5xl leading-[0.92] font-black uppercase tracking-[-0.06em] sm:text-6xl">
 							{about.hero?.title || t("about.heroTitle")}
 						</h1>
-						<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
+						<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)] sm:text-lg">
 							{about.hero?.body || t("about.heroBody")}
 						</p>
 					</div>
@@ -47,7 +48,7 @@ export default async function AboutPage() {
 				/>
 
 				<section className="grid gap-6 lg:grid-cols-3">
-					<article className="border border-border/60 bg-card/60 p-6">
+					<EditorialPanel className="p-6">
 						<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
 							{cards[0]?.eyebrow || t("about.publishingEyebrow")}
 						</p>
@@ -57,8 +58,8 @@ export default async function AboutPage() {
 						<p className="mt-3 text-sm leading-7 text-muted-foreground">
 							{cards[0]?.body || t("about.publishingBody")}
 						</p>
-					</article>
-					<article className="border border-border/60 bg-card/60 p-6">
+					</EditorialPanel>
+					<EditorialPanel className="p-6">
 						<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
 							{cards[1]?.eyebrow || t("about.programmingEyebrow")}
 						</p>
@@ -68,8 +69,8 @@ export default async function AboutPage() {
 						<p className="mt-3 text-sm leading-7 text-muted-foreground">
 							{cards[1]?.body || t("about.programmingBody")}
 						</p>
-					</article>
-					<article className="border border-border/60 bg-card/60 p-6">
+					</EditorialPanel>
+					<EditorialPanel className="p-6">
 						<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
 							{cards[2]?.eyebrow || t("about.directionEyebrow")}
 						</p>
@@ -79,31 +80,31 @@ export default async function AboutPage() {
 						<p className="mt-3 text-sm leading-7 text-muted-foreground">
 							{cards[2]?.body || t("about.directionBody")}
 						</p>
-					</article>
+					</EditorialPanel>
 				</section>
 
 				<section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-					<article className="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.38),transparent_42%),linear-gradient(180deg,#220607_0%,#050203_100%)] p-6 text-primary-foreground">
-						<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/48">
+					<article className="border-l-[12px] border-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)] p-6">
+						<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
 							{about.closing?.eyebrow || t("about.whyEyebrow")}
 						</p>
-						<h2 className="editorial-serif mt-3 text-3xl font-semibold tracking-tight">
+						<h2 className="mt-3 text-3xl font-black uppercase tracking-tight">
 							{about.closing?.title || t("about.whyTitle")}
 						</h2>
-						<p className="mt-4 max-w-2xl text-sm leading-8 text-primary-foreground/72">
+						<p className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)]">
 							{about.closing?.body || t("about.whyBody")}
 						</p>
 					</article>
-					<article className="border border-border/60 bg-card/60 p-6">
+					<EditorialPanel className="p-6 bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
 						<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
 							{about.closing?.coreEyebrow || t("about.coreEyebrow")}
 						</p>
-						<p className="editorial-serif mt-3 text-2xl leading-tight font-medium">
+						<p className="mt-3 text-2xl leading-tight font-black uppercase">
 							{about.closing?.coreTitle || t("about.coreTitle")}
 						</p>
-					</article>
+					</EditorialPanel>
 				</section>
-			</main>
+			</EditorialShell>
 			<Footer />
 		</div>
 	);

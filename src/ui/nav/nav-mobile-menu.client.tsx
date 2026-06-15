@@ -18,12 +18,13 @@ export const NavMobileMenu = ({ children }: { children: ReactNode }) => {
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
 			<DrawerTrigger>
-				{/* hamburger menu icon: make it turn project red on hover */}
-				<MenuIcon className="hover:text-red-700" />
+				<MenuIcon className="h-5 w-5 text-[color:var(--editorial-ink)]" />
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>
-					<DrawerTitle className="display-font text-center text-md">{t("title")}</DrawerTitle>
+					<DrawerTitle className="text-left text-sm font-black uppercase tracking-[0.18em]">
+						{t("title")}
+					</DrawerTitle>
 					<DrawerDescription className="sr-only">{t("description")}</DrawerDescription>
 				</DrawerHeader>
 				<div

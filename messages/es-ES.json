@@ -44,7 +44,7 @@
 	"Global.deliveryEstimates.week": "{count, plural, =1 {# semana} other {# semanas}}",
 	"Global.actions.shopNow": "Comprar ahora",
 	"Global.products.option": "Opción {index}",
-	"/.hero.title": "STOREFRONT",
+	"/.hero.title": "DevButterStore",
 	"/.hero.description": "Lanza una nueva tienda más rápido con flujos reutilizables de catálogo, checkout y cuenta.",
 	"/.hero.action": "Comprar ahora",
 	"/.hero.link": "/category/accessories",

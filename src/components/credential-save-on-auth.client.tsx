@@ -8,7 +8,7 @@ type LoginDraft = {
 	createdAt: number;
 };
 
-const LOGIN_DRAFT_KEY = "storefront_login_draft";
+const LOGIN_DRAFT_KEY = "devbutterstore_login_draft";
 const LOGIN_DRAFT_MAX_AGE_MS = 5 * 60 * 1000;
 
 export function CredentialSaveOnAuth() {

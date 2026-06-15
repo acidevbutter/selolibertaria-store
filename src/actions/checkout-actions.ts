@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import Stripe from "stripe";
 import { env, publicUrl } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
-import { canBuyOnStorefront } from "@/lib/authz";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Cart } from "@/lib/commerce-types";
@@ -360,7 +360,8 @@ export async function updateCheckoutDeliverySelection(input: {
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Backoffice users cannot perform purchases." };
+	if (!canBuyOnSelolibertaria(auth.session.role))
+		return { error: "Backoffice users cannot perform purchases." };
 
 	const userId = auth.session.sub as string;
 	const db = await getDb();
@@ -475,7 +476,8 @@ export async function updatePaymentMethodSavingPreference({
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Backoffice users cannot perform purchases." };
+	if (!canBuyOnSelolibertaria(auth.session.role))
+		return { error: "Backoffice users cannot perform purchases." };
 
 	const userId = auth.session.sub as string;
 	const db = await getDb();
@@ -532,7 +534,8 @@ export async function createCheckoutSession(): Promise<
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Backoffice users cannot perform purchases." };
+	if (!canBuyOnSelolibertaria(auth.session.role))
+		return { error: "Backoffice users cannot perform purchases." };
 
 	const userId = auth.session.sub as string;
 	const db = await getDb();

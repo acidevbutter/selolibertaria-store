@@ -16,7 +16,7 @@ export type Capability =
 	| "webhooks.read"
 	| "emails.read"
 	| "staff.manage"
-	| "storefront.buy"
+	| "selolibertaria.buy"
 	| "account.self";
 
 const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
@@ -51,7 +51,7 @@ const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
 		"promotions.write",
 		"account.self",
 	],
-	customer: ["storefront.buy", "account.self"],
+	customer: ["selolibertaria.buy", "account.self"],
 };
 
 export function normalizeUserRole(role?: string | null): UserRole {
@@ -76,8 +76,8 @@ export function isBackofficeRole(role?: string | null): boolean {
 	return hasCapability(role, "admin.access");
 }
 
-export function canBuyOnStorefront(role?: string | null): boolean {
-	return hasCapability(role, "storefront.buy");
+export function canBuyOnSelolibertaria(role?: string | null): boolean {
+	return hasCapability(role, "selolibertaria.buy");
 }
 
 export function isUserBlocked(
@@ -85,3 +85,6 @@ export function isUserBlocked(
 ): boolean {
 	return Boolean(user?.access?.blockedAt);
 }
+
+// Compatibility alias for legacy importers that used a different casing
+export const canBuyOnselolibertaria = canBuyOnSelolibertaria;

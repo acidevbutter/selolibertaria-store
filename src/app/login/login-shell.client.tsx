@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,7 +21,6 @@ type Props = {
 };
 
 export default function LoginShell({ defaultCountry, defaultCurrency, providers }: Props) {
-	const metadataT = useTranslations("Global.metadata");
 	const t = useTranslations("Login");
 	const params = useSearchParams();
 	const [flash, setFlash] = useState<string | null>(null);
@@ -36,40 +34,111 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 		return undefined;
 	}, [params, t]);
 
-	return (
-		<div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background text-foreground p-6 md:p-10">
-			<Link
-				aria-label={t("actions.backToHomepage")}
-				href="/"
-				className="absolute left-4 top-4 md:left-8 md:top-8 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card/80 text-foreground shadow hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition"
-			>
-				<ArrowLeft className="h-5 w-5" />
-				<span className="sr-only">{t("actions.back")}</span>
-			</Link>
+	const date = new Date();
 
-			<div className="flex w-full max-w-sm flex-col gap-6 md:max-w-4xl xl:max-w-5xl">
-				<Link
-					href="/"
-					className="flex items-center gap-3 self-center text-3xl font-extrabold transition hover:opacity-90"
-				>
-					<div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-black/30 shadow-sm">
-						<Image
-							src="/images/selolibertaria.png"
-							alt={metadataT("title")}
-							width={64}
-							height={64}
-							className="h-14 w-14 object-contain"
-						/>
+	return (
+		<div className="min-h-svh overflow-x-hidden bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]">
+			<main className="w-full">
+				<section className="grid border-b border-[color:var(--editorial-border)] lg:grid-cols-[48.5%_51.5%]">
+					<div className="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-18 lg:py-18">
+						<div className="max-w-[36rem] space-y-8">
+							<div className="space-y-4">
+								<h1 className="max-w-[10ch] text-5xl font-black sm:text-6xl xl:text-[5.5rem]">
+									Bem-vinde <br />
+									de volta.
+								</h1>
+								<p className="max-w-[27rem] text-base leading-8 text-[color:var(--editorial-muted)] sm:text-[1.05rem]">
+									Acesse sua conta para continuar sua jornada literária com o Selo Libertária.
+								</p>
+							</div>
+
+							<LoginForm
+								defaultCountry={defaultCountry}
+								defaultCurrency={defaultCurrency}
+								providers={providers}
+							/>
+
+							{flash ? (
+								<div className="max-w-[30rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+									{flash}
+								</div>
+							) : null}
+						</div>
 					</div>
-					<span className="text-4xl font-semibold tracking-tight text-foreground">{metadataT("title")}</span>
-				</Link>
-				<LoginForm defaultCountry={defaultCountry} defaultCurrency={defaultCurrency} providers={providers} />
-				{flash && (
-					<div className="mt-4 rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-						{flash}
+
+					<aside className="relative overflow-hidden bg-[color:var(--editorial-ink)] px-6 py-10 text-[color:var(--editorial-paper)] sm:px-10 sm:py-12 lg:min-h-[880px] lg:px-16 lg:py-16">
+						<div className="flex h-full flex-col justify-between">
+							<div className="flex justify-center">
+								<div className="relative w-full max-w-[620px]">
+									<div className="relative aspect-[0.84] overflow-hidden">
+										<Image
+											src="/images/ninfas-example.png"
+											alt="Capa do livro Ninfas do Tiete"
+											fill
+											className="object-contain"
+											sizes="(min-width: 1024px) 45vw, 100vw"
+											priority
+										/>
+									</div>
+									<div className="absolute bottom-0 right-0 w-[66%] bg-[color:var(--editorial-paper)] px-6 py-6 text-[color:var(--editorial-ink)] shadow-[0_18px_48px_-30px_rgba(0,0,0,0.55)] sm:px-8 sm:py-7">
+										<p className="text-5xl leading-none text-[color:var(--editorial-accent)]">“</p>
+										<p className="mt-2 text-[2rem] leading-[0.95] font-black tracking-[-0.05em] sm:text-[2.4rem]">
+											Se te começo,
+											<br />
+											logo me despeço.
+										</p>
+										<div className="mt-5 h-px w-14 bg-[color:var(--editorial-accent)]" />
+										<p className="mt-3 text-sm text-[color:var(--editorial-muted)]">Ninfas do Tiete</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</aside>
+				</section>
+
+				<footer className="mx-4 w-auto overflow-x-hidden flex flex-col gap-5 py-5 text-sm text-[color:var(--editorial-muted)] sm:mx-6 lg:mx-8 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+					<div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+						<span>© {date.getFullYear()} Selo Libertaria. Todos os direitos reservados.</span>
+						<span className="text-[color:var(--editorial-border)]">|</span>
+						<Link
+							href="https://devbutter.tech"
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center gap-2 text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<Image
+								src="/images/icons/devbutter.svg"
+								alt=""
+								aria-hidden="true"
+								width={18}
+								height={18}
+								className="h-[18px] w-[18px]"
+							/>
+							<span className="font-medium">devbutter</span>
+						</Link>
 					</div>
-				)}
-			</div>
+
+					<div className="hidden h-8 w-px bg-[color:var(--editorial-border)] lg:block" />
+
+					<p className="price-font text-lg italic text-[color:var(--editorial-accent)]">
+						Literatura erótica, urbana e dissidente.
+					</p>
+
+					<div className="hidden h-8 w-px bg-[color:var(--editorial-border)] lg:block" />
+
+					<nav className="flex flex-wrap items-center gap-x-8 gap-y-2 lg:justify-end">
+						<Link href="/privacy" className="transition-colors hover:text-[color:var(--editorial-ink)]">
+							Política de Privacidade
+						</Link>
+						<Link href="/terms" className="transition-colors hover:text-[color:var(--editorial-ink)]">
+							Termos de Uso
+						</Link>
+						<Link href="/contact" className="transition-colors hover:text-[color:var(--editorial-ink)]">
+							Contato
+						</Link>
+					</nav>
+				</footer>
+			</main>
 		</div>
 	);
 }

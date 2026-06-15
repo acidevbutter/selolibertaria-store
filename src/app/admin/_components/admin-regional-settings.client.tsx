@@ -69,7 +69,7 @@ export default function AdminRegionalSettings() {
 			<div className="space-y-1">
 				<p className="text-sm text-muted-foreground">
 					Visitors use their device language when it matches a supported locale. The default language below is
-					used as the storefront fallback.
+					used as the selolibertaria fallback.
 				</p>
 				<p className="text-sm text-muted-foreground">
 					The default country still seeds phone and address fields whenever a user has no saved region yet.
@@ -77,7 +77,7 @@ export default function AdminRegionalSettings() {
 			</div>
 			<div className="grid gap-4 md:grid-cols-2 md:max-w-2xl">
 				<div className="grid gap-2 md:max-w-sm">
-					<Label htmlFor="admin-default-locale">Default storefront language</Label>
+					<Label htmlFor="admin-default-locale">Default selolibertaria language</Label>
 					<Select value={defaultLocale} onValueChange={(value) => setDefaultLocale(value as AppLocale)}>
 						<SelectTrigger id="admin-default-locale">
 							<SelectValue placeholder="Select language" />

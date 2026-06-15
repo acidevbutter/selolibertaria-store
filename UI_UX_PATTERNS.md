@@ -8,7 +8,7 @@ Consolidar os padrões de interface e experiência atualmente implementados no p
 
 Este documento descreve o estado atual da UI/UX em produção no repositório, com foco em:
 
-- storefront;
+- devbutterstore;
 - autenticação e cadastro;
 - carrinho e checkout;
 - conta do usuário;
@@ -43,20 +43,20 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - `Editorial Noturno` significa: fundos profundos, acentos quentes, composição editorial, contraste alto e erotismo sugerido pela linguagem visual, não por clichês.
 - `Barroco Contemporâneo` e `Urbano Sensual Minimalista` podem servir como variantes de estudo, mas não devem ser misturados sem uma decisão explícita de direção de arte.
 
-### 1. Preservar a storefront por padrão
+### 1. Preservar a DevButterStore por padrão
 
 - Não alterar layout, tipografia, cores, hierarquia visual ou copy pública sem necessidade explícita do requisito.
 - Mudanças técnicas devem reaproveitar a linguagem visual existente em vez de redesenhar a superfície.
 
 ### 1.1. Base visual genérica e rebrandable
 
-- A storefront atual deve funcionar como base genérica para uma futura marca.
+- A DevButterStore atual deve funcionar como base genérica para uma futura marca.
 - Nome, ícone, imagens editoriais, emails, textos institucionais e metadata devem permanecer neutros e facilmente substituíveis.
 - Evitar elementos visuais excessivamente autorais, agressivos ou presos a uma identidade específica sem pedido explícito.
 
 ### 2. Cards e blocos com borda suave
 
-- O projeto usa com frequência containers com `rounded-xl` ou `rounded-2xl`, exceto nos cards de produto da storefront, que devem permanecer sem cantos arredondados.
+- O projeto usa com frequência containers com `rounded-xl` ou `rounded-2xl`, exceto nos cards de produto da selolibertaria, que devem permanecer sem cantos arredondados.
 - Blocos informativos e formulários costumam usar borda discreta, fundo `bg-card`, `bg-card/60` ou `bg-muted/10`.
 - Estados secundários usam `text-muted-foreground` e mensagens curtas de apoio abaixo do campo ou da seção.
 
@@ -84,8 +84,8 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Superfícies novas de promoção, favoritos administrativos e preferências de marketing já introduzem mais pt-BR.
 - Ao evoluir uma tela, manter o idioma dominante daquela superfície e evitar blocos mistos dentro do mesmo componente.
 - Ao corrigir localização pública em `pt-BR`, incluir também `aria-label`, placeholders, mensagens transitórias e estados vazios na mesma passada; textos autorais ou operacionais cadastrados pelo admin ficam fora dessa normalização e devem permanecer como conteúdo-fonte.
-- A storefront deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
-- Para QA, suporte e testes de localização, a storefront pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
+- A DevButterStore deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
+- Para QA, suporte e testes de localização, a selolibertaria pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
 - Campos compartilhados com país, moeda, datas e checkout devem espelhar o locale resolvido daquela sessão, sem duplicar layouts ou criar variantes visuais por idioma.
 - Quando a pessoa usuária tiver uma moeda preferida salva, cadastro, perfil, favoritos, carrinho e checkout devem tentar refletir essa moeda de forma consistente; se a Stripe não oferecer aquela moeda no preço correspondente, a interface deve cair de forma silenciosa e coerente para a moeda padrão do produto, sem exibir mensagens técnicas.
 - Em `/checkout/processing`, o loading deve ser sempre temporário: a tela pode aguardar alguns segundos por confirmação autoritativa, mas deve redirecionar automaticamente para a área de pedidos após no máximo `15s` sem confirmação final; em estados autoritativos de disputa/análise, pode interromper o loading antes e orientar acompanhamento por e-mail e na área de pedidos.
@@ -102,12 +102,26 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - O trilho social usa coluna única, largura máxima de `22rem` e botões de `44px`.
 - Google mantém fundo claro e ícone oficial; demais provedores seguem a mesma estrutura visual do sistema.
 
+### Login editorial do Selo Libertária
+
+- Em `Editorial V2`, a tela de login deve parecer uma página editorial do próprio site, não um modal ou card SaaS pousado no centro.
+- A composição preferencial no desktop é um `spread` em duas colunas: conteúdo e formulário à esquerda, capa/livro protagonista à direita.
+- O header da tela de login deve repetir o header editorial do sistema, preservando continuidade visual com home, catálogo e PDP.
+- O formulário deve usar fundo papel, bordas retas, labels em caixa alta discreta e apenas uma CTA primária forte.
+- O submit e o trilho de OAuth devem compartilhar a mesma largura máxima para reforçar alinhamento visual.
+- A coluna visual deve usar capa de livro real ou arte do acervo como protagonista, com bloco-quote curto sobreposto para criar atmosfera.
+- No mobile, a hierarquia deve virar pilha: header, texto de entrada, formulário, OAuth, bloco visual reduzido.
+
 ### Cadastro
 
-- O cadastro é dividido em cards/seções:
-  - `Account`
-  - `Delivery Address`
-  - `Security`
+- No contexto do `/login` editorial do Selo Libertária, o cadastro deve ser progressivo e dividido em etapas curtas, não apresentado como um bloco longo único.
+- A sequência preferencial é:
+  - `Conta`
+  - `Entrega`
+  - `Preferências`
+- A etapa `Conta` deve concentrar apenas o essencial para a decisão inicial: nome, email, telefone e senha.
+- O endereço completo deve entrar apenas depois que a pessoa conclui a primeira etapa, reduzindo sensação de esforço antes do compromisso.
+- A última etapa deve ficar mais leve, reservando preferências como moeda e opt-in de marketing para o fim.
 - A seção `Account` pode incluir preferências primárias da conta, como moeda preferida, desde que isso não desloque a CTA principal nem quebre a leitura em mobile.
 - Campos de erro aparecem em banner superior com borda e fundo de erro.
 - Disponibilidade de email é validada de forma assíncrona com feedback curto.
@@ -128,7 +142,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 ## Catálogo e PDP
 
-### Footer da storefront
+### Footer da selolibertaria
 
 - A faixa inferior do footer deve manter copyright e métodos de pagamento como conteúdo primário.
 - Créditos externos de desenvolvimento, quando existirem, devem aparecer na mesma faixa inferior, em formato inline, com link externo, ícone da marca e nome visível.
@@ -138,6 +152,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Home do Selo Libertária
 
 - A home do rebrand deve seguir a trilha `Editorial Noturno`.
+- Em redesigns aprovados como `Editorial V2`, aplicar a versão clara dessa linguagem: fundo papel `#F7F4EF`, texto `#0B0B0B`, acento vinho `#7A1E22`, apoio bege `#D8D0C4`, ritmo de revista e hero com respiro mais amplo.
 - A primeira dobra precisa unir posicionamento e ação comercial no mesmo quadro.
 - O título principal da home deve comunicar explicitamente literatura, livraria-editora ou proposta cultural adulta; evitar hero genérico de lifestyle.
 - A CTA primária da home deve levar para livros ou loja.
@@ -164,6 +179,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Listagem de produtos
 
 - Grade responsiva `1 -> 2 -> 3` colunas.
+- Em `Editorial V2`, a imagem/capa deve ganhar quadro mais alto e mais área útil do que no card comercial genérico, preservando cantos externos retos e quick actions discretas sobre a mídia.
 - Antes da grade, a listagem pode usar um bloco curto de leitura editorial para enquadrar o catálogo e quebrar a sensação de página puramente utilitária.
 - Card de produto usa imagem quadrada com fundo neutro, borda suave, cantos retos e hover sutil na mídia.
 - Todos os cards da listagem devem manter o mesmo formato e a mesma altura visual; nome, preço e área de variantes precisam reservar espaço consistente, e a imagem do produto é que deve se adaptar ao quadro.
@@ -300,6 +316,8 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Dashboard administrativo
 
 - O dashboard do admin deve funcionar como painel de decisão, não apenas como resumo decorativo de números.
+- No `Desktop / Admin Conceitual`, a sidebar é um trilho preto fixo e silencioso; a área principal trabalha em papel claro com bordas retas e sem visual translúcido.
+- A DCC Ash deve ficar concentrada na assinatura da marca e em acentos pontuais; títulos operacionais longos do dashboard precisam usar uma leitura mais sóbria para não sacrificar legibilidade.
 - A primeira dobra precisa responder rapidamente:
   - quanto entrou;
   - quantos pedidos exigem ação;
@@ -369,7 +387,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - O backoffice deve tratar `admin` e futuros papéis internos, como `vendor`, como operadores e não como compradores.
 - A navegação administrativa deve revelar apenas áreas compatíveis com as capacidades do papel logado, reduzindo ruído e evitando expor ações sem permissão.
 - A ausência de permissão deve preferir remoção da entrada de navegação e, como segunda linha de defesa, resposta `403` no servidor.
-- A storefront pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
+- A selolibertaria pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
 - Superfícies de gestão de usuários no admin devem separar claramente leitura de perfil, papel atual e estado de acesso; ações de promover, rebaixar, bloquear e desbloquear devem ficar agrupadas em um bloco operacional distinto e só aparecer para `admin`.
 - A página administrativa de produto deve expor histórico de edição em um bloco próprio abaixo da configuração principal e das variantes, mostrando quem alterou, quando alterou e um resumo técnico curto da mudança.
 

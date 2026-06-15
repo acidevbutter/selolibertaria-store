@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { env } from "@/env.mjs";
-import { requireStorefrontBuyer } from "@/lib/api-auth";
+import { requireSelolibertariaBuyer } from "@/lib/api-auth";
 import { getDb } from "@/lib/mongodb";
 import { listSavedCardPaymentMethods } from "@/lib/saved-payment-methods";
 
@@ -11,7 +11,7 @@ export async function GET() {
 		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
 
-	const auth = await requireStorefrontBuyer();
+	const auth = await requireSelolibertariaBuyer();
 	if ("error" in auth) return auth.error;
 
 	const db = await getDb();

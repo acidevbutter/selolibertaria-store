@@ -67,19 +67,21 @@ function SectionHeader({
 		<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 			<div className="space-y-2">
 				{eyebrow ? (
-					<div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 						{eyebrow}
 					</div>
 				) : null}
-				<h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+				<h2 className="display-font text-3xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)] sm:text-4xl">
+					{title}
+				</h2>
 				{description ? (
-					<p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+					<p className="max-w-3xl text-sm leading-6 text-[color:var(--editorial-muted)]">{description}</p>
 				) : null}
 			</div>
 			{actionHref && actionLabel ? (
 				<Link
 					href={actionHref}
-					className="inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4"
+					className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] underline underline-offset-4"
 				>
 					{actionLabel}
 					<ArrowRight className="h-4 w-4" />
@@ -211,64 +213,81 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 		dashboard.fulfillmentQueue.paidWithoutFulfillment;
 
 	return (
-		<main className="mx-auto w-full max-w-[1440px] space-y-10 px-4 py-8 sm:px-6 lg:px-8">
-			<section className="rounded-[28px] border bg-card p-6 shadow-sm sm:p-8">
-				<div className="grid gap-8 xl:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.9fr)]">
+		<main className="w-full space-y-10">
+			<section className="border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-6 sm:p-8">
+				<div className="grid gap-8 xl:grid-cols-[minmax(0,1.6fr)_320px]">
 					<div className="space-y-5">
 						<div className="space-y-3">
-							<div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 								Admin dashboard
 							</div>
-							<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-								Store performance, order pressure, and operational risk in one view.
+							<h1 className="display-font max-w-4xl text-[2.9rem] font-black leading-[0.9] tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-[4.4rem]">
+								Loja, catálogo e operação em uma leitura só.
 							</h1>
-							<p className="max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
-								Use this overview to understand what the store earned, what is blocked in payment, what still
-								needs fulfillment, and which technical failures may be affecting orders.
+							<p className="max-w-3xl text-sm leading-7 text-[color:var(--editorial-muted)] sm:text-base">
+								Este painel deve mostrar rapidamente o que entrou, o que exige ação e onde a operação está
+								perdendo ritmo. A funcionalidade permanece idêntica; o enquadramento agora é editorial.
 							</p>
 						</div>
 
-						<div className="rounded-2xl border bg-background/70 p-4">
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
 							<AdminFilters defaultStatus={status} defaultPeriod={period} defaultSort={sort} />
 						</div>
 
 						{dashboard.hasMultipleCurrencies ? (
-							<div className="rounded-2xl border border-amber-200/70 bg-amber-50/60 p-4 text-sm leading-6 text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
+							<div className="border border-[rgba(11,11,11,0.14)] bg-[color:var(--editorial-beige)]/35 p-4 text-sm leading-6 text-[color:var(--editorial-ink)]">
 								Totals are shown per currency so the dashboard does not mix nominal amounts.
 							</div>
 						) : null}
 					</div>
 
-					<Card className="overflow-hidden border-none bg-foreground text-background">
-						<CardContent className="p-6 sm:p-7">
-							<div className="space-y-6">
-								<div className="space-y-2">
-									<div className="text-xs font-medium uppercase tracking-[0.18em] text-background/60">
-										Immediate attention
+					<Card className="overflow-hidden border-none bg-[#0b0b0b] text-[color:var(--editorial-paper)] shadow-none">
+						<CardContent className="p-0">
+							<div className="grid min-h-[280px] gap-0 md:grid-cols-[1fr_136px]">
+								<div className="flex flex-col justify-between p-6 sm:p-7">
+									<div className="space-y-3">
+										<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/52">
+											Immediate attention
+										</div>
+										<div className="text-6xl font-black leading-none tracking-[-0.06em]">{urgentOrders}</div>
+										<p className="max-w-sm text-sm leading-6 text-white/72">
+											Orders needing payment follow-up, review, dispute handling, or fulfillment kickoff.
+										</p>
 									</div>
-									<div className="text-5xl font-semibold tracking-tight">{urgentOrders}</div>
-									<p className="text-sm leading-6 text-background/70">
-										Orders currently needing payment follow-up, review, dispute handling, or fulfillment
-										kickoff.
-									</p>
-								</div>
 
-								<div className="grid gap-3">
-									<div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-										<div className="text-sm text-background/70">Needs payment action</div>
-										<div className="mt-2 text-2xl font-semibold">
-											{dashboard.paymentFunnel.awaitingAction}
+									<div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+										<div className="border border-white/10 bg-white/4 p-4">
+											<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/52">
+												Needs action
+											</div>
+											<div className="mt-3 text-2xl font-bold">{dashboard.paymentFunnel.awaitingAction}</div>
+										</div>
+										<div className="border border-white/10 bg-white/4 p-4">
+											<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/52">
+												Paid, not moving
+											</div>
+											<div className="mt-3 text-2xl font-bold">
+												{dashboard.fulfillmentQueue.paidWithoutFulfillment}
+											</div>
+										</div>
+										<div className="border border-white/10 bg-white/4 p-4">
+											<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/52">
+												Disputes
+											</div>
+											<div className="mt-3 text-2xl font-bold">{dashboard.recentDisputesCount}</div>
 										</div>
 									</div>
-									<div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-										<div className="text-sm text-background/70">Paid, not in fulfillment</div>
-										<div className="mt-2 text-2xl font-semibold">
-											{dashboard.fulfillmentQueue.paidWithoutFulfillment}
+								</div>
+								<div className="hidden items-center justify-center bg-[color:var(--editorial-beige)] p-5 md:flex">
+									<div className="relative h-[210px] w-[136px] border border-black/20 bg-[color:var(--editorial-paper)]">
+										<div className="absolute left-2 top-2 h-[194px] w-[6px] bg-[color:var(--editorial-accent)]" />
+										<div className="px-5 pt-7 text-left text-[1.1rem] font-black uppercase leading-[0.95] tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+											Ninfas
+											<br />
+											do
+											<br />
+											Tietê
 										</div>
-									</div>
-									<div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-										<div className="text-sm text-background/70">Dispute-related orders</div>
-										<div className="mt-2 text-2xl font-semibold">{dashboard.recentDisputesCount}</div>
 									</div>
 								</div>
 							</div>

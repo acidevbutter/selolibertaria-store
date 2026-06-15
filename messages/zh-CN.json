@@ -31,7 +31,7 @@
 	"Global.deliveryEstimates.month": "{count, plural, =1 {# 个月} other {# 个月}}",
 	"Global.deliveryEstimates.week": "{count, plural, =1 {# 周} other {# 周}}",
 	"Global.actions.shopNow": "立即选购",
-	"/.hero.title": "STOREFRONT",
+	"/.hero.title": "DevButterStore",
 	"/.hero.description": "探索我们精心挑选的家居和生活产品。",
 	"/.hero.action": "立即选购",
 	"/.hero.link": "/category/accessories",

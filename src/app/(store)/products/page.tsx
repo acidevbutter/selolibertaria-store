@@ -3,6 +3,7 @@ import { publicUrl } from "@/env.mjs";
 import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce-stripe";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { ProductList } from "@/ui/products/product-list";
 
 export const generateMetadata = async (): Promise<Metadata> => {
@@ -20,51 +21,53 @@ export default async function AllProductsPage() {
 	const seloT = await getTranslations("Selo");
 
 	return (
-		<main className="space-y-8 pb-8">
-			<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
-				<div className="max-w-4xl space-y-5">
-					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
-						{seloT("catalogue.eyebrow")}
-					</p>
-					<h1 className="editorial-serif max-w-4xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
-						{t("title")}
-					</h1>
-					<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
-						{seloT("catalogue.description")}
-					</p>
-				</div>
+		<main className="space-y-8 pb-12">
+			<section className="px-0 py-10 sm:py-14">
+				<EditorialShell>
+					<div className="max-w-4xl space-y-5">
+						<EditorialEyebrow className="sm:text-sm">{seloT("catalogue.eyebrow")}</EditorialEyebrow>
+						<h1 className="max-w-5xl text-balance text-5xl leading-[0.9] font-black tracking-[-0.06em] uppercase sm:text-6xl lg:text-7xl">
+							{t("title")}
+						</h1>
+						<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)] sm:text-lg">
+							{seloT("catalogue.description")}
+						</p>
+					</div>
+				</EditorialShell>
 			</section>
-			<section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-				<div className="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.38),transparent_42%),linear-gradient(180deg,#220607_0%,#050203_100%)] p-6 text-primary-foreground">
-					<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/52">
-						Leitura do catálogo
-					</p>
-					<h2 className="editorial-serif mt-4 text-3xl font-semibold sm:text-4xl">
-						O catálogo funciona como prateleira curada, não como grade neutra.
-					</h2>
-				</div>
-				<div className="grid gap-4 sm:grid-cols-3">
-					<div className="border border-border/60 bg-card/60 p-5">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Livros</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							Títulos, edições e formatos aparecem como entradas para o universo do selo.
+			<EditorialShell className="space-y-8">
+				<section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+					<div className="border-l-[12px] border-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)] p-6 sm:p-8">
+						<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
+							Leitura do catálogo
 						</p>
+						<h2 className="mt-4 text-3xl leading-[0.95] font-black uppercase sm:text-4xl">
+							O catálogo funciona como prateleira curada, não como grade neutra.
+						</h2>
 					</div>
-					<div className="border border-border/60 bg-card/60 p-5">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Curadoria</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							A seleção preserva atmosfera editorial sem perder clareza comercial.
-						</p>
+					<div className="grid gap-4 sm:grid-cols-3">
+						<EditorialPanel className="p-5">
+							<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Livros</p>
+							<p className="mt-3 text-sm leading-7 text-muted-foreground">
+								Títulos, edições e formatos aparecem como entradas para o universo do selo.
+							</p>
+						</EditorialPanel>
+						<EditorialPanel className="p-5">
+							<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Curadoria</p>
+							<p className="mt-3 text-sm leading-7 text-muted-foreground">
+								A seleção preserva atmosfera editorial sem perder clareza comercial.
+							</p>
+						</EditorialPanel>
+						<EditorialPanel className="p-5">
+							<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Continuidade</p>
+							<p className="mt-3 text-sm leading-7 text-muted-foreground">
+								Cada livro pode levar a eventos, projetos e contexto cultural mais amplo.
+							</p>
+						</EditorialPanel>
 					</div>
-					<div className="border border-border/60 bg-card/60 p-5">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Continuidade</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							Cada livro pode levar a eventos, projetos e contexto cultural mais amplo.
-						</p>
-					</div>
-				</div>
-			</section>
-			<ProductList products={products} />
+				</section>
+				<ProductList products={products} />
+			</EditorialShell>
 		</main>
 	);
 }

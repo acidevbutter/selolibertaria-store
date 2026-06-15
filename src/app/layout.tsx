@@ -2,6 +2,7 @@ import "@/app/globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
 import { CheckoutSuccessHandler } from "@/components/checkout-success-handler.client";
@@ -14,6 +15,18 @@ import { env, publicUrl } from "@/env.mjs";
 import { IntlClientProvider } from "@/i18n/client";
 import { getLocale, getMessages } from "@/i18n/server";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
+
+const dccAsh = localFont({
+	src: "../../public/fonts/DCC - Ash.otf",
+	variable: "--font-editorial-display",
+	display: "swap",
+});
+
+const fertigoPro = localFont({
+	src: "../../public/fonts/FertigoPro-Regular.otf",
+	variable: "--font-editorial-body",
+	display: "swap",
+});
 
 export const generateMetadata = async (): Promise<Metadata> => {
 	return {
@@ -33,8 +46,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	const messages = await getMessages();
 
 	return (
-		<html lang={locale} className="h-full antialiased light">
-			<body className="flex min-h-full flex-col bg-background text-foreground">
+		<html
+			lang={locale}
+			suppressHydrationWarning
+			className={`h-full antialiased ${dccAsh.variable} ${fertigoPro.variable}`}
+		>
+			<body className="display-font flex min-h-full flex-col bg-background text-foreground">
 				{/* Pre-hydration splash: insert a neutral overlay before React hydrates to avoid FOUC */}
 				<Script
 					id="splash-preinit"
@@ -45,16 +62,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 							"  var path = window.location.pathname || '/';\n" +
 							"  if (path.startsWith('/admin') || path.startsWith('/login')) return;\n" +
 							"  try {\n" +
-							"    if (localStorage.getItem('storefront_splash_seen')) return;\n" +
+							"    if (localStorage.getItem('selolibertaria_splash_seen')) return;\n" +
 							"  } catch (e) {}\n" +
 							"  var style = document.createElement('style');\n" +
-							"  style.id = 'storefront-splash-style';\n" +
-							"  style.textContent = '#storefront-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#111827;color:#f9fafb;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.storefront-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
+							"  style.id = 'selolibertaria-splash-style';\n" +
+							"  style.textContent = '#selolibertaria-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#111827;color:#f9fafb;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.selolibertaria-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
 							"  document.head.appendChild(style);\n" +
 							"  var div = document.createElement('div');\n" +
-							"  div.id = 'storefront-splash-pre';\n" +
+							"  div.id = 'selolibertaria-splash-pre';\n" +
 							"  var percent = document.createElement('div');\n" +
-							"  percent.className = 'storefront-splash-percent';\n" +
+							"  percent.className = 'selolibertaria-splash-percent';\n" +
 							"  percent.textContent = '0%';\n" +
 							"  div.appendChild(percent);\n" +
 							"  document.documentElement.appendChild(div);\n" +
@@ -63,28 +80,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 				/>
 
 				<SplashLoader />
-				{/* Set initial theme class before hydration to avoid FOUC / hydration mismatches. */}
-				<Script
-					id="theme-init"
-					strategy="beforeInteractive"
-					dangerouslySetInnerHTML={{
-						__html: `(() => {
-							try {
-								const key = 'theme';
-								const stored = localStorage.getItem(key);
-								if (stored === 'dark') {
-									document.documentElement.classList.remove('light');
-									document.documentElement.classList.add('dark');
-								} else {
-									document.documentElement.classList.remove('dark');
-									document.documentElement.classList.add('light');
-								}
-							} catch (e) {
-								// ignore
-							}
-						})();`,
-					}}
-				/>
 				<ThemeProviderWrapper>
 					<IntlClientProvider messages={messages} locale={locale}>
 						<Suspense fallback={null}>

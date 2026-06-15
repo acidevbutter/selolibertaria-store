@@ -1,6 +1,6 @@
 import type { AppLocale } from "@/i18n/config";
 
-export const CURRENCY_COOKIE_NAME = "storefront_currency";
+export const CURRENCY_COOKIE_NAME = "selolibertaria_currency";
 
 export const CURRENCY_OPTIONS = [
 	{ code: "USD", label: "US Dollar" },

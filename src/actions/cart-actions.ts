@@ -2,7 +2,7 @@
 
 import { ObjectId } from "mongodb";
 import { requireAuth } from "@/lib/api-auth";
-import { canBuyOnStorefront } from "@/lib/authz";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import {
 	clearCartId,
 	getCartCookieItems,
@@ -23,12 +23,12 @@ interface MinimalItem {
 	quantity: number;
 }
 
-type StorefrontAuthContext = { kind: "guest" } | { kind: "blocked" } | { kind: "buyer"; userId: string };
+type SelolibertariaAuthContext = { kind: "guest" } | { kind: "blocked" } | { kind: "buyer"; userId: string };
 
-async function getStorefrontAuthContext(): Promise<StorefrontAuthContext> {
+async function getSelolibertariaAuthContext(): Promise<SelolibertariaAuthContext> {
 	const auth = await requireAuth();
 	if ("error" in auth) return { kind: "guest" };
-	if (!canBuyOnStorefront(auth.session.role)) return { kind: "blocked" };
+	if (!canBuyOnSelolibertaria(auth.session.role)) return { kind: "blocked" };
 	return { kind: "buyer", userId: auth.session.sub as string };
 }
 
@@ -66,7 +66,7 @@ async function buildCartFromMinimalItems(args: {
 }
 
 export async function getCartAction(): Promise<Cart | null> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
@@ -164,7 +164,7 @@ export async function getCartAction(): Promise<Cart | null> {
 }
 
 export async function addToCartAction(variantId: string, quantity = 1): Promise<Cart | null> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
@@ -211,7 +211,7 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
 }
 
 export async function updateCartItemAction(variantId: string, quantity: number): Promise<Cart | null> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
@@ -261,7 +261,7 @@ export async function removeFromCartAction(variantId: string): Promise<Cart | nu
 }
 
 export async function clearCartAction(): Promise<void> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return;
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
@@ -282,7 +282,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 	const code = normalizeCouponCode(rawCode);
 	if (!code) return { cart: null, error: "Digite um cupom válido." };
 
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") {
 		return { cart: null, error: "Usuárias do backoffice não podem aplicar cupons nem realizar compras." };
 	}
@@ -342,7 +342,7 @@ export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Ca
 }
 
 export async function removeCartCouponAction(): Promise<Cart | null> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
@@ -388,7 +388,7 @@ export async function getCartItemCount(): Promise<number> {
 }
 
 export async function mergeGuestCartIntoUser(): Promise<Cart | null> {
-	const authContext = await getStorefrontAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind !== "buyer") return null;
 	const userId = authContext.userId;
 	const [cookieCartId, cookieItems, cookieCouponCode] = await Promise.all([

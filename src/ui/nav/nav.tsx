@@ -1,60 +1,61 @@
 import { UserIcon } from "lucide-react";
-import Image from "next/image";
 import { CartIcon } from "@/components/cart-icon";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { HomeTopBar } from "@/ui/home/home-top-bar";
 import { NavMenu } from "@/ui/nav/nav-menu";
-import { SearchNav } from "@/ui/nav/search-nav";
 // import ThemeToggle from "@/ui/theme-toggle.client";
 import { YnsLink } from "@/ui/yns-link";
 
-export const Nav = async () => {
+export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {}) => {
 	const session = await auth();
 	return (
-		<header className="sticky top-0 z-50 border-b border-border/60 bg-background/92 backdrop-blur-xs nav-border-reveal">
-			<HomeTopBar />
-			<div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:px-6 lg:px-8">
-				<YnsLink
-					href="/"
-					className="flex min-w-0 shrink-0 items-center gap-3 lg:max-w-[17rem] xl:max-w-[19rem]"
-				>
-					<Image
-						src="/images/selolibertaria.png"
-						alt={`${seloSiteMeta.name} mark`}
-						width={48}
-						height={48}
-						className="h-12 w-12 object-contain"
-					/>
-					<span className="min-w-0">
-						<span className="editorial-serif block truncate text-lg font-semibold tracking-tight text-foreground">
-							{seloSiteMeta.name}
-						</span>
-						<span className="hidden text-xs text-muted-foreground xl:block">{seloSiteMeta.tagline}</span>
-					</span>
-				</YnsLink>
-
-				<div className="min-w-0 flex-1 lg:flex lg:justify-center">
-					<NavMenu />
-				</div>
-
-				<div className="ml-auto hidden min-w-0 lg:block lg:w-full lg:max-w-[11rem] xl:max-w-[14rem]">
-					<SearchNav />
-				</div>
-				<div className="ml-auto lg:hidden">
-					<SearchNav />
-				</div>
-				{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
-				<div className="mx-1">{/* <ThemeToggle /> */}</div>
-				{isBackofficeRole(session?.user.role) && (
-					<YnsLink href="/admin" className="mr-1 text-sm font-medium hover:underline">
-						Admin
+		<header className="sticky top-0 z-50 bg-[color:rgba(247,244,239,0.98)] backdrop-blur-xs">
+			<div className="w-full bg-[color:var(--editorial-paper)] px-4 pt-5 sm:px-8 sm:pt-5 lg:px-12">
+				<div className="flex items-center justify-between gap-6 pb-5">
+					<YnsLink
+						href="/"
+						className="min-w-0 shrink-0 text-base font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)]"
+					>
+						{seloSiteMeta.name}
 					</YnsLink>
-				)}
-				<YnsLink href={session ? "/user" : "/login"}>
-					<UserIcon className="hover:text-red-700" />
-				</YnsLink>
+
+					<div className="flex items-center gap-5">
+						<div className="min-w-0 flex-1 lg:flex lg:justify-end">
+							<NavMenu />
+						</div>
+						{hideAuthCta ? null : (
+							<>
+								<div className="flex items-center gap-2 lg:hidden">
+									{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
+									<YnsLink
+										href={session ? "/user" : "/login"}
+										className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
+									>
+										<UserIcon className="h-4 w-4" />
+									</YnsLink>
+								</div>
+								<YnsLink
+									href={session ? "/user" : "/login"}
+									className="hidden h-12 w-25 items-center justify-center bg-[color:var(--editorial-ink)] px-3 text-[11px] font-black uppercase leading-[1.05] tracking-[0.2em] text-[color:var(--editorial-paper)] lg:inline-flex"
+								>
+									<span className="block text-center">
+										{session ? (
+											<>
+												MINHA
+												<br />
+												CONTA
+											</>
+										) : (
+											<>ENTRAR</>
+										)}
+									</span>
+								</YnsLink>
+							</>
+						)}
+					</div>
+				</div>
+				<div className="border-b-2 border-[color:var(--editorial-ink)]" />
 			</div>
 		</header>
 	);

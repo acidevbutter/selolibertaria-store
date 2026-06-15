@@ -11,9 +11,9 @@ export async function HomeImmersiveGallery() {
 	}
 
 	return (
-		<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top,rgba(111,26,22,0.25),transparent_42%),linear-gradient(180deg,#120d0d,#0d0b0b)] p-6 text-primary-foreground sm:p-8 lg:p-10">
+		<section className="overflow-hidden border border-[color:var(--editorial-dark-border)] bg-[color:var(--editorial-ink)] p-6 text-[color:var(--editorial-paper)] sm:p-8 lg:p-10">
 			<div className="mb-6 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-				<p className="text-xs uppercase tracking-[0.3em] text-primary-foreground/50 sm:text-sm">
+				<p className="text-xs uppercase tracking-[0.3em] text-[color:rgba(247,244,239,0.5)] sm:text-sm">
 					{t("home.immersive.eyebrow")}
 				</p>
 				<p className="max-w-2xl text-balance text-2xl leading-tight font-medium sm:text-3xl">

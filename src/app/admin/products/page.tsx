@@ -6,9 +6,10 @@ import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { formatMoney } from "@/lib/utils";
+import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import {
 	Table,
@@ -50,12 +51,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 		: groups;
 
 	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div className="space-y-2">
-					<h1 className="text-2xl font-semibold">Products</h1>
-					<p className="text-sm text-muted-foreground">
-						Manage Stripe products, prices, variants, categories, and storefront metadata.
+					<EditorialEyebrow>Admin editorial v2</EditorialEyebrow>
+					<h1 className="editorial-serif text-3xl font-semibold">Products</h1>
+					<p className="max-w-2xl text-sm leading-7 text-[color:var(--editorial-muted)]">
+						Manage Stripe products, prices, variants, categories, and selolibertaria metadata.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -81,14 +83,14 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 			</form>
 
 			{error ? (
-				<Card>
+				<EditorialPanel>
 					<CardHeader>
 						<CardTitle>Stripe catalog unavailable</CardTitle>
 					</CardHeader>
 					<CardContent className="text-sm text-muted-foreground">{error}</CardContent>
-				</Card>
+				</EditorialPanel>
 			) : (
-				<Card>
+				<EditorialPanel className="overflow-hidden p-0">
 					<CardHeader>
 						<CardTitle>Stripe catalog</CardTitle>
 					</CardHeader>
@@ -161,7 +163,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 							<TableCaption>Products are grouped by Stripe metadata.slug.</TableCaption>
 						</Table>
 					</CardContent>
-				</Card>
+				</EditorialPanel>
 			)}
 		</main>
 	);

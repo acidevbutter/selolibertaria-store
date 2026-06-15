@@ -22,11 +22,11 @@ const providerIconMap: Partial<Record<OAuthProviderId, string>> = {
 
 const providerButtonClassMap: Partial<Record<OAuthProviderId, string>> = {
 	google:
-		"border-[#d9dce1] bg-white text-slate-900 hover:border-[#c7ccd3] hover:bg-white hover:text-slate-900 focus-visible:ring-slate-300/70",
+		"border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-ink)] hover:bg-transparent hover:text-[color:var(--editorial-ink)] focus-visible:ring-slate-300/70",
 	facebook:
-		"border-border/80 bg-card/85 text-foreground hover:border-[#1877F2]/35 hover:bg-card hover:text-foreground focus-visible:ring-[#1877F2]/25",
+		"border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-ink)] hover:bg-transparent hover:text-[color:var(--editorial-ink)] focus-visible:ring-[#1877F2]/25",
 	instagram:
-		"border-border/80 bg-card/85 text-foreground hover:border-[#E1306C]/30 hover:bg-card hover:text-foreground focus-visible:ring-[#E1306C]/25",
+		"border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-ink)] hover:bg-transparent hover:text-[color:var(--editorial-ink)] focus-visible:ring-[#E1306C]/25",
 };
 
 const providerBadgeClassMap: Partial<Record<OAuthProviderId, string>> = {
@@ -41,11 +41,11 @@ export function OAuthButtons({ providers }: Props) {
 	if (providers.length === 0) return null;
 
 	return (
-		<div className="mx-auto grid w-full max-w-[22rem] gap-3">
-			<div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
-				<span className="h-px flex-1 bg-border/70" />
-				<span className="rounded-full border border-border/60 bg-card px-3 py-1">{t("divider")}</span>
-				<span className="h-px flex-1 bg-border/70" />
+		<div className="grid w-full gap-3">
+			<div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
+				<span className="h-px flex-1 bg-[color:var(--editorial-border)]" />
+				<span>OU</span>
+				<span className="h-px flex-1 bg-[color:var(--editorial-border)]" />
 			</div>
 			<div className="grid gap-2.5">
 				{providers.map((provider) => (
@@ -54,9 +54,9 @@ export function OAuthButtons({ providers }: Props) {
 						asChild
 						variant="outline"
 						className={[
-							"group h-11 w-full rounded-xl px-3 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_28px_-18px_rgba(15,23,42,0.48)]",
+							"group h-11 w-full rounded-none border-[color:var(--editorial-border)] px-3 shadow-none transition-colors duration-200 hover:-translate-y-0 hover:shadow-none",
 							providerButtonClassMap[provider.id] ??
-								"border-border/80 bg-card/85 text-foreground hover:bg-card",
+								"border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-ink)] hover:bg-transparent",
 						].join(" ")}
 					>
 						<a href={provider.href}>

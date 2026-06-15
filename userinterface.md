@@ -3,12 +3,14 @@
 ## Fonte canônica
 
 - O documento principal de padrões visuais continua sendo `UI_UX_PATTERNS.md`.
+- O inventário funcional que deve orientar briefings de UI/UX fica em `spec.md`.
 - Este arquivo resume decisões de interface que precisam ser consultadas rapidamente durante mudanças de UI.
 - A baseline atual da marca é propositalmente genérica, com placeholder visual neutro e fácil substituição posterior.
 
 ## Direção visual do rebrand Selo Libertária
 
 - A direção preferencial atual é `Editorial Noturno`.
+- A variante em implementação para este redesign é `Editorial V2`, mais clara e tátil: papel `#F7F4EF`, preto `#0B0B0B`, vinho seco `#7A1E22`, bege envelhecido `#D8D0C4`, serifas editoriais, cards com borda reta e mais espaço em branco.
 - Isso pede paleta quente e profunda, contraste alto, composição editorial e sensação adulta.
 - Evitar visual infantil, fofo, pop colorido, excesso de brilho ou referência explícita de sex shop.
 - Tipografia deve combinar uma serifada marcante para títulos com uma sans limpa para navegação, ficha técnica e compra.
@@ -32,7 +34,7 @@
 - No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
 - Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 
-## Footer da storefront
+## Footer da DevButterStore
 
 - Manter a estrutura atual do footer, com newsletter, navegação auxiliar, copyright e métodos de pagamento.
 - Quando houver assinatura de desenvolvimento, usar lockup inline na faixa inferior com texto, ícone e nome visível da marca.
@@ -57,8 +59,8 @@
 
 ## Cards de produto
 
-- Cards de produto da storefront devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
-- Todos os cards da storefront devem compartilhar o mesmo formato e a mesma altura visual.
+- Cards de produto da DevButterStore devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
+- Todos os cards da selolibertaria devem compartilhar o mesmo formato e a mesma altura visual.
 - A imagem do produto deve se adaptar ao quadro fixo do card, sem definir o tamanho externo do componente.
 - O título do produto no card deve ter mais destaque do que o preço-base e permanecer confortável para leitura em duas linhas.
 - O botão de favorito permanece flutuante no topo direito.
@@ -79,12 +81,23 @@
 - Em uploads administrativos por arquivo, a prévia principal deve abrir em modal de confirmação com ações claras de `Salvar` e `Descartar`, para que a pessoa valide visualmente a mídia antes de mantê-la no formulário ou iniciar o envio.
 - Em `/admin` e `/login`, nenhuma camada global transitória deve ficar por cima dos controles. Backoffice e autenticação precisam estar clicáveis assim que a rota renderizar.
 - Em listas editoriais com ordenação, a interface deve expor controles pequenos e diretos de subir/descer na própria linha do item, para que a pessoa operadora ajuste sequência sem abrir a tela de edição.
+
+## Login do Selo Libertária
+
+- A tela de login deve seguir a linguagem `Editorial V2` do restante da DevButterStore, com header editorial, superfície de papel e protagonista visual ligado a livro/capa.
+- Evitar o padrão de card centralizado isolado sobre fundo neutro; a página inteira deve compor o enquadramento do login.
+- O layout preferencial no desktop é assimétrico em duas colunas: texto e formulário à esquerda, capa/livro em painel escuro à direita.
+- Inputs e botões devem usar cantos retos e bordas discretas, com a CTA principal em preto profundo e trilho social alinhado logo abaixo.
+- O bloco visual da direita deve parecer capa ampliada ou cartaz editorial, e pode receber uma citação curta sobreposta como elemento de ritmo.
+- Quando a pessoa optar por criar conta nessa mesma superfície, o cadastro deve migrar para um fluxo em etapas, com indicador de progresso editorial e apenas um grupo lógico de campos por vez.
 - A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
 
 ## Admin
 
 - A interface do backoffice deve esconder entradas e ações que o papel logado não pode usar, especialmente na futura diferenciação entre `admin` e `vendor`.
-- Perfis internos não devem receber affordances de compra na storefront por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
+- No shell administrativo editorial, a barra lateral deve permanecer preta, fixa e com largura estável, enquanto a área de trabalho usa papel claro e largura ampla para não parecer um dashboard SaaS genérico.
+- Títulos de operação do admin devem priorizar leitura clara; a expressão tipográfica mais dramática da marca pode aparecer no logo e em acentos, mas não deve esmagar blocos analíticos longos.
+- Perfis internos não devem receber affordances de compra na selolibertaria por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
 - No dashboard administrativo, KPIs executivos devem aparecer primeiro em cards compactos e comparáveis, seguidos por blocos separados de pagamento, fulfillment e saúde operacional.
 - Estados que exigem atenção, como disputa, falha de email, webhook pendente ou pedido pago sem avanço operacional, devem receber destaque visual superior ao de métricas históricas neutras.
 - Em gestão de usuários, ações de papel e bloqueio devem aparecer como controles administrativos explícitos, separados dos dados de perfil e visíveis apenas para `admin`.

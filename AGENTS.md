@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-Storefront is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
+DevButterStore is a Next.js 16 storefront and admin application integrated with Stripe for catalog and payment flows. It is built with React 19, TypeScript, and Yarn Classic on Node.js 24.
 
 ## Development Commands
 
@@ -52,7 +52,12 @@ yarn docker:run             # Run Docker container
 ## AI Patterns
 
 - Prefer Yarn Classic (`yarn@1.22.22`) for dependency management and scripts.
+- Para redesigns guiados por referência visual, especialmente no Selo Libertária, consolidar primeiro um sistema reutilizável de componentes e tokens; na trilha `Editorial V2`, usar papel `#F7F4EF`, preto profundo `#0B0B0B`, vinho seco `#7A1E22`, bege envelhecido `#D8D0C4`, capas grandes, serifas editoriais e bastante respiro, sem copiar código absoluto gerado pelo Figma.
+- When a workflow needs local productivity context and no native connector is available, prefer small AppleScript-backed helpers in `scripts/` plus a concise repo note such as `MAC_AUTOMATIONS.md`; they must degrade gracefully when macOS Calendar or Reminders permissions are unavailable.
+- For personal automation flows that coordinate multiple repositories, keep the source of truth in a parent-level `projects.json`, read it through a repo script instead of hardcoding one project path, and rank active work by deadline pressure plus explicit priority before generating daily briefs or focus blocks.
+- Quando a tarefa pedir um briefing de UI/UX ou uma descrição funcional ampla do produto, consolidar o inventário de funcionalidades em `spec.md` e manter `UI_UX_PATTERNS.md`, `userinterface.md` e `userexperience.md` alinhados com esse retrato.
 - Ao estreitar coleções derivadas de `FormData` com type predicates, preserve exatamente as uniões opcionais e anuláveis do objeto de entrada, ou normalize os valores antes do `filter`, para manter o `yarn build` e a checagem de TypeScript consistentes localmente e na Vercel.
+- Quando `src/lib/authz.ts` expuser aliases legados por compatibilidade, mantenha imports e chamadas novos no nome canônico com casing exato, especialmente em Server Actions, para evitar falhas de TypeScript que só aparecem no `yarn build` da Vercel.
 - Treat the repository as a reusable storefront starter: keep brand copy, visuals, icons, contact data, and metadata generic unless a task explicitly introduces a new store identity.
 - The default placeholder brand is `Storefront`; prefer neutral descriptions, neutral assets, and replaceable examples over niche editorial narratives.
 - When a task explicitly targets the Selo Libertaria rebrand, implement it as a hybrid editorial storefront: preserve the current store architecture, cart, checkout, account, and admin flows while layering institutional pages, cultural programming, and author-driven content on top instead of replacing commerce with a brochure site.
@@ -81,6 +86,7 @@ yarn docker:run             # Run Docker container
 - Splash screens ou overlays globais nunca devem interceptar interação em `/admin` ou `/login`; essas superfícies precisam abrir diretamente utilizáveis, sem camada transitória bloqueando clique, upload ou submit.
 - Depois de `events`, `projects` e `sarau-safado`, páginas institucionais como `about` e `contact` também devem entrar no mesmo circuito editorial administrável, preferindo documentos de página estruturados em Mongo, seed idempotente a partir dos mocks existentes e leitura pública com fallback seguro.
 - Blocos institucionais da home do Selo Libertária, especialmente `hero`, `manifesto`, `autora` e `CTA final`, também devem seguir o circuito editorial administrável em Mongo; preserve `events`, `projects` e catálogo como fontes separadas, em vez de colapsar a home inteira em um único texto rígido.
+- Na home do Selo Libertária, se o admin já persiste `author`, `community` ou mídia editorial de destaque, a página pública deve renderizar esses blocos integralmente; evitar salvar campos no backoffice que depois não aparecem no storefront.
 - Em coleções editoriais ordenáveis, como `events` e `projects`, o admin deve oferecer pelo menos reordenação básica por mover para cima/baixo antes de considerar interações mais pesadas como drag-and-drop; a ordem persistida em Mongo precisa refletir imediatamente no storefront.
 - User-facing copy should default to English across storefront, admin, transactional emails, and i18n fallbacks unless a task explicitly requires another locale; when normalizing mixed-language UI, also update related email templates, placeholders, and status messages in the same pass.
 - For the Selo Libertária rebrand, `pt-BR` is the primary public storefront language; new public-facing copy must go through the existing i18n layer and keep `en-US` as a secondary translation instead of leaving hardcoded English in the UI.
@@ -167,6 +173,8 @@ yarn docker:run             # Run Docker container
 - OAuth provider credentials managed in admin must be persisted encrypted at rest in Mongo with reversible server-side decryption derived from `JWT_SECRET`; decryptors should remain backward-compatible with older ciphertext formats during key-derivation transitions.
 - On the login screen, OAuth actions should render below the primary email/password submit button, and each provider button should reuse a matching SVG from `public/images/icons/` when that asset exists.
 - The social-login cluster on the login screen should follow `AUTH_SOCIAL_BUTTON_PATTERN.md`: centered single-column rail, shared max width, 44px buttons, visually centered labels, and Google rendered on a light surface that stays compliant with its branding rules.
+- No rebrand `Editorial V2`, a tela de `/login` deve abandonar o card genérico centralizado e assumir composição editorial de página inteira: header do sistema, bloco textual à esquerda, formulário em superfície de papel com cantos retos, trilho social logo abaixo do submit e uma capa/livro protagonista em painel escuro à direita.
+- No fluxo de cadastro dentro de `/login`, preferir uma jornada editorial em etapas curtas (`Conta`, `Entrega`, `Preferências`) em vez de um formulário longo e simultâneo; a primeira etapa deve pedir apenas o essencial para reduzir abandono.
 - Phone and address defaults should come from admin-configured regional settings, and the phone input should show a country/DDI selector beside the number field, start from the admin default country, and update the phone mask based on the currently selected country.
 - In the transparent checkout flow, the browser return must treat a freshly submitted order as `pedido recebido` and may send that email immediately, but it must not treat `payment_intent.succeeded` as final payment confirmation or clear the cart before the Stripe webhook processes and confirms the payment server-side.
 - The `/checkout/processing` screen must degrade gracefully when the browser-side `payment_intent` sync fails or the customer returns without a valid session cookie: keep a success-like return (`checkout=success|succeeded|processing`) in a non-error processing state and let the webhook-backed order status be the source of truth.

@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { env } from "@/env.mjs";
 import {
 	type Capability,
-	canBuyOnStorefront,
+	canBuyOnSelolibertaria,
 	hasCapability,
 	isUserBlocked,
 	normalizeUserRole,
@@ -91,10 +91,10 @@ export async function requireCapability(capability: Capability) {
 	return auth;
 }
 
-export async function requireStorefrontBuyer() {
+export async function requireSelolibertariaBuyer() {
 	const auth = await requireAuth();
 	if ("error" in auth) return auth;
-	if (!canBuyOnStorefront(auth.session.role)) {
+	if (!canBuyOnSelolibertaria(auth.session.role)) {
 		return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 	}
 	return auth;

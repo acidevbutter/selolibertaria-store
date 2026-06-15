@@ -53,7 +53,7 @@ export const FooterClient = ({
 	};
 
 	return (
-		<footer className="w-full border-t border-border/60 bg-[linear-gradient(180deg,rgba(20,14,14,0.98),rgba(11,9,9,1))] p-6 text-primary-foreground md:py-12">
+		<footer className="w-full border-t border-[color:var(--editorial-dark-border)] bg-[color:var(--editorial-ink)] p-6 text-[color:var(--editorial-paper)] md:py-12">
 			<div className="container flex max-w-7xl flex-row flex-wrap justify-center gap-16 text-sm sm:justify-between">
 				<div className="max-w-sm space-y-6">
 					<div className="space-y-2">

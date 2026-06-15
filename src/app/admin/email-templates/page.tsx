@@ -15,7 +15,7 @@ export default function EmailTemplatesPage() {
 			render: () =>
 				confirmationEmailHtml({
 					name: "Customer",
-					verifyUrl: "https://storefront.local/verify?token=abc123",
+					verifyUrl: "https://devbutterstore.local/verify?token=abc123",
 					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
@@ -25,7 +25,7 @@ export default function EmailTemplatesPage() {
 			render: () =>
 				passwordResetEmailHtml({
 					name: "Customer",
-					resetUrl: "https://storefront.local/reset-password?token=xyz",
+					resetUrl: "https://devbutterstore.local/reset-password?token=xyz",
 					supportEmail: "natalianolli@selolibertaria.page",
 				}),
 		},
@@ -45,7 +45,7 @@ export default function EmailTemplatesPage() {
 					currency: "BRL",
 					fulfillment: { status: "shipped", trackingNumber: "BR123456789" },
 					items: [
-						{ name: "T-shirt", qty: 2, unitAmount: 2000, image: "/images/storefront-mark.svg" },
+						{ name: "T-shirt", qty: 2, unitAmount: 2000, image: "/images/devbutterstore-mark.svg" },
 						{ name: "Poster", qty: 1, unitAmount: 1500, image: "/yns-cover.jpg" },
 					],
 					totalCents: 5500,
@@ -61,7 +61,7 @@ export default function EmailTemplatesPage() {
 					name: "Customer",
 					productName: "Essential T-shirt",
 					variantLabel: "Black / M",
-					productUrl: "https://storefront.local/product/essential-t-shirt",
+					productUrl: "https://devbutterstore.local/product/essential-t-shirt",
 					basePrice: "$129.90",
 					effectivePrice: "$99.90",
 					promotionLabel: "Flash sale",

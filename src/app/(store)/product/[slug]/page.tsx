@@ -1,24 +1,18 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
-import { Suspense } from "react";
 import { ProductImageGallery } from "@/app/(store)/product/[slug]/product-image-gallery.client";
 import { AddToCart } from "@/components/add-to-cart";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { publicUrl } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { commerce } from "@/lib/commerce-stripe";
-import type { YnsProduct } from "@/lib/commerce-types";
+import type { Product, YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { isFavorite } from "@/lib/favorites";
+import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
+import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
@@ -84,7 +78,6 @@ export default async function SingleProductPage(props: {
 	}
 
 	const t = await getTranslations("/product.page");
-	const seloT = await getTranslations("Selo");
 	const locale = await getLocale();
 
 	// Cast to YnsProduct to access YNS-specific fields
@@ -111,233 +104,208 @@ export default async function SingleProductPage(props: {
 	const displayStock = typeof selectedVariant?.stock === "number" ? selectedVariant?.stock : product.stock;
 	const isOutOfStock = displayStock === 0;
 	const selectedVariantId = selectedVariant?.id ?? ynsProduct.variants[0]?.id ?? product.id;
+	const relatedProducts = (
+		await commerce.product.browse({
+			first: 3,
+			currency: await getRequestPreferredCurrency(),
+		})
+	).data
+		.filter((candidate) => candidate.slug !== product.slug)
+		.slice(0, 2);
 	const session = await auth();
 	const favoriteActive = session
 		? await isFavorite({ userId: session.user.id, productSlug: product.slug, variantId: selectedVariantId })
 		: false;
+	const taxonomy = [
+		category ? deslugify(category) : null,
+		selectedVariant?.label ? deslugify(selectedVariant.label) : null,
+		"Poesia",
+		"Corpo",
+	]
+		.filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index)
+		.slice(0, 4);
+	const details = [
+		{
+			label: "Formato impresso",
+			value: selectedVariant?.label ? deslugify(selectedVariant.label) : "Edicao impressa",
+		},
+		{ label: "ISBN", value: "Em atualizacao" },
+		{ label: "Ano de publicacao", value: "Edicao atual do selo" },
+		{ label: "Editora / selo", value: "Selo Libertaria" },
+		{ label: "Envio para todo o Brasil", value: "Disponivel" },
+	];
 
 	return (
 		<article className="pb-12">
-			<Breadcrumb>
-				<BreadcrumbList>
-					<BreadcrumbItem>
-						<BreadcrumbLink asChild className="inline-flex min-h-12 min-w-12 items-center justify-center">
-							<YnsLink href="/products">{t("allProducts")}</YnsLink>
-						</BreadcrumbLink>
-					</BreadcrumbItem>
-					{category && (
-						<>
-							<BreadcrumbSeparator />
-							<BreadcrumbItem>
-								<BreadcrumbLink className="inline-flex min-h-12 min-w-12 items-center justify-center" asChild>
-									<YnsLink href={`/category/${category}`}>{deslugify(category)}</YnsLink>
-								</BreadcrumbLink>
-							</BreadcrumbItem>
-						</>
-					)}
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<BreadcrumbPage>{product.name}</BreadcrumbPage>
-					</BreadcrumbItem>
-				</BreadcrumbList>
-			</Breadcrumb>
-
-			<div className="mt-6 grid gap-6 lg:grid-cols-12">
-				<div className="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] p-6 text-primary-foreground lg:col-span-5 lg:col-start-8 lg:self-start">
-					<div className="flex items-start justify-between gap-4">
-						<div className="space-y-3">
-							<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/58">
-								{category ? deslugify(category) : seloT("product.categoryFallback")}
-							</p>
-							<h1 className="editorial-serif text-4xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-5xl">
-								{selectedVariant?.label
-									? formatProductName(product.name, selectedVariant.label)
-									: product.name}
-							</h1>
+			<EditorialShell className="space-y-10">
+				<section className="grid gap-10 lg:grid-cols-[420px_minmax(0,1fr)] lg:items-start">
+					<div className="max-w-[420px]">
+						<h2 className="sr-only">{t("imagesTitle")}</h2>
+						<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
+							<ProductImageGallery images={images} alt={product.name} />
 						</div>
-						<FavoriteToggle
-							productSlug={product.slug}
-							variantId={selectedVariantId}
-							initialActive={favoriteActive}
-						/>
 					</div>
-					<div className="mt-5 space-y-1">
-						<p className="text-xs uppercase tracking-[0.22em] text-primary-foreground/48">{t("addToCart")}</p>
-						<p className="price-font text-2xl font-medium leading-none tracking-tight text-primary-foreground/82">
-							{formatMoney({
-								amount: displayPrice,
-								currency: displayCurrency,
-								locale,
-							})}
-						</p>
-						{displayBasePrice > displayPrice ? (
-							<p className="text-sm text-muted-foreground line-through">
-								{formatMoney({
-									amount: displayBasePrice,
-									currency: displayCurrency,
-									locale,
-								})}
-							</p>
-						) : null}
-						{selectedVariant?.pricing?.promotionLabel ? (
-							<p className="text-xs font-medium uppercase tracking-[0.18em] text-[#d97957]">
-								{selectedVariant.pricing.promotionLabel}
-							</p>
-						) : null}
-					</div>
-					<div className="mt-3">
-						{isOutOfStock && <div className="text-sm text-primary-foreground/72">{t("outOfStock")}</div>}
-					</div>
-					{description ? (
-						<p className="mt-5 max-w-xl text-sm leading-8 text-primary-foreground/74">
-							{description.replace(/[#*_`>\n]/g, " ").slice(0, 220)}
-							{description.length > 220 ? "..." : ""}
-						</p>
-					) : null}
-				</div>
 
-				<div className="lg:col-span-7 lg:row-span-3 lg:row-start-1">
-					<h2 className="sr-only">{t("imagesTitle")}</h2>
-					<ProductImageGallery images={images} alt={product.name} />
-				</div>
-
-				<div className="grid gap-8 lg:col-span-5">
-					{variants.length > 1 && (
-						<section className="border border-border/60 bg-card/60 p-5">
-							<h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-								{t("variantTitle")}
-							</h2>
-							<div className="flex flex-wrap gap-2">
-								{variants.map((variant) => {
-									const currentSlug = variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
-									const isActive = selectedVariant?.id === variant.id;
-									const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
-									const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
-									return (
-										<YnsLink key={variant.id} href={href} scroll={false}>
-											<Badge
-												className={
-													isActive
-														? "bg-red-600 text-black hover:bg-red-600"
-														: "border-border text-muted-foreground hover:bg-muted/70"
-												}
-												variant={isActive ? "default" : "outline"}
-											>
-												{label}
-											</Badge>
-										</YnsLink>
-									);
-								})}
+					<div className="space-y-8 pt-2">
+						<div className="flex items-start justify-between gap-4">
+							<div className="space-y-5">
+								<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
+									{category ? deslugify(category) : "Livro"}
+								</EditorialEyebrow>
+								<h1 className="text-5xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">
+									{selectedVariant?.label
+										? formatProductName(product.name, selectedVariant.label)
+										: product.name}
+								</h1>
+								<p className="text-lg text-[color:var(--editorial-muted)]">{taxonomy.join(" / ")}</p>
+								<p className="price-font text-4xl font-black text-[color:var(--editorial-ink)]">
+									{formatMoney({
+										amount: displayPrice,
+										currency: displayCurrency,
+										locale,
+									})}
+								</p>
+								{displayBasePrice > displayPrice ? (
+									<p className="text-base text-[color:var(--editorial-muted)] line-through">
+										{formatMoney({
+											amount: displayBasePrice,
+											currency: displayCurrency,
+											locale,
+										})}
+									</p>
+								) : null}
+								<div className="flex flex-wrap gap-4">
+									<AddToCart
+										variantId={selectedVariantId}
+										className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-11 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]`}
+									>
+										{isOutOfStock ? t("outOfStock") : "Comprar"}
+									</AddToCart>
+									<YnsLink
+										href="#sinopse"
+										className="inline-flex h-11 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)]"
+									>
+										Ler trecho
+									</YnsLink>
+								</div>
+								{variants.length > 1 ? (
+									<div className="flex flex-wrap gap-2">
+										{variants.map((variant) => {
+											const currentSlug =
+												variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
+											const isActive = selectedVariant?.id === variant.id;
+											const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
+											const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
+											return (
+												<YnsLink key={variant.id} href={href} scroll={false}>
+													<Badge
+														className={
+															isActive
+																? "rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]"
+																: "rounded-none border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-muted)]"
+														}
+														variant={isActive ? "default" : "outline"}
+													>
+														{label}
+													</Badge>
+												</YnsLink>
+											);
+										})}
+									</div>
+								) : null}
+								{isOutOfStock ? (
+									<p className="text-sm text-[color:var(--editorial-muted)]">{t("outOfStock")}</p>
+								) : null}
 							</div>
-						</section>
-					)}
-					<section className="border border-border/60 bg-card/60 p-5">
-						<h2 className="sr-only">{t("descriptionTitle")}</h2>
-						<div className="prose text-secondary-foreground">
-							<Markdown source={description} />
+							<FavoriteToggle
+								productSlug={product.slug}
+								variantId={selectedVariantId}
+								initialActive={favoriteActive}
+							/>
 						</div>
-					</section>
 
-					<AddToCart
-						variantId={selectedVariantId}
-						className={`${isOutOfStock ? "opacity-50 cursor-not-allowed" : ""} display-font`}
-					>
-						{isOutOfStock ? t("outOfStock") : t("addToCart")}
-					</AddToCart>
-				</div>
-			</div>
+						<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
+							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Sinopse</EditorialEyebrow>
+							<div className="mt-6 max-w-3xl text-2xl leading-[1.45] text-[color:var(--editorial-muted)]">
+								<Markdown source={description} />
+							</div>
+						</div>
+					</div>
+				</section>
 
-			<div className="mt-10 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-				<section className="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.38),transparent_42%),linear-gradient(180deg,#220607_0%,#050203_100%)] p-6 text-primary-foreground sm:p-8">
-					<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/48">
-						{seloT("product.editorialEyebrow")}
-					</p>
-					<h2 className="editorial-serif mt-3 max-w-3xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-						{seloT("product.editorialTitle")}
+				<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-8 py-12 text-[color:var(--editorial-paper)] lg:grid-cols-[1.4fr_0.6fr] lg:items-end">
+					<h2 className="max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
+						“Se te começo,
+						<br />
+						logo me despeço.”
 					</h2>
-					<p className="mt-4 max-w-2xl text-sm leading-8 text-primary-foreground/72 sm:text-base">
-						{seloT("product.editorialBody")}
+					<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
+						Trecho visual do livro para criar desejo de leitura.
 					</p>
 				</section>
 
-				<section className="border border-border/60 bg-card/60 p-6 sm:p-8">
-					<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
-						{seloT("product.continueEyebrow")}
-					</p>
-					<div className="mt-5 grid gap-4">
-						<YnsLink
-							href="/events"
-							className="border border-border/50 bg-background/70 px-4 py-4 transition-colors hover:bg-accent"
-						>
-							<span className="editorial-serif block text-2xl font-semibold">
-								{seloT("product.eventsTitle")}
-							</span>
-							<span className="mt-1 block text-sm leading-7 text-muted-foreground">
-								{seloT("product.eventsBody")}
-							</span>
-						</YnsLink>
-						<YnsLink
-							href="/projects"
-							className="border border-border/50 bg-background/70 px-4 py-4 transition-colors hover:bg-accent"
-						>
-							<span className="editorial-serif block text-2xl font-semibold">
-								{seloT("product.projectsTitle")}
-							</span>
-							<span className="mt-1 block text-sm leading-7 text-muted-foreground">
-								{seloT("product.projectsBody")}
-							</span>
-						</YnsLink>
-						<YnsLink
-							href="/sarau-safado"
-							className="border border-border/50 bg-background/70 px-4 py-4 transition-colors hover:bg-accent"
-						>
-							<span className="editorial-serif block text-2xl font-semibold">Sarau Safado</span>
-							<span className="mt-1 block text-sm leading-7 text-muted-foreground">
-								{seloT("product.sarauBody")}
-							</span>
-						</YnsLink>
+				<section className="grid gap-10 lg:grid-cols-[1fr_0.95fr]">
+					<div>
+						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Detalhes</EditorialEyebrow>
+						<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
+							{details.map((detail) => (
+								<li
+									key={detail.label}
+									className="flex flex-col gap-3 border-b border-[color:var(--editorial-border)] py-5 sm:flex-row sm:items-center sm:justify-between"
+								>
+									<span className="text-2xl leading-tight text-[color:var(--editorial-ink)]">
+										{detail.label}
+									</span>
+									<span className="text-sm uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+										{detail.value}
+									</span>
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<div>
+						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
+							Outros livros
+						</EditorialEyebrow>
+						<div className="mt-10 grid gap-8 sm:grid-cols-2">
+							{relatedProducts.map((related) => (
+								<RelatedBookCard key={related.id} product={related} />
+							))}
+						</div>
 					</div>
 				</section>
-			</div>
 
-			<section className="mt-6 grid gap-6 border border-border/60 bg-background/70 p-6 sm:p-8 lg:grid-cols-[0.95fr_1.05fr]">
-				<div>
-					<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Leitura da obra</p>
-					<h2 className="editorial-serif mt-4 text-3xl font-semibold sm:text-4xl">
-						A compra é direta, mas a leitura continua para além da ficha do produto.
-					</h2>
-				</div>
-				<div className="grid gap-4 sm:grid-cols-3">
-					<div className="border border-border/50 bg-card/60 p-4">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Livro</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							Este título entra no catálogo como obra e como porta de entrada para o universo do selo.
-						</p>
-					</div>
-					<div className="border border-border/50 bg-card/60 p-4">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Presença</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							Leituras públicas, saraus e oficinas ampliam a experiência de leitura sem competir com a compra.
-						</p>
-					</div>
-					<div className="border border-border/50 bg-card/60 p-4">
-						<p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Continuidade</p>
-						<p className="mt-3 text-sm leading-7 text-muted-foreground">
-							O catálogo funciona melhor quando cada página convida a seguir para outras camadas do projeto.
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<Suspense>
-				<SimilarProducts id={selectedVariant?.productId ?? product.id} />
-			</Suspense>
-			<JsonLd jsonLd={mappedProductToJsonLd(product)} />
+				<JsonLd jsonLd={mappedProductToJsonLd(product)} />
+			</EditorialShell>
 		</article>
 	);
 }
 
-async function SimilarProducts({ id }: { id: string }) {
-	// TODO: Implement similar products functionality
-	return null;
+function RelatedBookCard({ product }: { product: Product }) {
+	return (
+		<YnsLink href={`/product/${product.slug}`} className="group block">
+			<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
+				<div className="aspect-[0.72] overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]">
+					{product.images[0] ? (
+						<Image
+							src={product.images[0]}
+							alt={product.name}
+							width={420}
+							height={580}
+							className="h-full w-full object-cover"
+							sizes="220px"
+							{...getProductImageOptimizationProps(product.images[0])}
+						/>
+					) : null}
+				</div>
+			</div>
+			<h3 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[color:var(--editorial-ink)] group-hover:text-[color:var(--editorial-accent)]">
+				{product.name}
+			</h3>
+			<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
+				{product.summary ?? "Novo titulo em breve"}
+			</p>
+		</YnsLink>
+	);
 }

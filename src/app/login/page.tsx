@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { getDefaultCurrencyForLocale } from "@/lib/currency";
 import { getPublicOAuthProviders } from "@/lib/oauth/config";
 import { getDefaultCountrySetting } from "@/lib/settings-store";
+import { Nav } from "@/ui/nav/nav";
 import LoginShell from "./login-shell.client";
 
 export default async function LoginPage() {
@@ -15,10 +16,13 @@ export default async function LoginPage() {
 		getDefaultCountrySetting(locale),
 	]);
 	return (
-		<LoginShell
-			defaultCountry={defaultCountry}
-			defaultCurrency={getDefaultCurrencyForLocale(locale)}
-			providers={providers}
-		/>
+		<>
+			<Nav />
+			<LoginShell
+				defaultCountry={defaultCountry}
+				defaultCurrency={getDefaultCurrencyForLocale(locale)}
+				providers={providers}
+			/>
+		</>
 	);
 }
