@@ -37,6 +37,7 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- A home pública agora consome integralmente os blocos editoriais configurados no admin para `author` e `community`, e o destaque de programação passou a puxar título, resumo e imagem do conteúdo editorial ativo.
 - Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.
 - Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.
 - A base da loja foi desmarcada para um estado genérico e reaproveitável, removendo referências da identidade anterior em documentação, metadata, textos institucionais, exemplos de email, identificadores técnicos visíveis e elementos principais de UI.

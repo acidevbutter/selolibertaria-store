@@ -3,7 +3,12 @@ import { publicUrl } from "@/env.mjs";
 import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import { getEditorialHomePage } from "@/lib/editorial-content-store";
+import {
+	getEditorialHomePage,
+	getEditorialSarauPage,
+	listEditorialEvents,
+} from "@/lib/editorial-content-store";
+import { HomeAuthorSpotlight } from "@/ui/home/home-author-spotlight";
 import { HomeCommunityCta } from "@/ui/home/home-community-cta";
 import { HomeFeaturedBooks } from "@/ui/home/home-featured-books";
 import { HomeHero } from "@/ui/home/home-hero";
@@ -18,7 +23,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-	const [homeContent, t] = await Promise.all([getEditorialHomePage(), getTranslations("Selo.home.fallback")]);
+	const [homeContent, featuredEvents, sarauPage, t] = await Promise.all([
+		getEditorialHomePage(),
+		listEditorialEvents(),
+		getEditorialSarauPage(),
+		getTranslations("Selo.home.fallback"),
+	]);
+	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
 	try {
 		const result = await commerce.product.browse({ first: 6, currency: await getRequestPreferredCurrency() });
 		const products = result.data || [];
@@ -29,7 +40,8 @@ export default async function Home() {
 				<div className="space-y-8 md:space-y-12">
 					<HomeManifesto content={homeContent.manifesto} />
 					<HomeFeaturedBooks products={products} />
-					<HomeProgramGrid />
+					<HomeProgramGrid event={featuredEvent} sarau={sarauPage} />
+					<HomeAuthorSpotlight content={homeContent.author} />
 					<HomeCommunityCta content={homeContent.community} />
 				</div>
 			</div>
@@ -53,7 +65,8 @@ export default async function Home() {
 						</YnsLink>
 					</div>
 					<HomeManifesto content={homeContent.manifesto} />
-					<HomeProgramGrid />
+					<HomeProgramGrid event={featuredEvent} sarau={sarauPage} />
+					<HomeAuthorSpotlight content={homeContent.author} />
 					<HomeCommunityCta content={homeContent.community} />
 				</div>
 			</div>

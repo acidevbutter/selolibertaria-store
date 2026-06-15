@@ -95,6 +95,8 @@
 ## Admin
 
 - A interface do backoffice deve esconder entradas e ações que o papel logado não pode usar, especialmente na futura diferenciação entre `admin` e `vendor`.
+- No shell administrativo editorial, a barra lateral deve permanecer preta, fixa e com largura estável, enquanto a área de trabalho usa papel claro e largura ampla para não parecer um dashboard SaaS genérico.
+- Títulos de operação do admin devem priorizar leitura clara; a expressão tipográfica mais dramática da marca pode aparecer no logo e em acentos, mas não deve esmagar blocos analíticos longos.
 - Perfis internos não devem receber affordances de compra na storefront por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
 - No dashboard administrativo, KPIs executivos devem aparecer primeiro em cards compactos e comparáveis, seguidos por blocos separados de pagamento, fulfillment e saúde operacional.
 - Estados que exigem atenção, como disputa, falha de email, webhook pendente ou pedido pago sem avanço operacional, devem receber destaque visual superior ao de métricas históricas neutras.

@@ -316,6 +316,8 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 ### Dashboard administrativo
 
 - O dashboard do admin deve funcionar como painel de decisão, não apenas como resumo decorativo de números.
+- No `Desktop / Admin Conceitual`, a sidebar é um trilho preto fixo e silencioso; a área principal trabalha em papel claro com bordas retas e sem visual translúcido.
+- A DCC Ash deve ficar concentrada na assinatura da marca e em acentos pontuais; títulos operacionais longos do dashboard precisam usar uma leitura mais sóbria para não sacrificar legibilidade.
 - A primeira dobra precisa responder rapidamente:
   - quanto entrou;
   - quantos pedidos exigem ação;

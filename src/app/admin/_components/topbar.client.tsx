@@ -17,20 +17,29 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 		setNavigating(false);
 	}, [pathname]);
 	return (
-		<div className="md:hidden sticky top-0 z-40 border-b bg-background">
-			<div className="flex h-14 items-center justify-between px-4">
-				<Link href="/admin" className="font-semibold">
-					Admin
+		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
+			<div className="flex h-16 items-center justify-between px-5">
+				<Link href="/admin" className="text-sm font-black uppercase tracking-[0.2em]">
+					Selo Libertária
 				</Link>
 				<Sheet>
-					<SheetTrigger className="inline-flex items-center justify-center rounded-md p-2 hover:bg-muted">
+					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
 						<Menu className="h-5 w-5" />
-						<span className="sr-only">Open menu</span>
+						<span className="sr-only">Abrir menu</span>
 					</SheetTrigger>
-					<SheetContent side="left" className="p-0">
-						<SheetTitle className="sr-only">Navigation menu</SheetTitle>
-						<div className="px-4 py-4 border-b font-semibold">Menu</div>
-						<nav className="p-2 space-y-1">
+					<SheetContent
+						side="left"
+						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
+					>
+						<SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+						<div className="border-b border-white/10 px-6 pb-7 pt-8">
+							<div className="editorial-serif text-[2.1rem] leading-[0.92] tracking-[-0.02em]">
+								SELO
+								<br />
+								LIBERTÁRIA
+							</div>
+						</div>
+						<nav className="space-y-1 px-4 py-6">
 							{visibleNavItems.map(({ href, label }) => {
 								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
 								return (
@@ -45,8 +54,10 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 												setNavigating(true);
 											}}
 											className={cn(
-												"block rounded-md px-3 py-2 text-sm",
-												active ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground",
+												"block border-l-2 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em]",
+												active
+													? "border-[color:var(--editorial-accent)] bg-white/6 text-[color:var(--editorial-paper)]"
+													: "border-transparent text-white/62 hover:border-white/18 hover:bg-white/4 hover:text-[color:var(--editorial-paper)]",
 											)}
 										>
 											{label}
@@ -59,8 +70,8 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 				</Sheet>
 			</div>
 			{navigating && (
-				<div className="fixed inset-0 z-[60] grid place-items-center bg-background/60">
-					<Loader2 className="h-8 w-8 animate-spin text-primary" />
+				<div className="fixed inset-0 z-[60] grid place-items-center bg-black/55">
+					<Loader2 className="h-8 w-8 animate-spin text-[color:var(--editorial-paper)]" />
 				</div>
 			)}
 		</div>
