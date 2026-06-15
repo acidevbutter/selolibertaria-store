@@ -102,12 +102,26 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - O trilho social usa coluna única, largura máxima de `22rem` e botões de `44px`.
 - Google mantém fundo claro e ícone oficial; demais provedores seguem a mesma estrutura visual do sistema.
 
+### Login editorial do Selo Libertária
+
+- Em `Editorial V2`, a tela de login deve parecer uma página editorial do próprio site, não um modal ou card SaaS pousado no centro.
+- A composição preferencial no desktop é um `spread` em duas colunas: conteúdo e formulário à esquerda, capa/livro protagonista à direita.
+- O header da tela de login deve repetir o header editorial do sistema, preservando continuidade visual com home, catálogo e PDP.
+- O formulário deve usar fundo papel, bordas retas, labels em caixa alta discreta e apenas uma CTA primária forte.
+- O submit e o trilho de OAuth devem compartilhar a mesma largura máxima para reforçar alinhamento visual.
+- A coluna visual deve usar capa de livro real ou arte do acervo como protagonista, com bloco-quote curto sobreposto para criar atmosfera.
+- No mobile, a hierarquia deve virar pilha: header, texto de entrada, formulário, OAuth, bloco visual reduzido.
+
 ### Cadastro
 
-- O cadastro é dividido em cards/seções:
-  - `Account`
-  - `Delivery Address`
-  - `Security`
+- No contexto do `/login` editorial do Selo Libertária, o cadastro deve ser progressivo e dividido em etapas curtas, não apresentado como um bloco longo único.
+- A sequência preferencial é:
+  - `Conta`
+  - `Entrega`
+  - `Preferências`
+- A etapa `Conta` deve concentrar apenas o essencial para a decisão inicial: nome, email, telefone e senha.
+- O endereço completo deve entrar apenas depois que a pessoa conclui a primeira etapa, reduzindo sensação de esforço antes do compromisso.
+- A última etapa deve ficar mais leve, reservando preferências como moeda e opt-in de marketing para o fim.
 - A seção `Account` pode incluir preferências primárias da conta, como moeda preferida, desde que isso não desloque a CTA principal nem quebre a leitura em mobile.
 - Campos de erro aparecem em banner superior com borda e fundo de erro.
 - Disponibilidade de email é validada de forma assíncrona com feedback curto.

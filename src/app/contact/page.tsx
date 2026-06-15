@@ -3,9 +3,9 @@ import { getTranslations } from "@/i18n/server";
 import { getEditorialContactPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { ContactForm } from "@/ui/contact/contact-form.client";
+import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { YnsLink } from "@/ui/yns-link";
 
 export const generateMetadata = async (): Promise<Metadata> => {
@@ -22,47 +22,45 @@ export default async function ContactPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<main className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-				<div
-					className="pointer-events-none absolute inset-0 select-none opacity-40 [mask-image:radial-gradient(circle_at_center,white,transparent_70%)]"
-					aria-hidden
-				/>
-				<header className="mb-10 overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
+			<EditorialShell className="relative py-12">
+				<header className="mb-10 overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] px-6 py-10 sm:px-10 sm:py-14">
 					<div className="max-w-4xl space-y-5">
-						<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
+						<EditorialEyebrow className="sm:text-sm">
 							{contact.hero?.eyebrow || t("contact.eyebrow")}
-						</p>
-						<h1 className="editorial-serif max-w-4xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
+						</EditorialEyebrow>
+						<h1 className="max-w-4xl text-balance text-5xl leading-[0.92] font-black uppercase tracking-[-0.06em] sm:text-6xl">
 							{contact.hero?.title || t("contact.title")}
 						</h1>
-						<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
+						<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)] sm:text-lg">
 							{contact.hero?.body || t("contact.description")}
 						</p>
 					</div>
 				</header>
 				<div className="grid gap-8 lg:grid-cols-3">
-					<Card className="border-border/60 lg:col-span-2 backdrop-blur supports-[backdrop-filter]:bg-card/70">
-						<CardHeader className="pb-4">
-							<CardTitle className="editorial-serif text-3xl">
+					<EditorialPanel className="lg:col-span-2">
+						<div className="pb-4">
+							<h2 className="text-3xl font-black uppercase">
 								{contact.form?.title || t("contact.formTitle")}
-							</CardTitle>
-							<CardDescription>{contact.form?.description || t("contact.formDescription")}</CardDescription>
-						</CardHeader>
-						<CardContent className="pt-2">
+							</h2>
+							<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
+								{contact.form?.description || t("contact.formDescription")}
+							</p>
+						</div>
+						<div className="pt-2">
 							<ContactForm />
-						</CardContent>
-					</Card>
+						</div>
+					</EditorialPanel>
 					<div className="space-y-8">
-						<Card className="border-border/60 backdrop-blur supports-[backdrop-filter]:bg-card/70">
-							<CardHeader className="pb-4">
-								<CardTitle className="editorial-serif text-3xl">
+						<EditorialPanel>
+							<div className="pb-4">
+								<h2 className="text-3xl font-black uppercase">
 									{contact.direct?.title || t("contact.directTitle")}
-								</CardTitle>
-								<CardDescription>
+								</h2>
+								<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
 									{contact.direct?.description || t("contact.directDescription")}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="pt-2 text-sm">
+								</p>
+							</div>
+							<div className="pt-2 text-sm">
 								<ul className="space-y-3">
 									{(
 										contact.direct?.links ?? [
@@ -102,18 +100,18 @@ export default async function ContactPage() {
 										</li>
 									))}
 								</ul>
-							</CardContent>
-						</Card>
-						<Card className="border-border/60 backdrop-blur supports-[backdrop-filter]:bg-card/70">
-							<CardHeader className="pb-4">
-								<CardTitle className="editorial-serif text-3xl">
+							</div>
+						</EditorialPanel>
+						<EditorialPanel className="bg-[color:var(--editorial-beige)]">
+							<div className="pb-4">
+								<h2 className="text-3xl font-black uppercase">
 									{contact.paths?.title || t("contact.pathsTitle")}
-								</CardTitle>
-								<CardDescription>
+								</h2>
+								<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
 									{contact.paths?.description || t("contact.pathsDescription")}
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="pt-2 text-sm">
+								</p>
+							</div>
+							<div className="pt-2 text-sm">
 								<ul className="space-y-2">
 									{(
 										contact.paths?.links ?? [
@@ -133,11 +131,11 @@ export default async function ContactPage() {
 										</li>
 									))}
 								</ul>
-							</CardContent>
-						</Card>
+							</div>
+						</EditorialPanel>
 					</div>
 				</div>
-			</main>
+			</EditorialShell>
 			<Footer />
 		</div>
 	);

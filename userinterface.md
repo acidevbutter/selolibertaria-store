@@ -81,6 +81,15 @@
 - Em uploads administrativos por arquivo, a prévia principal deve abrir em modal de confirmação com ações claras de `Salvar` e `Descartar`, para que a pessoa valide visualmente a mídia antes de mantê-la no formulário ou iniciar o envio.
 - Em `/admin` e `/login`, nenhuma camada global transitória deve ficar por cima dos controles. Backoffice e autenticação precisam estar clicáveis assim que a rota renderizar.
 - Em listas editoriais com ordenação, a interface deve expor controles pequenos e diretos de subir/descer na própria linha do item, para que a pessoa operadora ajuste sequência sem abrir a tela de edição.
+
+## Login do Selo Libertária
+
+- A tela de login deve seguir a linguagem `Editorial V2` do restante da storefront, com header editorial, superfície de papel e protagonista visual ligado a livro/capa.
+- Evitar o padrão de card centralizado isolado sobre fundo neutro; a página inteira deve compor o enquadramento do login.
+- O layout preferencial no desktop é assimétrico em duas colunas: texto e formulário à esquerda, capa/livro em painel escuro à direita.
+- Inputs e botões devem usar cantos retos e bordas discretas, com a CTA principal em preto profundo e trilho social alinhado logo abaixo.
+- O bloco visual da direita deve parecer capa ampliada ou cartaz editorial, e pode receber uma citação curta sobreposta como elemento de ritmo.
+- Quando a pessoa optar por criar conta nessa mesma superfície, o cadastro deve migrar para um fluxo em etapas, com indicador de progresso editorial e apenas um grupo lógico de campos por vez.
 - A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
 
 ## Admin

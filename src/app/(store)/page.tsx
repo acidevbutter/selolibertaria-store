@@ -4,7 +4,6 @@ import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialHomePage } from "@/lib/editorial-content-store";
-import { EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { HomeCommunityCta } from "@/ui/home/home-community-cta";
 import { HomeFeaturedBooks } from "@/ui/home/home-featured-books";
 import { HomeHero } from "@/ui/home/home-hero";
@@ -27,19 +26,19 @@ export default async function Home() {
 		return (
 			<div className="space-y-8 pb-12 md:space-y-12">
 				<HomeHero content={homeContent.hero} />
-				<EditorialShell className="space-y-8 md:space-y-12">
+				<div className="space-y-8 md:space-y-12">
 					<HomeManifesto content={homeContent.manifesto} />
 					<HomeFeaturedBooks products={products} />
 					<HomeProgramGrid />
 					<HomeCommunityCta content={homeContent.community} />
-				</EditorialShell>
+				</div>
 			</div>
 		);
 	} catch (error) {
 		return (
 			<div className="space-y-8 pb-12 md:space-y-12">
 				<HomeHero content={homeContent.hero} />
-				<EditorialShell className="space-y-8 md:space-y-12">
+				<div className="space-y-8 md:space-y-12">
 					<section className="border border-red-500/30 bg-red-500/8 p-4 text-center text-sm text-red-700 dark:text-red-300">
 						{t("catalogUnavailable")}
 						<br />
@@ -56,7 +55,7 @@ export default async function Home() {
 					<HomeManifesto content={homeContent.manifesto} />
 					<HomeProgramGrid />
 					<HomeCommunityCta content={homeContent.community} />
-				</EditorialShell>
+				</div>
 			</div>
 		);
 	}

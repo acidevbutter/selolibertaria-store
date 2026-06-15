@@ -7,41 +7,55 @@ import { NavMenu } from "@/ui/nav/nav-menu";
 // import ThemeToggle from "@/ui/theme-toggle.client";
 import { YnsLink } from "@/ui/yns-link";
 
-export const Nav = async () => {
+export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {}) => {
 	const session = await auth();
 	return (
-		<header className="sticky top-0 z-50 border-b border-[color:var(--editorial-ink)] bg-[color:rgba(247,244,239,0.96)] backdrop-blur-xs">
-			<div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-				<YnsLink
-					href="/"
-					className="min-w-0 shrink-0 text-sm font-black uppercase tracking-[0.14em] text-[color:var(--editorial-ink)]"
-				>
-					{seloSiteMeta.name}
-				</YnsLink>
+		<header className="sticky top-0 z-50 bg-[color:rgba(247,244,239,0.98)] backdrop-blur-xs">
+			<div className="w-full bg-[color:var(--editorial-paper)] px-4 py-5 sm:px-8 lg:px-12">
+				<div className="flex items-center justify-between gap-6">
+					<YnsLink
+						href="/"
+						className="min-w-0 shrink-0 text-sm font-black uppercase tracking-[0.16em] text-[color:var(--editorial-ink)]"
+					>
+						{seloSiteMeta.name}
+					</YnsLink>
 
-				<div className="min-w-0 flex-1 lg:flex lg:justify-end">
-					<NavMenu />
+					<div className="flex items-center gap-5">
+						<div className="min-w-0 flex-1 lg:flex lg:justify-end">
+							<NavMenu />
+						</div>
+						{hideAuthCta ? null : (
+							<>
+								<div className="flex items-center gap-2 lg:hidden">
+									{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
+									<YnsLink
+										href={session ? "/user" : "/login"}
+										className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
+									>
+										<UserIcon className="h-4 w-4" />
+									</YnsLink>
+								</div>
+								<YnsLink
+									href={session ? "/user" : "/login"}
+									className="hidden h-12 w-25 items-center justify-center bg-[color:var(--editorial-ink)] px-3 text-[11px] font-black uppercase leading-[1.05] tracking-[0.2em] text-[color:var(--editorial-paper)] lg:inline-flex"
+								>
+									<span className="block text-center">
+										{session ? (
+											<>
+												MINHA
+												<br />
+												CONTA
+											</>
+										) : (
+											<>ENTRAR</>
+										)}
+									</span>
+								</YnsLink>
+							</>
+						)}
+					</div>
 				</div>
-				<div className="flex items-center gap-2">
-					{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
-					{isBackofficeRole(session?.user.role) && (
-						<YnsLink href="/admin" className="text-xs font-bold uppercase tracking-[0.14em] hover:underline">
-							Admin
-						</YnsLink>
-					)}
-					<YnsLink
-						href={session ? "/user" : "/login"}
-						className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:var(--editorial-ink)] hover:text-[color:var(--editorial-paper)]"
-					>
-						<UserIcon className="h-4 w-4" />
-					</YnsLink>
-					<YnsLink
-						href="/products"
-						className="hidden h-10 items-center justify-center bg-[color:var(--editorial-ink)] px-4 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] lg:inline-flex"
-					>
-						Comprar
-					</YnsLink>
-				</div>
+				<div className="mt-5 border-b border-[color:var(--editorial-ink)]" />
 			</div>
 		</header>
 	);

@@ -34,13 +34,19 @@ export function ContactForm({ className }: ContactFormProps) {
 		<form onSubmit={onSubmit} className={cn("space-y-6", className)}>
 			<div className="grid gap-6 sm:grid-cols-2">
 				<div className="space-y-2">
-					<label htmlFor="name" className="text-xs font-medium uppercase tracking-wide text-neutral-600">
+					<label
+						htmlFor="name"
+						className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+					>
 						{t("fields.name")}
 					</label>
 					<Input id="name" name="name" required placeholder={t("placeholders.name")} autoComplete="name" />
 				</div>
 				<div className="space-y-2">
-					<label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-neutral-600">
+					<label
+						htmlFor="email"
+						className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+					>
 						{t("fields.email")}
 					</label>
 					<Input
@@ -54,13 +60,19 @@ export function ContactForm({ className }: ContactFormProps) {
 				</div>
 			</div>
 			<div className="space-y-2">
-				<label htmlFor="subject" className="text-xs font-medium uppercase tracking-wide text-neutral-600">
+				<label
+					htmlFor="subject"
+					className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+				>
 					{t("fields.subject")}
 				</label>
 				<Input id="subject" name="subject" required placeholder={t("placeholders.subject")} />
 			</div>
 			<div className="space-y-2">
-				<label htmlFor="message" className="text-xs font-medium uppercase tracking-wide text-neutral-600">
+				<label
+					htmlFor="message"
+					className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+				>
 					{t("fields.message")}
 				</label>
 				<textarea
@@ -68,12 +80,16 @@ export function ContactForm({ className }: ContactFormProps) {
 					name="message"
 					required
 					rows={6}
-					className="flex w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					className="flex min-h-36 w-full resize-y border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					placeholder={t("placeholders.message")}
 				/>
 			</div>
 			<div className="flex items-center gap-4">
-				<Button type="submit" disabled={status === "submitting"} className="min-w-32">
+				<Button
+					type="submit"
+					disabled={status === "submitting"}
+					className="min-w-32 rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+				>
 					{status === "submitting"
 						? t("actions.sending")
 						: status === "sent"

@@ -47,6 +47,14 @@
 - Em uploads por arquivo no admin, abrir uma prévia em modal antes da confirmação reduz ansiedade operacional e evita salvar mídia errada; `Salvar` deve confirmar a escolha, e `Descartar` deve limpar a seleção sem efeitos colaterais.
 - Em rotas de admin e login, qualquer splash global que bloqueie interação degrada a confiança do produto. Essas superfícies devem responder imediatamente a clique, digitação e seleção de arquivo.
 
+## Login do Selo Libertária
+
+- A experiência de login deve continuar funcional e imediata, mas com sensação de entrada em um universo editorial, não em uma tela técnica apartada do resto do site.
+- A primeira leitura precisa comunicar três coisas sem esforço: onde a pessoa está, por que vale entrar e qual caminho principal seguir para autenticação.
+- A presença de uma capa ou peça visual grande ao lado do formulário deve aumentar desejo e reconhecimento de marca sem competir com o submit.
+- Recuperação de senha, login social e criação de conta precisam continuar acessíveis, mas subordinados claramente ao fluxo principal de entrar.
+- No cadastro, a experiência deve reduzir desistência pedindo primeiro o mínimo necessário; endereço e preferências podem entrar em passos posteriores, desde que a progressão fique clara e calma.
+
 ## Footer da storefront
 
 - O crédito de desenvolvimento deve funcionar como informação secundária de confiança, não como CTA principal.

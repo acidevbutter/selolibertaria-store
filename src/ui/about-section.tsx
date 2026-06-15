@@ -35,36 +35,39 @@ export async function AboutSection({
 		<section
 			className={
 				className ??
-				"rounded-3xl border border-border/60 bg-[radial-gradient(circle_at_top,#2b1814,transparent_50%),linear-gradient(180deg,#1a1716,#0f0d0d)] py-10 text-primary-foreground sm:py-14"
+				"border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] py-10 sm:py-14"
 			}
 		>
-			<div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-8 sm:px-16 md:grid-cols-2">
+			<div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-8 sm:px-12 md:grid-cols-2">
 				<div className="flex justify-center md:justify-start">
 					<Image
 						src={imageSrc}
 						alt={imageAlt}
 						width={420}
 						height={420}
-						className="rounded-3xl border border-white/10 object-cover shadow-2xl"
+						className="border border-[color:var(--editorial-ink)] object-cover"
 						style={{ objectFit: "cover" }}
 						priority={false}
 					/>
 				</div>
 
 				<div className="max-w-xl space-y-4">
-					<p className="text-sm uppercase tracking-[0.24em] text-primary-foreground/60">
+					<p className="text-sm uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
 						{t("about.sectionEyebrow")}
 					</p>
-					<Heading className="mb-2 text-3xl font-semibold tracking-tight text-primary-foreground sm:text-4xl">
+					<Heading className="mb-2 text-4xl font-black tracking-[-0.05em] uppercase text-[color:var(--editorial-ink)] sm:text-5xl">
 						{resolvedTitle}
 					</Heading>
-					<p className="leading-7 text-primary-foreground/80">{resolvedBody}</p>
+					<p className="leading-8 text-[color:var(--editorial-muted)]">{resolvedBody}</p>
 					{resolvedExtended ? (
-						<p className="leading-7 text-primary-foreground/72">{resolvedExtended}</p>
+						<p className="leading-8 text-[color:var(--editorial-muted)]">{resolvedExtended}</p>
 					) : null}
 					{showReadMore && (
 						<p className="mt-4">
-							<YnsLink className="underline underline-offset-4" href="/about">
+							<YnsLink
+								className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+								href="/about"
+							>
 								{t("about.sectionReadMore")}
 							</YnsLink>
 						</p>

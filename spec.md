@@ -9,6 +9,8 @@ Implementar as funcionalidades e a identidade de conteúdo do Selo Libertária d
 - O fluxo de autenticação por senha deve continuar compatível com contas legadas cujo `email` foi persistido com letras maiúsculas ou casing misto.
 - O login precisa localizar essas contas de forma case-insensitive, e após autenticação bem-sucedida deve normalizar o valor salvo para minúsculas.
 - Cookies de sessão inválidos ou legados devem ser descartados silenciosamente durante a checagem de autenticação para evitar loops de erro e ruído de `Invalid Compact JWS`.
+- No rebrand `Editorial V2`, a tela de login deve ser tratada como superfície pública de marca: header editorial, formulário em papel com cantos retos, CTA única forte, OAuth subordinado e um painel visual de capa/livro integrando a composição em vez de um card genérico centralizado.
+- Na criação de conta dentro de `/login`, o fluxo preferencial deve ser multi-step (`Conta`, `Entrega`, `Preferências`), preservando a API atual mas reduzindo abandono com uma primeira etapa curta e de baixo atrito.
 - Uploads administrativos por seleção de arquivo devem incluir uma etapa explícita de revisão em modal com prévia ampliada e ações `Salvar`/`Descartar`, preservando a diferença entre modos `instant` e `on-submit`.
 
 O resultado desejado não é trocar a loja por um site institucional, e sim transformar a storefront atual em uma plataforma híbrida:

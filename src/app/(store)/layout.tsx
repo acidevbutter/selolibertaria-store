@@ -19,9 +19,7 @@ export default async function StoreLayout({
 			<Nav />
 			<NavScroll />
 			<TooltipProvider>
-				<main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-6 pt-2 sm:px-6 lg:px-8">
-					{children}
-				</main>
+				<main className="flex w-full flex-1 flex-col">{children}</main>
 				<Footer />
 			</TooltipProvider>
 			<JsonLd

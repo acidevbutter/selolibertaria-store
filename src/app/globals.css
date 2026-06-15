@@ -3,16 +3,16 @@
 
 /* Neutral typography helpers for the generic storefront baseline. */
 .display-font {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
 }
 
 .price-font {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 	/* Keep price sizing and weight inherited unless explicitly set */
 }
 
 .editorial-serif {
-	font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -108,11 +108,11 @@
 }
 
 @utility display-font {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
 }
 
 @utility editorial-serif {
-	font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 }
 
 @utility animation-fade-in {
@@ -204,6 +204,7 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+		font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
 		background:
 			radial-gradient(circle at top, rgba(122, 30, 34, 0.08), transparent 30%),
 			linear-gradient(180deg, var(--editorial-paper) 0%, #f3ede4 100%);
@@ -214,7 +215,7 @@
 	h2,
 	h3,
 	.seo-h1 {
-		font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+		font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 		letter-spacing: -0.03em;
 	}
 

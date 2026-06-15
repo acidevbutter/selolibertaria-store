@@ -8,8 +8,8 @@ export async function HomeManifesto({ content }: { content?: EditorialHomePage["
 	const manifesto = content ?? null;
 
 	return (
-		<section className="border-t border-[color:var(--editorial-border)] px-0 py-10 sm:py-14">
-			<div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+		<section className="border-t border-[color:var(--editorial-border)] py-10 sm:py-14">
+			<div className="grid gap-8 px-4 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:px-8">
 				<div className="space-y-5">
 					<EditorialEyebrow>Manifesto</EditorialEyebrow>
 					<p className="max-w-4xl text-balance text-4xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">

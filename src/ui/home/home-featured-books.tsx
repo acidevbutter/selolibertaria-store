@@ -14,8 +14,8 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 	return (
 		<EditorialSection className="space-y-16">
 			{featured ? (
-				<section className="bg-[color:var(--editorial-ink)] px-6 py-10 text-[color:var(--editorial-paper)] sm:px-8 sm:py-14">
-					<div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+				<section className="bg-[color:var(--editorial-ink)] py-10 text-[color:var(--editorial-paper)] sm:py-14">
+					<div className="grid gap-10 px-4 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start lg:px-8">
 						<div className="border border-[color:rgba(247,244,239,0.22)] bg-[color:var(--editorial-beige)] p-4">
 							<div className="relative aspect-[0.72] overflow-hidden border border-[color:var(--editorial-ink)]">
 								<Image
@@ -69,7 +69,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 			) : null}
 
 			<section className="space-y-8">
-				<div className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_320px] lg:items-start">
+				<div className="grid gap-6 border-t border-[color:var(--editorial-border)] px-8 pt-8 lg:grid-cols-[1fr_320px] lg:items-start">
 					<h2 className="text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl">Catalogo</h2>
 					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
 						Poucos cards, capas grandes e filtros discretos. O catálogo deve parecer uma estante curada, não

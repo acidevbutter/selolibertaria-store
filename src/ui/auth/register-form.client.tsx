@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useTranslations } from "@/i18n/client";
 import type { Cart } from "@/lib/commerce-types";
 import type { SupportedCurrency } from "@/lib/currency";
 import { normalizePhoneParts } from "@/lib/location/countries";
+import { cn } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { CurrencySelect } from "@/ui/auth/currency-select";
 import { PhoneInput, type PhoneValue } from "@/ui/auth/phone-input.client";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 import { PasswordInput } from "@/ui/shadcn/password-input";
 
 type Props = {
@@ -20,6 +21,8 @@ type Props = {
 	pending: boolean;
 	onRegistered: (email: string) => void;
 };
+
+type RegisterStep = 1 | 2 | 3;
 
 function createInitialAddress(defaultCountry: string): AddressValue {
 	return {
@@ -35,8 +38,20 @@ function createInitialAddress(defaultCountry: string): AddressValue {
 	};
 }
 
+const fieldClassName =
+	"h-12 rounded-none border-[color:var(--editorial-border)] bg-transparent px-4 text-base text-[color:var(--editorial-ink)] shadow-none placeholder:text-[color:var(--editorial-muted)] focus-visible:ring-0 focus-visible:border-[color:var(--editorial-ink)]";
+
+const stepMeta = {
+	1: { label: "Conta", helper: "Primeiro, os dados essenciais para criar sua entrada no selo." },
+	2: { label: "Entrega", helper: "Seu endereço fica no segundo passo, sem apertar a primeira decisão." },
+	3: { label: "Preferências", helper: "Últimos ajustes antes de concluir e continuar sua jornada." },
+} as const;
+
+const registerSteps: RegisterStep[] = [1, 2, 3];
+
 export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, onRegistered }: Props) {
 	const t = useTranslations("Register");
+	const [step, setStep] = useState<RegisterStep>(1);
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [phone, setPhone] = useState<PhoneValue>(() => normalizePhoneParts(defaultCountry, ""));
@@ -113,26 +128,17 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 		}
 	}
 
-	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		setError(null);
+	function validateStepOne() {
+		if (!name.trim()) return t("errors.nameRequired");
+		if (!normalizedEmail) return t("errors.emailInvalid");
+		if (emailStatus === "taken") return t("errors.emailTaken");
+		if (!phone.e164) return t("errors.phoneRequired");
+		if (!isStrong) return t("errors.passwordWeak");
+		if (password !== confirmPassword) return t("errors.passwordMismatch");
+		return null;
+	}
 
-		if (!name.trim()) {
-			setError(t("errors.nameRequired"));
-			return;
-		}
-		if (!normalizedEmail) {
-			setError(t("errors.emailInvalid"));
-			return;
-		}
-		if (emailStatus === "taken") {
-			setError(t("errors.emailTaken"));
-			return;
-		}
-		if (!phone.e164) {
-			setError(t("errors.phoneRequired"));
-			return;
-		}
+	function validateStepTwo() {
 		if (
 			!address.line1 ||
 			!address.number ||
@@ -141,15 +147,26 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 			!address.postalCode ||
 			!address.country
 		) {
-			setError(t("errors.addressRequired"));
+			return t("errors.addressRequired");
+		}
+		return null;
+	}
+
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		setError(null);
+
+		const stepOneError = validateStepOne();
+		if (stepOneError) {
+			setStep(1);
+			setError(stepOneError);
 			return;
 		}
-		if (!isStrong) {
-			setError(t("errors.passwordWeak"));
-			return;
-		}
-		if (password !== confirmPassword) {
-			setError(t("errors.passwordMismatch"));
+
+		const stepTwoError = validateStepTwo();
+		if (stepTwoError) {
+			setStep(2);
+			setError(stepTwoError);
 			return;
 		}
 
@@ -172,6 +189,7 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 				},
 			},
 		};
+
 		if (cart?.items?.length) {
 			payload.cart = {
 				items: cart.items.map((item) => ({
@@ -201,86 +219,131 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 		}
 	}
 
-	return (
-		<form onSubmit={handleSubmit} autoComplete="on">
-			<div className="grid gap-6">
-				{error ? (
-					<p className="text-sm rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive lg:col-span-2">
-						{error}
-					</p>
-				) : null}
-				<div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-					<section className="grid gap-4 rounded-xl border border-border/70 bg-card/60 p-4 md:p-5">
-						<div className="space-y-1">
-							<h3 className="text-base font-semibold">{t("sections.account.title")}</h3>
-							<p className="text-sm text-muted-foreground">{t("sections.account.description")}</p>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="register-name">{t("fields.name")}</Label>
-							<Input
-								id="register-name"
-								name="name"
-								value={name}
-								onChange={(event) => setName(event.target.value)}
-								autoComplete="name"
-								required
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="register-email">{t("fields.email")}</Label>
-							<Input
-								id="register-email"
-								name="email"
-								type="email"
-								value={email}
-								onChange={(event) => setEmail(event.target.value)}
-								autoComplete="username"
-								required
-							/>
-							{emailStatus === "checking" ? (
-								<p className="text-xs text-muted-foreground">{t("email.checking")}</p>
-							) : null}
-							{emailStatus === "available" ? (
-								<p className="text-xs text-green-600">{t("email.available")}</p>
-							) : null}
-							{emailStatus === "taken" ? (
-								<p className="text-xs text-destructive">{t("email.taken")}</p>
-							) : null}
-						</div>
-						<PhoneInput
-							idPrefix="register-phone"
-							label={t("fields.phone")}
-							value={phone}
-							onChange={setPhone}
-							required
-						/>
-						<div className="grid gap-2">
-							<Label htmlFor="register-preferred-currency">{t("fields.preferredCurrency")}</Label>
-							<CurrencySelect
-								id="register-preferred-currency"
-								value={preferredCurrency}
-								onChange={setPreferredCurrency}
-							/>
-							<p className="text-xs text-muted-foreground">{t("fields.preferredCurrencyHint")}</p>
-						</div>
-					</section>
+	function goNext() {
+		setError(null);
+		if (step === 1) {
+			const issue = validateStepOne();
+			if (issue) {
+				setError(issue);
+				return;
+			}
+			setStep(2);
+			return;
+		}
+		if (step === 2) {
+			const issue = validateStepTwo();
+			if (issue) {
+				setError(issue);
+				return;
+			}
+			setStep(3);
+		}
+	}
 
-					<section className="grid gap-4 rounded-xl border border-border/70 bg-card/60 p-4 md:p-5">
-						<div className="space-y-1">
-							<h3 className="text-base font-semibold">{t("sections.address.title")}</h3>
-							<p className="text-sm text-muted-foreground">{t("sections.address.description")}</p>
-						</div>
-						<AddressFields idPrefix="register-address" value={address} onChange={setAddress} required />
-					</section>
+	const submitDisabled = pending || emailStatus === "taken" || !isStrong || password !== confirmPassword;
+
+	return (
+		<form onSubmit={handleSubmit} autoComplete="on" className="space-y-7">
+			<div className="space-y-3 border-b border-[color:var(--editorial-border)] pb-5">
+				<p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[color:var(--editorial-accent)]">
+					Passo {step} de 3
+				</p>
+				<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+					{registerSteps.map((key) => {
+						const active = key === step;
+						const complete = key < step;
+						return (
+							<div key={key} className="flex items-center gap-3">
+								<span
+									className={cn(
+										"inline-flex h-8 min-w-8 items-center justify-center border px-3",
+										active
+											? "border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
+											: complete
+												? "border-[color:var(--editorial-accent)] text-[color:var(--editorial-accent)]"
+												: "border-[color:var(--editorial-border)]",
+									)}
+								>
+									{stepMeta[key].label}
+								</span>
+								{key < 3 ? <span className="h-px w-6 bg-[color:var(--editorial-border)]" /> : null}
+							</div>
+						);
+					})}
 				</div>
-				<section className="grid gap-4 rounded-xl border border-border/70 bg-card/60 p-4 md:p-5">
-					<div className="space-y-1">
-						<h3 className="text-base font-semibold">{t("sections.security.title")}</h3>
-						<p className="text-sm text-muted-foreground">{t("sections.security.description")}</p>
+				<p className="max-w-[32rem] text-sm leading-7 text-[color:var(--editorial-muted)]">
+					{stepMeta[step].helper}
+				</p>
+			</div>
+
+			{error ? (
+				<p className="border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+					{error}
+				</p>
+			) : null}
+
+			{step === 1 ? (
+				<div className="grid gap-5">
+					<div className="grid gap-2">
+						<Label
+							htmlFor="register-name"
+							className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+						>
+							{t("fields.name")}
+						</Label>
+						<Input
+							id="register-name"
+							name="name"
+							value={name}
+							onChange={(event) => setName(event.target.value)}
+							autoComplete="name"
+							required
+							className={fieldClassName}
+						/>
 					</div>
-					<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+
+					<div className="grid gap-2">
+						<Label
+							htmlFor="register-email"
+							className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+						>
+							{t("fields.email")}
+						</Label>
+						<Input
+							id="register-email"
+							name="email"
+							type="email"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+							autoComplete="username"
+							required
+							className={fieldClassName}
+						/>
+						{emailStatus === "checking" ? (
+							<p className="text-xs text-[color:var(--editorial-muted)]">{t("email.checking")}</p>
+						) : null}
+						{emailStatus === "available" ? (
+							<p className="text-xs text-green-600">{t("email.available")}</p>
+						) : null}
+						{emailStatus === "taken" ? <p className="text-xs text-destructive">{t("email.taken")}</p> : null}
+					</div>
+
+					<PhoneInput
+						idPrefix="register-phone"
+						label={t("fields.phone")}
+						value={phone}
+						onChange={setPhone}
+						required
+					/>
+
+					<div className="grid gap-5 lg:grid-cols-2">
 						<div className="grid gap-2">
-							<Label htmlFor="register-password">{t("fields.password")}</Label>
+							<Label
+								htmlFor="register-password"
+								className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+							>
+								{t("fields.password")}
+							</Label>
 							<PasswordInput
 								id="register-password"
 								name="password"
@@ -288,10 +351,17 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 								onChange={(event) => setPassword((event.target as HTMLInputElement).value)}
 								autoComplete="new-password"
 								required
+								className={fieldClassName}
 							/>
 						</div>
+
 						<div className="grid gap-2">
-							<Label htmlFor="register-confirm-password">{t("fields.confirmPassword")}</Label>
+							<Label
+								htmlFor="register-confirm-password"
+								className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+							>
+								{t("fields.confirmPassword")}
+							</Label>
 							<Input
 								id="register-confirm-password"
 								name="confirm"
@@ -300,53 +370,117 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 								onChange={(event) => setConfirmPassword(event.target.value)}
 								autoComplete="new-password"
 								required
+								className={fieldClassName}
 							/>
 						</div>
 					</div>
-					<div className="text-sm text-muted-foreground lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-6">
-						<div>
-							<div>{t("passwordStrength.title")}</div>
-							<ul className="ml-5 list-disc">
-								<li className={strength.length ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.length")}
-								</li>
-								<li className={strength.upper ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.upper")}
-								</li>
-								<li className={strength.lower ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.lower")}
-								</li>
-								<li className={strength.digit ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.digit")}
-								</li>
-								<li className={strength.special ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.special")}
-								</li>
-							</ul>
-							<label className="mt-4 flex items-start gap-3 rounded-lg border bg-background/70 p-3 text-left text-sm">
-								<input
-									type="checkbox"
-									checked={marketingOptIn}
-									onChange={(event) => setMarketingOptIn(event.currentTarget.checked)}
-									className="mt-1 h-4 w-4 rounded border-gray-300"
-								/>
-								<span>
-									<span className="block font-medium text-foreground">{t("marketing.title")}</span>
-									<span className="mt-1 block text-xs leading-5 text-muted-foreground">
-										{t("marketing.description")}
-									</span>
-								</span>
-							</label>
-						</div>
-						<Button
-							type="submit"
-							className="mt-4 w-full lg:mt-0 lg:w-auto lg:min-w-52"
-							disabled={pending || emailStatus === "taken" || !isStrong || password !== confirmPassword}
-						>
-							{pending ? t("actions.submitting") : t("actions.createAccount")}
-						</Button>
+
+					<div className="border-t border-[color:var(--editorial-border)] pt-4 text-sm text-[color:var(--editorial-muted)]">
+						<p className="mb-2 font-medium text-[color:var(--editorial-ink)]">
+							{t("passwordStrength.title")}
+						</p>
+						<ul className="grid gap-1">
+							<li className={strength.length ? "text-green-600" : "text-[color:var(--editorial-muted)]"}>
+								{t("passwordStrength.rules.length")}
+							</li>
+							<li className={strength.upper ? "text-green-600" : "text-[color:var(--editorial-muted)]"}>
+								{t("passwordStrength.rules.upper")}
+							</li>
+							<li className={strength.lower ? "text-green-600" : "text-[color:var(--editorial-muted)]"}>
+								{t("passwordStrength.rules.lower")}
+							</li>
+							<li className={strength.digit ? "text-green-600" : "text-[color:var(--editorial-muted)]"}>
+								{t("passwordStrength.rules.digit")}
+							</li>
+							<li className={strength.special ? "text-green-600" : "text-[color:var(--editorial-muted)]"}>
+								{t("passwordStrength.rules.special")}
+							</li>
+						</ul>
 					</div>
-				</section>
+				</div>
+			) : null}
+
+			{step === 2 ? (
+				<div className="space-y-5">
+					<div className="rounded-none border border-[color:var(--editorial-border)] bg-[color:rgba(216,208,196,0.16)] p-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
+						Você já passou pela parte principal. Agora só precisamos do endereço para entrega e acompanhamento
+						dos pedidos.
+					</div>
+					<AddressFields idPrefix="register-address" value={address} onChange={setAddress} required />
+				</div>
+			) : null}
+
+			{step === 3 ? (
+				<div className="grid gap-6">
+					<div className="grid gap-2">
+						<Label
+							htmlFor="register-preferred-currency"
+							className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+						>
+							{t("fields.preferredCurrency")}
+						</Label>
+						<CurrencySelect
+							id="register-preferred-currency"
+							value={preferredCurrency}
+							onChange={setPreferredCurrency}
+						/>
+						<p className="text-xs text-[color:var(--editorial-muted)]">{t("fields.preferredCurrencyHint")}</p>
+					</div>
+
+					<label className="flex items-start gap-3 border border-[color:var(--editorial-border)] bg-[color:rgba(216,208,196,0.16)] p-4 text-left text-sm">
+						<input
+							type="checkbox"
+							checked={marketingOptIn}
+							onChange={(event) => setMarketingOptIn(event.currentTarget.checked)}
+							className="mt-1 h-4 w-4 rounded border-gray-300"
+						/>
+						<span>
+							<span className="block font-medium text-[color:var(--editorial-ink)]">
+								{t("marketing.title")}
+							</span>
+							<span className="mt-1 block text-xs leading-6 text-[color:var(--editorial-muted)]">
+								{t("marketing.description")}
+							</span>
+						</span>
+					</label>
+				</div>
+			) : null}
+
+			<div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--editorial-border)] pt-5">
+				<div className="text-sm text-[color:var(--editorial-muted)]">
+					{step > 1 ? (
+						<button
+							type="button"
+							className="underline underline-offset-4 text-[color:var(--editorial-accent)]"
+							onClick={() => {
+								setError(null);
+								setStep((prev) => Math.max(1, prev - 1) as RegisterStep);
+							}}
+						>
+							Voltar
+						</button>
+					) : (
+						<p>Leva menos de 2 minutos e o endereço fica só no próximo passo.</p>
+					)}
+				</div>
+
+				{step < 3 ? (
+					<Button
+						type="button"
+						onClick={goNext}
+						className="h-12 rounded-none bg-[color:var(--editorial-ink)] px-8 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]/92"
+					>
+						{step === 1 ? "Continuar" : "Continuar para preferências"}
+					</Button>
+				) : (
+					<Button
+						type="submit"
+						className="h-12 rounded-none bg-[color:var(--editorial-ink)] px-8 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]/92"
+						disabled={submitDisabled}
+					>
+						{pending ? t("actions.submitting") : t("actions.createAccount")}
+					</Button>
+				)}
 			</div>
 		</form>
 	);
