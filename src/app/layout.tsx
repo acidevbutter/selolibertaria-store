@@ -46,7 +46,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	const messages = await getMessages();
 
 	return (
-		<html lang={locale} className={`h-full antialiased light ${dccAsh.variable} ${fertigoPro.variable}`}>
+		<html
+			lang={locale}
+			suppressHydrationWarning
+			className={`h-full antialiased ${dccAsh.variable} ${fertigoPro.variable}`}
+		>
 			<body className="display-font flex min-h-full flex-col bg-background text-foreground">
 				{/* Pre-hydration splash: insert a neutral overlay before React hydrates to avoid FOUC */}
 				<Script

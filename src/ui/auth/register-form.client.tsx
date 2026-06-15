@@ -42,9 +42,9 @@ const fieldClassName =
 	"h-12 rounded-none border-[color:var(--editorial-border)] bg-transparent px-4 text-base text-[color:var(--editorial-ink)] shadow-none placeholder:text-[color:var(--editorial-muted)] focus-visible:ring-0 focus-visible:border-[color:var(--editorial-ink)]";
 
 const stepMeta = {
-	1: { label: "Conta", helper: "Primeiro, os dados essenciais para criar sua entrada no selo." },
-	2: { label: "Entrega", helper: "Seu endereço fica no segundo passo, sem apertar a primeira decisão." },
-	3: { label: "Preferências", helper: "Últimos ajustes antes de concluir e continuar sua jornada." },
+	1: { label: "1 de 3", helper: "" },
+	2: { label: "2 de 3", helper: "Seu endereço fica no segundo passo, sem apertar a primeira decisão." },
+	3: { label: "3 de 3", helper: "Últimos ajustes antes de concluir e continuar sua jornada." },
 } as const;
 
 const registerSteps: RegisterStep[] = [1, 2, 3];
@@ -243,37 +243,33 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 	const submitDisabled = pending || emailStatus === "taken" || !isStrong || password !== confirmPassword;
 
 	return (
-		<form onSubmit={handleSubmit} autoComplete="on" className="space-y-7">
-			<div className="space-y-3 border-b border-[color:var(--editorial-border)] pb-5">
-				<p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[color:var(--editorial-accent)]">
-					Passo {step} de 3
+		<form onSubmit={handleSubmit} autoComplete="on" className="space-y-8">
+			<div className="space-y-4">
+				<p className="text-3xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+					{stepMeta[step].label}
 				</p>
-				<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+				<div className="grid grid-cols-3 gap-6">
 					{registerSteps.map((key) => {
 						const active = key === step;
 						const complete = key < step;
 						return (
-							<div key={key} className="flex items-center gap-3">
-								<span
-									className={cn(
-										"inline-flex h-8 min-w-8 items-center justify-center border px-3",
-										active
-											? "border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
-											: complete
-												? "border-[color:var(--editorial-accent)] text-[color:var(--editorial-accent)]"
-												: "border-[color:var(--editorial-border)]",
-									)}
-								>
-									{stepMeta[key].label}
-								</span>
-								{key < 3 ? <span className="h-px w-6 bg-[color:var(--editorial-border)]" /> : null}
-							</div>
+							<span
+								key={key}
+								className={cn(
+									"h-px w-full",
+									active || complete
+										? "bg-[color:var(--editorial-accent)]"
+										: "bg-[color:var(--editorial-border)]",
+								)}
+							/>
 						);
 					})}
 				</div>
-				<p className="max-w-[32rem] text-sm leading-7 text-[color:var(--editorial-muted)]">
-					{stepMeta[step].helper}
-				</p>
+				{stepMeta[step].helper ? (
+					<p className="max-w-[32rem] text-sm leading-7 text-[color:var(--editorial-muted)]">
+						{stepMeta[step].helper}
+					</p>
+				) : null}
 			</div>
 
 			{error ? (

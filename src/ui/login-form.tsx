@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import type { SupportedCurrency } from "@/lib/currency";
@@ -29,11 +29,13 @@ export function LoginForm({
 	defaultCountry = "BR",
 	defaultCurrency = "USD",
 	providers = [],
+	onModeChange,
 	...props
 }: React.ComponentPropsWithoutRef<"div"> & {
 	defaultCountry?: string;
 	defaultCurrency?: SupportedCurrency;
 	providers?: ProviderLink[];
+	onModeChange?: (mode: "login" | "register" | "pending") => void;
 }) {
 	const searchParams = useSearchParams();
 	const loginFormRef = useRef<HTMLFormElement | null>(null);
@@ -49,6 +51,10 @@ export function LoginForm({
 	const oauthError = searchParams.get("oauth_error");
 	const loginError = searchParams.get("login_error");
 	const providerLabel = providers.find((provider) => provider.id === oauthComplete)?.label ?? "Instagram";
+
+	useEffect(() => {
+		onModeChange?.(mode);
+	}, [mode, onModeChange]);
 
 	function persistLoginDraft() {
 		if (typeof window === "undefined" || !loginFormRef.current) return;

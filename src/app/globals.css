@@ -8,11 +8,33 @@
 
 .price-font {
 	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-synthesis: none;
+	letter-spacing: -0.015em;
 	/* Keep price sizing and weight inherited unless explicitly set */
 }
 
 .editorial-serif {
 	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-synthesis: none;
+	letter-spacing: -0.015em;
+}
+
+.admin-editorial-shell {
+	background:
+		radial-gradient(circle at top left, rgba(122, 30, 34, 0.08), transparent 24%),
+		linear-gradient(180deg, #f8f3ec 0%, #f3ede3 100%);
+	color: var(--editorial-ink);
+}
+
+.admin-editorial-panel {
+	border: 1px solid var(--editorial-border);
+	background: rgba(255, 251, 245, 0.82);
+	backdrop-filter: blur(4px);
+}
+
+.admin-editorial-dark {
+	background: var(--editorial-ink);
+	color: var(--editorial-paper);
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -113,6 +135,8 @@
 
 @utility editorial-serif {
 	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-synthesis: none;
+	letter-spacing: -0.015em;
 }
 
 @utility animation-fade-in {
@@ -216,7 +240,8 @@
 	h3,
 	.seo-h1 {
 		font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
-		letter-spacing: -0.03em;
+		font-synthesis: none;
+		letter-spacing: -0.015em;
 	}
 
 	/* Slightly increase title sizes where the custom font is used.
