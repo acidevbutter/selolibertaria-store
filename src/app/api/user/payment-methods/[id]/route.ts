@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { env } from "@/env.mjs";
-import { requireselolibertariaBuyer } from "@/lib/api-auth";
+import { requireSelolibertariaBuyer } from "@/lib/api-auth";
 import { getDb } from "@/lib/mongodb";
 
 type RouteContext = { params: Promise<{ id?: string | string[] }> };
@@ -18,7 +18,7 @@ export async function DELETE(_req: Request, ctx: RouteContext) {
 		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
 
-	const auth = await requireselolibertariaBuyer();
+	const auth = await requireSelolibertariaBuyer();
 	if ("error" in auth) return auth.error;
 
 	const params = await ctx.params;

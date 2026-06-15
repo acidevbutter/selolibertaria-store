@@ -65,7 +65,7 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 	let userId: string | null = null;
 
 	if (!("error" in auth)) {
-		if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
+		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
 		userId = auth.session.sub as string;
 	}
 

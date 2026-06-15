@@ -388,7 +388,7 @@ export async function getCartItemCount(): Promise<number> {
 }
 
 export async function mergeGuestCartIntoUser(): Promise<Cart | null> {
-	const authContext = await getselolibertariaAuthContext();
+	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind !== "buyer") return null;
 	const userId = authContext.userId;
 	const [cookieCartId, cookieItems, cookieCouponCode] = await Promise.all([

@@ -1,8 +1,8 @@
 import { createCheckoutSession } from "@/actions/checkout-actions";
-import { requireselolibertariaBuyer } from "@/lib/api-auth";
+import { requireSelolibertariaBuyer } from "@/lib/api-auth";
 
 export async function POST() {
-	const auth = await requireselolibertariaBuyer();
+	const auth = await requireSelolibertariaBuyer();
 	if ("error" in auth) return auth.error;
 	const res = await createCheckoutSession();
 	if ("requireAuth" in res) {
