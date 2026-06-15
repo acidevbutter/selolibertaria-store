@@ -26,7 +26,7 @@ services:
   #       condition: service_healthy
   #   environment:
   #     MONGODB_URI: mongodb://mongo:27017
-  #     MONGODB_DB_NAME: storefront
+  #     MONGODB_DB_NAME: selolibertaria
   #     STRIPE_CURRENCY: usd
   #     NEXT_PUBLIC_URL: http://localhost:3000
   #     JWT_SECRET: dev_super_secret_change_me_please_123456
@@ -35,7 +35,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: storefront-mailpit
+    container_name: selolibertaria-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"

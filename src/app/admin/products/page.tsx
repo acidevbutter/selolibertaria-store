@@ -57,7 +57,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 					<EditorialEyebrow>Admin editorial v2</EditorialEyebrow>
 					<h1 className="editorial-serif text-3xl font-semibold">Products</h1>
 					<p className="max-w-2xl text-sm leading-7 text-[color:var(--editorial-muted)]">
-						Manage Stripe products, prices, variants, categories, and storefront metadata.
+						Manage Stripe products, prices, variants, categories, and selolibertaria metadata.
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-2">

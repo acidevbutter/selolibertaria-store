@@ -1,4 +1,4 @@
-export const LOCALE_COOKIE_NAME = "storefront_locale";
+export const LOCALE_COOKIE_NAME = "selolibertaria_locale";
 
 export const LOCALE_OPTIONS = [
 	{

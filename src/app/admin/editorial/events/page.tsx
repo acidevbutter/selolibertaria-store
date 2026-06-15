@@ -67,7 +67,7 @@ export default async function AdminEditorialEventsPage() {
 					<div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<PenSquare className="h-3.5 w-3.5" />
-							Ordem e publicação já respondem no storefront
+							Ordem e publicação já respondem no selolibertaria
 						</span>
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<ImagePlus className="h-3.5 w-3.5" />

@@ -55,7 +55,7 @@
 - Recuperação de senha, login social e criação de conta precisam continuar acessíveis, mas subordinados claramente ao fluxo principal de entrar.
 - No cadastro, a experiência deve reduzir desistência pedindo primeiro o mínimo necessário; endereço e preferências podem entrar em passos posteriores, desde que a progressão fique clara e calma.
 
-## Footer da storefront
+## Footer da selolibertaria
 
 - O crédito de desenvolvimento deve funcionar como informação secundária de confiança, não como CTA principal.
 - Em telas menores, o conteúdo precisa quebrar de linha de forma natural sem apertar os ícones de pagamento nem prejudicar a leitura do copyright.

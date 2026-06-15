@@ -56,7 +56,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 ### 2. Cards e blocos com borda suave
 
-- O projeto usa com frequência containers com `rounded-xl` ou `rounded-2xl`, exceto nos cards de produto da storefront, que devem permanecer sem cantos arredondados.
+- O projeto usa com frequência containers com `rounded-xl` ou `rounded-2xl`, exceto nos cards de produto da selolibertaria, que devem permanecer sem cantos arredondados.
 - Blocos informativos e formulários costumam usar borda discreta, fundo `bg-card`, `bg-card/60` ou `bg-muted/10`.
 - Estados secundários usam `text-muted-foreground` e mensagens curtas de apoio abaixo do campo ou da seção.
 
@@ -85,7 +85,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Ao evoluir uma tela, manter o idioma dominante daquela superfície e evitar blocos mistos dentro do mesmo componente.
 - Ao corrigir localização pública em `pt-BR`, incluir também `aria-label`, placeholders, mensagens transitórias e estados vazios na mesma passada; textos autorais ou operacionais cadastrados pelo admin ficam fora dessa normalização e devem permanecer como conteúdo-fonte.
 - A DevButterStore deve resolver idioma por requisição sem mudar a URL visível: idioma suportado do dispositivo quando disponível, com fallback para o idioma padrão configurado no admin e, por fim, para `en-US`.
-- Para QA, suporte e testes de localização, a storefront pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
+- Para QA, suporte e testes de localização, a selolibertaria pode aceitar um prefixo temporário como `/en`, `/en-us`, `/pt-br` ou `/es`, mas esse acesso deve apenas gravar o cookie de locale e redirecionar em seguida para a URL canônica sem prefixo.
 - Campos compartilhados com país, moeda, datas e checkout devem espelhar o locale resolvido daquela sessão, sem duplicar layouts ou criar variantes visuais por idioma.
 - Quando a pessoa usuária tiver uma moeda preferida salva, cadastro, perfil, favoritos, carrinho e checkout devem tentar refletir essa moeda de forma consistente; se a Stripe não oferecer aquela moeda no preço correspondente, a interface deve cair de forma silenciosa e coerente para a moeda padrão do produto, sem exibir mensagens técnicas.
 - Em `/checkout/processing`, o loading deve ser sempre temporário: a tela pode aguardar alguns segundos por confirmação autoritativa, mas deve redirecionar automaticamente para a área de pedidos após no máximo `15s` sem confirmação final; em estados autoritativos de disputa/análise, pode interromper o loading antes e orientar acompanhamento por e-mail e na área de pedidos.
@@ -142,7 +142,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 ## Catálogo e PDP
 
-### Footer da storefront
+### Footer da selolibertaria
 
 - A faixa inferior do footer deve manter copyright e métodos de pagamento como conteúdo primário.
 - Créditos externos de desenvolvimento, quando existirem, devem aparecer na mesma faixa inferior, em formato inline, com link externo, ícone da marca e nome visível.
@@ -387,7 +387,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - O backoffice deve tratar `admin` e futuros papéis internos, como `vendor`, como operadores e não como compradores.
 - A navegação administrativa deve revelar apenas áreas compatíveis com as capacidades do papel logado, reduzindo ruído e evitando expor ações sem permissão.
 - A ausência de permissão deve preferir remoção da entrada de navegação e, como segunda linha de defesa, resposta `403` no servidor.
-- A storefront pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
+- A selolibertaria pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
 - Superfícies de gestão de usuários no admin devem separar claramente leitura de perfil, papel atual e estado de acesso; ações de promover, rebaixar, bloquear e desbloquear devem ficar agrupadas em um bloco operacional distinto e só aparecer para `admin`.
 - A página administrativa de produto deve expor histórico de edição em um bloco próprio abaixo da configuração principal e das variantes, mostrando quem alterou, quando alterou e um resumo técnico curto da mudança.
 

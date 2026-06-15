@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "../styles/glitch.css";
 
-/* Neutral typography helpers for the generic storefront baseline. */
+/* Neutral typography helpers for the generic selolibertaria baseline. */
 .display-font {
 	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
 }

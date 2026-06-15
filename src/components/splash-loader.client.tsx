@@ -22,8 +22,8 @@ export default function SplashLoader() {
 	useEffect(() => {
 		if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
 			try {
-				const pre = document.getElementById("devbutterstore-splash-pre");
-				const preStyle = document.getElementById("devbutterstore-splash-style");
+				const pre = document.getElementById("selolibertaria-splash-pre");
+				const preStyle = document.getElementById("selolibertaria-splash-style");
 				if (pre) pre.remove();
 				if (preStyle) preStyle.remove();
 			} catch (e) {
@@ -34,7 +34,7 @@ export default function SplashLoader() {
 
 		// Only run on first visit
 		try {
-			if (localStorage.getItem("devbutterstore_splash_seen")) return;
+			if (localStorage.getItem("selolibertaria_splash_seen")) return;
 		} catch (e) {
 			// ignore
 		}
@@ -60,17 +60,17 @@ export default function SplashLoader() {
 
 				// update pre-hydration overlay percent if present
 				try {
-					const pre = document.getElementById("devbutterstore-splash-pre");
+					const pre = document.getElementById("selolibertaria-splash-pre");
 					if (pre) {
-						pre.innerHTML = `<div class='devbutterstore-splash-percent'>${next}%</div>`;
+						pre.innerHTML = `<div class='selolibertaria-splash-percent'>${next}%</div>`;
 					}
 				} catch (e) {}
 
 				// once we reach 2% remove the pre-hydration placeholder (so client-controlled UI shows)
 				if (next >= 2 && !preRemovedRef.current) {
 					try {
-						const pre = document.getElementById("devbutterstore-splash-pre");
-						const preStyle = document.getElementById("devbutterstore-splash-style");
+						const pre = document.getElementById("selolibertaria-splash-pre");
+						const preStyle = document.getElementById("selolibertaria-splash-style");
 						if (pre) pre.remove();
 						if (preStyle) preStyle.remove();
 					} catch (e) {}
@@ -96,14 +96,14 @@ export default function SplashLoader() {
 					// hide the splash after the circle expands
 					setTimeout(() => {
 						try {
-							localStorage.setItem("devbutterstore_splash_seen", "1");
+							localStorage.setItem("selolibertaria_splash_seen", "1");
 						} catch (e) {
 							// ignore
 						}
 						// ensure pre elements removed
 						try {
-							const pre = document.getElementById("devbutterstore-splash-pre");
-							const preStyle = document.getElementById("devbutterstore-splash-style");
+							const pre = document.getElementById("selolibertaria-splash-pre");
+							const preStyle = document.getElementById("selolibertaria-splash-style");
 							if (pre) pre.remove();
 							if (preStyle) preStyle.remove();
 						} catch (e) {}

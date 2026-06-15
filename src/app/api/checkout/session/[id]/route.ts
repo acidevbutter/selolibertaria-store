@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { env } from "@/env.mjs";
-import { requireStorefrontBuyer } from "@/lib/api-auth";
+import { requireselolibertariaBuyer } from "@/lib/api-auth";
 
 type RouteParams = { id?: string | string[] };
 type RouteContext = { params: Promise<RouteParams> };
@@ -25,7 +25,7 @@ export async function GET(_req: Request, ctx: RouteContext) {
 	if (!env.STRIPE_SECRET_KEY) {
 		return NextResponse.json({ error: "Stripe não configurado" }, { status: 500 });
 	}
-	const auth = await requireStorefrontBuyer();
+	const auth = await requireselolibertariaBuyer();
 	if ("error" in auth) return auth.error; // 401
 
 	const params = await resolveParams(ctx);

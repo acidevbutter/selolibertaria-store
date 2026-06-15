@@ -5,12 +5,12 @@ import { describe, expect, it } from "vitest";
 import { proxy } from "@/proxy";
 
 describe("proxy public auth paths", () => {
-	it("stores the locale cookie and redirects locale-prefixed storefront routes", async () => {
+	it("stores the locale cookie and redirects locale-prefixed selolibertaria routes", async () => {
 		const res = await proxy(new NextRequest("http://localhost/pt-br"));
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/");
-		expect(res.headers.get("set-cookie")).toContain("storefront_locale=pt-BR");
+		expect(res.headers.get("set-cookie")).toContain("selolibertaria_locale=pt-BR");
 	});
 
 	it("stores the locale cookie and preserves the remaining pathname", async () => {
@@ -18,7 +18,7 @@ describe("proxy public auth paths", () => {
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/product/test-slug?ref=nav");
-		expect(res.headers.get("set-cookie")).toContain("storefront_locale=es-ES");
+		expect(res.headers.get("set-cookie")).toContain("selolibertaria_locale=es-ES");
 	});
 
 	it("allows oauth start without an authenticated session", async () => {

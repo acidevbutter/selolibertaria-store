@@ -13,7 +13,7 @@ Implementar as funcionalidades e a identidade de conteúdo do Selo Libertária d
 - Na criação de conta dentro de `/login`, o fluxo preferencial deve ser multi-step (`Conta`, `Entrega`, `Preferências`), preservando a API atual mas reduzindo abandono com uma primeira etapa curta e de baixo atrito.
 - Uploads administrativos por seleção de arquivo devem incluir uma etapa explícita de revisão em modal com prévia ampliada e ações `Salvar`/`Descartar`, preservando a diferença entre modos `instant` e `on-submit`.
 
-O resultado desejado não é trocar a loja por um site institucional, e sim transformar a storefront atual em uma plataforma híbrida:
+O resultado desejado não é trocar a loja por um site institucional, e sim transformar a selolibertaria atual em uma plataforma híbrida:
 
 - loja de livros e produtos;
 - vitrine editorial de autora, selo e publicações;
@@ -58,7 +58,7 @@ Manter a espinha dorsal de comércio já pronta no projeto e acoplar a ela as su
 
 O novo site deve funcionar em dois modos complementares ao mesmo tempo:
 
-1. modo `storefront`
+1. modo `selolibertaria`
    - compra de livros, produtos e futuras edições;
    - navegação por catálogo, produto, carrinho e checkout.
 
@@ -143,7 +143,7 @@ A direção mais alinhada ao Selo Libertária neste momento é `Editorial Noturn
 
 Este produto é uma plataforma híbrida que combina e-commerce, conteúdo editorial e backoffice operacional. Para trabalho de UI/UX, o GPT deve tratar o site como um ecossistema com quatro camadas principais.
 
-### 1. Storefront pública
+### 1. selolibertaria pública
 
 - Home com posicionamento editorial, vitrine de catálogo, blocos institucionais e CTAs para compra e descoberta cultural.
 - Catálogo de produtos com listagem por grade, microcopy curatorial, preço promocional, seleção de variantes no card, ação rápida de adicionar ao carrinho e favoritar.
@@ -364,7 +364,7 @@ Essa relação pode ficar:
 
 Recomendação inicial: usar Mongo separado para não acoplar demais conteúdo editorial ao catálogo Stripe.
 
-### Camada de leitura no storefront
+### Camada de leitura no selolibertaria
 
 Criar um loader dedicado, por exemplo:
 
@@ -531,7 +531,7 @@ O script pode aceitar dois modos:
 
 #### Estratégia de segurança
 
-Enquanto o migrador não rodar, o storefront continua lendo do fallback estático.
+Enquanto o migrador não rodar, o selolibertaria continua lendo do fallback estático.
 
 Depois que o migrador rodar com sucesso:
 
@@ -675,11 +675,11 @@ O próximo passo de implementação deve ser:
 4. definir ou extrair a primitiva de upload de imagem compartilhada com `admin/products`;
 5. criar a primeira superfície administrativa em `/admin/editorial/events`.
 
-### 1. Rebranding do storefront para Selo Libertária
+### 1. Rebranding do selolibertaria para Selo Libertária
 
 #### Objetivo
 
-Substituir a base genérica `Storefront` por uma identidade explícita de Selo Libertária, sem desmontar a estrutura técnica existente.
+Substituir a base genérica `selolibertaria` por uma identidade explícita de Selo Libertária, sem desmontar a estrutura técnica existente.
 
 #### Entregas
 
@@ -1248,7 +1248,7 @@ Este mock descreve sensação, proporção, densidade e ritmo visual da página,
 
 #### Plano de componentes da home
 
-Este plano converte a direção visual em peças reais de interface, priorizando reaproveitamento da base atual da storefront e separando claramente o que pode ser extraído como componente reutilizável.
+Este plano converte a direção visual em peças reais de interface, priorizando reaproveitamento da base atual da selolibertaria e separando claramente o que pode ser extraído como componente reutilizável.
 
 ##### Estado atual aproveitável
 
@@ -1267,7 +1267,7 @@ Este plano converte a direção visual em peças reais de interface, priorizando
 
 ##### Objetivo do plano
 
-Evoluir a home atual para o modelo `Editorial Noturno` sem reescrever a storefront inteira, usando composição de seções especializadas e conteúdo mais curado.
+Evoluir a home atual para o modelo `Editorial Noturno` sem reescrever a selolibertaria inteira, usando composição de seções especializadas e conteúdo mais curado.
 
 ##### Estrutura recomendada de componentes
 
@@ -1816,7 +1816,7 @@ Reduzir dependência de conteúdo hardcoded e permitir atualização contínua.
 
 1. Projetos e eventos podem ser atualizados sem editar código.
 2. Build e runtime degradam com segurança quando uma coleção editorial falhar.
-3. A storefront continua funcional mesmo com falha na camada editorial.
+3. A selolibertaria continua funcional mesmo com falha na camada editorial.
 
 ### Fase 4. Profundidade comercial-editorial
 

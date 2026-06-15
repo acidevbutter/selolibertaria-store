@@ -4,12 +4,12 @@
 
 O projeto atual está organizado em quatro camadas principais:
 
-1. Storefront público
+1. selolibertaria público
 2. Camada editorial pública
 3. Backoffice administrativo
 4. Infraestrutura e fluxos de suporte
 
-## 1. Storefront público
+## 1. selolibertaria público
 
 ### Já existe
 
@@ -178,7 +178,7 @@ O projeto atual está organizado em quatro camadas principais:
 ### Revisão operacional
 
 - Validar no uso real se a equipe do admin entende claramente o que altera cada bloco público.
-- Conferir se todos os campos salvos no admin têm reflexo visível no storefront.
+- Conferir se todos os campos salvos no admin têm reflexo visível no selolibertaria.
 - Evitar criar novos campos editoriais no admin sem saída pública correspondente.
 
 ## Lista resumida do que faltava e foi conectado agora

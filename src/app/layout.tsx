@@ -62,16 +62,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 							"  var path = window.location.pathname || '/';\n" +
 							"  if (path.startsWith('/admin') || path.startsWith('/login')) return;\n" +
 							"  try {\n" +
-							"    if (localStorage.getItem('devbutterstore_splash_seen')) return;\n" +
+							"    if (localStorage.getItem('selolibertaria_splash_seen')) return;\n" +
 							"  } catch (e) {}\n" +
 							"  var style = document.createElement('style');\n" +
-							"  style.id = 'devbutterstore-splash-style';\n" +
-							"  style.textContent = '#devbutterstore-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#111827;color:#f9fafb;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.devbutterstore-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
+							"  style.id = 'selolibertaria-splash-style';\n" +
+							"  style.textContent = '#selolibertaria-splash-pre{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#111827;color:#f9fafb;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.selolibertaria-splash-percent{font-weight:700;font-size:3.5rem}';\n" +
 							"  document.head.appendChild(style);\n" +
 							"  var div = document.createElement('div');\n" +
-							"  div.id = 'devbutterstore-splash-pre';\n" +
+							"  div.id = 'selolibertaria-splash-pre';\n" +
 							"  var percent = document.createElement('div');\n" +
-							"  percent.className = 'devbutterstore-splash-percent';\n" +
+							"  percent.className = 'selolibertaria-splash-percent';\n" +
 							"  percent.textContent = '0%';\n" +
 							"  div.appendChild(percent);\n" +
 							"  document.documentElement.appendChild(div);\n" +

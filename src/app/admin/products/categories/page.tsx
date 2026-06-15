@@ -52,7 +52,7 @@ export default async function AdminProductCategoriesPage() {
 				<div>
 					<h1 className="text-2xl font-semibold">Categories</h1>
 					<p className="text-sm text-muted-foreground">
-						Categories are stored in Stripe product metadata and reflected in storefront navigation.
+						Categories are stored in Stripe product metadata and reflected in selolibertaria navigation.
 					</p>
 				</div>
 			</div>

@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
-import { canBuyOnStorefront } from "@/lib/authz";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import type { Product } from "@/lib/commerce-types";
 import { buildFavoriteKey, listFavoriteKeysForUser } from "@/lib/favorites";
 import { deslugify, formatMoney } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { ProductCard } from "@/ui/products/product-card.client";
 export const ProductList = async ({ products }: { products: Product[] }) => {
 	const [locale, t, session] = await Promise.all([getLocale(), getTranslations("Global.products"), auth()]);
 	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();
-	const canPurchase = canBuyOnStorefront(session?.user.role);
+	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
 
 	return (
 		<>

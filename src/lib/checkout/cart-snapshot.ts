@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { ObjectId } from "mongodb";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
-import { canBuyOnStorefront } from "@/lib/authz";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { getCartCookieItems, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
 import { commerce } from "@/lib/commerce-stripe";
@@ -161,7 +161,7 @@ async function resolveCheckoutItems(existingItems: MinimalItem[]) {
 export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 	const auth = await requireAuth();
 	if ("error" in auth) return { ok: false, requireAuth: true };
-	if (!canBuyOnStorefront(auth.session.role)) {
+	if (!canBuyOnSelolibertaria(auth.session.role)) {
 		return { ok: false, error: "Backoffice users cannot perform purchases." };
 	}
 

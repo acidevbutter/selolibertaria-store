@@ -66,7 +66,7 @@ export function LoginForm({
 		if (!email || !password) return;
 		try {
 			window.sessionStorage.setItem(
-				"devbutterstore_login_draft",
+				"selolibertaria_login_draft",
 				JSON.stringify({
 					email,
 					password,

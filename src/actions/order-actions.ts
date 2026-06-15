@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import Stripe from "stripe";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
-import { canBuyOnStorefront } from "@/lib/authz";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { clearCartId, getCartId } from "@/lib/cart-cookies";
 import type { CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
 import { commerce } from "@/lib/commerce-stripe";
@@ -26,7 +26,7 @@ import {
 export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
+	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
 
 	const userId = auth.session.sub as string;
 
@@ -65,7 +65,7 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 	let userId: string | null = null;
 
 	if (!("error" in auth)) {
-		if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
+		if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
 		userId = auth.session.sub as string;
 	}
 
@@ -171,7 +171,7 @@ export async function recordPaymentIntentCheckout(input: {
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
+	if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
 
 	const userId = auth.session.sub as string;
 
@@ -387,7 +387,7 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 	if (!purchaseId) return { error: "ID do pedido ausente" };
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnStorefront(auth.session.role)) return { error: "Acesso negado" };
+	if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
 	try {
 		const db = await getDb();
 		const userId = new ObjectId(auth.session.sub as string);

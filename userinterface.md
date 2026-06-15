@@ -60,7 +60,7 @@
 ## Cards de produto
 
 - Cards de produto da DevButterStore devem usar cantos retos, borda suave e sombra discreta, com hover elevando levemente o bloco.
-- Todos os cards da storefront devem compartilhar o mesmo formato e a mesma altura visual.
+- Todos os cards da selolibertaria devem compartilhar o mesmo formato e a mesma altura visual.
 - A imagem do produto deve se adaptar ao quadro fixo do card, sem definir o tamanho externo do componente.
 - O título do produto no card deve ter mais destaque do que o preço-base e permanecer confortável para leitura em duas linhas.
 - O botão de favorito permanece flutuante no topo direito.
@@ -97,7 +97,7 @@
 - A interface do backoffice deve esconder entradas e ações que o papel logado não pode usar, especialmente na futura diferenciação entre `admin` e `vendor`.
 - No shell administrativo editorial, a barra lateral deve permanecer preta, fixa e com largura estável, enquanto a área de trabalho usa papel claro e largura ampla para não parecer um dashboard SaaS genérico.
 - Títulos de operação do admin devem priorizar leitura clara; a expressão tipográfica mais dramática da marca pode aparecer no logo e em acentos, mas não deve esmagar blocos analíticos longos.
-- Perfis internos não devem receber affordances de compra na storefront por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
+- Perfis internos não devem receber affordances de compra na selolibertaria por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
 - No dashboard administrativo, KPIs executivos devem aparecer primeiro em cards compactos e comparáveis, seguidos por blocos separados de pagamento, fulfillment e saúde operacional.
 - Estados que exigem atenção, como disputa, falha de email, webhook pendente ou pedido pago sem avanço operacional, devem receber destaque visual superior ao de métricas históricas neutras.
 - Em gestão de usuários, ações de papel e bloqueio devem aparecer como controles administrativos explícitos, separados dos dados de perfil e visíveis apenas para `admin`.
