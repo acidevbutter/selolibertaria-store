@@ -171,7 +171,7 @@ export async function recordPaymentIntentCheckout(input: {
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
+	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
 
 	const userId = auth.session.sub as string;
 
@@ -387,7 +387,7 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 	if (!purchaseId) return { error: "ID do pedido ausente" };
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnselolibertaria(auth.session.role)) return { error: "Acesso negado" };
+	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
 	try {
 		const db = await getDb();
 		const userId = new ObjectId(auth.session.sub as string);
