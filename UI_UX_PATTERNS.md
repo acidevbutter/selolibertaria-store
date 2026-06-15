@@ -386,10 +386,12 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 - O backoffice deve tratar `admin` e futuros papéis internos, como `vendor`, como operadores e não como compradores.
 - A navegação administrativa deve revelar apenas áreas compatíveis com as capacidades do papel logado, reduzindo ruído e evitando expor ações sem permissão.
+- No `Admin System / Editorial V2`, a navegação deve viver em sidebar preta fixa com logo textual em caixa alta, trilho estreito de links e estado ativo marcado por acento vinho, enquanto o miolo usa fundo papel e respiro horizontal amplo.
 - A ausência de permissão deve preferir remoção da entrada de navegação e, como segunda linha de defesa, resposta `403` no servidor.
 - A selolibertaria pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
 - Superfícies de gestão de usuários no admin devem separar claramente leitura de perfil, papel atual e estado de acesso; ações de promover, rebaixar, bloquear e desbloquear devem ficar agrupadas em um bloco operacional distinto e só aparecer para `admin`.
 - A página administrativa de produto deve expor histórico de edição em um bloco próprio abaixo da configuração principal e das variantes, mostrando quem alterou, quando alterou e um resumo técnico curto da mudança.
+- Cada tela administrativa principal deve começar por um hero curto com título forte, descrição operacional e, quando fizer sentido, filtros ou CTA no mesmo enquadramento; depois vêm cards de métrica e só então tabelas ou formulários longos.
 
 ## Padrões de disclosure e redução de ruído
 

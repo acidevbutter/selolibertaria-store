@@ -6,7 +6,12 @@ import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { formatMoney } from "@/lib/utils";
-import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
 import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
@@ -49,43 +54,67 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 				[group.name, group.slug, group.category].join(" ").toLowerCase().includes(query),
 			)
 		: groups;
+	const activeCount = filtered.filter((group) => group.active).length;
+	const variantCount = filtered.reduce((total, group) => total + group.variants.length, 0);
 
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div className="space-y-2">
-					<EditorialEyebrow>Admin editorial v2</EditorialEyebrow>
-					<h1 className="editorial-serif text-3xl font-semibold">Products</h1>
-					<p className="max-w-2xl text-sm leading-7 text-[color:var(--editorial-muted)]">
-						Manage Stripe products, prices, variants, categories, and selolibertaria metadata.
-					</p>
-				</div>
-				<div className="flex flex-wrap gap-2">
-					{hasCapability(session.user.role, "settings.write") ? (
-						<Button asChild variant="outline">
-							<Link href="/admin/products/categories">
-								<Tags className="h-4 w-4" />
-								Categories
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Livros"
+				title="Catálogo, variantes e preços no mesmo enquadramento editorial do admin."
+				description="A listagem de produtos passa a conversar com o layout do Figma: hero introdutório, CTAs retas, filtros limpos e tabela de catálogo mais sóbria."
+				actions={
+					<>
+						<form className="min-w-[280px] max-w-md flex-1">
+							<Input
+								name="q"
+								defaultValue={query}
+								placeholder="Buscar livros, slugs ou categorias"
+								className="rounded-none border-[color:var(--editorial-border)] bg-[#fbf7f1]"
+							/>
+						</form>
+						{hasCapability(session.user.role, "settings.write") ? (
+							<Button asChild variant="outline" className="rounded-none">
+								<Link href="/admin/products/categories">
+									<Tags className="h-4 w-4" />
+									Categorias
+								</Link>
+							</Button>
+						) : null}
+						<Button
+							asChild
+							className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+						>
+							<Link href="/admin/products/new">
+								<PackagePlus className="h-4 w-4" />
+								Novo livro
 							</Link>
 						</Button>
-					) : null}
-					<Button asChild>
-						<Link href="/admin/products/new">
-							<PackagePlus className="h-4 w-4" />
-							New product
-						</Link>
-					</Button>
-				</div>
+					</>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Grupos"
+					value={filtered.length}
+					helper="Produtos agrupados por metadata.slug."
+				/>
+				<AdminEditorialStat
+					label="Ativos"
+					value={activeCount}
+					helper="Itens disponíveis para venda neste recorte."
+				/>
+				<AdminEditorialStat
+					label="Variantes"
+					value={variantCount}
+					helper="Soma de todas as edições e formatos listados."
+				/>
 			</div>
-
-			<form className="max-w-md">
-				<Input name="q" defaultValue={query} placeholder="Search products, slugs, or categories" />
-			</form>
 
 			{error ? (
 				<EditorialPanel>
 					<CardHeader>
-						<CardTitle>Stripe catalog unavailable</CardTitle>
+						<CardTitle>Catálogo Stripe indisponível</CardTitle>
 					</CardHeader>
 					<CardContent className="text-sm text-muted-foreground">{error}</CardContent>
 				</EditorialPanel>
@@ -98,10 +127,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 						<Table className="min-w-[760px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Product</TableHead>
-									<TableHead>Category</TableHead>
-									<TableHead>Variants</TableHead>
-									<TableHead>Price</TableHead>
+									<TableHead>Livro</TableHead>
+									<TableHead>Categoria</TableHead>
+									<TableHead>Variantes</TableHead>
+									<TableHead>Preço</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead></TableHead>
 								</TableRow>
@@ -145,8 +174,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 												</Badge>
 											</TableCell>
 											<TableCell className="text-right">
-												<Link className="text-sm underline" href={`/admin/products/${group.slug}`}>
-													Edit
+												<Link
+													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
+													href={`/admin/products/${group.slug}`}
+												>
+													Editar
 												</Link>
 											</TableCell>
 										</TableRow>
@@ -155,16 +187,16 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 								{filtered.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											No products found.
+											Nenhum produto encontrado.
 										</TableCell>
 									</TableRow>
 								) : null}
 							</TableBody>
-							<TableCaption>Products are grouped by Stripe metadata.slug.</TableCaption>
+							<TableCaption>Produtos agrupados por `metadata.slug` na Stripe.</TableCaption>
 						</Table>
 					</CardContent>
 				</EditorialPanel>
 			)}
-		</main>
+		</AdminEditorialPage>
 	);
 }

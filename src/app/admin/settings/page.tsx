@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { AdminEditorialHero, AdminEditorialPage, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
@@ -15,51 +16,64 @@ export default async function AdminSettingsPage() {
 	if (session.user.role !== "admin") redirect("/forbidden");
 
 	return (
-		<main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8 space-y-6 bg-background text-foreground">
-			<div className="space-y-2">
-				<h1 className="text-2xl font-semibold">Settings</h1>
-				<p className="text-muted-foreground">Admin panel preferences</p>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Configurações"
+				title="Infraestrutura, identidade operacional e preferências do painel."
+				description="Regionalização, provedores de entrega, autenticação social e email de suporte ficam agrupados em blocos editoriais mais legíveis."
+			/>
+			<div className="grid gap-5 xl:grid-cols-2">
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Tema</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<AdminThemeSelector />
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Padrões regionais</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<AdminRegionalSettings />
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Email de suporte</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<AdminSupportEmail />
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Provedores OAuth</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<AdminOAuthProviders />
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+				<EditorialPanel className="p-0 xl:col-span-2">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Provedores de frete</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<AdminShippingProviders />
+						</CardContent>
+					</Card>
+				</EditorialPanel>
 			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Theme</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<AdminThemeSelector />
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>Regional defaults</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<AdminRegionalSettings />
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>Support email</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<AdminSupportEmail />
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>OAuth providers</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<AdminOAuthProviders />
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>Shipping providers</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<AdminShippingProviders />
-				</CardContent>
-			</Card>
-		</main>
+		</AdminEditorialPage>
 	);
 }

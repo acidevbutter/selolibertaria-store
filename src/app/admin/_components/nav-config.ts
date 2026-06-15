@@ -19,14 +19,14 @@ export type NavItem = {
 };
 
 export const adminNavItems: NavItem[] = [
-	{ href: "/admin", label: "Overview", icon: LayoutDashboard, capability: "admin.access" },
-	{ href: "/admin/orders", label: "Orders", icon: ShoppingCart, capability: "orders.read" },
-	{ href: "/admin/products", label: "Products", icon: Package, capability: "catalog.write" },
+	{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, capability: "admin.access" },
+	{ href: "/admin/orders", label: "Pedidos", icon: ShoppingCart, capability: "orders.read" },
+	{ href: "/admin/products", label: "Livros", icon: Package, capability: "catalog.write" },
 	{ href: "/admin/editorial", label: "Editorial", icon: BookOpen, capability: "editorial.write" },
-	{ href: "/admin/promotions", label: "Promotions", icon: Percent, capability: "promotions.read" },
-	{ href: "/admin/users", label: "Users", icon: Users, capability: "customers.read" },
+	{ href: "/admin/promotions", label: "Promoções", icon: Percent, capability: "promotions.read" },
+	{ href: "/admin/users", label: "Usuários", icon: Users, capability: "customers.read" },
 	{ href: "/admin/emails", label: "Emails", icon: Mail, capability: "emails.read" },
-	{ href: "/admin/settings", label: "Settings", icon: Settings, capability: "settings.write" },
-	{ href: "/admin/email-templates", label: "Email Templates", icon: Settings, capability: "settings.write" },
+	{ href: "/admin/settings", label: "Configurações", icon: Settings, capability: "settings.write" },
+	{ href: "/admin/email-templates", label: "Templates", icon: Settings, capability: "settings.write" },
 	{ href: "/admin/webhooks", label: "Webhooks", icon: Activity, capability: "webhooks.read" },
 ];

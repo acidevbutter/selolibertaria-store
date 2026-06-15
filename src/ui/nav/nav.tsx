@@ -9,6 +9,9 @@ import { YnsLink } from "@/ui/yns-link";
 
 export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {}) => {
 	const session = await auth();
+	const isAdminSession = isBackofficeRole(session?.user.role);
+	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
+	const authLabel = !session ? "ENTRAR" : isAdminSession ? "ADMIN" : "MINHA_CONTA";
 	return (
 		<header className="sticky top-0 z-50 bg-[color:rgba(247,244,239,0.98)] backdrop-blur-xs">
 			<div className="w-full bg-[color:var(--editorial-paper)] px-4 pt-5 sm:px-8 sm:pt-5 lg:px-12">
@@ -27,27 +30,27 @@ export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {
 						{hideAuthCta ? null : (
 							<>
 								<div className="flex items-center gap-2 lg:hidden">
-									{!isBackofficeRole(session?.user.role) ? <CartIcon /> : null}
+									{!isAdminSession ? <CartIcon /> : null}
 									<YnsLink
-										href={session ? "/user" : "/login"}
+										href={authHref}
 										className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
 									>
 										<UserIcon className="h-4 w-4" />
 									</YnsLink>
 								</div>
 								<YnsLink
-									href={session ? "/user" : "/login"}
+									href={authHref}
 									className="hidden h-12 w-25 items-center justify-center bg-[color:var(--editorial-ink)] px-3 text-[11px] font-black uppercase leading-[1.05] tracking-[0.2em] text-[color:var(--editorial-paper)] lg:inline-flex"
 								>
 									<span className="block text-center">
-										{session ? (
+										{authLabel === "MINHA_CONTA" ? (
 											<>
 												MINHA
 												<br />
 												CONTA
 											</>
 										) : (
-											<>ENTRAR</>
+											<>{authLabel}</>
 										)}
 									</span>
 								</YnsLink>

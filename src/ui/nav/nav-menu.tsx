@@ -1,5 +1,6 @@
 import { getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
+import { isBackofficeRole } from "@/lib/authz";
 import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
 import { getStripeCategories } from "@/lib/stripe-categories";
 import { NavMobileMenu } from "@/ui/nav/nav-mobile-menu.client";
@@ -7,6 +8,9 @@ import { YnsLink } from "@/ui/yns-link";
 
 export const NavMenu = async () => {
 	const session = await auth();
+	const isAdminSession = isBackofficeRole(session?.user.role);
+	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
+	const authLabel = !session ? "Entrar" : isAdminSession ? "Admin" : "Minha conta";
 	const t = await getTranslations("Selo");
 	const dynamicCategories = await getStripeCategories();
 	const desktopLinks = [
@@ -53,10 +57,10 @@ export const NavMenu = async () => {
 						))}
 						<li className="pt-3">
 							<YnsLink
-								href={session ? "/user" : "/login"}
+								href={authHref}
 								className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-2 w-10 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
 							>
-								{session ? "Minha conta" : "Entrar"}
+								{authLabel}
 							</YnsLink>
 						</li>
 					</ul>

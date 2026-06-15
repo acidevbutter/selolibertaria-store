@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { authenticateAndCreateSession } from "@/lib/auth-login";
+import { isBackofficeRole } from "@/lib/authz";
 
 function buildLoginRedirect(req: Request, query = "") {
 	return NextResponse.redirect(new URL(`/login${query}`, req.url), 303);
@@ -25,5 +26,5 @@ export async function POST(req: Request) {
 		return buildLoginRedirect(req, query);
 	}
 
-	return NextResponse.redirect(new URL("/", req.url), 303);
+	return NextResponse.redirect(new URL(isBackofficeRole(result.role) ? "/admin" : "/", req.url), 303);
 }

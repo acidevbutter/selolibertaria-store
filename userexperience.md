@@ -101,6 +101,7 @@
 - Quando uma ação não for permitida, o sistema deve falhar de forma clara e previsível, sem levar a pessoa usuária interna a descobrir a restrição apenas no fim do fluxo.
 - No dashboard do admin, a pessoa operadora deve conseguir identificar em poucos segundos o que vendeu, o que está travado no pagamento e o que ainda precisa avançar em fulfillment.
 - O painel inicial do backoffice deve favorecer ação e diagnóstico: alertas operacionais precisam aparecer antes de análises secundárias ou listas longas.
+- No novo estilo editorial do admin, a experiência precisa transmitir orientação imediata: hero curto para contextualizar a tela, métricas logo abaixo para leitura rápida e só depois tabelas ou formulários extensos.
 - Na gestão de usuários, a pessoa administradora deve entender rapidamente quem está ativo, bloqueado ou com privilégio elevado, e mudanças sensíveis como bloquear acesso devem comunicar impacto imediato sobre sessões ativas.
 - Em catálogo, tanto `admin` quanto `vendor` devem conseguir editar produto sem ambiguidade de permissão, e o histórico precisa permitir reconstruir rapidamente o que mudou e quem fez a alteração.
 - No cadastro e na edição de produto, a pessoa operadora deve entender rapidamente o que é dado compartilhado do produto, o que é específico da variante e o que controla disponibilidade.
@@ -112,3 +113,4 @@
 - Quando um webhook alterar automaticamente o status de pagamento, a pessoa operadora também deve enxergar esse momento no histórico do pedido com data, hora e origem automática claramente identificadas.
 - Em frete, a pessoa operadora precisa conseguir entender rapidamente qual provedor está ativo, qual serviço foi cotado e se a integração está saudável antes de mexer em regras ou credenciais.
 - Em settings de frete, a pessoa operadora não deve precisar lembrar o formato de autenticação de cada API; o formulário deve guiar a configuração de Correios, Jadlog e EasyPost com campos já organizados por padrão.
+- No shell do backoffice, a sidebar fixa deve ajudar na sensação de localização contínua entre módulos; ao trocar de página, a pessoa operadora deve perceber que continua dentro do mesmo “caderno” editorial, não em telas desconectadas.

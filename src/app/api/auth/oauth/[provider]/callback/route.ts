@@ -76,7 +76,7 @@ export async function GET(req: Request, context: RouteContext) {
 		});
 		await clearOAuthPendingCookie();
 		await mergeGuestCartIntoUserCart(user.id);
-		const target = await resolvePostAuthRedirect(user.id);
+		const target = await resolvePostAuthRedirect(user.id, user.role);
 		const session = await createPersistentSession(user);
 		const redirectRes = NextResponse.redirect(new URL(target, req.url));
 		redirectRes.cookies.set({

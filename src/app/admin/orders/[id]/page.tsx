@@ -4,6 +4,7 @@ import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
 import { listOrderAuditEntries, type OrderAuditEntry } from "@/lib/order-audit";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
+import { AdminEditorialHero, AdminEditorialPage, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { StatusBadge } from "@/ui/status-badge";
@@ -110,135 +111,149 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 	const history = await listOrderAuditEntries(p.id, 15);
 
 	return (
-		<main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-			<div>
-				<h1 className="text-2xl font-semibold">Order details</h1>
-			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Summary</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-2">
-					<div>
-						<span className="text-muted-foreground">ID:</span>{" "}
-						<span className="font-mono text-sm break-all">{p.id}</span>
-					</div>
-					<div>
-						<span className="text-muted-foreground">User:</span>{" "}
-						<span className="break-all">{doc.email}</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="text-muted-foreground">Status:</span>
-						<StatusBadge status={p.status} />
-					</div>
-					<div>
-						<span className="text-muted-foreground">Amount:</span>{" "}
-						{new Intl.NumberFormat("en-US", {
-							style: "currency",
-							currency: p.currency?.toUpperCase?.() || "USD",
-						}).format((p.amountTotal || 0) / 100)}
-					</div>
-					<div>
-						<span className="text-muted-foreground">Date:</span> {new Date(p.createdAt).toLocaleString()}
-					</div>
-					<div className="pt-2">
-						<UpdateFulfillment
-							id={p.id}
-							current={p.fulfillment}
-							statuses={["received", "producing", "shipped"]}
-						/>
-					</div>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>Items</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<ul className="divide-y">
-						{(p.items || []).map((it, idx) => (
-							<li key={idx} className="py-2 flex items-center justify-between gap-3">
-								<div className="min-w-0">
-									<div className="font-medium break-words">{it.name || "—"}</div>
-									<div className="text-sm text-muted-foreground">Qty: {it.quantity}</div>
-								</div>
-								<div className="text-sm">
-									{typeof it.unitAmount === "number"
-										? new Intl.NumberFormat("en-US", {
-												style: "currency",
-												currency: p.currency?.toUpperCase?.() || "USD",
-											}).format(it.unitAmount / 100)
-										: "—"}
-								</div>
-							</li>
-						))}
-						{(p.items || []).length === 0 && <li className="py-6 text-muted-foreground">No items.</li>}
-					</ul>
-				</CardContent>
-			</Card>
-			<Card>
-				<CardHeader>
-					<div className="space-y-1">
-						<CardTitle>Edit history</CardTitle>
-						<p className="text-sm text-muted-foreground">
-							Every manual fulfillment update is recorded here with who changed it and what changed.
-						</p>
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<ul className="space-y-3">
-						{history.map((entry) => (
-							<li key={String(entry._id)} className="rounded-lg border p-4">
-								<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-									<div className="space-y-2">
-										<div className="flex flex-wrap items-center gap-2">
-											<div className="font-medium">{getAuditSummary(entry)}</div>
-											<Badge variant="outline">{entry.actorRole}</Badge>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Pedido"
+				title={`Leitura operacional do pedido ${p.id}.`}
+				description="Resumo financeiro, itens, fulfillment e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
+			/>
+			<EditorialPanel className="p-0">
+				<Card className="border-none bg-transparent shadow-none">
+					<CardHeader>
+						<CardTitle>Resumo</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-2">
+						<div>
+							<span className="text-muted-foreground">ID:</span>{" "}
+							<span className="font-mono text-sm break-all">{p.id}</span>
+						</div>
+						<div>
+							<span className="text-muted-foreground">User:</span>{" "}
+							<span className="break-all">{doc.email}</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<span className="text-muted-foreground">Status:</span>
+							<StatusBadge status={p.status} />
+						</div>
+						<div>
+							<span className="text-muted-foreground">Amount:</span>{" "}
+							{new Intl.NumberFormat("en-US", {
+								style: "currency",
+								currency: p.currency?.toUpperCase?.() || "USD",
+							}).format((p.amountTotal || 0) / 100)}
+						</div>
+						<div>
+							<span className="text-muted-foreground">Date:</span> {new Date(p.createdAt).toLocaleString()}
+						</div>
+						<div className="pt-2">
+							<UpdateFulfillment
+								id={p.id}
+								current={p.fulfillment}
+								statuses={["received", "producing", "shipped"]}
+							/>
+						</div>
+					</CardContent>
+				</Card>
+			</EditorialPanel>
+			<div className="grid gap-6 xl:grid-cols-2">
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<CardTitle>Itens</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<ul className="divide-y">
+								{(p.items || []).map((it, idx) => (
+									<li key={idx} className="py-2 flex items-center justify-between gap-3">
+										<div className="min-w-0">
+											<div className="font-medium break-words">{it.name || "—"}</div>
+											<div className="text-sm text-muted-foreground">Qty: {it.quantity}</div>
 										</div>
-										<div className="text-sm text-muted-foreground">
-											{entry.actorRole === "system"
-												? "Webhook automation"
-												: entry.actorEmail || entry.actorId}
+										<div className="text-sm">
+											{typeof it.unitAmount === "number"
+												? new Intl.NumberFormat("en-US", {
+														style: "currency",
+														currency: p.currency?.toUpperCase?.() || "USD",
+													}).format(it.unitAmount / 100)
+												: "—"}
 										</div>
-										{entry.action === "order_payment_status_webhook_updated" ? (
+									</li>
+								))}
+								{(p.items || []).length === 0 && <li className="py-6 text-muted-foreground">No items.</li>}
+							</ul>
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+				<EditorialPanel className="p-0">
+					<Card className="border-none bg-transparent shadow-none">
+						<CardHeader>
+							<div className="space-y-1">
+								<CardTitle>Histórico de edição</CardTitle>
+								<p className="text-sm text-muted-foreground">
+									Toda atualização manual ou automática de status aparece aqui com autoria e comparação.
+								</p>
+							</div>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<ul className="space-y-3">
+								{history.map((entry) => (
+									<li key={String(entry._id)} className="rounded-lg border p-4">
+										<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+											<div className="space-y-2">
+												<div className="flex flex-wrap items-center gap-2">
+													<div className="font-medium">{getAuditSummary(entry)}</div>
+													<Badge variant="outline">{entry.actorRole}</Badge>
+												</div>
+												<div className="text-sm text-muted-foreground">
+													{entry.actorRole === "system"
+														? "Webhook automation"
+														: entry.actorEmail || entry.actorId}
+												</div>
+												{entry.action === "order_payment_status_webhook_updated" ? (
+													<div className="text-xs text-muted-foreground">
+														{((entry.details ?? {}) as { webhookType?: string | null }).webhookType ||
+															"Webhook"}
+													</div>
+												) : null}
+											</div>
 											<div className="text-xs text-muted-foreground">
-												{((entry.details ?? {}) as { webhookType?: string | null }).webhookType || "Webhook"}
-											</div>
-										) : null}
-									</div>
-									<div className="text-xs text-muted-foreground">
-										{new Date(entry.createdAt).toLocaleString()}
-									</div>
-								</div>
-								<div className="mt-4 grid gap-3">
-									{getAuditChanges(entry).map((change) => (
-										<div key={change.label} className="rounded-md bg-muted/30 p-3">
-											<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-												{change.label}
-											</div>
-											<div className="mt-2 grid gap-2 sm:grid-cols-2">
-												<div className="rounded-md border bg-background px-3 py-2">
-													<div className="text-xs text-muted-foreground">Before</div>
-													<div className="text-sm">{change.previous}</div>
-												</div>
-												<div className="rounded-md border bg-background px-3 py-2">
-													<div className="text-xs text-muted-foreground">After</div>
-													<div className="text-sm">{change.next}</div>
-												</div>
+												{new Date(entry.createdAt).toLocaleString()}
 											</div>
 										</div>
-									))}
-								</div>
-							</li>
-						))}
-						{history.length === 0 ? (
-							<li className="rounded-lg border border-dashed py-8 text-center text-muted-foreground">
-								No status changes recorded yet.
-							</li>
-						) : null}
-					</ul>
-				</CardContent>
-			</Card>
-		</main>
+										<div className="mt-4 grid gap-3">
+											{getAuditChanges(entry).map((change) => (
+												<div
+													key={change.label}
+													className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-3"
+												>
+													<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+														{change.label}
+													</div>
+													<div className="mt-2 grid gap-2 sm:grid-cols-2">
+														<div className="border bg-background px-3 py-2">
+															<div className="text-xs text-muted-foreground">Before</div>
+															<div className="text-sm">{change.previous}</div>
+														</div>
+														<div className="border bg-background px-3 py-2">
+															<div className="text-xs text-muted-foreground">After</div>
+															<div className="text-sm">{change.next}</div>
+														</div>
+													</div>
+												</div>
+											))}
+										</div>
+									</li>
+								))}
+								{history.length === 0 ? (
+									<li className="border border-dashed py-8 text-center text-muted-foreground">
+										Nenhuma mudança de status registrada ainda.
+									</li>
+								) : null}
+							</ul>
+						</CardContent>
+					</Card>
+				</EditorialPanel>
+			</div>
+		</AdminEditorialPage>
 	);
 }

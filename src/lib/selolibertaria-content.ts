@@ -13,13 +13,13 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Home", href: PUBLIC_NAVIGATION.home },
-	{ label: "Shop", href: PUBLIC_NAVIGATION.shop },
-	{ label: "Projects", href: PUBLIC_NAVIGATION.projects },
-	{ label: "Events", href: PUBLIC_NAVIGATION.events },
+	{ label: "Início", href: PUBLIC_NAVIGATION.home },
+	{ label: "Livros", href: PUBLIC_NAVIGATION.shop },
+	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
+	{ label: "Eventos", href: PUBLIC_NAVIGATION.events },
 	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
-	{ label: "About", href: PUBLIC_NAVIGATION.about },
-	{ label: "Contact", href: PUBLIC_NAVIGATION.contact },
+	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },
+	{ label: "Contato", href: PUBLIC_NAVIGATION.contact },
 ];
 
 export const seloSocialLinks = [
@@ -30,121 +30,119 @@ export const seloSocialLinks = [
 
 export const seloHomeHighlights = [
 	{
-		title: "Independent publishing",
-		description:
-			"Books and sonic publications that carry the editorial voice of the selo into the public catalogue.",
+		title: "Publicação autoral",
+		description: "Livros e publicações sonoras que carregam a voz editorial do selo no catálogo público.",
 	},
 	{
-		title: "Cultural programming",
-		description:
-			"Readings, workshops, festivals, and gatherings connected to the catalogue and the author's practice.",
+		title: "Programação cultural",
+		description: "Leituras, oficinas, festivais e encontros conectados ao catálogo e à prática autoral.",
 	},
 	{
-		title: "Author-led curation",
+		title: "Curadoria autoral",
 		description:
-			"A hybrid platform where publishing, performance, and community rituals are presented side by side.",
+			"Uma plataforma híbrida onde publicação, performance e rituais comunitários convivem lado a lado.",
 	},
 ];
 
 export const seloHomeEditorialCtas = [
 	{
-		eyebrow: "Shop the catalogue",
-		title: "Books stay at the center of the experience.",
+		eyebrow: "Ver catálogo",
+		title: "Os livros permanecem no centro da experiência.",
 		description:
-			"The current site keeps its cart, checkout, and product flow while gaining stronger editorial context around each release.",
+			"O site atual mantém fluxo de carrinho, checkout e produto enquanto ganha contexto editorial mais forte para cada lançamento.",
 		href: PUBLIC_NAVIGATION.shop,
-		label: "Browse books",
+		label: "Ver livros",
 	},
 	{
-		eyebrow: "Follow the program",
-		title: "Events, workshops, and projects build the world around the books.",
+		eyebrow: "Acompanhar a programação",
+		title: "Eventos, oficinas e projetos constroem o mundo em torno dos livros.",
 		description:
-			"Public programming should not feel detached from the catalogue. It should extend the same voice into readings, labs, and performances.",
+			"A programação pública não deve parecer desconectada do catálogo. Deve estender a mesma voz para leituras, laboratórios e performances.",
 		href: PUBLIC_NAVIGATION.events,
-		label: "See events",
+		label: "Ver eventos",
 	},
 ];
 
 export const seloHomeTopBar = {
-	message: "New books, live programs, and erotic literature with cultural direction.",
+	message: "Novos livros, programação ao vivo e literatura erótica com direção cultural.",
 };
 
 export const seloHomeHero = {
-	eyebrow: "Books, performance, and erotic literature",
-	title: "A bookstore-publisher for people who read with their whole body.",
+	eyebrow: "Livros, performance e literatura erótica",
+	title: "Uma livraria-editora para quem lê com o corpo inteiro.",
 	description:
-		"Selo Libertaria brings together books, cultural projects, salons, and author-led publishing inside one experience of reading, presence, and desire.",
+		"O Selo Libertaria reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
 	primaryCta: {
-		label: "Browse books",
+		label: "Ver livros",
 		href: PUBLIC_NAVIGATION.shop,
 	},
 	secondaryCta: {
-		label: "Explore the agenda",
+		label: "Explorar a agenda",
 		href: "/events",
 	},
-	supportingLine: "Printed books, sonic editions, live gatherings, and cultural projects.",
-	featureEyebrow: "Editorial site",
+	supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
+	featureEyebrow: "Site editorial",
 	featureTitle:
-		"A hybrid home where catalogue, cultural programming, and authorial context meet without friction.",
+		"Uma home híbrida onde catálogo, programação cultural e contexto autoral convivem sem fricção.",
 	featureBody: seloSiteMeta.tagline,
-	featureQuote: "Reading can also be a way of igniting presence.",
+	featureQuote: "Ler também pode ser uma forma de acender presença.",
 	featureImage: {
 		src: "/yns-cover.jpg",
-		alt: "Selo Libertaria editorial cover",
+		alt: "Capa editorial do Selo Libertaria",
 	},
 };
 
 export const seloHomeFeaturedBooksIntro = {
-	eyebrow: "Featured catalogue",
-	title: "Books to enter this universe through reading.",
-	linkLabel: "View the full catalogue",
+	eyebrow: "Catálogo em destaque",
+	title: "Livros para entrar nesse universo pela leitura.",
+	linkLabel: "Ver catálogo completo",
 	linkHref: "/products",
 };
 
 export const seloHomeManifesto = {
-	title: "Literature to set language, city, and imagination on fire.",
-	body: "Between publications, live encounters, and performance, Selo Libertaria builds an authorial catalogue for adults where the book operates as work, gesture, and cultural presence at once.",
-	linkLabel: "Meet the selo",
+	title: "Literatura para incendiar linguagem, cidade e imaginação.",
+	body: "Entre publicações, encontros e performance, o Selo Libertaria constrói um catálogo autoral para adultos onde o livro opera ao mesmo tempo como obra, gesto e presença cultural.",
+	linkLabel: "Conheça o selo",
 	linkHref: PUBLIC_NAVIGATION.about,
 };
 
 export const seloHomeAgenda = {
 	eyebrow: "Agenda",
-	title: "Upcoming encounters, readings, and public appearances from the selo.",
-	archiveTitle: "Archive of encounters and cultural interventions",
-	linkLabel: "See all events",
+	title: "Próximos encontros, leituras e aparições públicas do selo.",
+	archiveTitle: "Arquivo de encontros e intervenções culturais",
+	linkLabel: "Ver todos os eventos",
 	linkHref: PUBLIC_NAVIGATION.events,
 };
 
 export const seloHomeProjectsIntro = {
-	eyebrow: "Projects",
-	title: "A practice that moves through books, stage, and formation.",
-	linkLabel: "View projects",
+	eyebrow: "Projetos",
+	title: "Uma prática que atravessa livros, palco e formação.",
+	linkLabel: "Ver projetos",
 	linkHref: PUBLIC_NAVIGATION.projects,
 };
 
 export const seloHomeImmersiveGallery = {
-	eyebrow: "Atmosphere",
-	quote: "Reading can also be a way of igniting presence.",
+	eyebrow: "Atmosfera",
+	quote: "Ler também pode ser uma forma de acender presença.",
 	images: [
-		{ src: "/yns-cover.jpg", alt: "Book cover from Selo Libertaria" },
-		{ src: "/yns-cover.jpg", alt: "Editorial composition for Selo Libertaria" },
-		{ src: "/yns-cover.jpg", alt: "Visual atmosphere of books and performance" },
+		{ src: "/yns-cover.jpg", alt: "Capa de livro do Selo Libertaria" },
+		{ src: "/yns-cover.jpg", alt: "Composição editorial do Selo Libertaria" },
+		{ src: "/yns-cover.jpg", alt: "Atmosfera visual de livros e performance" },
 	],
 };
 
 export const seloHomeAuthorSpotlight = {
-	eyebrow: "Author and curation",
-	title: "Natalia Nolli Sasso and the wider orbit of Selo Libertaria",
-	body: "Books remain at the center, but the catalogue grows in dialogue with public programs, workshops, salons, and collaborative cultural work.",
+	eyebrow: "Autora e curadoria",
+	title: "Natália Nolli Sasso e a órbita do Selo Libertaria",
+	body: "Os livros seguem no centro, mas o catálogo cresce em diálogo com programas públicos, oficinas, saraus e trabalho cultural colaborativo.",
 	secondaryBody:
-		"The new site should let readers move naturally from a title to the artistic and cultural context that surrounds it.",
+		"O site deve permitir que a pessoa leitora passe naturalmente de um título para o contexto artístico e cultural que o cerca.",
 	primaryCta: {
-		label: "About the author",
+		label: "Sobre a autora",
 		href: PUBLIC_NAVIGATION.about,
 	},
 	secondaryCta: {
-		label: "Discover Sarau Safado",
+		label: "Conhecer o Sarau Safado",
 		href: PUBLIC_NAVIGATION.sarau,
 	},
 	imageSrc: "/yns-cover.jpg",
@@ -152,10 +150,10 @@ export const seloHomeAuthorSpotlight = {
 };
 
 export const seloHomeCommunityCta = {
-	title: "Follow the next books, salons, and cultural projects.",
-	body: "Receive updates, follow the networks, and get in touch for invitations, partnerships, and programming.",
+	title: "Acompanhe os próximos livros, saraus e projetos culturais.",
+	body: "Receba atualizações, acompanhe as redes e entre em contato para convites, parcerias e programação.",
 	primaryCta: {
-		label: "Get in touch",
+		label: "Entrar em contato",
 		href: PUBLIC_NAVIGATION.contact,
 	},
 	secondaryLinks: [
@@ -166,17 +164,17 @@ export const seloHomeCommunityCta = {
 };
 
 export const seloContactPage = {
-	eyebrow: "Contact",
-	title: "Talk to the selo about books, invitations, partnerships, and programming.",
+	eyebrow: "Contato",
+	title: "Fale com o selo sobre livros, convites, parcerias e programação.",
 	description:
-		"Use this space for book inquiries, cultural invitations, workshops, press, collaborations, or programming conversations.",
-	formTitle: "Send a message",
+		"Use este espaço para falar sobre livros, convites culturais, oficinas, imprensa, colaborações ou programação.",
+	formTitle: "Enviar mensagem",
 	formDescription:
-		"We will route your note to the right path inside books, events, partnerships, or support.",
-	directTitle: "Direct channels",
-	directDescription: "Reach the selo through the main editorial and social touchpoints.",
-	pathsTitle: "Common paths",
-	pathsDescription: "Move quickly between catalogue, programming, and institutional pages.",
+		"Vamos encaminhar sua mensagem para o caminho certo dentro de livros, eventos, parcerias ou suporte.",
+	directTitle: "Canais diretos",
+	directDescription: "Fale com o selo pelos principais pontos de contato editoriais e sociais.",
+	pathsTitle: "Caminhos comuns",
+	pathsDescription: "Navegue rapidamente entre catálogo, programação e páginas institucionais.",
 };
 
 export const seloAbout = {

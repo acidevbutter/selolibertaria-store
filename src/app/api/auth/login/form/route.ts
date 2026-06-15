@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { authenticateAndCreateSession } from "@/lib/auth-login";
+import { isBackofficeRole } from "@/lib/authz";
 import { CURRENCY_COOKIE_NAME, resolveSupportedCurrency } from "@/lib/currency";
 
 function buildLoginRedirect(req: Request, query = "") {
@@ -26,7 +27,10 @@ export async function POST(req: Request) {
 		return buildLoginRedirect(req, query);
 	}
 
-	const response = NextResponse.redirect(new URL("/", req.url), 303);
+	const response = NextResponse.redirect(
+		new URL(isBackofficeRole(result.role) ? "/admin" : "/", req.url),
+		303,
+	);
 	const preferredCurrency = resolveSupportedCurrency(result.preferredCurrency);
 	if (preferredCurrency) {
 		response.cookies.set(CURRENCY_COOKIE_NAME, preferredCurrency, {

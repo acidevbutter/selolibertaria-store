@@ -43,18 +43,10 @@ const getMessagesByLocale = cache(async (locale: AppLocale) => {
 });
 
 const getRequestLocale = cache(async (): Promise<AppLocale> => {
-	const cookieStore = await cookies();
-	const cookieLocale = matchLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
-	if (cookieLocale) return cookieLocale;
-
-	const headerStore = await headers();
-	const headerLocale = resolveLocaleFromAcceptLanguage(headerStore.get("accept-language"));
-	if (headerLocale) return headerLocale;
-
-	const adminLocale = await getDefaultLocaleSetting();
-	if (adminLocale) return adminLocale;
-
-	return resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	// Forçar o locale da aplicação para o DEFAULT_LOCALE (pt-BR).
+	// Ignora cookies, cabeçalhos Accept-Language e configuração do admin
+	// para apresentar a loja consistentemente em português.
+	return DEFAULT_LOCALE;
 });
 
 export const getLocale = async (): Promise<AppLocale> => getRequestLocale();

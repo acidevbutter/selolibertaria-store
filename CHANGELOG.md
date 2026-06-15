@@ -37,6 +37,7 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- O admin passou a seguir o estilo editorial do Figma nas superfícies-base: navegação com sidebar preta fixa, páginas com hero introdutório, cards retos em fundo papel e nova hierarquia visual em `orders`, `order details`, `products`, `editorial`, `promotions` e `settings`.
 - A home pública agora consome integralmente os blocos editoriais configurados no admin para `author` e `community`, e o destaque de programação passou a puxar título, resumo e imagem do conteúdo editorial ativo.
 - Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.
 - Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.

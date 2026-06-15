@@ -9,7 +9,7 @@ import { hasCapability, type UserRole } from "@/lib/authz";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/ui/shadcn/sheet";
 
-export function AdminTopbar({ role }: { role?: UserRole }) {
+export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAction: () => Promise<void> }) {
 	const pathname = usePathname();
 	const [navigating, setNavigating] = useState(false);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(role, item.capability));
@@ -20,7 +20,7 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
 			<div className="flex h-16 items-center justify-between px-5">
 				<Link href="/admin" className="text-sm font-black uppercase tracking-[0.2em]">
-					Selo Libertária
+					Selo Libertária Admin
 				</Link>
 				<Sheet>
 					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
@@ -32,14 +32,29 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
 					>
 						<SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-						<div className="border-b border-white/10 px-6 pb-7 pt-8">
-							<div className="editorial-serif text-[2.1rem] leading-[0.92] tracking-[-0.02em]">
+						<div className="border-b border-white/10 px-6 pb-6 pt-7">
+							<div className="text-[1.2rem] font-black uppercase leading-[0.96] tracking-[0.08em]">
 								SELO
 								<br />
 								LIBERTÁRIA
+								<br />
+								ADMIN
+							</div>
+							<div className="mt-3 flex items-center justify-between gap-3">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/52">
+									Painel editorial
+								</div>
+								<form action={logoutAction}>
+									<button
+										type="submit"
+										className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/52 transition-colors hover:text-[color:var(--editorial-paper)]"
+									>
+										Logout
+									</button>
+								</form>
 							</div>
 						</div>
-						<nav className="space-y-1 px-4 py-6">
+						<nav className="space-y-1 px-0 py-4">
 							{visibleNavItems.map(({ href, label }) => {
 								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
 								return (
@@ -54,7 +69,7 @@ export function AdminTopbar({ role }: { role?: UserRole }) {
 												setNavigating(true);
 											}}
 											className={cn(
-												"block border-l-2 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em]",
+												"block w-full border-l-2 px-6 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
 												active
 													? "border-[color:var(--editorial-accent)] bg-white/6 text-[color:var(--editorial-paper)]"
 													: "border-transparent text-white/62 hover:border-white/18 hover:bg-white/4 hover:text-[color:var(--editorial-paper)]",

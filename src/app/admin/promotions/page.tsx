@@ -16,6 +16,12 @@ import {
 	type PromotionStatus,
 } from "@/lib/promotions";
 import { getDecimalFromStripeAmount } from "@/lib/utils";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -507,46 +513,70 @@ function PromotionForm(args: {
 export default async function AdminPromotionsPage() {
 	const promotions = await listPromotionsForAdmin();
 	const createDefaults = buildPromotionFormDefaults();
+	const activeCount = promotions.filter((promotion) => promotion.status === "active").length;
+	const couponCount = promotions.filter((promotion) => promotion.kind === "coupon").length;
+	const pendingAlerts = promotions.reduce((total, promotion) => total + promotion.pendingNotifications, 0);
 
 	return (
-		<div className="space-y-8 p-6">
-			<div className="flex flex-wrap items-start justify-between gap-4">
-				<div className="space-y-2">
-					<h1 className="text-3xl font-semibold tracking-tight">Promotions</h1>
-					<p className="text-sm text-muted-foreground">
-						Manage automatic discounts, coupons, and favorite alerts.
-					</p>
-				</div>
-				<form action={processFavoriteDiscountAlertsAction}>
-					<button type="submit" className="rounded-lg border px-4 py-2 text-sm font-medium">
-						Process pending alerts
-					</button>
-				</form>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Promoções"
+				title="Campanhas, cupons e alertas com leitura operacional mais clara."
+				description="A tela acompanha a direção editorial do novo admin: introdução contextual, blocos retos e edição longa organizada sem perder a visão do conjunto."
+				actions={
+					<form action={processFavoriteDiscountAlertsAction}>
+						<button
+							type="submit"
+							className="rounded-none border border-[color:var(--editorial-ink)] px-4 py-3 text-sm font-semibold text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:var(--editorial-ink)] hover:text-[color:var(--editorial-paper)]"
+						>
+							Processar alertas pendentes
+						</button>
+					</form>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Promoções"
+					value={promotions.length}
+					helper="Campanhas automáticas e cupons cadastrados."
+				/>
+				<AdminEditorialStat
+					label="Ativas"
+					value={activeCount}
+					helper="Regras publicadas e elegíveis para aplicação."
+				/>
+				<AdminEditorialStat
+					label="Alertas pendentes"
+					value={pendingAlerts}
+					helper={`${couponCount} campanha(s) do tipo cupom neste acervo.`}
+				/>
 			</div>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>New promotion</CardTitle>
-					<CardDescription>
-						Create an automatic campaign or a coupon. Monetary values should be entered in decimal format,
-						like <code className="ml-1">19.90</code>. For coupons, you can also define validity and usage
-						limits.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<PromotionForm
-						action={createPromotionAction}
-						defaults={createDefaults}
-						submitLabel="Create promotion"
-					/>
-				</CardContent>
-			</Card>
+			<EditorialPanel className="p-0">
+				<Card className="border-none bg-transparent shadow-none">
+					<CardHeader>
+						<CardTitle>Nova promoção</CardTitle>
+						<CardDescription>
+							Crie uma campanha automática ou um cupom. Valores monetários devem ser informados em formato
+							decimal, como <code className="ml-1">19.90</code>. Para cupons, você também pode definir
+							validade e limites de uso.
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<PromotionForm
+							action={createPromotionAction}
+							defaults={createDefaults}
+							submitLabel="Criar promoção"
+						/>
+					</CardContent>
+				</Card>
+			</EditorialPanel>
 
 			<div className="grid gap-4">
 				{promotions.length === 0 ? (
 					<Card>
 						<CardContent className="p-6 text-sm text-muted-foreground">
-							No promotions created yet.
+							Nenhuma promoção cadastrada ainda.
 						</CardContent>
 					</Card>
 				) : (
@@ -558,7 +588,7 @@ export default async function AdminPromotionsPage() {
 									<div className="flex flex-wrap items-start justify-between gap-3">
 										<div className="space-y-1">
 											<CardTitle className="text-xl">{promotion.name}</CardTitle>
-											<CardDescription>{promotion.description || "No description."}</CardDescription>
+											<CardDescription>{promotion.description || "Sem descrição."}</CardDescription>
 										</div>
 										<div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
 											<span className="rounded-full border px-3 py-1">{promotion.status}</span>
@@ -571,31 +601,31 @@ export default async function AdminPromotionsPage() {
 									<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
 										<div className="rounded-lg border p-3 text-sm">
 											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-												Discount
+												Desconto
 											</div>
 											<div className="mt-1 font-medium">
 												{formatBenefit(promotion.benefitValue, promotion.benefitType, promotion.currency)}
 											</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
-											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Targets</div>
+											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Alvos</div>
 											<div className="mt-1 font-medium">{formatPromotionTargets(promotion.targets)}</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
-											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Codes</div>
+											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Códigos</div>
 											<div className="mt-1 font-medium">
 												{promotion.codes.length > 0
 													? promotion.codes.map((code) => code.code).join(", ")
-													: "No code"}
+													: "Sem código"}
 											</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
-											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Rules</div>
+											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Regras</div>
 											<div className="mt-1 font-medium">{formatUsageRules(promotion)}</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
 											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-												Pending alerts
+												Alertas pendentes
 											</div>
 											<div className="mt-1 font-medium">{promotion.pendingNotifications}</div>
 										</div>
@@ -603,21 +633,21 @@ export default async function AdminPromotionsPage() {
 									<div className="grid gap-3 md:grid-cols-2">
 										<div className="rounded-lg border p-3 text-sm">
 											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-												Promotion window
+												Janela da promoção
 											</div>
 											<div className="mt-1 font-medium">
-												{formatDateTime(promotion.schedule?.startsAt)} to{" "}
+												{formatDateTime(promotion.schedule?.startsAt)} até{" "}
 												{formatDateTime(promotion.schedule?.endsAt)}
 											</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
 											<div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-												Coupon window
+												Janela do cupom
 											</div>
 											<div className="mt-1 font-medium">
 												{promotion.codes[0]
-													? `${formatDateTime(promotion.codes[0].startsAt)} to ${formatDateTime(promotion.codes[0].endsAt)}`
-													: "Does not apply"}
+													? `${formatDateTime(promotion.codes[0].startsAt)} até ${formatDateTime(promotion.codes[0].endsAt)}`
+													: "Não se aplica"}
 											</div>
 										</div>
 									</div>
@@ -626,33 +656,33 @@ export default async function AdminPromotionsPage() {
 											<input type="hidden" name="promotionId" value={promotion._id?.toString()} />
 											<input type="hidden" name="status" value="active" />
 											<button type="submit" className="rounded-lg border px-3 py-2 text-sm font-medium">
-												Activate
+												Ativar
 											</button>
 										</form>
 										<form action={changePromotionStatusAction}>
 											<input type="hidden" name="promotionId" value={promotion._id?.toString()} />
 											<input type="hidden" name="status" value="paused" />
 											<button type="submit" className="rounded-lg border px-3 py-2 text-sm font-medium">
-												Deactivate
+												Desativar
 											</button>
 										</form>
 										<form action={changePromotionStatusAction}>
 											<input type="hidden" name="promotionId" value={promotion._id?.toString()} />
 											<input type="hidden" name="status" value="archived" />
 											<button type="submit" className="rounded-lg border px-3 py-2 text-sm font-medium">
-												Archive
+												Arquivar
 											</button>
 										</form>
 									</div>
 									<details className="rounded-xl border bg-muted/20">
 										<summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium">
-											Edit promotion
+											Editar promoção
 										</summary>
 										<div className="border-t p-4">
 											<PromotionForm
 												action={updatePromotionAction}
 												defaults={defaults}
-												submitLabel="Save changes"
+												submitLabel="Salvar alterações"
 												promotionId={promotion._id?.toString()}
 												lockKind
 											/>
@@ -664,6 +694,6 @@ export default async function AdminPromotionsPage() {
 					})
 				)}
 			</div>
-		</div>
+		</AdminEditorialPage>
 	);
 }

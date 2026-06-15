@@ -2,6 +2,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authenticateAndCreateSession } from "@/lib/auth-login";
+import { isBackofficeRole } from "@/lib/authz";
 import { revokeSessionByJwt } from "@/lib/session";
 
 // Async wrappers to avoid non-async exports in a "use server" file
@@ -37,7 +38,7 @@ export async function login(_state: unknown, formData: FormData): Promise<{ erro
 			cartRaw: typeof formData.get("cart") === "string" ? String(formData.get("cart")) : null,
 		});
 		if (!result.ok) return { error: result.error };
-		redirect("/");
+		redirect(isBackofficeRole(result.role) ? "/admin" : "/");
 	} catch (err: unknown) {
 		if (
 			err &&

@@ -47,3 +47,78 @@ export function EditorialEyebrow({ children, className }: { children: ReactNode;
 		</p>
 	);
 }
+
+export function AdminEditorialPage({ children, className }: { children: ReactNode; className?: string }) {
+	return <main className={cn("w-full space-y-8", className)}>{children}</main>;
+}
+
+export function AdminEditorialHero({
+	eyebrow,
+	title,
+	description,
+	actions,
+	aside,
+	className,
+}: {
+	eyebrow?: ReactNode;
+	title: ReactNode;
+	description?: ReactNode;
+	actions?: ReactNode;
+	aside?: ReactNode;
+	className?: string;
+}) {
+	return (
+		<section
+			className={cn(
+				"border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-6 sm:p-8",
+				className,
+			)}
+		>
+			<div className={cn("grid gap-8", aside ? "xl:grid-cols-[minmax(0,1.5fr)_320px]" : undefined)}>
+				<div className="space-y-5">
+					<div className="space-y-3">
+						{eyebrow ? (
+							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">{eyebrow}</EditorialEyebrow>
+						) : null}
+						<h1 className="display-font max-w-4xl text-[2.6rem] font-black leading-[0.9] tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-[4rem]">
+							{title}
+						</h1>
+						{description ? (
+							<p className="max-w-3xl text-sm leading-7 text-[color:var(--editorial-muted)] sm:text-base">
+								{description}
+							</p>
+						) : null}
+					</div>
+					{actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
+				</div>
+				{aside ? <div>{aside}</div> : null}
+			</div>
+		</section>
+	);
+}
+
+export function AdminEditorialStat({
+	label,
+	value,
+	helper,
+	className,
+}: {
+	label: ReactNode;
+	value: ReactNode;
+	helper?: ReactNode;
+	className?: string;
+}) {
+	return (
+		<div className={cn("border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5", className)}>
+			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+				{label}
+			</div>
+			<div className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+				{value}
+			</div>
+			{helper ? (
+				<div className="mt-3 text-sm leading-6 text-[color:var(--editorial-muted)]">{helper}</div>
+			) : null}
+		</div>
+	);
+}
