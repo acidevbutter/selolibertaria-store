@@ -6,7 +6,6 @@ import { EditorialSarauForm } from "@/app/admin/editorial/_components/editorial-
 import { getEditorialSarauRecord, updateEditorialSarauAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getMockEditorialSarauPage } from "@/lib/editorial-content-mock";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +14,8 @@ export default async function AdminEditorialSarauPage() {
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
 
-	const page = (await getEditorialSarauRecord()) ?? getMockEditorialSarauPage();
+	const page = await getEditorialSarauRecord();
+	if (!page) redirect("/admin/editorial");
 
 	return (
 		<main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">

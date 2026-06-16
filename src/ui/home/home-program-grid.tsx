@@ -12,18 +12,15 @@ export async function HomeProgramGrid({
 	sarau?: EditorialSarauPage | null;
 }) {
 	const t = await getTranslations("Selo");
-	const featuredTitle = sarau?.hero?.title || event?.title || "Sarau Safado";
-	const featuredSummary =
-		sarau?.hero?.body ||
-		event?.summary ||
-		"Poesia, performance, corpo e encontro. A página de eventos deve ter agenda simples, memória visual e formulário de interesse.";
+	const featuredTitle = sarau?.hero?.title || event?.title || t("nav.sarau");
+	const featuredSummary = sarau?.hero?.body || event?.summary || t("home.agenda.title");
 	const featuredImage = sarau?.hero?.image ?? event?.image ?? null;
 
 	return (
 		<section className="border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)] p-8 sm:p-10">
 			<div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
 				<div className="space-y-5">
-					<EditorialEyebrow>Projetos / eventos</EditorialEyebrow>
+					<EditorialEyebrow>{t("home.agenda.eyebrow")}</EditorialEyebrow>
 					<h2 className="text-5xl leading-[0.9] font-black uppercase tracking-[-0.06em] sm:text-6xl">
 						{featuredTitle}
 					</h2>
@@ -34,7 +31,7 @@ export async function HomeProgramGrid({
 						href={sarau ? "/sarau-safado" : "/events"}
 						className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
 					>
-						{sarau ? "Conhecer o Sarau" : t("home.agenda.link")}
+						{sarau ? t("home.author.secondaryCta") : t("home.agenda.link")}
 					</YnsLink>
 				</div>
 				{featuredImage?.src ? (
@@ -56,7 +53,7 @@ export async function HomeProgramGrid({
 				) : (
 					<div className="flex min-h-[280px] items-center justify-center bg-[color:var(--editorial-ink)] p-8 text-[color:var(--editorial-paper)]">
 						<p className="max-w-[240px] text-3xl leading-[1.05] font-bold uppercase tracking-[-0.04em]">
-							Foto / video / cartaz do evento
+							{t("home.agenda.title")}
 						</p>
 					</div>
 				)}

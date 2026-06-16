@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
-import { seloAbout, seloSiteMeta } from "@/lib/selolibertaria-content";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { AboutSection } from "@/ui/about-section";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
@@ -40,8 +40,8 @@ export default async function AboutPage() {
 				<AboutSection
 					headingTag="h2"
 					showReadMore={false}
-					imageSrc={about.section?.image?.src || seloAbout.imageSrc}
-					imageAlt={about.section?.image?.alt || seloAbout.imageAlt}
+					imageSrc={about.section?.image?.src || undefined}
+					imageAlt={about.section?.image?.alt || undefined}
 					title={about.section?.title || t("about.sectionTitle")}
 					body={about.section?.body || t("about.sectionBody")}
 					extended={about.section?.extended || t("about.sectionExtended")}

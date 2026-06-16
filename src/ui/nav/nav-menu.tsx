@@ -16,13 +16,13 @@ export const NavMenu = async () => {
 	const desktopLinks = [
 		{ label: t("nav.shop"), href: PUBLIC_NAVIGATION.shop },
 		{ label: t("nav.projects"), href: PUBLIC_NAVIGATION.projects },
+		{ label: t("nav.events"), href: PUBLIC_NAVIGATION.events },
 		{ label: t("nav.sarau"), href: PUBLIC_NAVIGATION.sarau },
 		{ label: t("nav.about"), href: PUBLIC_NAVIGATION.about },
 	];
 	const mobileLinks = [
 		{ label: t("nav.home"), href: PUBLIC_NAVIGATION.home },
 		...desktopLinks,
-		{ label: t("nav.events"), href: PUBLIC_NAVIGATION.events },
 		{ label: t("nav.contact"), href: PUBLIC_NAVIGATION.contact },
 		...dynamicCategories.slice(0, 3).map(({ name, slug }) => ({ label: name, href: `/category/${slug}` })),
 	];

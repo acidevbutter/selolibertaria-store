@@ -6,7 +6,6 @@ import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-m
 import { getEditorialAboutRecord, updateEditorialAboutAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getMockEditorialAboutPage } from "@/lib/editorial-content-mock";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +14,8 @@ export default async function AdminEditorialAboutPage() {
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
 
-	const page = (await getEditorialAboutRecord()) ?? getMockEditorialAboutPage();
+	const page = await getEditorialAboutRecord();
+	if (!page) redirect("/admin/editorial");
 
 	return (
 		<main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">

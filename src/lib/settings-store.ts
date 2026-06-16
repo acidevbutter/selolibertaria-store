@@ -23,3 +23,12 @@ export const getDefaultCountrySetting = cache(async (locale?: string) => {
 
 	return getDefaultCountryForLocale(locale ?? settings?.current?.defaultLocale ?? DEFAULT_LOCALE);
 });
+
+export const getSupportEmailSetting = cache(async (): Promise<string | null> => {
+	try {
+		const settings = await getSettingsDoc();
+		return settings?.current?.supportEmail?.trim() || null;
+	} catch {
+		return null;
+	}
+});

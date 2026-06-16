@@ -13,17 +13,17 @@ export async function HomeCommunityCta({ content }: { content?: EditorialHomePag
 			<div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
 				<div className="space-y-4">
 					<h2 className="max-w-xl text-3xl leading-[0.95] font-black tracking-[-0.05em]">
-						{community?.title || "Receba lancamentos, textos e saraus."}
+						{community?.title || t("home.community.title")}
 					</h2>
 					{community?.body ? (
 						<p className="max-w-xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">{community.body}</p>
 					) : null}
-					{community?.primaryCtaLabel && community?.primaryCtaHref ? (
+					{community?.primaryCtaLabel || community?.primaryCtaHref ? (
 						<YnsLink
-							href={community.primaryCtaHref}
+							href={community?.primaryCtaHref || "/contact"}
 							className="inline-flex h-11 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:rgba(247,244,239,0.08)]"
 						>
-							{community.primaryCtaLabel}
+							{community?.primaryCtaLabel || t("home.community.primaryCta")}
 						</YnsLink>
 					) : null}
 					{secondaryLinks.length ? (

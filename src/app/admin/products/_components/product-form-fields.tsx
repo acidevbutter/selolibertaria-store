@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useFormStatus } from "react-dom";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
 import { CategorySelectField } from "@/app/admin/products/_components/category-select-field.client";
@@ -40,7 +43,7 @@ export function Textarea({
 	placeholder,
 }: {
 	name: string;
-	defaultValue?: string;
+	defaultValue?: string | null;
 	rows?: number;
 	placeholder?: string;
 }) {
@@ -48,7 +51,7 @@ export function Textarea({
 		<textarea
 			id={name}
 			name={name}
-			defaultValue={defaultValue}
+			defaultValue={defaultValue ?? undefined}
 			rows={rows}
 			placeholder={placeholder}
 			className="flex min-h-24 w-full border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -333,7 +336,13 @@ export function VariantFields({
 }
 
 export function SubmitButton({ children }: { children: ReactNode }) {
-	return <Button type="submit">{children}</Button>;
+	const { pending } = useFormStatus();
+
+	return (
+		<Button type="submit" disabled={pending}>
+			{pending ? "Saving..." : children}
+		</Button>
+	);
 }
 
 export { VariantPriceFields };

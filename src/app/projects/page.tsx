@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
 import { listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
@@ -76,7 +77,23 @@ export default async function ProjectsPage() {
 					<div className="grid gap-6">
 						{projects.map((project, index) => (
 							<EditorialPanel key={project.slug} className="p-6">
+								{project.image?.src ? (
+									<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
+										<Image
+											src={project.image.src}
+											alt={project.image.alt || project.title}
+											width={1600}
+											height={900}
+											className="h-auto w-full object-cover"
+											sizes="(max-width: 1024px) 100vw, 960px"
+										/>
+									</div>
+								) : null}
 								<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+									{project.eyebrow ? <span>{project.eyebrow}</span> : null}
+									{project.eyebrow ? (
+										<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
+									) : null}
 									<span>{project.period}</span>
 									<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
 									<span>{project.location}</span>
@@ -84,11 +101,15 @@ export default async function ProjectsPage() {
 								<div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
 									<div>
 										<h2 className="editorial-serif text-3xl font-semibold sm:text-4xl">{project.title}</h2>
-										<p className="mt-3 max-w-2xl text-base text-foreground/85">{project.summary}</p>
+										{project.summary ? (
+											<p className="mt-3 max-w-2xl text-base text-foreground/85">{project.summary}</p>
+										) : null}
 									</div>
-									<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
-										{project.description}
-									</p>
+									{project.description ? (
+										<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
+											{project.description}
+										</p>
+									) : null}
 								</div>
 								{index === 0 ? (
 									<div className="mt-5 flex flex-wrap gap-3">

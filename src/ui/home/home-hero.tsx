@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
-import { seloHomeHero } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -24,13 +23,13 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 					</p>
 					<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 						<YnsLink
-							href={hero?.primaryCtaHref || seloHomeHero.primaryCta.href}
+							href={hero?.primaryCtaHref || "/products"}
 							className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-6 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
 						>
 							{hero?.primaryCtaLabel || t("home.hero.primaryCta")}
 						</YnsLink>
 						<YnsLink
-							href={hero?.secondaryCtaHref || seloHomeHero.secondaryCta.href}
+							href={hero?.secondaryCtaHref || "/events"}
 							className="inline-flex h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-6 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:rgba(247,244,239,0.08)]"
 						>
 							{hero?.secondaryCtaLabel || t("home.hero.secondaryCta")}
@@ -43,15 +42,23 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 
 				<div className="grid gap-5 lg:grid-cols-[0.68fr_0.32fr]">
 					<div className="relative overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] lg:pb-28">
-						<Image
-							src={hero?.featureImage?.src || seloHomeHero.featureImage.src}
-							alt={hero?.featureImage?.alt || seloHomeHero.featureImage.alt}
-							width={720}
-							height={840}
-							priority
-							className="h-full min-h-[420px] w-full object-cover object-center"
-							sizes="(max-width: 1024px) 100vw, 620px"
-						/>
+						{hero?.featureImage?.src ? (
+							<Image
+								src={hero.featureImage.src}
+								alt={hero.featureImage.alt || hero.title || t("home.hero.title")}
+								width={720}
+								height={840}
+								priority
+								className="h-full min-h-[420px] w-full object-cover object-center"
+								sizes="(max-width: 1024px) 100vw, 620px"
+							/>
+						) : (
+							<div className="flex min-h-[420px] items-center justify-center bg-[color:var(--editorial-ink)] p-8 text-center text-[color:var(--editorial-paper)]">
+								<p className="max-w-xs text-2xl leading-tight font-black uppercase tracking-[-0.04em]">
+									{hero?.featureTitle || t("home.hero.featureTitle")}
+								</p>
+							</div>
+						)}
 						<div className="border-t border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] p-5 lg:absolute lg:-bottom-px lg:left-[-38%] lg:w-[78%] lg:border lg:p-8">
 							<p className="text-3xl leading-[0.98] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
 								“Se te começo,

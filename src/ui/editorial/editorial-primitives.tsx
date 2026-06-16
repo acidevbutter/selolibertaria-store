@@ -122,3 +122,53 @@ export function AdminEditorialStat({
 		</div>
 	);
 }
+
+export function AdminEditorialNote({
+	title,
+	description,
+	className,
+}: {
+	title: ReactNode;
+	description: ReactNode;
+	className?: string;
+}) {
+	return (
+		<div
+			className={cn(
+				"border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 text-[color:var(--editorial-ink)]",
+				className,
+			)}
+		>
+			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+				{title}
+			</div>
+			<div className="mt-3 text-sm leading-6 text-[color:var(--editorial-muted)]">{description}</div>
+		</div>
+	);
+}
+
+export function AdminEditorialEmptyState({
+	title,
+	description,
+	className,
+}: {
+	title: ReactNode;
+	description: ReactNode;
+	className?: string;
+}) {
+	return (
+		<div
+			className={cn(
+				"border border-dashed border-[color:var(--editorial-border)] bg-[#fbf7f1] px-6 py-10 text-center",
+				className,
+			)}
+		>
+			<div className="space-y-2">
+				<div className="text-base font-semibold text-[color:var(--editorial-ink)]">{title}</div>
+				<div className="mx-auto max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+					{description}
+				</div>
+			</div>
+		</div>
+	);
+}

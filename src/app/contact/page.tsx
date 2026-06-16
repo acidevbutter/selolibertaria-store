@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
 import { getEditorialContactPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
+import { getSupportEmailSetting } from "@/lib/settings-store";
 import { ContactForm } from "@/ui/contact/contact-form.client";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
@@ -18,7 +19,8 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function ContactPage() {
 	const t = await getTranslations("Selo");
-	const contact = await getEditorialContactPage();
+	const [contact, supportEmail] = await Promise.all([getEditorialContactPage(), getSupportEmailSetting()]);
+	const resolvedSupportEmail = supportEmail || seloSiteMeta.email;
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
@@ -66,8 +68,8 @@ export default async function ContactPage() {
 										contact.direct?.links ?? [
 											{
 												label: t("contact.emailLabel"),
-												href: `mailto:${seloSiteMeta.email}`,
-												text: seloSiteMeta.email,
+												href: `mailto:${resolvedSupportEmail}`,
+												text: resolvedSupportEmail,
 											},
 											{
 												label: t("contact.instagramLabel"),

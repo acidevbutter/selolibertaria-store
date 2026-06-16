@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
 import { listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
@@ -77,7 +78,23 @@ export default async function EventsPage() {
 					<div className="grid gap-6">
 						{events.map((event, index) => (
 							<EditorialPanel key={event.slug} className="p-6">
+								{event.image?.src ? (
+									<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
+										<Image
+											src={event.image.src}
+											alt={event.image.alt || event.title}
+											width={1600}
+											height={900}
+											className="h-auto w-full object-cover"
+											sizes="(max-width: 1024px) 100vw, 960px"
+										/>
+									</div>
+								) : null}
 								<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+									{event.eyebrow ? <span>{event.eyebrow}</span> : null}
+									{event.eyebrow ? (
+										<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
+									) : null}
 									<span>{event.status}</span>
 									<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
 									<span>{event.period}</span>
@@ -87,11 +104,15 @@ export default async function EventsPage() {
 								<div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
 									<div>
 										<h2 className="editorial-serif text-3xl font-semibold sm:text-4xl">{event.title}</h2>
-										<p className="mt-3 max-w-2xl text-base text-foreground/85">{event.summary}</p>
+										{event.summary ? (
+											<p className="mt-3 max-w-2xl text-base text-foreground/85">{event.summary}</p>
+										) : null}
 									</div>
-									<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
-										{event.description}
-									</p>
+									{event.description ? (
+										<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
+											{event.description}
+										</p>
+									) : null}
 								</div>
 								{index === 0 ? (
 									<div className="mt-5 flex flex-wrap gap-3">

@@ -1,15 +1,5 @@
-import { cookies, headers } from "next/headers";
 import { cache } from "react";
-import { env } from "@/env.mjs";
-import { getDefaultLocaleSetting } from "@/lib/settings-store";
-import {
-	type AppLocale,
-	DEFAULT_LOCALE,
-	LOCALE_COOKIE_NAME,
-	matchLocale,
-	resolveLocale,
-	resolveLocaleFromAcceptLanguage,
-} from "./config";
+import { type AppLocale, DEFAULT_LOCALE } from "./config";
 import { getMessagesInternal } from "./translate";
 import type { IntlNamespaceKeys } from "./types";
 
