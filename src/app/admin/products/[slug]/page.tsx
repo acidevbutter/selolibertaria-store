@@ -51,11 +51,11 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
 				>
 					<ArrowLeft className="h-4 w-4" />
-					Products
+					Livros
 				</Link>
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<EditorialEyebrow>Product editor</EditorialEyebrow>
+						<EditorialEyebrow>Livro</EditorialEyebrow>
 						<h1 className="editorial-serif text-3xl font-semibold">{group.name}</h1>
 						<p className="font-mono text-xs text-[color:var(--editorial-muted)]">{group.slug}</p>
 					</div>
@@ -67,15 +67,12 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Product settings</CardTitle>
+					<CardTitle>Dados do livro</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<form action={updateStripeProductGroupAction} className="space-y-6">
 						<input type="hidden" name="currentSlug" value={group.slug} />
-						<FormSection
-							title="Shared product details"
-							description="These fields control the main product information inherited by every variant."
-						>
+						<FormSection title="Informações principais">
 							<ProductCoreFields
 								name={group.name}
 								slug={group.slug}
@@ -90,7 +87,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							/>
 						</FormSection>
 						<ActiveCheckbox defaultChecked={group.active} />
-						<SubmitButton>Save group</SubmitButton>
+						<SubmitButton>Salvar</SubmitButton>
 					</form>
 				</CardContent>
 			</EditorialPanel>
@@ -104,7 +101,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Edit history</CardTitle>
+					<CardTitle>Histórico</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<ul className="divide-y">
@@ -127,7 +124,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							</li>
 						))}
 						{history.length === 0 ? (
-							<li className="py-6 text-muted-foreground">No edits recorded yet.</li>
+							<li className="py-6 text-muted-foreground">Nenhuma edição registrada.</li>
 						) : null}
 					</ul>
 				</CardContent>

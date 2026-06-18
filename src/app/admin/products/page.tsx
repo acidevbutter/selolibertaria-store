@@ -16,15 +16,7 @@ import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
 import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/ui/shadcn/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +53,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Livros"
-				title="Catálogo, variantes e preços no mesmo enquadramento editorial do admin."
-				description="A listagem de produtos passa a conversar com o layout do Figma: hero introdutório, CTAs retas, filtros limpos e tabela de catálogo mais sóbria."
+				title="Catálogo"
+				description="Gerencie livros, variantes e preços."
 				actions={
 					<>
 						<form className="min-w-[280px] max-w-md flex-1">
@@ -94,21 +86,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat
-					label="Grupos"
-					value={filtered.length}
-					helper="Produtos agrupados por metadata.slug."
-				/>
-				<AdminEditorialStat
-					label="Ativos"
-					value={activeCount}
-					helper="Itens disponíveis para venda neste recorte."
-				/>
-				<AdminEditorialStat
-					label="Variantes"
-					value={variantCount}
-					helper="Soma de todas as edições e formatos listados."
-				/>
+				<AdminEditorialStat label="Livros" value={filtered.length} helper="Itens listados." />
+				<AdminEditorialStat label="Ativos" value={activeCount} helper="Disponíveis para venda." />
+				<AdminEditorialStat label="Variantes" value={variantCount} helper="Total de variações." />
 			</div>
 
 			{error ? (
@@ -121,7 +101,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 			) : (
 				<EditorialPanel className="overflow-hidden p-0">
 					<CardHeader>
-						<CardTitle>Stripe catalog</CardTitle>
+						<CardTitle>Livros</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<Table className="min-w-[760px]">
@@ -192,7 +172,6 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 									</TableRow>
 								) : null}
 							</TableBody>
-							<TableCaption>Produtos agrupados por `metadata.slug` na Stripe.</TableCaption>
 						</Table>
 					</CardContent>
 				</EditorialPanel>

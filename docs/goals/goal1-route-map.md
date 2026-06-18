@@ -37,6 +37,6 @@
 
 ## Pendências visíveis para próximos passos
 
-- Reduzir fallback visual residual em componentes que ainda importam defaults estáticos de `selolibertaria-content`.
-- Revisar superfícies operacionais além do editorial para garantir que nenhuma continue mostrando textos ou estados mockados quando o backend real já existe.
-- Validar tudo com `yarn build` após os próximos patches da Goal 1.
+- Nenhuma pendência crítica restante dentro do escopo original da Goal 1.
+- Fallbacks editoriais seguem centralizados no `editorial-content-store` apenas para indisponibilidade de Mongo ou ausência de documento publicado.
+- Superfícies operacionais já auditadas neste ciclo: `admin/settings`, `admin/email-templates`, footer público e contato público.

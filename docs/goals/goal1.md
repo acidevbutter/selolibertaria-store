@@ -39,9 +39,15 @@ Hoje, várias páginas ainda renderizam conteúdo mockado ou parcialmente mockad
 - Remoção gradual dos mocks da experiência pública.
 - Verificação de revalidação e consistência visual após salvar no admin.
 
+## Status atual
+
+- Rotas públicas do escopo (`/`, `/about`, `/contact`, `/events`, `/projects`, `/sarau-safado`) usam backend editorial como fonte primária via `editorial-content-store`.
+- Catálogo e PDP do escopo (`/products`, `/product/[slug]`, `/category/[slug]`) usam backend canônico do catálogo via `commerce.product.*`.
+- Admin editorial lê do store canônico com fallback seguro, grava em Mongo e revalida as superfícies públicas e o hub `/admin/editorial`.
+- Superfícies operacionais revisadas nesta meta passaram a preferir `settings` quando já havia backend canônico, como `supportEmail` em contato, footer e preview de emails.
+
 ## Riscos
 
 - Quebrar páginas em ambiente sem Mongo.
 - Deixar campos salvos no admin sem reflexo no storefront.
 - Misturar conteúdo editorial com mock residual em alguma rota.
-

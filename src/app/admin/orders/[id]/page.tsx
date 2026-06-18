@@ -4,23 +4,28 @@ import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
 import { listOrderAuditEntries, type OrderAuditEntry } from "@/lib/order-audit";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
-import { AdminEditorialHero, AdminEditorialPage, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
+import { Reveal } from "@/ui/motion/reveal";
 import { Badge } from "@/ui/shadcn/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { StatusBadge } from "@/ui/status-badge";
 import UpdateFulfillment from "../_components/update-fulfillment.client";
 
 function formatAuditValue(value: string | null | undefined) {
-	if (!value) return "Not set";
+	if (!value) return "Não definido";
 	return value;
 }
 
 function getAuditSummary(entry: OrderAuditEntry) {
 	switch (entry.action) {
 		case "order_fulfillment_updated":
-			return "Fulfillment updated";
+			return "Fulfillment atualizado";
 		case "order_payment_status_webhook_updated":
-			return "Payment status updated by webhook";
+			return "Status de pagamento atualizado por webhook";
 	}
 }
 
@@ -37,7 +42,7 @@ function getAuditChanges(entry: OrderAuditEntry) {
 
 	if (entry.action === "order_fulfillment_updated" && details.previousStatus !== details.nextStatus) {
 		changes.push({
-			label: "Fulfillment status",
+			label: "Status de fulfillment",
 			previous: formatAuditValue(details.previousStatus),
 			next: formatAuditValue(details.nextStatus),
 		});
@@ -48,7 +53,7 @@ function getAuditChanges(entry: OrderAuditEntry) {
 		details.previousStatus !== details.nextStatus
 	) {
 		changes.push({
-			label: "Payment status",
+			label: "Status de pagamento",
 			previous: formatAuditValue(details.previousStatus),
 			next: formatAuditValue(details.nextStatus),
 		});
@@ -59,13 +64,44 @@ function getAuditChanges(entry: OrderAuditEntry) {
 		details.previousTrackingNumber !== details.nextTrackingNumber
 	) {
 		changes.push({
-			label: "Tracking number",
+			label: "Código de rastreio",
 			previous: formatAuditValue(details.previousTrackingNumber),
 			next: formatAuditValue(details.nextTrackingNumber),
 		});
 	}
 
 	return changes;
+}
+
+function formatMoney(amount: number, currency: string) {
+	try {
+		return new Intl.NumberFormat("pt-BR", {
+			style: "currency",
+			currency: currency?.toUpperCase?.() || "BRL",
+		}).format((amount || 0) / 100);
+	} catch {
+		return `${((amount || 0) / 100).toFixed(2)} ${currency?.toUpperCase?.() || "BRL"}`;
+	}
+}
+
+function formatDateTime(value: string | Date) {
+	return new Intl.DateTimeFormat("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+	}).format(new Date(value));
+}
+
+function getFulfillmentLabel(status?: "received" | "producing" | "shipped") {
+	switch (status) {
+		case "received":
+			return "Recebido";
+		case "producing":
+			return "Em produção";
+		case "shipped":
+			return "Enviado";
+		default:
+			return "Não iniciado";
+	}
 }
 
 export default async function AdminOrderDetails({ params }: { params: Promise<{ id: string }> }) {
@@ -109,150 +145,219 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 	};
 	if (!matchesOrderIdentifier(p, purchaseId)) redirect("/admin/orders");
 	const history = await listOrderAuditEntries(p.id, 15);
+	const itemCount = p.items?.reduce((total, item) => total + (item.quantity || 0), 0) ?? 0;
+	const auditCount = history.length;
+	const fulfillmentLabel = getFulfillmentLabel(p.fulfillment?.status);
 
 	return (
 		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Pedido"
-				title={`Leitura operacional do pedido ${p.id}.`}
-				description="Resumo financeiro, itens, fulfillment e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
-			/>
-			<EditorialPanel className="p-0">
-				<Card className="border-none bg-transparent shadow-none">
-					<CardHeader>
-						<CardTitle>Resumo</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-2">
-						<div>
-							<span className="text-muted-foreground">ID:</span>{" "}
-							<span className="font-mono text-sm break-all">{p.id}</span>
+			<Reveal>
+				<AdminEditorialHero
+					eyebrow="Pedido"
+					title={`Leitura operacional do pedido ${p.id}.`}
+					description="Resumo financeiro, itens, fulfillment e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
+				/>
+			</Reveal>
+			<Reveal delay={0.04}>
+				<div className="grid gap-5 lg:grid-cols-4">
+					<AdminEditorialStat
+						label="Status"
+						value={<StatusBadge status={p.status} />}
+						helper="Estado atual reconhecido para pagamento."
+					/>
+					<AdminEditorialStat
+						label="Total"
+						value={formatMoney(p.amountTotal || 0, p.currency)}
+						helper="Valor consolidado deste pedido."
+					/>
+					<AdminEditorialStat
+						label="Itens"
+						value={itemCount}
+						helper="Quantidade total de unidades na compra."
+					/>
+					<AdminEditorialStat
+						label="Fulfillment"
+						value={fulfillmentLabel}
+						helper="Etapa operacional atual de produção e envio."
+					/>
+				</div>
+			</Reveal>
+			<Reveal delay={0.08}>
+				<EditorialPanel className="space-y-6">
+					<div className="space-y-1">
+						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+							Resumo
 						</div>
-						<div>
-							<span className="text-muted-foreground">User:</span>{" "}
-							<span className="break-all">{doc.email}</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<span className="text-muted-foreground">Status:</span>
-							<StatusBadge status={p.status} />
-						</div>
-						<div>
-							<span className="text-muted-foreground">Amount:</span>{" "}
-							{new Intl.NumberFormat("en-US", {
-								style: "currency",
-								currency: p.currency?.toUpperCase?.() || "USD",
-							}).format((p.amountTotal || 0) / 100)}
-						</div>
-						<div>
-							<span className="text-muted-foreground">Date:</span> {new Date(p.createdAt).toLocaleString()}
-						</div>
-						<div className="pt-2">
-							<UpdateFulfillment
-								id={p.id}
-								current={p.fulfillment}
-								statuses={["received", "producing", "shipped"]}
-							/>
-						</div>
-					</CardContent>
-				</Card>
-			</EditorialPanel>
-			<div className="grid gap-6 xl:grid-cols-2">
-				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Itens</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<ul className="divide-y">
-								{(p.items || []).map((it, idx) => (
-									<li key={idx} className="py-2 flex items-center justify-between gap-3">
-										<div className="min-w-0">
-											<div className="font-medium break-words">{it.name || "—"}</div>
-											<div className="text-sm text-muted-foreground">Qty: {it.quantity}</div>
-										</div>
-										<div className="text-sm">
-											{typeof it.unitAmount === "number"
-												? new Intl.NumberFormat("en-US", {
-														style: "currency",
-														currency: p.currency?.toUpperCase?.() || "USD",
-													}).format(it.unitAmount / 100)
-												: "—"}
-										</div>
-									</li>
-								))}
-								{(p.items || []).length === 0 && <li className="py-6 text-muted-foreground">No items.</li>}
-							</ul>
-						</CardContent>
-					</Card>
-				</EditorialPanel>
-				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<div className="space-y-1">
-								<CardTitle>Histórico de edição</CardTitle>
-								<p className="text-sm text-muted-foreground">
-									Toda atualização manual ou automática de status aparece aqui com autoria e comparação.
-								</p>
+						<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+							Leitura operacional do pedido
+						</h2>
+					</div>
+					<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+						<div className="space-y-1 xl:col-span-2">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Pedido
 							</div>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<ul className="space-y-3">
-								{history.map((entry) => (
-									<li key={String(entry._id)} className="rounded-lg border p-4">
-										<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-											<div className="space-y-2">
-												<div className="flex flex-wrap items-center gap-2">
-													<div className="font-medium">{getAuditSummary(entry)}</div>
-													<Badge variant="outline">{entry.actorRole}</Badge>
-												</div>
-												<div className="text-sm text-muted-foreground">
-													{entry.actorRole === "system"
-														? "Webhook automation"
-														: entry.actorEmail || entry.actorId}
-												</div>
-												{entry.action === "order_payment_status_webhook_updated" ? (
-													<div className="text-xs text-muted-foreground">
-														{((entry.details ?? {}) as { webhookType?: string | null }).webhookType ||
-															"Webhook"}
-													</div>
-												) : null}
-											</div>
-											<div className="text-xs text-muted-foreground">
-												{new Date(entry.createdAt).toLocaleString()}
-											</div>
-										</div>
-										<div className="mt-4 grid gap-3">
-											{getAuditChanges(entry).map((change) => (
-												<div
-													key={change.label}
-													className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-3"
-												>
-													<div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-														{change.label}
-													</div>
-													<div className="mt-2 grid gap-2 sm:grid-cols-2">
-														<div className="border bg-background px-3 py-2">
-															<div className="text-xs text-muted-foreground">Before</div>
-															<div className="text-sm">{change.previous}</div>
-														</div>
-														<div className="border bg-background px-3 py-2">
-															<div className="text-xs text-muted-foreground">After</div>
-															<div className="text-sm">{change.next}</div>
-														</div>
-													</div>
-												</div>
-											))}
-										</div>
-									</li>
-								))}
-								{history.length === 0 ? (
-									<li className="border border-dashed py-8 text-center text-muted-foreground">
-										Nenhuma mudança de status registrada ainda.
-									</li>
-								) : null}
-							</ul>
-						</CardContent>
-					</Card>
+							<div className="font-mono text-sm break-all text-[color:var(--editorial-ink)]">{p.id}</div>
+						</div>
+						<div className="space-y-1">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Cliente
+							</div>
+							<div className="break-all text-sm text-[color:var(--editorial-ink)]">{doc.email}</div>
+						</div>
+						<div className="space-y-1">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Criado em
+							</div>
+							<div className="text-sm text-[color:var(--editorial-ink)]">{formatDateTime(p.createdAt)}</div>
+						</div>
+						<div className="space-y-1">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Payment Intent
+							</div>
+							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
+								{p.relatedIds?.paymentIntentId || "—"}
+							</div>
+						</div>
+						<div className="space-y-1">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Sessão Checkout
+							</div>
+							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
+								{p.relatedIds?.sessionId || "—"}
+							</div>
+						</div>
+					</div>
+					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
+						<div className="mb-4 space-y-1">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Fulfillment
+							</div>
+							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+								Atualize status e rastreio sabendo que a tela registra a mudança no histórico logo abaixo.
+							</p>
+						</div>
+						<UpdateFulfillment
+							id={p.id}
+							current={p.fulfillment}
+							statuses={["received", "producing", "shipped"]}
+						/>
+					</div>
 				</EditorialPanel>
+			</Reveal>
+			<div className="grid gap-6 xl:grid-cols-2">
+				<Reveal delay={0.12}>
+					<EditorialPanel className="space-y-5">
+						<div className="space-y-1">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Itens
+							</div>
+							<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+								Composição da compra
+							</h2>
+						</div>
+						<ul className="divide-y divide-[color:var(--editorial-border)]">
+							{(p.items || []).map((it, idx) => (
+								<li key={idx} className="flex items-center justify-between gap-3 py-4">
+									<div className="min-w-0">
+										<div className="font-medium break-words text-[color:var(--editorial-ink)]">
+											{it.name || "—"}
+										</div>
+										<div className="text-sm text-[color:var(--editorial-muted)]">Qtd.: {it.quantity}</div>
+									</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">
+										{typeof it.unitAmount === "number" ? formatMoney(it.unitAmount, p.currency) : "—"}
+									</div>
+								</li>
+							))}
+							{(p.items || []).length === 0 ? (
+								<li className="py-6 text-[color:var(--editorial-muted)]">Nenhum item registrado.</li>
+							) : null}
+						</ul>
+					</EditorialPanel>
+				</Reveal>
+				<Reveal delay={0.16}>
+					<EditorialPanel className="space-y-5">
+						<div className="space-y-2">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Auditoria
+							</div>
+							<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+								Histórico de edição
+							</h2>
+							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+								Toda atualização manual ou automática de status aparece aqui com autoria, origem e comparação.
+							</p>
+						</div>
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
+							<div className="text-sm text-[color:var(--editorial-muted)]">
+								{auditCount === 0
+									? "Ainda não há eventos auditáveis registrados para este pedido."
+									: `${auditCount} ${auditCount === 1 ? "evento auditável" : "eventos auditáveis"} recentes.`}
+							</div>
+						</div>
+						<ul className="space-y-3">
+							{history.map((entry) => (
+								<li
+									key={String(entry._id)}
+									className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+								>
+									<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+										<div className="space-y-2">
+											<div className="flex flex-wrap items-center gap-2">
+												<div className="font-medium text-[color:var(--editorial-ink)]">
+													{getAuditSummary(entry)}
+												</div>
+												<Badge variant="outline">{entry.actorRole}</Badge>
+											</div>
+											<div className="text-sm text-[color:var(--editorial-muted)]">
+												{entry.actorRole === "system"
+													? "Automação de webhook"
+													: entry.actorEmail || entry.actorId}
+											</div>
+											{entry.action === "order_payment_status_webhook_updated" ? (
+												<div className="text-xs text-[color:var(--editorial-muted)]">
+													{((entry.details ?? {}) as { webhookType?: string | null }).webhookType ||
+														"Webhook"}
+												</div>
+											) : null}
+										</div>
+										<div className="text-xs text-[color:var(--editorial-muted)]">
+											{formatDateTime(entry.createdAt)}
+										</div>
+									</div>
+									<div className="mt-4 grid gap-3">
+										{getAuditChanges(entry).map((change) => (
+											<div
+												key={change.label}
+												className="border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-3"
+											>
+												<div className="text-xs font-medium uppercase tracking-wide text-[color:var(--editorial-muted)]">
+													{change.label}
+												</div>
+												<div className="mt-2 grid gap-2 sm:grid-cols-2">
+													<div className="border border-[color:var(--editorial-border)] bg-white px-3 py-2">
+														<div className="text-xs text-[color:var(--editorial-muted)]">Antes</div>
+														<div className="text-sm text-[color:var(--editorial-ink)]">{change.previous}</div>
+													</div>
+													<div className="border border-[color:var(--editorial-border)] bg-white px-3 py-2">
+														<div className="text-xs text-[color:var(--editorial-muted)]">Depois</div>
+														<div className="text-sm text-[color:var(--editorial-ink)]">{change.next}</div>
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								</li>
+							))}
+							{history.length === 0 ? (
+								<li className="border border-dashed border-[color:var(--editorial-border)] py-8 text-center text-[color:var(--editorial-muted)]">
+									Nenhuma mudança de status registrada ainda.
+								</li>
+							) : null}
+						</ul>
+					</EditorialPanel>
+				</Reveal>
 			</div>
 		</AdminEditorialPage>
 	);

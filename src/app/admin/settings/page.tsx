@@ -19,8 +19,8 @@ export default async function AdminSettingsPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Configurações"
-				title="Infraestrutura, identidade operacional e preferências do painel."
-				description="Regionalização, provedores de entrega, autenticação social e email de suporte ficam agrupados em blocos editoriais mais legíveis."
+				title="Configurações"
+				description="Ajuste idioma, suporte, autenticação e frete."
 			/>
 			<div className="grid gap-5 xl:grid-cols-2">
 				<EditorialPanel className="p-0">

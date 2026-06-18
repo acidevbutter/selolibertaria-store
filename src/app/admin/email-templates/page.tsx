@@ -8,7 +8,7 @@ import { transactionalEmailHtml } from "@/lib/email-templates/transactional";
 import { getCustomerOrderStatusContent } from "@/lib/order-status-notification";
 
 export default function EmailTemplatesPage() {
-	const [supportEmail, setSupportEmail] = useState("natalianolli@selolibertaria.page");
+	const [supportEmail, setSupportEmail] = useState("");
 
 	useEffect(() => {
 		let mounted = true;
@@ -32,7 +32,7 @@ export default function EmailTemplatesPage() {
 	const templates = [
 		{
 			id: "confirmation",
-			label: "Account verification",
+			label: "Confirmação de conta",
 			render: () =>
 				confirmationEmailHtml({
 					name: "Customer",
@@ -42,7 +42,7 @@ export default function EmailTemplatesPage() {
 		},
 		{
 			id: "password-reset",
-			label: "Password reset",
+			label: "Redefinição de senha",
 			render: () =>
 				passwordResetEmailHtml({
 					name: "Customer",
@@ -52,7 +52,7 @@ export default function EmailTemplatesPage() {
 		},
 		{
 			id: "order-status",
-			label: "Order status update",
+			label: "Status do pedido",
 			render: () => {
 				const content = getCustomerOrderStatusContent({
 					status: "shipped",
@@ -76,7 +76,7 @@ export default function EmailTemplatesPage() {
 		},
 		{
 			id: "favorite-discount-alert",
-			label: "Favorite discount alert",
+			label: "Desconto em favorito",
 			render: () =>
 				favoriteDiscountEmailHtml({
 					name: "Customer",
@@ -91,7 +91,7 @@ export default function EmailTemplatesPage() {
 		},
 		{
 			id: "transactional",
-			label: "Transactional (custom)",
+			label: "Transacional",
 			render: () =>
 				transactionalEmailHtml({
 					title: "Welcome to Selo Libertaria",

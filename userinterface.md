@@ -24,6 +24,7 @@
 - Capas, retratos e fotos de performance devem receber mais protagonismo do que ícones ou ilustrações genéricas.
 - O wireframe-base da home é: header editorial, hero híbrido, vitrine de livros, manifesto, agenda/projetos, seção visual, bloco autora/selo, fechamento comunitário e footer.
 - No desktop, o hero deve se comportar como uma capa editorial ampla; no mobile, como uma pilha elegante de copy, CTA e imagem.
+- Na iteração atual da Goal 3, o hero deve usar CTA primária clara, título com escala mais próxima do Figma, quadro principal de capa à direita e reveals curtos por bloco para adicionar acabamento sem ruído.
 - A densidade da home deve variar intencionalmente: hero forte, vitrine curada, manifesto respirado, agenda/projetos médios, mosaico imersivo e fechamento leve.
 - A implementação ideal da home deve ser modularizada em componentes próprios de `src/ui/home/`, deixando `src/app/(store)/page.tsx` como composição limpa de seções.
 
@@ -31,6 +32,7 @@
 
 - `events`, `projects` e `sarau-safado` devem parecer capítulos editoriais, não somente repositórios de cards.
 - O padrão preferencial é: entrada forte, bloco curatorial de apoio, listagem principal com melhor hierarquia interna e fechamento com links de continuidade.
+- Na iteração atual da Goal 3, as páginas institucionais devem herdar a mesma linguagem de motion da home, com heróis mais firmes, cards editoriais com hover lift leve e entradas em cascata discretas.
 - No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
 - Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 
@@ -91,14 +93,25 @@
 - O bloco visual da direita deve parecer capa ampliada ou cartaz editorial, e pode receber uma citação curta sobreposta como elemento de ritmo.
 - Quando a pessoa optar por criar conta nessa mesma superfície, o cadastro deve migrar para um fluxo em etapas, com indicador de progresso editorial e apenas um grupo lógico de campos por vez.
 - A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
+- Na iteração atual da Goal 3, a PDP deve ampliar o contraste editorial entre galeria, título, CTAs e bloco de citação, além de usar microinterações leves de hover/reveal para manter a página viva sem competir com a compra.
 
 ## Admin
 
 - A interface do backoffice deve esconder entradas e ações que o papel logado não pode usar, especialmente na futura diferenciação entre `admin` e `vendor`.
 - No shell administrativo editorial, a barra lateral deve permanecer preta, fixa e com largura estável, enquanto a área de trabalho usa papel claro e largura ampla para não parecer um dashboard SaaS genérico.
 - No redesign guiado pelo Figma do admin, o shell deve reforçar um contraste simples e adulto: sidebar preta com logotipo textual em caixa alta, links estreitos em uppercase, área principal em papel claro e cards com cantos retos.
+- Na iteração atual da Goal 2, o shell desktop do admin passa a seguir o cockpit refinado do Figma: largura de `264px`, marca com bloco claro de `44px`, subtítulo `admin editorial`, navegação em pills de canto arredondado com ponto vinho no item ativo e rodapé enxuto de sessão abaixo de divisor curto.
+- No mobile, o menu lateral deve repetir a mesma hierarquia do desktop dentro do sheet, evitando ícones ruidosos e mantendo os links como pills claras sobre fundo preto.
 - Títulos de operação do admin devem priorizar leitura clara; a expressão tipográfica mais dramática da marca pode aparecer no logo e em acentos, mas não deve esmagar blocos analíticos longos.
 - As páginas-base do admin devem abrir com um hero editorial curto antes dos blocos funcionais; filtros, ações primárias e KPIs entram logo abaixo desse hero, não dispersos em cabeçalhos pequenos.
+- No dashboard `/admin`, o hero curto agora deve funcionar como topbar operacional: título em sans forte, descrição curta, CTAs compactas à direita, faixa de filtros logo abaixo e um cockpit com quatro métricas principais, fila de ação e coluna auxiliar de preview/atividade.
+- Na continuação atual da Goal 2, páginas legadas como `emails`, `webhooks` e `users` devem herdar esse mesmo enquadramento: hero editorial curto, métricas na abertura e bloco principal mais sóbrio para tabela ou auditoria.
+- Na Goal 4 do admin, a consistência de idioma vira regra de interface: labels, help text, CTAs, placeholders e estados vazios devem seguir o idioma padrão resolvido pela aplicação, sem telas híbridas metade em inglês e metade em `pt-BR`.
+- Na Goal 6 do admin, a navegação lateral deve deixar de existir como duas implementações paralelas; desktop e mobile precisam compartilhar a mesma fonte de verdade para item ativo, agrupamentos, ícone opcional, badge e copy de apoio.
+- Na Goal 6 do admin, o shell não deve depender apenas de ponto + texto para toda a hierarquia; grupos, label secundária, estado ativo e contexto de sessão precisam comunicar localização sem competir com o conteúdo principal.
+- Na Goal 6 do admin, o hero operacional do dashboard e das páginas-base deve preservar legibilidade tipográfica limpa em qualquer viewport, sem sobreposição visual nem áreas em branco acidentais causadas por motion ou composição.
+- Nos detalhes de `users` e `orders` do admin, o primeiro bloco deve consolidar leitura rápida de contexto com hero curto e métricas; perfil, compras, fulfillment e auditoria ficam em painéis separados para evitar uma coluna longa e opaca.
+- Na etapa atual da Goal 3, essas telas de detalhe do admin também devem usar reveals discretos por seção, preservando a sensação de acabamento do cockpit sem transformar o backoffice em uma interface animada demais.
 - Perfis internos não devem receber affordances de compra na selolibertaria por regra de interface; mesmo assim, a proteção canônica continua sendo o bloqueio no servidor.
 - No dashboard administrativo, KPIs executivos devem aparecer primeiro em cards compactos e comparáveis, seguidos por blocos separados de pagamento, fulfillment e saúde operacional.
 - Estados que exigem atenção, como disputa, falha de email, webhook pendente ou pedido pago sem avanço operacional, devem receber destaque visual superior ao de métricas históricas neutras.
@@ -112,3 +125,5 @@
 - Em pedidos exibidos no admin e em superfícies do cliente, o identificador principal deve ser um `orderId` interno da aplicação, evitando expor `paymentIntentId` da Stripe como rótulo principal do pedido.
 - Em frete, o admin precisa mostrar provedores, prioridade, status e última cotação válida em blocos curtos, sem misturar a política comercial com os detalhes técnicos da integração.
 - No admin de frete, cada família de provider deve abrir apenas seus campos esperados, como token dos Correios, token da Jadlog ou API key da EasyPost, para reduzir erro de configuração.
+- Em formulários administrativos da Goal 4, campos estruturados devem oferecer autoformatação visível e previsível, como slug normalizado, telefone e CEP mascarados e URLs/códigos com limpeza básica de entrada, sempre sem esconder o valor efetivamente persistido.
+- Na mesma fase, o admin não deve expor seletor geral de moeda em settings: a interface assume somente a moeda definida pelo ambiente e evita prometer conversão antes da etapa final.

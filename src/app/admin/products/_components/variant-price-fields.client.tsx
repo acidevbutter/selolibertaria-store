@@ -57,8 +57,8 @@ export function VariantPriceFields({
 					<span className="block font-medium">Set custom price</span>
 				</label>
 			</div>
-			<div className="grid gap-4 md:grid-cols-2">
-				<div className="space-y-2">
+			<div className="grid gap-4 md:grid-cols-12">
+				<div className="space-y-2 md:col-span-5 xl:col-span-4">
 					<Label htmlFor="priceOverride">Custom price</Label>
 					<Input
 						id="priceOverride"
@@ -69,9 +69,10 @@ export function VariantPriceFields({
 						defaultValue={typeof overridePrice === "number" ? String(overridePrice) : ""}
 						disabled={mode !== "override"}
 						placeholder="0.00"
+						className="max-w-[10rem]"
 					/>
 				</div>
-				<div className="space-y-2">
+				<div className="space-y-2 md:col-span-3 xl:col-span-2">
 					<Label htmlFor="currency">Currency</Label>
 					<Input
 						id="currency"
@@ -81,6 +82,7 @@ export function VariantPriceFields({
 						pattern={fieldPatterns.currency}
 						title="Use a 3-letter currency code, such as usd or brl."
 						required
+						className="max-w-[7rem]"
 					/>
 				</div>
 			</div>

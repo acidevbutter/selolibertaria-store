@@ -521,8 +521,8 @@ export default async function AdminPromotionsPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Promoções"
-				title="Campanhas, cupons e alertas com leitura operacional mais clara."
-				description="A tela acompanha a direção editorial do novo admin: introdução contextual, blocos retos e edição longa organizada sem perder a visão do conjunto."
+				title="Promoções"
+				description="Gerencie campanhas, cupons e alertas."
 				actions={
 					<form action={processFavoriteDiscountAlertsAction}>
 						<button

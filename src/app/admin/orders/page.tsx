@@ -86,8 +86,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Pedidos"
-				title="Status financeiro e ritmo operacional em leitura editorial."
-				description="A tela de pedidos agora segue o enquadramento do Figma: abertura contextual, filtros em destaque e uma tabela mais seca, com ênfase em status e ação."
+				title="Pedidos"
+				description="Acompanhe status, pagamento e operação."
 				actions={
 					<div className="w-full max-w-3xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
 						<AdminFilters defaultStatus={status} defaultPeriod={period} defaultSort={sort} />

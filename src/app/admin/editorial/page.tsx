@@ -93,8 +93,8 @@ export default async function AdminEditorialOverviewPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
-				title="Conteúdo institucional, agenda e páginas autorais em um só circuito."
-				description="O hub editorial concentra as superfícies administráveis do Selo Libertária com leitura clara de publicação, volume e continuidade operacional."
+				title="Editorial"
+				description="Gerencie páginas, agenda e conteúdo institucional."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat

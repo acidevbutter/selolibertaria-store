@@ -401,14 +401,14 @@ export default function AdminShippingProviders() {
 									<Label htmlFor={`shipping-${index}-enabled`}>Enable provider</Label>
 								</div>
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
 										<Label htmlFor={`shipping-${index}-kind`}>Provider family</Label>
 										<Select
 											value={provider.kind}
 											onValueChange={(value) => updateProviderKind(index, value as ShippingProviderKind)}
 										>
-											<SelectTrigger id={`shipping-${index}-kind`}>
+											<SelectTrigger id={`shipping-${index}-kind`} className="max-w-[15rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
@@ -420,14 +420,14 @@ export default function AdminShippingProviders() {
 											</SelectContent>
 										</Select>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
 										<Label htmlFor={`shipping-${index}-mode`}>Mode</Label>
 										<Select
 											value={provider.mode}
 											onValueChange={(value) => updateProvider(index, { mode: value as ShippingMode })}
 											disabled={provider.kind !== "custom"}
 										>
-											<SelectTrigger id={`shipping-${index}-mode`}>
+											<SelectTrigger id={`shipping-${index}-mode`} className="max-w-[12rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
@@ -436,25 +436,27 @@ export default function AdminShippingProviders() {
 											</SelectContent>
 										</Select>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-2">
 										<Label htmlFor={`shipping-${index}-code`}>Code</Label>
 										<Input
 											id={`shipping-${index}-code`}
 											value={provider.code}
 											onChange={(event) => updateProvider(index, { code: event.target.value })}
 											placeholder="correios"
+											className="max-w-[10rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-6 xl:col-span-4">
 										<Label htmlFor={`shipping-${index}-label`}>Label</Label>
 										<Input
 											id={`shipping-${index}-label`}
 											value={provider.label}
 											onChange={(event) => updateProvider(index, { label: event.target.value })}
 											placeholder="Correios"
+											className="max-w-[18rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-3 xl:col-span-1">
 										<Label htmlFor={`shipping-${index}-priority`}>Priority</Label>
 										<Input
 											id={`shipping-${index}-priority`}
@@ -463,9 +465,10 @@ export default function AdminShippingProviders() {
 											onChange={(event) =>
 												updateProvider(index, { priority: Number.parseInt(event.target.value || "0", 10) })
 											}
+											className="max-w-[6rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 										<Label htmlFor={`shipping-${index}-currency`}>Currency</Label>
 										<Input
 											id={`shipping-${index}-currency`}
@@ -475,23 +478,25 @@ export default function AdminShippingProviders() {
 											}
 											placeholder="BRL"
 											maxLength={3}
+											className="max-w-[7rem]"
 										/>
 									</div>
 								</div>
 
 								{provider.mode === "http" ? (
 									<div className="space-y-4 rounded-lg border p-4">
-										<div className="grid gap-4 md:grid-cols-3">
-											<div className="grid gap-2 md:col-span-2">
+										<div className="grid gap-4 md:grid-cols-12">
+											<div className="grid gap-2 md:col-span-8 xl:col-span-7">
 												<Label htmlFor={`shipping-${index}-base-url`}>Base URL</Label>
 												<Input
 													id={`shipping-${index}-base-url`}
 													value={provider.baseUrl}
 													onChange={(event) => updateProvider(index, { baseUrl: event.target.value })}
 													placeholder="https://api.correios.com.br"
+													className="max-w-[34rem]"
 												/>
 											</div>
-											<div className="grid gap-2">
+											<div className="grid gap-2 md:col-span-4 xl:col-span-3">
 												<Label htmlFor={`shipping-${index}-environment`}>Environment</Label>
 												<Select
 													value={provider.environment}
@@ -501,7 +506,7 @@ export default function AdminShippingProviders() {
 														})
 													}
 												>
-													<SelectTrigger id={`shipping-${index}-environment`}>
+													<SelectTrigger id={`shipping-${index}-environment`} className="max-w-[12rem]">
 														<SelectValue />
 													</SelectTrigger>
 													<SelectContent>
@@ -512,51 +517,55 @@ export default function AdminShippingProviders() {
 											</div>
 										</div>
 
-										<div className="grid gap-4 md:grid-cols-2">
-											<div className="grid gap-2">
+										<div className="grid gap-4 md:grid-cols-12">
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
 												<Label htmlFor={`shipping-${index}-quote`}>Quote endpoint</Label>
 												<Input
 													id={`shipping-${index}-quote`}
 													value={provider.endpoints.quote}
 													onChange={(event) => updateProviderEndpoint(index, "quote", event.target.value)}
 													placeholder="/preco/v1/nacional"
+													className="max-w-[22rem]"
 												/>
 											</div>
-											<div className="grid gap-2">
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
 												<Label htmlFor={`shipping-${index}-token`}>Token endpoint</Label>
 												<Input
 													id={`shipping-${index}-token`}
 													value={provider.endpoints.token}
 													onChange={(event) => updateProviderEndpoint(index, "token", event.target.value)}
 													placeholder="/token/v1/autentica/contrato"
+													className="max-w-[22rem]"
 												/>
 											</div>
-											<div className="grid gap-2">
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
 												<Label htmlFor={`shipping-${index}-shipment`}>Shipment endpoint</Label>
 												<Input
 													id={`shipping-${index}-shipment`}
 													value={provider.endpoints.shipment}
 													onChange={(event) => updateProviderEndpoint(index, "shipment", event.target.value)}
 													placeholder="/shipment"
+													className="max-w-[22rem]"
 												/>
 											</div>
-											<div className="grid gap-2">
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
 												<Label htmlFor={`shipping-${index}-tracking`}>Tracking endpoint</Label>
 												<Input
 													id={`shipping-${index}-tracking`}
 													value={provider.endpoints.tracking}
 													onChange={(event) => updateProviderEndpoint(index, "tracking", event.target.value)}
 													placeholder="/tracking"
+													className="max-w-[22rem]"
 												/>
 											</div>
 										</div>
 
-										<div className="grid gap-4 md:grid-cols-2">
+										<div className="grid gap-4 md:grid-cols-12">
 											{preset.credentialFields.map((field) => {
 												const fieldId = `shipping-${index}-credential-${field.key}`;
 												const maskedValue = provider.credentialsMasked[field.key];
 												return (
-													<div key={field.key} className="grid gap-2">
+													<div key={field.key} className="grid gap-2 md:col-span-6 xl:col-span-5">
 														<Label htmlFor={fieldId}>{field.label}</Label>
 														<Input
 															id={fieldId}
@@ -566,6 +575,7 @@ export default function AdminShippingProviders() {
 																updateProviderCredential(index, field.key, event.target.value)
 															}
 															placeholder={maskedValue ? `Configured: ${maskedValue}` : field.placeholder}
+															className="max-w-[22rem]"
 														/>
 														{field.helpText ? (
 															<p className="text-xs text-muted-foreground">{field.helpText}</p>
@@ -579,26 +589,28 @@ export default function AdminShippingProviders() {
 									</div>
 								) : null}
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
 										<Label htmlFor={`shipping-${index}-service-code`}>Default service code</Label>
 										<Input
 											id={`shipping-${index}-service-code`}
 											value={provider.serviceCode}
 											onChange={(event) => updateProvider(index, { serviceCode: event.target.value })}
 											placeholder={provider.kind === "correios" ? "03220" : "service-code"}
+											className="max-w-[10rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-5 xl:col-span-4">
 										<Label htmlFor={`shipping-${index}-service-name`}>Default service name</Label>
 										<Input
 											id={`shipping-${index}-service-name`}
 											value={provider.serviceName}
 											onChange={(event) => updateProvider(index, { serviceName: event.target.value })}
 											placeholder="SEDEX"
+											className="max-w-[16rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 										<Label htmlFor={`shipping-${index}-estimated-days`}>Fallback estimated days</Label>
 										<Input
 											id={`shipping-${index}-estimated-days`}
@@ -606,9 +618,10 @@ export default function AdminShippingProviders() {
 											value={provider.estimatedDays}
 											onChange={(event) => updateProvider(index, { estimatedDays: event.target.value })}
 											placeholder="3"
+											className="max-w-[7rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
 										<Label htmlFor={`shipping-${index}-fixed-amount`}>Flat amount (cents)</Label>
 										<Input
 											id={`shipping-${index}-fixed-amount`}
@@ -617,21 +630,23 @@ export default function AdminShippingProviders() {
 											onChange={(event) => updateProvider(index, { fixedAmount: event.target.value })}
 											placeholder="2500"
 											disabled={provider.mode === "http"}
+											className="max-w-[10rem]"
 										/>
 									</div>
 								</div>
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-5 xl:col-span-4">
 										<Label htmlFor={`shipping-${index}-countries`}>Supported countries</Label>
 										<Input
 											id={`shipping-${index}-countries`}
 											value={provider.supportedCountries}
 											onChange={(event) => updateProvider(index, { supportedCountries: event.target.value })}
 											placeholder="BR, US, CA"
+											className="max-w-[14rem]"
 										/>
 									</div>
-									<div className="flex items-center gap-3 pt-8">
+									<div className="flex items-center gap-3 pt-8 md:col-span-5 xl:col-span-4">
 										<Checkbox
 											id={`shipping-${index}-postal`}
 											checked={provider.requiresPostalCode}
@@ -645,8 +660,8 @@ export default function AdminShippingProviders() {
 
 								<div className="space-y-3 rounded-lg border p-4">
 									<p className="text-sm font-medium">Fallback parcel defaults</p>
-									<div className="grid gap-4 md:grid-cols-4">
-										<div className="grid gap-2">
+									<div className="grid gap-4 md:grid-cols-12">
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 											<Label htmlFor={`shipping-${index}-weight`}>Weight (g)</Label>
 											<Input
 												id={`shipping-${index}-weight`}
@@ -655,33 +670,37 @@ export default function AdminShippingProviders() {
 												onChange={(event) =>
 													updateProvider(index, { defaultWeightGrams: event.target.value })
 												}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 											<Label htmlFor={`shipping-${index}-length`}>Length (cm)</Label>
 											<Input
 												id={`shipping-${index}-length`}
 												type="number"
 												value={provider.defaultLengthCm}
 												onChange={(event) => updateProvider(index, { defaultLengthCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 											<Label htmlFor={`shipping-${index}-width`}>Width (cm)</Label>
 											<Input
 												id={`shipping-${index}-width`}
 												type="number"
 												value={provider.defaultWidthCm}
 												onChange={(event) => updateProvider(index, { defaultWidthCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 											<Label htmlFor={`shipping-${index}-height`}>Height (cm)</Label>
 											<Input
 												id={`shipping-${index}-height`}
 												type="number"
 												value={provider.defaultHeightCm}
 												onChange={(event) => updateProvider(index, { defaultHeightCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
 									</div>

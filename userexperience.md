@@ -29,6 +29,7 @@
   - depois a densidade cultural;
   - por fim o relacionamento contínuo com agenda, redes e contato.
 - Em desktop, a experiência deve parecer uma capa editorial navegável; em mobile, uma narrativa curta e quente em camadas bem espaçadas.
+- Na etapa atual guiada por Figma, a transição entre hero, manifesto e vitrine deve parecer mais suave e intencional, com reveals discretos que ajudem a leitura em vez de chamar atenção para a animação.
 - O ritmo ideal alterna tensão e respiro: impacto, compra, contexto, prova cultural, intimidade e continuidade.
 - A arquitetura da página deve refletir esse ritmo também no código: uma seção por intenção de experiência, evitando componentes gigantes com responsabilidades misturadas.
 
@@ -36,6 +37,7 @@
 
 - Nessas páginas, a pessoa usuária deve entender rápido por que aquela área existe dentro do ecossistema do selo e como ela se conecta aos livros.
 - A experiência não deve parecer uma sequência uniforme de cartões com mesmo peso visual; precisa haver entrada, aprofundamento e saída.
+- Na etapa atual da Goal 3, a passagem entre hero, blocos curatoriais e continuidade deve ficar mais fluida nessas páginas, usando motion discreto para reforçar leitura e não para espetacularizar a navegação.
 - No `Sarau Safado`, a primeira dobra deve se comportar como uma capa legível: a imagem de fundo atrai e contextualiza, enquanto o texto sobreposto precisa permanecer fácil de ler sem competir com a fotografia.
 - Links de continuidade para catálogo, agenda, projetos, contato ou Sarau Safado devem aparecer de forma natural para evitar becos sem saída.
 - No admin, a edição editorial precisa ser direta e pouco ansiosa: a pessoa deve entender rapidamente o que controla hero, texto principal, blocos curatoriais, imagem e publicação sem depender de conhecimento técnico.
@@ -94,6 +96,7 @@
 
 - Antes de entrar na grade, a pessoa usuária deve receber um enquadramento curto que explique como ler aquele catálogo.
 - Na PDP, a compra vem primeiro, mas a página deve continuar convidando a circular entre livro, programação e contexto cultural.
+- Na iteração atual da Goal 3, a PDP deve transmitir acabamento maior logo ao entrar: capa firme, título mais dramático, CTAs estáveis e bloco de citação/detalhes entrando com movimento mínimo e legível.
 
 ## Backoffice
 
@@ -102,6 +105,15 @@
 - No dashboard do admin, a pessoa operadora deve conseguir identificar em poucos segundos o que vendeu, o que está travado no pagamento e o que ainda precisa avançar em fulfillment.
 - O painel inicial do backoffice deve favorecer ação e diagnóstico: alertas operacionais precisam aparecer antes de análises secundárias ou listas longas.
 - No novo estilo editorial do admin, a experiência precisa transmitir orientação imediata: hero curto para contextualizar a tela, métricas logo abaixo para leitura rápida e só depois tabelas ou formulários extensos.
+- Na implementação atual guiada por Figma, a navegação do admin deve passar sensação de “caderno editorial”: a pessoa entra, encontra uma sidebar estável com poucos sinais visuais e percebe o item atual pelo pill claro e pelo ponto de estado, sem competir com o conteúdo.
+- Na fase atual da Goal 2, migrar páginas administrativas legadas para esse mesmo enquadramento reduz ansiedade operacional: a pessoa entende o contexto da tela antes de mergulhar em grids densos de email, webhook ou usuários.
+- Na Goal 4, a experiência do admin deve parecer linguisticamente estável: trocar de tela não pode significar trocar acidentalmente de idioma, porque isso quebra confiança e aumenta a sensação de produto incompleto.
+- Na Goal 6, a pessoa operadora deve sentir que a navegação lateral é o mesmo sistema em desktop e mobile; abrir o sheet no celular ou olhar a sidebar no desktop não pode parecer trocar de produto.
+- Na Goal 6, localização e orientação precisam acontecer sem esforço: item ativo, grupo atual, sessão e ações de saída devem manter a pessoa situada mesmo ao alternar entre dashboard, catálogo, editorial e operação.
+- Se o shell administrativo produzir sobreposição tipográfica, áreas vazias grandes ou hierarquia fraca nos menus, a experiência deve ser tratada como quebrada, porque isso reduz confiança antes mesmo da pessoa começar a operar.
+- Em detalhes de usuário, a pessoa administradora deve ler primeiro o estado da conta, o papel e o volume de compras antes de encontrar ações sensíveis como bloquear ou alterar permissões.
+- O cockpit do dashboard deve responder primeiro “o que precisa da minha atenção hoje?” e só depois abrir a camada analítica mais profunda; por isso a fila operacional e o resumo de atividade vêm antes das seções extensas de tabela e chart.
+- O preview lateral do dashboard não substitui staging nem publicação, mas reduz ansiedade operacional ao lembrar a pessoa de verificar storefront e narrativa antes de publicar ou seguir alterando blocos.
 - Na gestão de usuários, a pessoa administradora deve entender rapidamente quem está ativo, bloqueado ou com privilégio elevado, e mudanças sensíveis como bloquear acesso devem comunicar impacto imediato sobre sessões ativas.
 - Em catálogo, tanto `admin` quanto `vendor` devem conseguir editar produto sem ambiguidade de permissão, e o histórico precisa permitir reconstruir rapidamente o que mudou e quem fez a alteração.
 - No cadastro e na edição de produto, a pessoa operadora deve entender rapidamente o que é dado compartilhado do produto, o que é específico da variante e o que controla disponibilidade.
@@ -109,8 +121,11 @@
 - O estado de ativação não deve exigir conhecimento técnico da Stripe; a interface precisa comunicar apenas o impacto operacional de ativar ou desativar o item.
 - Em pedidos, a pessoa operadora deve conseguir alterar fulfillment sabendo que toda mudança ficará auditável; o histórico precisa reduzir dúvida sobre quem mudou status ou rastreio e quando isso aconteceu.
 - O feedback após salvar fulfillment deve ser imediato: a própria tela precisa refletir o novo registro de auditoria sem exigir refresh manual.
+- Na leitura de detalhes do pedido, resumo, fulfillment e auditoria devem aparecer como uma sequência curta e previsível, com linguagem operacional em `pt-BR` e microtransições discretas que reforçam orientação sem atrasar a ação.
 - O id de pedido exibido para operação e suporte deve ser estável e interno ao produto, para que a equipe não dependa de ids técnicos da Stripe como referência principal do pedido.
 - Quando um webhook alterar automaticamente o status de pagamento, a pessoa operadora também deve enxergar esse momento no histórico do pedido com data, hora e origem automática claramente identificadas.
 - Em frete, a pessoa operadora precisa conseguir entender rapidamente qual provedor está ativo, qual serviço foi cotado e se a integração está saudável antes de mexer em regras ou credenciais.
 - Em settings de frete, a pessoa operadora não deve precisar lembrar o formato de autenticação de cada API; o formulário deve guiar a configuração de Correios, Jadlog e EasyPost com campos já organizados por padrão.
 - No shell do backoffice, a sidebar fixa deve ajudar na sensação de localização contínua entre módulos; ao trocar de página, a pessoa operadora deve perceber que continua dentro do mesmo “caderno” editorial, não em telas desconectadas.
+- Em formulários administrativos, autoformatação deve diminuir fricção sem gerar surpresa: a pessoa precisa sentir que o sistema ajuda a preencher melhor, não que está brigando com o input ou alterando dados sem transparência.
+- Em configurações administrativas da Goal 4, remover escolha de moeda reduz ruído mental: se o sistema ainda opera com uma única moeda vinda do ambiente, a experiência deve refletir essa regra com clareza e deixar conversão futura fora da interface por enquanto.

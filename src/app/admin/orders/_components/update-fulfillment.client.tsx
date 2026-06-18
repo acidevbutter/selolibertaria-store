@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/ui/shadcn/button";
 import { Input } from "@/ui/shadcn/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
 
@@ -58,30 +58,42 @@ export default function UpdateFulfillment({
 			<div className="text-sm font-medium">Fulfillment</div>
 			<div className="grid gap-2 sm:grid-cols-2">
 				<div className="grid gap-1">
-					<label className="text-xs text-muted-foreground">Status</label>
+					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Status</label>
 					<Select value={status} onValueChange={(v) => setStatus(v as FulfillmentStatus)}>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select status" />
+						<SelectTrigger className="w-full rounded-none border-[color:var(--editorial-border)] bg-white">
+							<SelectValue placeholder="Selecionar status" />
 						</SelectTrigger>
 						<SelectContent>
 							{statuses.map((s) => (
 								<SelectItem key={s} value={s}>
-									{s}
+									{s === "received" ? "Recebido" : s === "producing" ? "Produção" : "Enviado"}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
 				</div>
 				<div className="grid gap-1">
-					<label className="text-xs text-muted-foreground">Tracking number</label>
-					<Input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="e.g. 1Z..." />
+					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+						Código de rastreio
+					</label>
+					<Input
+						value={tracking}
+						onChange={(e) => setTracking(e.target.value)}
+						placeholder="Ex.: BR123456789"
+						className="rounded-none border-[color:var(--editorial-border)] bg-white"
+					/>
 				</div>
 			</div>
 			<div className="flex items-center gap-2">
-				<Button size="sm" onClick={save} disabled={saving}>
-					{saving ? "Saving..." : "Save"}
+				<Button
+					size="sm"
+					onClick={save}
+					disabled={saving}
+					className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+				>
+					{saving ? "Salvando..." : "Salvar fulfillment"}
 				</Button>
-				{ok && <span className="text-xs text-emerald-600">Saved</span>}
+				{ok && <span className="text-xs text-emerald-700">Salvo</span>}
 				{error && <span className="text-xs text-destructive">{error}</span>}
 			</div>
 		</div>

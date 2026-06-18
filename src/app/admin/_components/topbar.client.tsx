@@ -19,8 +19,12 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 	return (
 		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
 			<div className="flex h-16 items-center justify-between px-5">
-				<Link href="/admin" className="text-sm font-black uppercase tracking-[0.2em]">
-					Selo Libertária Admin
+				<Link href="/admin" className="flex items-center gap-3">
+					<div className="h-9 w-9 rounded-xl bg-[#fffdf8]" />
+					<div className="space-y-0.5">
+						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
+						<div className="text-[11px] font-medium text-[#beb3a8]">admin editorial</div>
+					</div>
 				</Link>
 				<Sheet>
 					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
@@ -32,29 +36,31 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
 					>
 						<SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-						<div className="border-b border-white/10 px-6 pb-6 pt-7">
-							<div className="text-[1.2rem] font-black uppercase leading-[0.96] tracking-[0.08em]">
-								SELO
-								<br />
-								LIBERTÁRIA
-								<br />
-								ADMIN
+						<div className="px-7 pb-7 pt-7">
+							<div className="flex items-start gap-4">
+								<div className="h-11 w-11 shrink-0 rounded-xl bg-[#fffdf8]" />
+								<div className="space-y-1">
+									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
+										LIBERTÁRIA
+									</div>
+									<div className="text-xs font-medium leading-4 text-[#beb3a8]">admin editorial</div>
+								</div>
 							</div>
-							<div className="mt-3 flex items-center justify-between gap-3">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/52">
+							<div className="mt-5 flex items-center justify-between gap-3">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
 									Painel editorial
 								</div>
 								<form action={logoutAction}>
 									<button
 										type="submit"
-										className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/52 transition-colors hover:text-[color:var(--editorial-paper)]"
+										className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
 									>
-										Logout
+										Sair
 									</button>
 								</form>
 							</div>
 						</div>
-						<nav className="space-y-1 px-0 py-4">
+						<nav className="space-y-1 px-[18px] py-4">
 							{visibleNavItems.map(({ href, label }) => {
 								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
 								return (
@@ -69,12 +75,18 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 												setNavigating(true);
 											}}
 											className={cn(
-												"block w-full border-l-2 px-6 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
+												"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em]",
 												active
-													? "border-[color:var(--editorial-accent)] bg-white/6 text-[color:var(--editorial-paper)]"
-													: "border-transparent text-white/62 hover:border-white/18 hover:bg-white/4 hover:text-[color:var(--editorial-paper)]",
+													? "bg-[#f7f1e8] text-[#0b0b0b]"
+													: "text-[#cfc6bd] hover:bg-white/4 hover:text-[#fffdf8]",
 											)}
 										>
+											<span
+												className={cn(
+													"h-1.5 w-1.5 shrink-0 rounded-full",
+													active ? "bg-[#7a1e22]" : "bg-[#5c5450]",
+												)}
+											/>
 											{label}
 										</Link>
 									</SheetClose>

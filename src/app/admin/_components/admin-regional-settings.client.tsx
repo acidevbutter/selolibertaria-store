@@ -75,11 +75,11 @@ export default function AdminRegionalSettings() {
 					The default country still seeds phone and address fields whenever a user has no saved region yet.
 				</p>
 			</div>
-			<div className="grid gap-4 md:grid-cols-2 md:max-w-2xl">
-				<div className="grid gap-2 md:max-w-sm">
+			<div className="grid gap-4 md:grid-cols-12 md:max-w-3xl">
+				<div className="grid gap-2 md:col-span-7 xl:col-span-6">
 					<Label htmlFor="admin-default-locale">Default selolibertaria language</Label>
 					<Select value={defaultLocale} onValueChange={(value) => setDefaultLocale(value as AppLocale)}>
-						<SelectTrigger id="admin-default-locale">
+						<SelectTrigger id="admin-default-locale" className="max-w-[22rem]">
 							<SelectValue placeholder="Select language" />
 						</SelectTrigger>
 						<SelectContent>
@@ -91,7 +91,7 @@ export default function AdminRegionalSettings() {
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="grid gap-2 md:max-w-sm">
+				<div className="grid gap-2 md:col-span-5 xl:col-span-4">
 					<Label htmlFor="admin-default-country">Default country</Label>
 					<CountrySelect id="admin-default-country" value={defaultCountry} onChange={setDefaultCountry} />
 				</div>
