@@ -33,7 +33,7 @@ export function AdminSidebar({
 						<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 							LIBERTÁRIA
 						</div>
-						<div className="text-xs font-medium leading-4 text-[#beb3a8]">admin editorial</div>
+						<div className="text-xs font-medium leading-4 text-[#beb3a8]">painel editorial</div>
 					</div>
 				</Link>
 				<div className="mt-5 flex items-center justify-between gap-3">

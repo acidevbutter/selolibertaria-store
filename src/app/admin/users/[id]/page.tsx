@@ -238,9 +238,9 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 											defaultValue={role}
 											className="min-w-48 rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
 										>
-											<option value="customer">Customer</option>
-											<option value="vendor">Vendor</option>
-											<option value="admin">Admin</option>
+											<option value="customer">Cliente</option>
+											<option value="vendor">Vendedor</option>
+											<option value="admin">Administrador</option>
 										</select>
 									</label>
 									<Button

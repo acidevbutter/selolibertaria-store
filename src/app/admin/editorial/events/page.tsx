@@ -8,9 +8,15 @@ import {
 } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 export const dynamic = "force-dynamic";
@@ -21,43 +27,59 @@ export default async function AdminEditorialEventsPage() {
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
 
 	const events = await listEditorialEventRecords();
+	const publishedCount = events.filter((event) => event.published).length;
 
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div className="space-y-2">
-					<h1 className="text-2xl font-semibold">Editorial · Eventos</h1>
-					<p className="text-sm text-muted-foreground">
-						Gerencie a agenda pública do selo com publicação, ordem e edição rápida.
-					</p>
-				</div>
-				<Button asChild>
-					<Link href="/admin/editorial/events/new">
-						<Plus className="h-4 w-4" />
-						Novo evento
-					</Link>
-				</Button>
-			</div>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Eventos</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex flex-wrap gap-2">
-						<Button asChild variant="outline" size="sm">
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Editorial"
+				title="Eventos"
+				description="Gerencie agenda, publicação e ordem pública da programação cultural do selo."
+				actions={
+					<div className="flex flex-wrap gap-3">
+						<Button asChild className="rounded-none">
+							<Link href="/admin/editorial/events/new">
+								<Plus className="h-4 w-4" />
+								Novo evento
+							</Link>
+						</Button>
+						<Button asChild variant="outline" className="rounded-none">
 							<Link href="/admin/editorial">
 								<PenSquare className="h-4 w-4" />
 								Hub editorial
 							</Link>
 						</Button>
-						<Button asChild variant="outline" size="sm">
+					</div>
+				}
+			/>
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens ativos nesta coleção." />
+				<AdminEditorialStat
+					label="Publicados"
+					value={publishedCount}
+					helper="Entradas visíveis na área pública."
+				/>
+				<AdminEditorialStat
+					label="Rascunhos"
+					value={events.length - publishedCount}
+					helper="Edições ainda em revisão."
+				/>
+			</div>
+
+			<EditorialPanel className="space-y-6">
+				<CardHeader>
+					<CardTitle>Ações rápidas</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="flex flex-wrap gap-2">
+						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/projects">
 								<FolderKanban className="h-4 w-4" />
 								Projetos
 							</Link>
 						</Button>
-						<Button asChild variant="outline" size="sm">
+						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/sarau-safado">
 								<CalendarRange className="h-4 w-4" />
 								Sarau Safado
@@ -67,14 +89,21 @@ export default async function AdminEditorialEventsPage() {
 					<div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<PenSquare className="h-3.5 w-3.5" />
-							Ordem e publicação já respondem no selolibertaria
+							Ordem e publicação já respondem na área pública
 						</span>
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<ImagePlus className="h-3.5 w-3.5" />
 							Upload editorial reutiliza o fluxo de produtos
 						</span>
 					</div>
+				</CardContent>
+			</EditorialPanel>
 
+			<EditorialPanel className="overflow-hidden p-0">
+				<CardHeader>
+					<CardTitle>Eventos</CardTitle>
+				</CardHeader>
+				<CardContent>
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -149,7 +178,7 @@ export default async function AdminEditorialEventsPage() {
 						</TableBody>
 					</Table>
 				</CardContent>
-			</Card>
-		</main>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

@@ -34,13 +34,13 @@ export function orderStatusEmailHtml({
 	function formatCurrency(amountCents?: number | null, currencyCode?: string) {
 		try {
 			const amount = (amountCents ?? 0) / 100;
-			return new Intl.NumberFormat("en-US", {
+			return new Intl.NumberFormat("pt-BR", {
 				style: "currency",
-				currency: currencyCode || "USD",
+				currency: currencyCode || "BRL",
 			}).format(amount);
 		} catch {
 			const amount = ((amountCents ?? 0) / 100).toFixed(2);
-			return `${currencyCode || "USD"} ${amount}`;
+			return `${currencyCode || "BRL"} ${amount}`;
 		}
 	}
 
@@ -58,9 +58,9 @@ export function orderStatusEmailHtml({
 						<div class="progress-fill" style="width:${progressPercent}%"></div>
 					</div>
 					<div class="progress-labels">
-						<span>Received</span>
-						<span>In production</span>
-						<span>Shipped</span>
+						<span>Recebido</span>
+						<span>Em preparação</span>
+						<span>Enviado</span>
 					</div>
 				</div>
 			`
@@ -69,7 +69,7 @@ export function orderStatusEmailHtml({
 	const metaHtml = `
 		<div class="meta-grid">
 			<div class="meta-box">
-				<span class="meta-label">Order</span>
+				<span class="meta-label">Pedido</span>
 				<span class="meta-value">${escapeEmailHtml(orderId)}</span>
 			</div>
 			<div class="meta-box">
@@ -100,7 +100,7 @@ export function orderStatusEmailHtml({
 								<td style="width:72px;vertical-align:top">${imageHtml}</td>
 								<td style="vertical-align:top">
 									<div class="item-title">${escapeEmailHtml(item.name)}</div>
-									<div class="item-meta">Qty. ${item.qty}</div>
+									<div class="item-meta">Qtd. ${item.qty}</div>
 								</td>
 							</tr>
 						</table>
@@ -113,7 +113,7 @@ export function orderStatusEmailHtml({
 
 	const totalHtml = `
 		<div class="total-box">
-			<span class="total-label">Order total</span>
+			<span class="total-label">Total do pedido</span>
 			<span class="total-value">${escapeEmailHtml(formatCurrency(totalCents ?? null, currency))}</span>
 		</div>
 	`;
@@ -121,18 +121,18 @@ export function orderStatusEmailHtml({
 	const trackingHtml = fulfillment?.trackingNumber
 		? `
 			<div class="info-card">
-				<strong>Tracking</strong>
-				<p style="margin:8px 0 0">Code: ${escapeEmailHtml(fulfillment.trackingNumber)}</p>
+				<strong>Rastreio</strong>
+				<p style="margin:8px 0 0">Código: ${escapeEmailHtml(fulfillment.trackingNumber)}</p>
 			</div>
 		`
 		: "";
 
 	const detailsHtml = content.details
-		? `<div class="info-card"><strong>Next step</strong><p style="margin:8px 0 0">${escapeEmailHtml(content.details)}</p></div>`
+		? `<div class="info-card"><strong>Próximo passo</strong><p style="margin:8px 0 0">${escapeEmailHtml(content.details)}</p></div>`
 		: "";
 
 	const bodyHtml = `
-		<p class="lead">Hello${safeName},</p>
+		<p class="lead">Olá${safeName},</p>
 		<p>${escapeEmailHtml(content.intro)}</p>
 		<span class="status-pill">${escapeEmailHtml(content.statusLabel)}</span>
 		${metaHtml}
@@ -145,10 +145,10 @@ export function orderStatusEmailHtml({
 
 	return emailShellHtml({
 		title: content.heading,
-		eyebrow: content.kind === "payment" ? "Payment update" : "Order update",
-		preheader: `${content.heading} - order #${orderId}`,
+		eyebrow: content.kind === "payment" ? "Atualização de pagamento" : "Atualização do pedido",
+		preheader: `${content.heading} - pedido #${orderId}`,
 		bodyHtml,
 		supportEmail,
-		footerNote: "You are receiving this message because your order status was genuinely updated.",
+		footerNote: "Você está recebendo esta mensagem porque o status do seu pedido foi realmente atualizado.",
 	});
 }

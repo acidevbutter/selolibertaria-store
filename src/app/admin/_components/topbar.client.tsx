@@ -23,7 +23,7 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 					<div className="h-9 w-9 rounded-xl bg-[#fffdf8]" />
 					<div className="space-y-0.5">
 						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
-						<div className="text-[11px] font-medium text-[#beb3a8]">admin editorial</div>
+						<div className="text-[11px] font-medium text-[#beb3a8]">painel editorial</div>
 					</div>
 				</Link>
 				<Sheet>
@@ -43,7 +43,7 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 										LIBERTÁRIA
 									</div>
-									<div className="text-xs font-medium leading-4 text-[#beb3a8]">admin editorial</div>
+									<div className="text-xs font-medium leading-4 text-[#beb3a8]">painel editorial</div>
 								</div>
 							</div>
 							<div className="mt-5 flex items-center justify-between gap-3">

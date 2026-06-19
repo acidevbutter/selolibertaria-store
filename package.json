@@ -7,7 +7,7 @@
 	"type": "module",
 	"packageManager": "yarn@1.22.22",
 	"scripts": {
-		"dev": "next dev -p 3001",
+		"dev": "next dev --webpack -p 3001",
 		"build": "node scripts/vercel-build.mjs",
 		"start": "next start",
 		"seed:admin": "node scripts/seed-admin.mjs",

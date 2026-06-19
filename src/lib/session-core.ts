@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { env } from "@/env.mjs";
 import type { UserRole } from "@/lib/authz";
@@ -35,7 +36,5 @@ export function generateSid(): string {
 		crypto.getRandomValues(buf);
 		return Array.from(buf, (b) => b.toString(16).padStart(2, "0")).join("");
 	}
-	// fallback (Node) - dynamic require avoided in edge import path
-	const nodeCrypto = require("crypto") as typeof import("crypto");
-	return nodeCrypto.randomBytes(16).toString("hex");
+	return randomBytes(16).toString("hex");
 }

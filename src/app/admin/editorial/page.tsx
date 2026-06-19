@@ -78,7 +78,7 @@ export default async function AdminEditorialOverviewPage() {
 			icon: Mail,
 		},
 		{
-			title: "Home",
+			title: "Página inicial",
 			description: "Hero, manifesto, autora e CTA final da página inicial.",
 			countLabel: "Blocos institucionais",
 			statusLabel: home?.published ? "Publicado" : "Rascunho",
@@ -100,12 +100,12 @@ export default async function AdminEditorialOverviewPage() {
 				<AdminEditorialStat
 					label="Superfícies"
 					value={sections.length}
-					helper="Home, páginas institucionais e coleções editoriais."
+					helper="Página inicial, páginas institucionais e coleções editoriais."
 				/>
 				<AdminEditorialStat
 					label="Publicadas"
 					value={publishedCount}
-					helper="Entradas com publicação ativa no storefront."
+					helper="Entradas com publicação ativa na área pública."
 				/>
 				<AdminEditorialStat
 					label="Coleções dinâmicas"

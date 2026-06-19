@@ -55,7 +55,7 @@ export default function UpdateFulfillment({
 
 	return (
 		<div className="grid gap-3">
-			<div className="text-sm font-medium">Fulfillment</div>
+			<div className="text-sm font-medium">Expedição</div>
 			<div className="grid gap-2 sm:grid-cols-2">
 				<div className="grid gap-1">
 					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Status</label>
@@ -91,7 +91,7 @@ export default function UpdateFulfillment({
 					disabled={saving}
 					className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
 				>
-					{saving ? "Salvando..." : "Salvar fulfillment"}
+					{saving ? "Salvando..." : "Salvar expedição"}
 				</Button>
 				{ok && <span className="text-xs text-emerald-700">Salvo</span>}
 				{error && <span className="text-xs text-destructive">{error}</span>}

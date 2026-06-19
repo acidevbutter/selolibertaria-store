@@ -7,8 +7,13 @@ import { NavMenu } from "@/ui/nav/nav-menu";
 // import ThemeToggle from "@/ui/theme-toggle.client";
 import { YnsLink } from "@/ui/yns-link";
 
-export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {}) => {
-	const session = await auth();
+type NavProps = {
+	hideAuthCta?: boolean;
+	lightweight?: boolean;
+};
+
+export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps = {}) => {
+	const session = hideAuthCta || lightweight ? null : await auth();
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
 	const authLabel = !session ? "ENTRAR" : isAdminSession ? "ADMIN" : "MINHA_CONTA";
@@ -25,7 +30,10 @@ export const Nav = async ({ hideAuthCta = false }: { hideAuthCta?: boolean } = {
 
 					<div className="flex items-center gap-5">
 						<div className="min-w-0 flex-1 lg:flex lg:justify-end">
-							<NavMenu />
+							<NavMenu
+								includeDynamicCategories={!lightweight}
+								includeSessionLink={!hideAuthCta && !lightweight}
+							/>
 						</div>
 						{hideAuthCta ? null : (
 							<>

@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { AdminEditorialHero, AdminEditorialPage, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import {
+	AdminEditorialHero,
+	AdminEditorialNote,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
@@ -20,58 +26,166 @@ export default async function AdminSettingsPage() {
 			<AdminEditorialHero
 				eyebrow="Configurações"
 				title="Configurações"
-				description="Ajuste idioma, suporte, autenticação e frete."
+				description="Centralize idioma, suporte, autenticação e frete em blocos curtos, com contexto claro antes de cada ajuste."
 			/>
-			<div className="grid gap-5 xl:grid-cols-2">
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat label="Blocos" value="5" helper="Ajustes organizados por tema operacional." />
+				<AdminEditorialStat
+					label="Padrão regional"
+					value="Idioma e país"
+					helper="A loja resolve esses defaults antes de preferências salvas da pessoa usuária."
+				/>
+				<AdminEditorialNote
+					title="Leitura rápida"
+					description="Abra apenas a seção necessária para reduzir ruído visual e preservar contexto ao salvar cada ajuste."
+				/>
+			</div>
+			<div className="grid gap-5">
 				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Tema</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<AdminThemeSelector />
-						</CardContent>
-					</Card>
+					<details open className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Aparência
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">Tema do admin</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Defina o clima visual usado no admin sem misturar esse ajuste com preferências públicas da
+									loja.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Abrir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Fechar
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminThemeSelector />
+							</CardContent>
+						</Card>
+					</details>
 				</EditorialPanel>
+
 				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Padrões regionais</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<AdminRegionalSettings />
-						</CardContent>
-					</Card>
+					<details open className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Região
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
+									Idioma e país padrão
+								</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Controla o fallback de idioma e a região inicial usada em formulários quando a pessoa ainda
+									não definiu seus próprios dados.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Abrir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Fechar
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminRegionalSettings />
+							</CardContent>
+						</Card>
+					</details>
 				</EditorialPanel>
+
 				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Email de suporte</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<AdminSupportEmail />
-						</CardContent>
-					</Card>
+					<details className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Suporte
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
+									Email operacional
+								</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Usado nos templates transacionais e nos pontos de contato do admin quando a operação precisa
+									de um canal padrão.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Abrir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Fechar
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminSupportEmail />
+							</CardContent>
+						</Card>
+					</details>
 				</EditorialPanel>
+
 				<EditorialPanel className="p-0">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Provedores OAuth</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<AdminOAuthProviders />
-						</CardContent>
-					</Card>
+					<details className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Acesso
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
+									Provedores sociais
+								</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Ative ou revise integrações de login social sem espalhar credenciais por telas secundárias.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Abrir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Fechar
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminOAuthProviders />
+							</CardContent>
+						</Card>
+					</details>
 				</EditorialPanel>
-				<EditorialPanel className="p-0 xl:col-span-2">
-					<Card className="border-none bg-transparent shadow-none">
-						<CardHeader>
-							<CardTitle>Provedores de frete</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<AdminShippingProviders />
-						</CardContent>
-					</Card>
+
+				<EditorialPanel className="p-0">
+					<details className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Entrega
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
+									Provedores de frete
+								</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Configure provedores, prioridade e fallback em um único bloco, sem expor moeda como escolha
+									operacional nesta fase.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Abrir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Fechar
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminShippingProviders />
+							</CardContent>
+						</Card>
+					</details>
 				</EditorialPanel>
 			</div>
 		</AdminEditorialPage>

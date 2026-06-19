@@ -31,9 +31,9 @@ export type ShippingProviderPreset = {
 export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingProviderPreset> = {
 	custom: {
 		kind: "custom",
-		label: "Custom HTTP",
+		label: "HTTP personalizado",
 		description:
-			"Generic HTTP provider for custom gateways or middleware that return normalized shipping services.",
+			"Provedor HTTP genérico para gateways próprios ou middleware que devolvam serviços de frete já normalizados.",
 		defaultAuthType: "bearer",
 		defaultBaseUrl: "",
 		defaultEnvironment: "production",
@@ -48,19 +48,19 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		credentialFields: [
 			{
 				key: "apiKey",
-				label: "API key",
+				label: "Chave da API",
 				placeholder: "token-or-api-key",
 				secret: true,
 			},
 			{
 				key: "originPostalCode",
-				label: "Origin postal code",
+				label: "CEP de origem",
 				placeholder: "01000-000",
 				required: true,
 			},
 			{
 				key: "originCountry",
-				label: "Origin country",
+				label: "País de origem",
 				placeholder: "BR",
 				required: true,
 			},
@@ -69,7 +69,7 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 	correios: {
 		kind: "correios",
 		label: "Correios",
-		description: "Official Correios integration with token generation and national price endpoint.",
+		description: "Integração oficial dos Correios com geração de token e consulta nacional de preços.",
 		defaultAuthType: "bearer",
 		defaultBaseUrl: "https://api.correios.com.br",
 		defaultEnvironment: "production",
@@ -91,25 +91,25 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 			},
 			{
 				key: "accessCode",
-				label: "API access code",
+				label: "Código de acesso da API",
 				placeholder: "codigo-gerado-no-cws",
 				secret: true,
 				required: true,
 			},
 			{
 				key: "contract",
-				label: "Contract number",
+				label: "Número do contrato",
 				placeholder: "9912345678",
 				required: true,
 			},
 			{
 				key: "postingCard",
-				label: "Posting card",
+				label: "Cartão de postagem",
 				placeholder: "0076543210",
 			},
 			{
 				key: "originPostalCode",
-				label: "Origin postal code",
+				label: "CEP de origem",
 				placeholder: "01000-000",
 				required: true,
 			},
@@ -119,7 +119,7 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		kind: "jadlog",
 		label: "Jadlog",
 		description:
-			"Brazilian private carrier with REST JSON integration for quoting, order creation and tracking.",
+			"Transportadora privada brasileira com integração REST para cotação, criação de pedidos e rastreio.",
 		defaultAuthType: "custom",
 		defaultBaseUrl: "https://www.jadlog.com.br/embarcador",
 		defaultEnvironment: "production",
@@ -135,19 +135,19 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		credentialFields: [
 			{
 				key: "token",
-				label: "Integration token",
+				label: "Token de integração",
 				placeholder: "token-jadlog",
 				secret: true,
 				required: true,
 			},
 			{
 				key: "account",
-				label: "Shipper account",
+				label: "Conta do embarcador",
 				placeholder: "123456",
 			},
 			{
 				key: "originPostalCode",
-				label: "Origin postal code",
+				label: "CEP de origem",
 				placeholder: "01000-000",
 				required: true,
 			},
@@ -157,7 +157,7 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		kind: "easypost",
 		label: "EasyPost",
 		description:
-			"International multi-carrier API with rate shopping, labels and tracking under a single contract.",
+			"API internacional multi-transportadora para cotação, etiquetas e rastreio sob uma única integração.",
 		defaultAuthType: "basic",
 		defaultBaseUrl: "https://api.easypost.com/v2",
 		defaultEnvironment: "sandbox",
@@ -173,20 +173,20 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		credentialFields: [
 			{
 				key: "apiKey",
-				label: "API key",
+				label: "Chave da API",
 				placeholder: "EZAK...",
 				secret: true,
 				required: true,
 			},
 			{
 				key: "fromPostalCode",
-				label: "Origin postal code",
+				label: "Código postal de origem",
 				placeholder: "10001",
 				required: true,
 			},
 			{
 				key: "fromCountry",
-				label: "Origin country",
+				label: "País de origem",
 				placeholder: "US",
 				required: true,
 			},

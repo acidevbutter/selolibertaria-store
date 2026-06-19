@@ -281,7 +281,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 			section: "Expedição",
 			description:
 				dashboard.fulfillmentQueue.paidWithoutFulfillment > 0
-					? `${dashboard.fulfillmentQueue.paidWithoutFulfillment} pedido(s) pagos ainda não entraram no fluxo de fulfillment.`
+					? `${dashboard.fulfillmentQueue.paidWithoutFulfillment} pedido(s) pagos ainda não entraram no fluxo de expedição.`
 					: "Todos os pedidos pagos já avançaram para a operação.",
 			pill: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "Atenção" : "OK",
 			tone: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "danger" : "success",
@@ -291,7 +291,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 			section: "Webhooks",
 			description:
 				webhookAttention > 0
-					? `${dashboard.opsHealth.webhooksFailed} falha(s) e ${dashboard.opsHealth.webhooksPending} pendência(s) no ingest de eventos.`
+					? `${dashboard.opsHealth.webhooksFailed} falha(s) e ${dashboard.opsHealth.webhooksPending} pendência(s) no recebimento de eventos.`
 					: "Eventos recebidos sem fila pendente ou falha operacional.",
 			pill: dashboard.opsHealth.webhooksFailed > 0 ? "Falha" : webhookAttention > 0 ? "Checar" : "OK",
 			tone: dashboard.opsHealth.webhooksFailed > 0 ? "danger" : webhookAttention > 0 ? "warning" : "success",
@@ -386,7 +386,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<DashboardMetricCard
 								label="Webhooks"
 								value={webhookAttention}
-								helper="Falhas e pendências de ingestão que podem travar reconciliação automática."
+								helper="Falhas e pendências no recebimento que podem travar a reconciliação automática."
 								accentClass="bg-[#a02a2a]"
 							/>
 							<DashboardMetricCard
@@ -447,7 +447,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<div className="space-y-6">
 								<div className="rounded-[22px] bg-[#0b0b0b] p-6 text-white">
 									<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d8d0c4]">
-										Preview da loja
+										Prévia da loja
 									</div>
 									<div className="mt-4 rounded-2xl bg-[#f7f1e8] p-5 text-[#0b0b0b]">
 										<div className="flex items-start gap-4">
@@ -459,7 +459,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 													do Tietê
 												</div>
 												<p className="text-xs leading-5 text-[#746b63]">
-													Leitura rápida do storefront para checar vitrine, narrativa e CTA principal.
+													Leitura rápida da loja para checar vitrine, narrativa e CTA principal.
 												</p>
 												<span className="inline-flex h-7 items-center rounded-[7px] bg-[#7a1e22] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
 													Comprar
@@ -470,7 +470,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 									<div className="mt-5 space-y-2">
 										<div className="text-base font-bold text-white">Publicação segura</div>
 										<p className="text-sm leading-6 text-[#beb3a8]">
-											Use o preview para validar storefront, conteúdo e ritmo antes de mexer em publicação.
+											Use a prévia para validar loja, conteúdo e ritmo antes de mexer em publicação.
 										</p>
 									</div>
 								</div>
@@ -634,7 +634,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						<CardHeader className="pb-4">
 							<SectionHeader
 								eyebrow="Operação"
-								title="Fila de fulfillment"
+								title="Fila de expedição"
 								description="Leia onde o pós-pagamento está fluindo e onde a operação ainda está emperrada."
 								actionHref="/admin/orders"
 								actionLabel="Revisar operação"
@@ -653,7 +653,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<QueueMetric
 								label="Enviado sem rastreio"
 								value={dashboard.fulfillmentQueue.shippedWithoutTracking}
-								help="Pedidos marcados como enviados mas ainda sem tracking."
+								help="Pedidos marcados como enviados, mas ainda sem código de rastreio."
 								emphasis={dashboard.fulfillmentQueue.shippedWithoutTracking > 0 ? "warning" : "normal"}
 							/>
 						</CardContent>
@@ -697,7 +697,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 					<SectionHeader
 						eyebrow="Confiabilidade"
 						title="Saúde operacional"
-						description="Problemas técnicos que podem corroer conversão, comunicação ou cadência de fulfillment sem chamar atenção."
+						description="Problemas técnicos que podem corroer conversão, comunicação ou cadência de expedição sem chamar atenção."
 					/>
 
 					<div className="grid gap-5 lg:grid-cols-3">
@@ -732,7 +732,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						<HealthRow
 							label="Ações manuais em pedidos"
 							value={dashboard.opsHealth.manualTouches}
-							supplement="Edições de fulfillment registradas no período."
+							supplement="Edições de expedição registradas no período."
 							tone="default"
 						/>
 					</div>

@@ -6,6 +6,11 @@ import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-m
 import { getEditorialContactRecord, updateEditorialContactAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -18,21 +23,40 @@ export default async function AdminEditorialContactPage() {
 	if (!page) redirect("/admin/editorial");
 
 	return (
-		<main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="space-y-3">
-				<Link
-					href="/admin/editorial"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Editorial
-				</Link>
-				<div className="space-y-2">
-					<h1 className="text-2xl font-semibold">Editorial · Contato</h1>
-					<p className="text-sm text-muted-foreground">
-						Edite a página de contato e seus caminhos públicos sem depender de texto fixo no código.
-					</p>
-				</div>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Editorial"
+				title="Contato"
+				description="Mantenha hero, canais diretos e caminhos públicos da página de contato no mesmo fluxo operacional do resto do admin."
+				actions={
+					<div className="flex flex-wrap gap-3">
+						<Link
+							href="/admin/editorial"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para editorial
+						</Link>
+					</div>
+				}
+			/>
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Publicação"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Estado atual da página na área pública."
+				/>
+				<AdminEditorialStat
+					label="Ordem"
+					value={page.order ?? 1}
+					helper="Prioridade editorial desta superfície."
+				/>
+				<AdminEditorialStat
+					label="Blocos"
+					value="Canais"
+					helper="Hero, formulário, caminhos diretos e links públicos."
+				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
 				<EditorialContactForm action={updateEditorialContactAction} page={page} submitLabel="Salvar página" />
@@ -43,6 +67,6 @@ export default async function AdminEditorialContactPage() {
 					updatedBy={page.updatedBy}
 				/>
 			</div>
-		</main>
+		</AdminEditorialPage>
 	);
 }

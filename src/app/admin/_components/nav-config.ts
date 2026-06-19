@@ -19,7 +19,7 @@ export type NavItem = {
 };
 
 export const adminNavItems: NavItem[] = [
-	{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, capability: "admin.access" },
+	{ href: "/admin", label: "Painel", icon: LayoutDashboard, capability: "admin.access" },
 	{ href: "/admin/orders", label: "Pedidos", icon: ShoppingCart, capability: "orders.read" },
 	{ href: "/admin/products", label: "Livros", icon: Package, capability: "catalog.write" },
 	{ href: "/admin/editorial", label: "Editorial", icon: BookOpen, capability: "editorial.write" },
@@ -27,6 +27,6 @@ export const adminNavItems: NavItem[] = [
 	{ href: "/admin/users", label: "Usuários", icon: Users, capability: "customers.read" },
 	{ href: "/admin/emails", label: "Emails", icon: Mail, capability: "emails.read" },
 	{ href: "/admin/settings", label: "Configurações", icon: Settings, capability: "settings.write" },
-	{ href: "/admin/email-templates", label: "Templates", icon: Settings, capability: "settings.write" },
+	{ href: "/admin/email-templates", label: "Modelos de email", icon: Settings, capability: "settings.write" },
 	{ href: "/admin/webhooks", label: "Webhooks", icon: Activity, capability: "webhooks.read" },
 ];

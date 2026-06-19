@@ -9,6 +9,37 @@ import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 
+function formatSlugToKebab(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9\s-]/g, "")
+		.replace(/[\s_]+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
+function formatSlugWhileTyping(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9\s-]/g, "")
+		.replace(/[\s_]+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-+/, "");
+}
+
+function handleSlugInput(event: React.FormEvent<HTMLInputElement>) {
+	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
+}
+
+function handleSlugBlur(event: React.FocusEvent<HTMLInputElement>) {
+	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
+}
+
 export function EditorialEventForm({
 	action,
 	event,
@@ -36,7 +67,16 @@ export function EditorialEventForm({
 								<Input id="title" name="title" defaultValue={event?.title ?? ""} required />
 							</Field>
 							<Field label="Slug" name="slug" hint="Se vazio, será gerado a partir do título.">
-								<Input id="slug" name="slug" defaultValue={event?.slug ?? ""} />
+								<Input
+									id="slug"
+									name="slug"
+									defaultValue={event?.slug ?? ""}
+									onInput={handleSlugInput}
+									onBlur={handleSlugBlur}
+									autoCapitalize="none"
+									autoCorrect="off"
+									spellCheck={false}
+								/>
 							</Field>
 							<Field label="Status" name="status">
 								<Input id="status" name="status" defaultValue={event?.status ?? ""} placeholder="em curso" />
@@ -107,7 +147,7 @@ export function EditorialEventForm({
 								<span className="space-y-1">
 									<span className="block font-medium">Publicado</span>
 									<span className="block text-xs text-muted-foreground">
-										O evento pode aparecer como fonte primária no selolibertaria.
+										O evento pode aparecer como fonte primária na área pública.
 									</span>
 								</span>
 							</label>

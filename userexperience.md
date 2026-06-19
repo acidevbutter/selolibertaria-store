@@ -95,8 +95,10 @@
 ## Catálogo e PDP do Selo Libertária
 
 - Antes de entrar na grade, a pessoa usuária deve receber um enquadramento curto que explique como ler aquele catálogo.
+- Na fase concluída da Goal 3, busca e categoria deixam de parecer páginas técnicas isoladas e passam a reutilizar a mesma entrada curatorial do catálogo, mantendo continuidade emocional mesmo quando a pessoa chega por pesquisa.
 - Na PDP, a compra vem primeiro, mas a página deve continuar convidando a circular entre livro, programação e contexto cultural.
 - Na iteração atual da Goal 3, a PDP deve transmitir acabamento maior logo ao entrar: capa firme, título mais dramático, CTAs estáveis e bloco de citação/detalhes entrando com movimento mínimo e legível.
+- Em estados sem resultado, a experiência deve continuar editorial e orientada: em vez de um vazio duro, a pessoa precisa receber contexto, saída rápida para o catálogo e continuidade para agenda ou descoberta cultural.
 
 ## Backoffice
 
@@ -107,7 +109,30 @@
 - No novo estilo editorial do admin, a experiência precisa transmitir orientação imediata: hero curto para contextualizar a tela, métricas logo abaixo para leitura rápida e só depois tabelas ou formulários extensos.
 - Na implementação atual guiada por Figma, a navegação do admin deve passar sensação de “caderno editorial”: a pessoa entra, encontra uma sidebar estável com poucos sinais visuais e percebe o item atual pelo pill claro e pelo ponto de estado, sem competir com o conteúdo.
 - Na fase atual da Goal 2, migrar páginas administrativas legadas para esse mesmo enquadramento reduz ansiedade operacional: a pessoa entende o contexto da tela antes de mergulhar em grids densos de email, webhook ou usuários.
+- Na mesma fase, bibliotecas de revisão e taxonomia do backoffice devem oferecer leitura em duas etapas: primeiro contexto e escolha, depois preview ou tabela principal. Isso vale especialmente para templates de email, categorias de produto e coleções editoriais.
 - Na Goal 4, a experiência do admin deve parecer linguisticamente estável: trocar de tela não pode significar trocar acidentalmente de idioma, porque isso quebra confiança e aumenta a sensação de produto incompleto.
+- Na passada atual da Goal 4, telas de configuração e promoção devem reduzir a sensação de “produto pela metade”: salvar provedores, idioma, suporte ou campanhas precisa devolver feedback em `pt-BR` claro e apresentar labels previsíveis, sem alternar entre termos técnicos em inglês e operação cotidiana em português.
+- Em categorias e formulários de produto, a pessoa operadora não deve precisar traduzir mentalmente termos de origem do sistema; rótulos como `Catálogo` e `Manual` reduzem ambiguidade melhor do que valores crus de implementação.
+- Em promoções, a pessoa operadora também não deve desconfiar da moeda aplicada ao ler um resumo ou regra; se o sistema trabalha com uma moeda única do ambiente nesta fase, o texto e a formatação visual precisam refletir isso em toda a tela, inclusive nos fallbacks.
+- Em `admin/email-templates`, a pessoa operadora deve entender rapidamente qual grupo de mensagem está revisando, ver o email de suporte vigente sem espera extra e receber um estado vazio honesto quando a busca não retornar nenhum template, em vez de continuar vendo uma prévia que já não corresponde ao filtro.
+- Em auditorias como `webhooks` e `emails`, nomes de coluna e ações de detalhe devem ajudar leitura rápida antes de exigir conhecimento técnico. A pessoa operadora entende melhor `ID do evento` e `Abrir detalhes` do que termos crus em inglês quando o contexto já é conhecido.
+- Quando a pessoa abre uma prévia ou modal no admin, a experiência não deve “trocar de idioma” nos detalhes menores. Labels como `ID da mensagem` e `Imagem do produto` também fazem parte da sensação de acabamento da Goal 4.
+- O mesmo vale para estados compartilhados: ver `Pago`, `Em processamento` ou `Cancelado` diretamente no badge reduz carga cognitiva melhor do que ler um valor técnico cru e traduzi-lo mentalmente em cada tabela.
+- Essa previsibilidade também precisa alcançar os filtros compartilhados: selecionar `Período`, `Ordenação` e status em `pt-BR` reduz microtraduções mentais recorrentes no dashboard e em pedidos.
+- No painel inicial do admin, a pessoa operadora não deve precisar conhecer o jargão interno da implementação; termos como `expedição`, `recebimento de eventos`, `prévia da loja` e `código de rastreio` tornam a leitura mais direta do que `fulfillment`, `ingest`, `storefront` e `tracking`.
+- Em detalhes de pedido, essa clareza precisa continuar até a ação: `Salvar expedição` e `Status de expedição` reduzem hesitação melhor do que manter o vocabulário interno da implementação na interface.
+- Em formulários editoriais, autoformatar o slug enquanto a pessoa digita reduz erro bobo de publicação e evita que ela precise “limpar” manualmente espaços, acentos e caracteres inválidos antes de salvar.
+- No fluxo editorial, a pessoa operadora entende melhor `área pública` ou `site` do que `storefront`; esse tipo de ajuste pequeno diminui a sensação de produto híbrido ou inacabado entre telas vizinhas.
+- Em `settings`, a experiência também melhora quando o sistema corrige pequenos deslizes sozinho: email de suporte sem espaços sobrando, código de provedor coerente, endpoints previsíveis e países/CEPs já normalizados diminuem retrabalho antes do save.
+- Quando o bloco de frete fala `Chave da API` e `CEP de origem` em vez de labels legadas em inglês, a pessoa operadora precisa traduzir menos o formulário e consegue revisar a configuração com mais confiança.
+- No OAuth, o mesmo acabamento reduz hesitação: ler `ID do cliente` e `Segredo do cliente` em vez de labels híbridas em inglês, com trim automático e sem autocorreção, deixa a configuração mais previsível.
+- Em promoções, saber que o sistema aceita vírgula ou quebra de linha e que vai normalizar slugs/códigos ao salvar reduz medo de preencher “do jeito errado” campos operacionais mais secos.
+- Em seletores de ambiente, `Teste` comunica intenção mais rapidamente para a operação cotidiana do que `Sandbox`.
+- Em listagens e formulários de permissão, `Administrador` e `Vendedores` reduzem a sensação de interface remendada melhor do que labels híbridas como `Admin` ou `Vendors`.
+- Na navegação lateral, ver `Painel` e `Modelos de email` em vez de resíduos em inglês ajuda a pessoa operadora a perceber o admin como um sistema coeso, não como uma soma de telas migradas aos poucos.
+- O mesmo vale para o selo persistente do shell: `painel editorial` comunica um produto acabado melhor do que `admin editorial`, que soa como rótulo interno vazado.
+- Em `admin/settings`, a pessoa operadora não deve precisar percorrer todos os formulários só para achar um ajuste específico; seções recolhíveis com contexto curto ajudam a entrar no bloco certo mais rápido e reduzem fadiga durante tarefas repetitivas.
+- Se a tela inteira está em `pt-BR`, ver opções de idioma nomeadas em inglês dentro do próprio seletor regional cria ruído desnecessário; a pessoa operadora deve ler essas escolhas no mesmo idioma da interface atual.
 - Na Goal 6, a pessoa operadora deve sentir que a navegação lateral é o mesmo sistema em desktop e mobile; abrir o sheet no celular ou olhar a sidebar no desktop não pode parecer trocar de produto.
 - Na Goal 6, localização e orientação precisam acontecer sem esforço: item ativo, grupo atual, sessão e ações de saída devem manter a pessoa situada mesmo ao alternar entre dashboard, catálogo, editorial e operação.
 - Se o shell administrativo produzir sobreposição tipográfica, áreas vazias grandes ou hierarquia fraca nos menus, a experiência deve ser tratada como quebrada, porque isso reduz confiança antes mesmo da pessoa começar a operar.
@@ -129,3 +154,9 @@
 - No shell do backoffice, a sidebar fixa deve ajudar na sensação de localização contínua entre módulos; ao trocar de página, a pessoa operadora deve perceber que continua dentro do mesmo “caderno” editorial, não em telas desconectadas.
 - Em formulários administrativos, autoformatação deve diminuir fricção sem gerar surpresa: a pessoa precisa sentir que o sistema ajuda a preencher melhor, não que está brigando com o input ou alterando dados sem transparência.
 - Em configurações administrativas da Goal 4, remover escolha de moeda reduz ruído mental: se o sistema ainda opera com uma única moeda vinda do ambiente, a experiência deve refletir essa regra com clareza e deixar conversão futura fora da interface por enquanto.
+- Mesmo pistas secundárias, como cards-resumo de `settings`, não devem reintroduzir esse tema. Quando a pessoa abre a tela para ajustar idioma ou país, ler `Moeda` de novo sugere uma configuração que já não existe.
+- A experiência de login também precisa seguir o idioma resolvido pela aplicação; abrir a tela e encontrar hero em português com CTA, placeholder ou links em inglês quebra confiança logo na entrada do produto.
+- Em `email-templates`, pequenos resíduos como `Templates` no eyebrow também afetam percepção de acabamento; quando a pessoa revisa comunicação transacional, a própria moldura da tela precisa parecer finalizada.
+- Em `users`, ler papéis crus como `admin` ou `customer` quebra a sensação de produto final do mesmo jeito; a pessoa operadora deve encontrar nomenclatura administrativa estável também nas tabelas de gestão de acesso.
+- O mesmo cuidado vale para o editorial: quando a pessoa alterna entre projetos e edição da página inicial, a experiência deve manter o mesmo idioma e a mesma lógica operacional, sem ressurgir `Home` ou `backoffice` como sobras do starter.
+- No hub editorial, a consistência de nomenclatura também ajuda orientação: ver `Página inicial` no card e no formulário evita a sensação de que cada tela fala de uma entidade diferente.

@@ -3,6 +3,8 @@ import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
 import { getTranslations } from "@/i18n/server";
 import { Search } from "@/lib/api";
+import { EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { CatalogIntro } from "@/ui/products/catalog-intro";
 import { ProductList } from "@/ui/products/product-list";
 import { ProductNotFound } from "@/ui/products/product-not-found";
 
@@ -38,20 +40,29 @@ export default async function SearchPage(props: {
 
 	return (
 		<main className="space-y-8 pb-8">
-			<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
-				<div className="max-w-4xl space-y-5">
-					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
-						{seloT("search.eyebrow")}
-					</p>
-					<h1 className="editorial-serif max-w-4xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
-						{t("title", { query })}
-					</h1>
-					<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
-						{seloT("search.description")}
-					</p>
-				</div>
-			</section>
-			{products?.length ? <ProductList products={products} /> : <ProductNotFound query={query} />}
+			<CatalogIntro
+				eyebrow={seloT("search.eyebrow")}
+				title={t("title", { query })}
+				description={seloT("search.description")}
+				highlight="A busca deve parecer uma leitura guiada, não um estado técnico isolado."
+				cards={[
+					{
+						label: "Leitura",
+						body: "O termo pesquisado ganha contexto visual antes da lista, deixando a resposta menos seca.",
+					},
+					{
+						label: "Precisão",
+						body: "Resultados continuam rápidos, mas entram em uma moldura editorial consistente com o resto da loja.",
+					},
+					{
+						label: "Continuidade",
+						body: "Mesmo na busca, a pessoa sente que continua navegando o mesmo universo curado do selo.",
+					},
+				]}
+			/>
+			<EditorialShell>
+				{products?.length ? <ProductList products={products} /> : <ProductNotFound query={query} />}
+			</EditorialShell>
 		</main>
 	);
 }

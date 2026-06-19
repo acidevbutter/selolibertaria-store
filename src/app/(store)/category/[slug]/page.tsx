@@ -5,6 +5,8 @@ import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { deslugify } from "@/lib/utils";
+import { EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { CatalogIntro } from "@/ui/products/catalog-intro";
 import { ProductList } from "@/ui/products/product-list";
 
 export const generateMetadata = async (props: { params: Promise<{ slug: string }> }): Promise<Metadata> => {
@@ -48,20 +50,29 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
 	return (
 		<main className="space-y-8 pb-8">
-			<section className="overflow-hidden border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.46),transparent_36%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-primary-foreground sm:px-10 sm:py-14">
-				<div className="max-w-4xl space-y-5">
-					<p className="text-xs uppercase tracking-[0.32em] text-primary-foreground/58 sm:text-sm">
-						{seloT("category.eyebrow")}
-					</p>
-					<h1 className="editorial-serif max-w-4xl text-balance text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-6xl">
-						{deslugify(params.slug)}
-					</h1>
-					<p className="max-w-2xl text-base leading-8 text-primary-foreground/78 sm:text-lg">
-						{t("title", { categoryName: deslugify(params.slug) })}
-					</p>
-				</div>
-			</section>
-			<ProductList products={products} />
+			<CatalogIntro
+				eyebrow={seloT("category.eyebrow")}
+				title={deslugify(params.slug)}
+				description={t("title", { categoryName: deslugify(params.slug) })}
+				highlight="A categoria mantém o mesmo pulso editorial do catálogo, com recorte mais preciso."
+				cards={[
+					{
+						label: "Recorte",
+						body: "A seleção agrupa livros e edições por afinidade sem perder a sensação de descoberta.",
+					},
+					{
+						label: "Ritmo",
+						body: "O bloco de abertura prepara a leitura antes da grade, em vez de jogar a pessoa direto na listagem.",
+					},
+					{
+						label: "Conexão",
+						body: "Cada resultado ainda funciona como porta de entrada para autores, eventos e contexto do selo.",
+					},
+				]}
+			/>
+			<EditorialShell>
+				<ProductList products={products} />
+			</EditorialShell>
 		</main>
 	);
 }

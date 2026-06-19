@@ -32,3 +32,17 @@ Também faz parte deste objetivo usar o plugin do Figma para revisar, estruturar
 * Consolidação de padrões de formulário, tabela, modal e painel lateral.
 * Melhorias progressivas sem quebrar o fluxo atual.
 * Protótipo ou refinamento visual no Figma das telas principais do admin.
+
+## Status atual
+
+- O shell editorial do admin foi consolidado nas superfícies principais de dashboard, pedidos, usuários, emails, webhooks, produtos, categorias, promoções, settings, templates de email e hub editorial.
+- As jornadas de catálogo passaram a abrir com hero curto, contexto operacional e blocos mais previsíveis para formulário, variantes, histórico e ações rápidas.
+- As superfícies editoriais do escopo da meta (`events`, `projects`, `about`, `contact`, `home` e `sarau-safado`) foram migradas para o mesmo enquadramento do restante do backoffice, incluindo lista, criação e edição quando aplicável.
+- A superfície de `email-templates` deixou de ser um preview cru e passou a operar como biblioteca revisável com lista, busca, metadados e painel de preview.
+- O fluxo de imagens e uploads permaneceu no modelo `upload-first` já existente, mas dentro de telas mais consistentes e com leitura operacional mais clara.
+- Um artefato de revisão visual foi criado no Figma para esta rodada da Goal 2: [Selo Libertaria Admin Goal 2 Review](https://www.figma.com/design/jHjotPVsPCqtwVTqdL7bjl).
+
+## Conclusão da meta
+
+- A Goal 2 pode ser considerada concluída: o admin passou a se comportar como um sistema único, com hierarquia editorial compartilhada, melhor leitura de contexto, abertura mais clara das telas e revisão visual registrada no Figma.
+- Melhorias posteriores de i18n fino, autoformatação, moeda única do ambiente e consistência textual seguem como continuação natural da Goal 4, não como pendência estrutural da Goal 2.

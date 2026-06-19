@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
@@ -81,6 +82,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	const items = (await db.collection("users").aggregate(pipeline).toArray()) as unknown as AggOrderItem[];
 	const paidCount = items.filter((item) => item.purchases.status === "paid").length;
 	const processingCount = items.filter((item) => item.purchases.status === "processing").length;
+	const defaultCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+		.trim()
+		.toUpperCase();
 
 	return (
 		<AdminEditorialPage>
@@ -135,15 +139,15 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									<TableRow key={it.purchases.id}>
 										<TableCell className="break-all">{it.email}</TableCell>
 										<TableCell>
-											{new Intl.NumberFormat("en-US", {
+											{new Intl.NumberFormat("pt-BR", {
 												style: "currency",
-												currency: it.purchases.currency?.toUpperCase?.() || "USD",
+												currency: it.purchases.currency?.toUpperCase?.() || defaultCurrency,
 											}).format((it.purchases.amountTotal || 0) / 100)}
 										</TableCell>
 										<TableCell className="capitalize">
 											<StatusBadge status={it.purchases.status} />
 										</TableCell>
-										<TableCell>{new Date(it.purchases.createdAt).toLocaleString()}</TableCell>
+										<TableCell>{new Date(it.purchases.createdAt).toLocaleString("pt-BR")}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{it.purchases.id}</TableCell>
 										<TableCell className="text-right">
 											<Link

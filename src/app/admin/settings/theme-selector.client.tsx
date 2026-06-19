@@ -7,7 +7,7 @@ export function AdminThemeSelector() {
 	const { theme, setTheme } = useAdminTheme();
 	return (
 		<div className="max-w-xs">
-			<label className="block text-sm font-medium mb-2">Admin theme</label>
+			<label className="mb-2 block text-sm font-medium">Tema do admin</label>
 			<Select
 				value={theme}
 				onValueChange={async (v) => {
@@ -16,11 +16,11 @@ export function AdminThemeSelector() {
 				}}
 			>
 				<SelectTrigger>
-					<SelectValue placeholder="Select theme" />
+					<SelectValue placeholder="Selecione o tema" />
 				</SelectTrigger>
 				<SelectContent>
-					<SelectItem value="light">Light</SelectItem>
-					<SelectItem value="dark">Dark</SelectItem>
+					<SelectItem value="light">Claro</SelectItem>
+					<SelectItem value="dark">Escuro</SelectItem>
 				</SelectContent>
 			</Select>
 		</div>

@@ -113,7 +113,7 @@ export function AdminEditorialStat({
 			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 				{label}
 			</div>
-			<div className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+			<div className="mt-4 text-[1.65rem] font-semibold tracking-[-0.04em] text-[color:var(--editorial-ink)] sm:text-[1.9rem]">
 				{value}
 			</div>
 			{helper ? (

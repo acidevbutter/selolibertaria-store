@@ -85,8 +85,8 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Webhooks"
-				title="Webhooks"
-				description="Acompanhe eventos, falhas e verificações."
+				title="Rastreamento de webhooks"
+				description="Acompanhe eventos recebidos, falhas de processamento e validação de assinatura."
 				actions={
 					<div className="flex flex-wrap gap-2">
 						{[
@@ -117,7 +117,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 			<div className="grid gap-5 lg:grid-cols-4">
 				<AdminEditorialStat label="Registros" value={items.length} helper={`Até ${limit} itens.`} />
 				<AdminEditorialStat label="Processados" value={processedCount} helper="Sem erro." />
-				<AdminEditorialStat label="Falhos" value={failedCount} helper="Com erro." />
+				<AdminEditorialStat label="Falhos" value={failedCount} helper="Com falha." />
 				<AdminEditorialStat label="Não verificados" value={unverifiedCount} helper="Exigem revisão." />
 			</div>
 			<EditorialPanel className="p-0">
@@ -136,7 +136,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 									<TableHead>Status</TableHead>
 									<TableHead>Verificação</TableHead>
 									<TableHead>Tipo</TableHead>
-									<TableHead>Event ID</TableHead>
+									<TableHead>ID do evento</TableHead>
 									<TableHead>Erro</TableHead>
 									<TableHead>Detalhes</TableHead>
 								</TableRow>
@@ -148,7 +148,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										<TableCell>
 											<StatusBadge status={item.status || "unknown"} />
 										</TableCell>
-										<TableCell>{item.verified ? "Verificado" : "Não verificado"}</TableCell>
+										<TableCell>{item.verified ? "Assinatura validada" : "Não validado"}</TableCell>
 										<TableCell className="font-mono text-xs">{item.type || "-"}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{item.eventId || "-"}</TableCell>
 										<TableCell className="max-w-[320px] text-xs text-destructive">
@@ -157,7 +157,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										<TableCell>
 											<details className="max-w-[420px]">
 												<summary className="cursor-pointer text-sm underline underline-offset-4">
-													Abrir payload
+													Abrir detalhes
 												</summary>
 												<div className="mt-3 space-y-3">
 													<div>

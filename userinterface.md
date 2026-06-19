@@ -33,6 +33,7 @@
 - `events`, `projects` e `sarau-safado` devem parecer capítulos editoriais, não somente repositórios de cards.
 - O padrão preferencial é: entrada forte, bloco curatorial de apoio, listagem principal com melhor hierarquia interna e fechamento com links de continuidade.
 - Na iteração atual da Goal 3, as páginas institucionais devem herdar a mesma linguagem de motion da home, com heróis mais firmes, cards editoriais com hover lift leve e entradas em cascata discretas.
+- Na fase concluída da Goal 3, `products`, `search` e `category/[slug]` também devem abrir com o mesmo enquadramento editorial: eyebrow, título forte, descrição curta, bloco curatorial lateral e três cards de apoio antes da grade.
 - No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
 - Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 
@@ -94,6 +95,7 @@
 - Quando a pessoa optar por criar conta nessa mesma superfície, o cadastro deve migrar para um fluxo em etapas, com indicador de progresso editorial e apenas um grupo lógico de campos por vez.
 - A PDP deve preservar foco de compra no topo, mas ganhar camadas adicionais abaixo da dobra para contexto e continuidade.
 - Na iteração atual da Goal 3, a PDP deve ampliar o contraste editorial entre galeria, título, CTAs e bloco de citação, além de usar microinterações leves de hover/reveal para manter a página viva sem competir com a compra.
+- A grade pública de livros deve entrar em cascata leve com `Reveal`, mantendo o hover principal dentro do próprio card; evitar empilhar múltiplos lifts na mesma interação para não transformar a vitrine em uma superfície nervosa.
 
 ## Admin
 
@@ -106,7 +108,31 @@
 - As páginas-base do admin devem abrir com um hero editorial curto antes dos blocos funcionais; filtros, ações primárias e KPIs entram logo abaixo desse hero, não dispersos em cabeçalhos pequenos.
 - No dashboard `/admin`, o hero curto agora deve funcionar como topbar operacional: título em sans forte, descrição curta, CTAs compactas à direita, faixa de filtros logo abaixo e um cockpit com quatro métricas principais, fila de ação e coluna auxiliar de preview/atividade.
 - Na continuação atual da Goal 2, páginas legadas como `emails`, `webhooks` e `users` devem herdar esse mesmo enquadramento: hero editorial curto, métricas na abertura e bloco principal mais sóbrio para tabela ou auditoria.
+- Na mesma trilha da Goal 2, superfícies de revisão e taxonomia como `email-templates`, `products/categories`, `editorial/events` e `editorial/projects` devem seguir a mesma abertura com hero curto, cards de contexto e corpo principal claramente separado entre ações rápidas e conteúdo denso.
 - Na Goal 4 do admin, a consistência de idioma vira regra de interface: labels, help text, CTAs, placeholders e estados vazios devem seguir o idioma padrão resolvido pela aplicação, sem telas híbridas metade em inglês e metade em `pt-BR`.
+- Na passada atual da Goal 4, `settings`, `promotions` e os formulários de produto devem preferir rótulos curtos em `pt-BR`, mensagens de status igualmente em `pt-BR` e larguras máximas menores por campo, para que o formulário pareça calibrado para cada dado em vez de usar inputs longos por padrão.
+- Em taxonomias e cadastros de produto da Goal 4, evite expor termos de infraestrutura quando não ajudam a operação: origem de categoria deve aparecer como `Catálogo` ou `Manual`, e mensagens de falha devem priorizar contexto operacional em vez de citar Stripe sem necessidade.
+- Em `admin/promotions`, mesmo os blocos apenas informativos devem assumir a moeda do ambiente; helpers, subtotais mínimos e cards de resumo não devem cair em `BRL` hardcoded quando a aplicação já resolve `STRIPE_CURRENCY`.
+- Em `admin/email-templates`, a biblioteca lateral deve permitir busca curta, expor categoria por template e manter a prévia principal isolada em um quadro branco grande, com email de suporte destacado como metadado operacional sem depender de carregamento client-side tardio.
+- Em tabelas e painéis de auditoria do admin, labels técnicos podem existir, mas precisam entrar traduzidos e contextualizados: prefira `ID do evento`, `Assinatura validada`, `Abrir detalhes` e `Sem imagem` a valores crus de implementação quando isso não sacrificar diagnóstico.
+- O mesmo vale para microdetalhes de preview e modais: `ID da mensagem`, títulos de `iframe` e textos de fallback de imagem também devem seguir `pt-BR`, porque esses pontos viram ruído perceptível quando o restante da tela já está consistente.
+- Componentes compartilhados de estado também entram nessa regra: badges e tabelas-base do admin não devem depender de `capitalize` sobre status crus; a interface precisa renderizar estados prontos em `pt-BR` e formatar datas/valores com padrão local logo na base.
+- Filtros compartilhados do admin entram no mesmo contrato: labels como `Período` e `Ordenação`, placeholders e opções de status precisam sair traduzidos de origem, com largura proporcional ao conteúdo esperado em vez de manter textos do starter em inglês.
+- No dashboard do admin, a interface deve preferir palavras operacionais já conhecidas pela equipe, como `expedição`, `recebimento de eventos`, `prévia da loja` e `código de rastreio`, evitando expor `fulfillment`, `ingest`, `storefront` ou `tracking` quando não agregam diagnóstico.
+- Em detalhes de pedido, o mesmo contrato continua valendo: títulos de bloco, labels de auditoria e botões de ação devem usar `expedição`, preservando `fulfillment` apenas na camada de implementação.
+- Em formulários editoriais, campos de slug também devem receber autoformatação visível para kebab-case durante a digitação e no blur, mantendo o comportamento consistente com o editor de produto.
+- No hub editorial e nas páginas institucionais do admin, a copy visível deve falar em `área pública` ou `site`; `storefront` não deve aparecer como default em helpers e stats.
+- Em `admin/settings`, blocos de suporte e frete também entram na regra de ergonomia: email em minúsculas sem espaços extras, código do provedor normalizado, endpoints com barra inicial consistente e países suportados formatados como lista curta em maiúsculas.
+- Labels de preset e credenciais de frete fazem parte da UI do admin e devem nascer em `pt-BR`; evitar cards com descrição operacional em português e campos-chave ainda em inglês.
+- Essa mesma regra vale para OAuth: `ID do cliente` e `Segredo do cliente` devem aparecer localizados, e inputs de credenciais não devem sofrer capitalização ou autocorreção do navegador.
+- Em `admin/promotions`, quando um campo depende de normalização server-side, a interface deve avisar isso de forma curta no próprio bloco. Código de cupom, slugs e listas de IDs não precisam parecer mágicos nem exigir tentativa e erro.
+- Selects operacionais do backoffice também entram na revisão lexical: use `Teste` e `Produção` como opções visíveis para ambiente.
+- Essa revisão lexical vale para labels de papéis e campos técnicos curtos: `Administrador`, `Vendedores` e `URL base` ficam mais coerentes com o restante do backoffice do que versões híbridas em inglês.
+- O mesmo princípio vale para navegação persistente e textos de apoio: `Painel`, `Modelos de email` e helpers de login social em linguagem menos protocolar reduzem a sensação de starter parcialmente traduzido.
+- O lockup fixo do shell administrativo também deve seguir esse acabamento: prefira `painel editorial` em vez de resíduos como `admin editorial`.
+- Em `admin/settings`, a composição preferencial da Goal 4 é hero curto, trio de contexto e depois seções recolhíveis com título, descrição curta e conteúdo interno, evitando uma parede contínua de formulários com peso visual idêntico.
+- Na mesma tela de `settings`, cards-resumo não devem reintroduzir conceitos já removidos da operação, como `moeda`; se a fase assume defaults vindos do ambiente, o resumo precisa falar de `idioma`, `país` e contexto regional.
+- O seletor de idioma dentro de `settings` também precisa ser coerente com a própria interface: se o admin está em `pt-BR`, as opções devem aparecer localizadas em `pt-BR`, em vez de herdarem o idioma do browser da máquina.
 - Na Goal 6 do admin, a navegação lateral deve deixar de existir como duas implementações paralelas; desktop e mobile precisam compartilhar a mesma fonte de verdade para item ativo, agrupamentos, ícone opcional, badge e copy de apoio.
 - Na Goal 6 do admin, o shell não deve depender apenas de ponto + texto para toda a hierarquia; grupos, label secundária, estado ativo e contexto de sessão precisam comunicar localização sem competir com o conteúdo principal.
 - Na Goal 6 do admin, o hero operacional do dashboard e das páginas-base deve preservar legibilidade tipográfica limpa em qualquer viewport, sem sobreposição visual nem áreas em branco acidentais causadas por motion ou composição.
@@ -127,3 +153,8 @@
 - No admin de frete, cada família de provider deve abrir apenas seus campos esperados, como token dos Correios, token da Jadlog ou API key da EasyPost, para reduzir erro de configuração.
 - Em formulários administrativos da Goal 4, campos estruturados devem oferecer autoformatação visível e previsível, como slug normalizado, telefone e CEP mascarados e URLs/códigos com limpeza básica de entrada, sempre sem esconder o valor efetivamente persistido.
 - Na mesma fase, o admin não deve expor seletor geral de moeda em settings: a interface assume somente a moeda definida pelo ambiente e evita prometer conversão antes da etapa final.
+- O shell de login também faz parte desse contrato visual: hero, footer e links legais precisam respeitar a camada de i18n em vez de hardcodes locais, para não criar uma porta de entrada híbrida quando a aplicação resolver outro idioma.
+- Na moldura de `email-templates`, use `Emails` e `Modelos` em vez de reaproveitar `Templates` em inglês quando a própria tela já se apresenta como `Templates de email`.
+- Em `admin/users`, a tabela também não deve vazar papéis crus do domínio. A interface precisa listar `Administrador`, `Vendedor` e `Cliente` como rótulos visíveis, mantendo `admin` e afins apenas na camada de implementação.
+- Em superfícies editoriais do admin, títulos e descrições também devem evitar anglicismos ou nomes híbridos desnecessários; `Página inicial` e `restante do admin` comunicam melhor do que `Home` e `backoffice` quando a tela toda já está em `pt-BR`.
+- Esse cuidado vale também para hubs e formulários compartilhados do editorial: cards-resumo e títulos como `Editar página inicial` devem reforçar a mesma nomenclatura, sem alternar entre `Home` e `Página inicial`.

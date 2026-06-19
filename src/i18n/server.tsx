@@ -1,5 +1,13 @@
+import { cookies, headers } from "next/headers";
 import { cache } from "react";
-import { type AppLocale, DEFAULT_LOCALE } from "./config";
+import { env } from "@/env.mjs";
+import {
+	type AppLocale,
+	DEFAULT_LOCALE,
+	LOCALE_COOKIE_NAME,
+	resolveLocale,
+	resolveLocaleFromAcceptLanguage,
+} from "./config";
 import { getMessagesInternal } from "./translate";
 import type { IntlNamespaceKeys } from "./types";
 
@@ -33,9 +41,23 @@ const getMessagesByLocale = cache(async (locale: AppLocale) => {
 });
 
 const getRequestLocale = cache(async (): Promise<AppLocale> => {
-	// Forçar o locale da aplicação para o DEFAULT_LOCALE (pt-BR).
-	// Ignora cookies, cabeçalhos Accept-Language e configuração do admin
-	// para apresentar a loja consistentemente em português.
+	const cookieStore = await cookies();
+	const cookieLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value?.trim();
+	if (cookieLocale) {
+		return resolveLocale(cookieLocale);
+	}
+
+	const headerStore = await headers();
+	const browserLocale = resolveLocaleFromAcceptLanguage(headerStore.get("accept-language"));
+	if (browserLocale) {
+		return browserLocale;
+	}
+
+	const envLocale = env.NEXT_PUBLIC_LANGUAGE?.trim();
+	if (envLocale) {
+		return resolveLocale(envLocale);
+	}
+
 	return DEFAULT_LOCALE;
 });
 

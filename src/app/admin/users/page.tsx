@@ -11,6 +11,17 @@ import {
 } from "@/ui/editorial/editorial-primitives";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
+function formatRoleLabel(role: "admin" | "vendor" | "customer") {
+	switch (role) {
+		case "admin":
+			return "Administrador";
+		case "vendor":
+			return "Vendedor";
+		default:
+			return "Cliente";
+	}
+}
+
 export default async function AdminUsersPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
@@ -45,12 +56,12 @@ export default async function AdminUsersPage() {
 			<div className="grid gap-5 lg:grid-cols-4">
 				<AdminEditorialStat label="Listados" value={users.length} helper="Até 50 cadastros mais recentes." />
 				<AdminEditorialStat
-					label="Admins"
+					label="Administradores"
 					value={adminCount}
-					helper="Pessoas com acesso total ao backoffice."
+					helper="Pessoas com acesso total ao painel administrativo."
 				/>
 				<AdminEditorialStat
-					label="Vendors"
+					label="Vendedores"
 					value={vendorCount}
 					helper="Perfis internos com escopo comercial."
 				/>
@@ -86,7 +97,7 @@ export default async function AdminUsersPage() {
 											<TableCell className="font-medium break-all sm:break-normal">{u.email}</TableCell>
 											<TableCell>{u.name || "—"}</TableCell>
 											<TableCell className="uppercase text-[11px] tracking-[0.18em] text-[color:var(--editorial-muted)]">
-												{role}
+												{formatRoleLabel(role)}
 											</TableCell>
 											<TableCell>
 												{u.access?.blockedAt ? (

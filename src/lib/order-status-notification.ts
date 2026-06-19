@@ -106,125 +106,127 @@ export function getCustomerOrderStatusContent({
 			return {
 				key,
 				kind: "payment",
-				subject: "Your order is waiting for a payment action",
-				heading: "Payment action required",
+				subject: "Seu pedido aguarda uma ação no pagamento",
+				heading: "Ação de pagamento necessária",
 				intro:
-					"We received your order, but the payment still needs extra confirmation or a new payment method.",
-				statusLabel: "Payment action required",
-				details: "If needed, try again at checkout to complete your purchase.",
+					"Recebemos seu pedido, mas o pagamento ainda precisa de confirmação extra ou de um novo método.",
+				statusLabel: "Ação de pagamento necessária",
+				details: "Se preciso, tente novamente no checkout para concluir sua compra.",
 			};
 		case "payment_processing":
 			return {
 				key,
 				kind: "payment",
-				subject: "We received your order and the payment is under review",
-				heading: "Payment under review",
-				intro: "Your order was received and the payment is being reviewed by the financial institution.",
-				statusLabel: "Payment under review",
-				details: "As soon as confirmation arrives, we will notify you by email.",
+				subject: "Recebemos seu pedido e o pagamento está em análise",
+				heading: "Pagamento em análise",
+				intro: "Seu pedido foi recebido e o pagamento está sendo analisado pela instituição financeira.",
+				statusLabel: "Pagamento em análise",
+				details: "Assim que a confirmação chegar, avisaremos por email.",
 			};
 		case "payment_confirmed":
 			return {
 				key,
 				kind: "payment",
-				subject: "Payment confirmed",
-				heading: "Payment confirmed",
-				intro: "Your order payment was approved and is already moving through our internal flow.",
-				statusLabel: "Payment approved",
-				details: "We will continue with the next steps and send more updates as the order progresses.",
+				subject: "Pagamento confirmado",
+				heading: "Pagamento confirmado",
+				intro: "O pagamento do seu pedido foi aprovado e já entrou no nosso fluxo interno.",
+				statusLabel: "Pagamento aprovado",
+				details:
+					"Seguiremos com as próximas etapas e enviaremos novas atualizações conforme o pedido avançar.",
 			};
 		case "payment_disputed":
 			return {
 				key,
 				kind: "payment",
-				subject: "Your payment is under dispute review",
-				heading: "Payment under dispute review",
+				subject: "Seu pagamento está em análise de disputa",
+				heading: "Pagamento em disputa",
 				intro:
-					"A dispute was opened for this payment and our team is reviewing it with the payment provider.",
-				statusLabel: "Payment under dispute",
-				details: "We will contact you if we need anything else while the dispute is being reviewed.",
+					"Uma disputa foi aberta para este pagamento e nossa equipe está analisando o caso com o provedor.",
+				statusLabel: "Pagamento em disputa",
+				details: "Entraremos em contato se precisarmos de algo durante essa análise.",
 			};
 		case "payment_dispute_resolved":
 			return {
 				key,
 				kind: "payment",
-				subject: "Your payment dispute was resolved",
-				heading: "Dispute resolved",
-				intro: "The dispute related to this payment was resolved and the order timeline has been updated.",
-				statusLabel: "Dispute resolved",
-				details: "If you still need help with this order, please contact our support team.",
+				subject: "A disputa do seu pagamento foi resolvida",
+				heading: "Disputa resolvida",
+				intro:
+					"A disputa relacionada a este pagamento foi resolvida e a linha do tempo do pedido foi atualizada.",
+				statusLabel: "Disputa resolvida",
+				details: "Se você ainda precisar de ajuda com este pedido, fale com nosso suporte.",
 			};
 		case "payment_dispute_lost":
 			return {
 				key,
 				kind: "payment",
-				subject: "Your payment dispute was closed",
-				heading: "Dispute closed",
-				intro: "The dispute related to this payment was closed by the payment provider.",
-				statusLabel: "Dispute closed",
-				details: "If you have questions about the result, please contact our support team.",
+				subject: "A disputa do seu pagamento foi encerrada",
+				heading: "Disputa encerrada",
+				intro: "A disputa relacionada a este pagamento foi encerrada pelo provedor de pagamento.",
+				statusLabel: "Disputa encerrada",
+				details: "Se tiver dúvidas sobre o resultado, fale com nosso suporte.",
 			};
 		case "payment_failed":
 			return {
 				key,
 				kind: "payment",
-				subject: "We could not approve the payment",
-				heading: "Payment not approved",
-				intro: "We could not confirm your order payment.",
-				statusLabel: "Payment declined",
-				details: "You can try again with another payment method or review the submitted details.",
+				subject: "Não conseguimos aprovar o pagamento",
+				heading: "Pagamento não aprovado",
+				intro: "Não conseguimos confirmar o pagamento do seu pedido.",
+				statusLabel: "Pagamento recusado",
+				details: "Você pode tentar novamente com outro método de pagamento ou revisar os dados enviados.",
 			};
 		case "payment_canceled":
 			return {
 				key,
 				kind: "payment",
-				subject: "Payment canceled",
-				heading: "Payment canceled",
-				intro: "Your order payment was canceled or expired before confirmation.",
-				statusLabel: "Payment canceled",
-				details: "If you still want to complete the purchase, you will need to start a new payment.",
+				subject: "Pagamento cancelado",
+				heading: "Pagamento cancelado",
+				intro: "O pagamento do seu pedido foi cancelado ou expirou antes da confirmação.",
+				statusLabel: "Pagamento cancelado",
+				details: "Se você ainda quiser concluir a compra, será preciso iniciar um novo pagamento.",
 			};
 		case "payment_refunded":
 			return {
 				key,
 				kind: "payment",
-				subject: "Refund processed",
-				heading: "Refund update",
-				intro: "We recorded a refund update for your order.",
-				statusLabel: "Refund processed",
-				details: "If you need help tracking the refund, please contact our support team.",
+				subject: "Reembolso processado",
+				heading: "Atualização do reembolso",
+				intro: "Registramos uma atualização de reembolso para o seu pedido.",
+				statusLabel: "Reembolso processado",
+				details: "Se precisar de ajuda para acompanhar o reembolso, fale com nosso suporte.",
 			};
 		case "fulfillment_received":
 			return {
 				key,
 				kind: "fulfillment",
-				subject: "Your order was received by our team",
-				heading: "Order received",
-				intro: "Your order was received by our team and has entered the preparation queue.",
-				statusLabel: "Order received",
-				details: "We will let you know when it moves to the next step.",
+				subject: "Seu pedido foi recebido pela nossa equipe",
+				heading: "Pedido recebido",
+				intro: "Seu pedido foi recebido pela nossa equipe e entrou na fila de preparação.",
+				statusLabel: "Pedido recebido",
+				details: "Vamos avisar quando ele avançar para a próxima etapa.",
 			};
 		case "fulfillment_producing":
 			return {
 				key,
 				kind: "fulfillment",
-				subject: "Your order is in production",
-				heading: "Order in production",
-				intro: "Your order is currently in production/preparation.",
-				statusLabel: "In production",
-				details: "As soon as it ships, you will receive another update.",
+				subject: "Seu pedido está em preparação",
+				heading: "Pedido em preparação",
+				intro: "Seu pedido está em preparação no momento.",
+				statusLabel: "Em preparação",
+				details: "Assim que ele for enviado, você receberá outra atualização.",
 			};
 		case "fulfillment_shipped":
 			return {
 				key,
 				kind: "fulfillment",
-				subject: "Your order has shipped",
-				heading: "Order shipped",
-				intro: "Your order has been dispatched and is on the way.",
-				statusLabel: "Order shipped",
+				subject: "Seu pedido foi enviado",
+				heading: "Pedido enviado",
+				intro: "Seu pedido foi despachado e está a caminho.",
+				statusLabel: "Pedido enviado",
 				details: trackingNumber
-					? `Tracking code: ${trackingNumber}`
-					: "If tracking is available, it will appear in this update.",
+					? `Código de rastreio: ${trackingNumber}`
+					: "Se o rastreio estiver disponível, ele aparecerá nesta atualização.",
 			};
 	}
 }

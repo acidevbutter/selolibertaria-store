@@ -1,5 +1,17 @@
 # Goal 3: Refinar o design com Figma e animações discretas
 
+## Status
+
+Concluída em 2026-06-18.
+
+## Implementação realizada
+
+- Home, páginas institucionais e PDP permaneceram como base principal da linguagem editorial com `Reveal` e hover leve.
+- `products`, `search` e `category/[slug]` foram alinhadas à mesma moldura visual da Goal 3, com abertura curatorial, cards de apoio e continuidade estética com o restante da storefront.
+- A grade pública de livros passou a entrar em cascata discreta com `framer-motion`, preservando o hover principal dentro do card para evitar excesso de movimento.
+- O bloco de agenda/programação da home recebeu reveals leves e hover lift na mídia, aproximando a leitura da intenção visual mais refinada do Figma.
+- O estado sem resultados da busca deixou de parecer um fallback técnico cru e passou a oferecer continuidade editorial com saídas claras para catálogo e agenda.
+
 ## Objetivo
 
 Levar o visual do projeto para ficar muito próximo do planejado no Figma, com refinamento fino de composição, tipografia, espaçamento, imagem e atmosfera, adicionando animações sutis para enriquecer a experiência sem virar ruído.
@@ -59,4 +71,3 @@ Levar o visual do projeto para ficar muito próximo do planejado no Figma, com r
 - Exagerar na animação e enfraquecer a legibilidade.
 - Perder consistência entre páginas diferentes.
 - Aproximar o visual do Figma sem preservar performance e responsividade.
-

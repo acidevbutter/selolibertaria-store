@@ -38,7 +38,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 	try {
 		groups = await listAdminStripeProductGroups();
 	} catch (err) {
-		error = err instanceof Error ? err.message : "Could not load Stripe products.";
+		error = err instanceof Error ? err.message : "Não foi possível carregar o catálogo no momento.";
 	}
 
 	const filtered = query
@@ -94,7 +94,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 			{error ? (
 				<EditorialPanel>
 					<CardHeader>
-						<CardTitle>Catálogo Stripe indisponível</CardTitle>
+						<CardTitle>Catálogo indisponível</CardTitle>
 					</CardHeader>
 					<CardContent className="text-sm text-muted-foreground">{error}</CardContent>
 				</EditorialPanel>
@@ -132,7 +132,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 											? firstPrice.amount === lastPrice.amount
 												? formatMoney(firstPrice)
 												: `${formatMoney(firstPrice)} - ${formatMoney(lastPrice)}`
-											: "No price";
+											: "Sem preço";
 
 									return (
 										<TableRow key={group.slug}>
@@ -150,7 +150,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 											<TableCell>{priceLabel}</TableCell>
 											<TableCell>
 												<Badge variant={group.active ? "secondary" : "outline"}>
-													{group.active ? "Active" : "Inactive"}
+													{group.active ? "Ativo" : "Inativo"}
 												</Badge>
 											</TableCell>
 											<TableCell className="text-right">

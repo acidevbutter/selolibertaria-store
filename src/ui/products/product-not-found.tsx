@@ -1,19 +1,38 @@
 import { getTranslations } from "@/i18n/server";
+import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import { Reveal } from "@/ui/motion/reveal";
+import { YnsLink } from "@/ui/yns-link";
 
 export async function ProductNotFound({ query }: { query: string | undefined }) {
 	const t = await getTranslations("/search.notFound");
 
 	return (
-		<section className="flex min-h-[24rem] flex-col items-center justify-center border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.38),transparent_42%),linear-gradient(180deg,#220607_0%,#050203_100%)] px-6 py-10 text-center text-primary-foreground">
-			<div className="max-w-2xl space-y-4">
-				<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/48">Nenhum resultado</p>
-				<h2 className="editorial-serif text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-					{t("title", { query })}
-				</h2>
-				<p className="max-w-xl text-pretty text-sm leading-8 text-primary-foreground/72 sm:text-base">
-					{t("description")}
-				</p>
-			</div>
-		</section>
+		<Reveal>
+			<EditorialPanel className="flex min-h-[24rem] flex-col items-center justify-center bg-[color:var(--editorial-beige)] px-6 py-10 text-center">
+				<div className="max-w-2xl space-y-5">
+					<EditorialEyebrow>Nenhum resultado</EditorialEyebrow>
+					<h2 className="editorial-serif text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+						{t("title", { query })}
+					</h2>
+					<p className="mx-auto max-w-xl text-pretty text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
+						{t("description")}
+					</p>
+					<div className="flex flex-wrap justify-center gap-3 pt-2">
+						<YnsLink
+							href="/products"
+							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+						>
+							Ver catálogo
+						</YnsLink>
+						<YnsLink
+							href="/events"
+							className="inline-flex h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-paper)]"
+						>
+							Explorar agenda
+						</YnsLink>
+					</div>
+				</div>
+			</EditorialPanel>
+		</Reveal>
 	);
 }

@@ -6,13 +6,21 @@ import { getStripeCategories } from "@/lib/stripe-categories";
 import { NavMobileMenu } from "@/ui/nav/nav-mobile-menu.client";
 import { YnsLink } from "@/ui/yns-link";
 
-export const NavMenu = async () => {
-	const session = await auth();
+type NavMenuProps = {
+	includeDynamicCategories?: boolean;
+	includeSessionLink?: boolean;
+};
+
+export const NavMenu = async ({
+	includeDynamicCategories = true,
+	includeSessionLink = true,
+}: NavMenuProps = {}) => {
+	const session = includeSessionLink ? await auth() : null;
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
 	const authLabel = !session ? "Entrar" : isAdminSession ? "Admin" : "Minha conta";
 	const t = await getTranslations("Selo");
-	const dynamicCategories = await getStripeCategories();
+	const dynamicCategories = includeDynamicCategories ? await getStripeCategories() : [];
 	const desktopLinks = [
 		{ label: t("nav.shop"), href: PUBLIC_NAVIGATION.shop },
 		{ label: t("nav.projects"), href: PUBLIC_NAVIGATION.projects },
@@ -55,14 +63,16 @@ export const NavMenu = async () => {
 								</YnsLink>
 							</li>
 						))}
-						<li className="pt-3">
-							<YnsLink
-								href={authHref}
-								className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-2 w-10 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
-							>
-								{authLabel}
-							</YnsLink>
-						</li>
+						{includeSessionLink ? (
+							<li className="pt-3">
+								<YnsLink
+									href={authHref}
+									className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-2 w-10 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+								>
+									{authLabel}
+								</YnsLink>
+							</li>
+						) : null}
 					</ul>
 				</NavMobileMenu>
 			</div>

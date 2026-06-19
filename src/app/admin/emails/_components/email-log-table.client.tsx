@@ -80,7 +80,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 			} | null;
 
 			if (!res.ok) {
-				throw new Error(payload?.error || "Failed to resend email");
+				throw new Error(payload?.error || "Não foi possível reenviar o email.");
 			}
 
 			toast.success("Email reenviado", {
@@ -90,7 +90,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 			});
 			router.refresh();
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Failed to resend email";
+			const message = error instanceof Error ? error.message : "Não foi possível reenviar o email.";
 			toast.error(`Falha no reenvio via ${via === "api" ? "API" : "SMTP"}`, { description: message });
 		} finally {
 			setRetryingKey(null);
@@ -243,7 +243,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										<p>{selected.template || "indefinido"}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Message ID</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">ID da mensagem</p>
 										<p className="font-mono text-xs break-all">{selected.messageId || "-"}</p>
 									</div>
 									<div>
@@ -268,7 +268,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 								<div className="min-h-0 flex-1 p-4">
 									{selected.emailBody ? (
 										<iframe
-											title={`Email preview ${selected.subject || selected.id}`}
+											title={`Prévia do email ${selected.subject || selected.id}`}
 											srcDoc={selected.emailBody}
 											sandbox=""
 											className="h-full w-full rounded-md border bg-white"

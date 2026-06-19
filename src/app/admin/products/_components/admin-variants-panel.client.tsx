@@ -37,7 +37,6 @@ export function AdminVariantsPanel({
 	archiveStripeVariantAction: (formData: FormData) => Promise<void>;
 }) {
 	const groupBasePrice = group.variants[0]?.priceDecimal ?? null;
-	const groupCurrency = group.variants[0]?.currency ?? "usd";
 
 	return (
 		<section className="space-y-4">
@@ -69,12 +68,18 @@ export function AdminVariantsPanel({
 								/>
 								<FormSection title="Dados da variante">
 									<VariantFields />
-									<Field label="Stock" name="stock" hint="Use a whole number such as 25.">
-										<Input id="stock" name="stock" defaultValue={group.stock} inputMode="numeric" />
+									<Field label="Estoque" name="stock" hint="Use um número inteiro, como 25.">
+										<Input
+											id="stock"
+											name="stock"
+											defaultValue={group.stock}
+											inputMode="numeric"
+											className="max-w-[10rem]"
+										/>
 									</Field>
 								</FormSection>
 								<FormSection title="Preço">
-									<VariantPriceFields basePrice={groupBasePrice} currency={groupCurrency} />
+									<VariantPriceFields basePrice={groupBasePrice} />
 								</FormSection>
 								<ActiveCheckbox defaultChecked />
 								<DialogFooter>
@@ -108,7 +113,7 @@ export function AdminVariantsPanel({
 										<CardTitle>{variant.variantLabel || group.name}</CardTitle>
 										<div className="flex flex-wrap items-center gap-2">
 											<Badge variant={variant.active ? "secondary" : "outline"}>
-												{variant.active ? "Active" : "Inactive"}
+												{variant.active ? "Ativa" : "Inativa"}
 											</Badge>
 											<Badge variant="outline">{usesCustomPrice ? "Preço próprio" : "Preço do grupo"}</Badge>
 										</div>
@@ -161,15 +166,16 @@ export function AdminVariantsPanel({
 												<FormSection title="Dados da variante">
 													<div className="grid gap-4 md:grid-cols-2">
 														<Field
-															label="Stock"
+															label="Estoque"
 															name={`stock-${variant.id}`}
-															hint="Use a whole number such as 25."
+															hint="Use um número inteiro, como 25."
 														>
 															<Input
 																id={`stock-${variant.id}`}
 																name="stock"
 																defaultValue={variant.stock}
 																inputMode="numeric"
+																className="max-w-[10rem]"
 															/>
 														</Field>
 													</div>
@@ -178,7 +184,6 @@ export function AdminVariantsPanel({
 												<FormSection title="Preço">
 													<VariantPriceFields
 														basePrice={groupBasePrice}
-														currency={groupCurrency || variant.currency}
 														overridePrice={usesCustomPrice ? variant.priceDecimal : null}
 													/>
 												</FormSection>

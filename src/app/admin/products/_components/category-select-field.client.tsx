@@ -7,7 +7,7 @@ export function CategorySelectField({
 	name = "category",
 	categories,
 	defaultValue = "",
-	placeholder = "Select a category",
+	placeholder = "Selecione uma categoria",
 	triggerClassName,
 }: {
 	name?: string;

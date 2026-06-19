@@ -44,11 +44,11 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 						<div className="max-w-[36rem] space-y-8">
 							<div className="space-y-4">
 								<h1 className="max-w-[10ch] text-5xl font-black sm:text-6xl xl:text-[5.5rem]">
-									Bem-vinde <br />
-									de volta.
+									{t("hero.titleLine1")} <br />
+									{t("hero.titleLine2")}
 								</h1>
 								<p className="max-w-[27rem] text-base leading-8 text-[color:var(--editorial-muted)] sm:text-[1.05rem]">
-									Acesse sua conta para continuar sua jornada literária com o Selo Libertária.
+									{t("hero.description")}
 								</p>
 							</div>
 
@@ -73,7 +73,7 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 									<div className="relative aspect-[0.84] overflow-hidden">
 										<Image
 											src="/images/ninfas-example.png"
-											alt="Capa do livro Ninfas do Tiete"
+											alt={t("hero.coverAlt")}
 											fill
 											className="object-contain"
 											sizes="(min-width: 1024px) 45vw, 100vw"
@@ -98,7 +98,7 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 
 				<footer className="mx-4 w-auto overflow-x-hidden flex flex-col gap-5 py-5 text-sm text-[color:var(--editorial-muted)] sm:mx-6 lg:mx-8 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
 					<div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-						<span>© {date.getFullYear()} Selo Libertaria. Todos os direitos reservados.</span>
+						<span>{t("footer.rights", { year: date.getFullYear() })}</span>
 						<span className="text-[color:var(--editorial-border)]">|</span>
 						<Link
 							href="https://devbutter.tech"
@@ -121,20 +121,20 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 					<div className="hidden h-8 w-px bg-[color:var(--editorial-border)] lg:block" />
 
 					<p className="price-font text-lg italic text-[color:var(--editorial-accent)]">
-						Literatura erótica, urbana e dissidente.
+						{t("footer.tagline")}
 					</p>
 
 					<div className="hidden h-8 w-px bg-[color:var(--editorial-border)] lg:block" />
 
 					<nav className="flex flex-wrap items-center gap-x-8 gap-y-2 lg:justify-end">
 						<Link href="/privacy" className="transition-colors hover:text-[color:var(--editorial-ink)]">
-							Política de Privacidade
+							{t("footer.privacy")}
 						</Link>
 						<Link href="/terms" className="transition-colors hover:text-[color:var(--editorial-ink)]">
-							Termos de Uso
+							{t("footer.terms")}
 						</Link>
 						<Link href="/contact" className="transition-colors hover:text-[color:var(--editorial-ink)]">
-							Contato
+							{t("footer.contact")}
 						</Link>
 					</nav>
 				</footer>

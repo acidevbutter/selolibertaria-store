@@ -5,10 +5,10 @@ type Props = { title: string; bodyHtml: string; supportEmail?: string };
 export function transactionalEmailHtml({ title, bodyHtml, supportEmail }: Props) {
 	return emailShellHtml({
 		title,
-		eyebrow: "Store message",
+		eyebrow: "Mensagem da loja",
 		preheader: title,
 		bodyHtml,
 		supportEmail,
-		footerNote: "Official transactional message from Selo Libertaria.",
+		footerNote: "Mensagem transacional oficial do Selo Libertária.",
 	});
 }

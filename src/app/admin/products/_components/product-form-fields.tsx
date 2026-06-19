@@ -73,7 +73,7 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
 					<input type="radio" name="active" value="true" defaultChecked={defaultChecked} className="mt-0.5" />
 					<span className="space-y-1">
-						<span className="block font-medium">Active</span>
+						<span className="block font-medium">Ativo</span>
 						<span className="block text-xs text-muted-foreground">Disponível no catálogo.</span>
 					</span>
 				</label>
@@ -86,7 +86,7 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 						className="mt-0.5"
 					/>
 					<span className="space-y-1">
-						<span className="block font-medium">Deactivate</span>
+						<span className="block font-medium">Desativar</span>
 						<span className="block text-xs text-muted-foreground">Oculta o item no catálogo.</span>
 					</span>
 				</label>
@@ -184,7 +184,7 @@ export function ProductCoreFields({
 					defaultValue={slug}
 					placeholder="livro-exemplo"
 					pattern={fieldPatterns.kebabCase}
-					title="Use kebab-case, for example camiseta-preta."
+					title="Use kebab-case, por exemplo livro-exemplo."
 					className="max-w-sm"
 					onChange={autoFormatSlug ? applySlugAutoFormat : undefined}
 					onInput={autoFormatSlug ? applySlugAutoFormat : undefined}
@@ -232,7 +232,7 @@ export function ProductCoreFields({
 			</div>
 			<div className="md:col-span-12">
 				<Field
-					label="Images"
+					label="Imagens"
 					name="images"
 					hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 				>
@@ -245,7 +245,7 @@ export function ProductCoreFields({
 
 export function ImagePreviewField({ images, alt }: { images: string[]; alt: string }) {
 	return (
-		<Field label="Image preview" name={`${alt}-preview`}>
+		<Field label="Prévia das imagens" name={`${alt}-preview`}>
 			<AdminProductImagePreview images={images} alt={alt} />
 		</Field>
 	);
@@ -254,7 +254,7 @@ export function ImagePreviewField({ images, alt }: { images: string[]; alt: stri
 export function ImageUrlsField({ name = "images", images }: { name?: string; images: string[] }) {
 	return (
 		<Field
-			label="Images"
+			label="Imagens"
 			name={name}
 			hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 		>
@@ -263,7 +263,7 @@ export function ImageUrlsField({ name = "images", images }: { name?: string; ima
 	);
 }
 
-export function PriceFields({ price, currency = "usd" }: { price?: number | null; currency?: string }) {
+export function PriceFields({ price }: { price?: number | null }) {
 	return (
 		<div className="grid gap-4 md:grid-cols-12">
 			<Field label="Preço" name="price" className="space-y-2 md:col-span-4 xl:col-span-3">
@@ -276,18 +276,6 @@ export function PriceFields({ price, currency = "usd" }: { price?: number | null
 					defaultValue={typeof price === "number" ? String(price) : ""}
 					required
 					className="max-w-[10rem]"
-				/>
-			</Field>
-			<Field label="Moeda" name="currency" className="space-y-2 md:col-span-3 xl:col-span-2">
-				<Input
-					id="currency"
-					name="currency"
-					defaultValue={currency.toLowerCase()}
-					maxLength={3}
-					pattern={fieldPatterns.currency}
-					title="Use a 3-letter currency code, such as usd or brl."
-					required
-					className="max-w-[7rem]"
 				/>
 			</Field>
 		</div>
@@ -332,7 +320,7 @@ export function InheritedVariantFields({
 					</div>
 				</div>
 			</div>
-			<ImagePreviewField images={images} alt={name || slug || "Product image"} />
+			<ImagePreviewField images={images} alt={name || slug || "Imagem do produto"} />
 		</div>
 	);
 }
@@ -351,7 +339,7 @@ export function VariantFields({
 					id="variant"
 					name="variant"
 					defaultValue={variant}
-					placeholder="Red, XL, Framed..."
+					placeholder="Capa dura, bolso, edição 2..."
 					className="max-w-md"
 				/>
 			</Field>

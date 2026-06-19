@@ -19,7 +19,7 @@ export default async function LoginPage() {
 	]);
 	return (
 		<>
-			<Nav hideAuthCta />
+			<Nav hideAuthCta lightweight />
 			<LoginShell
 				defaultCountry={defaultCountry}
 				defaultCurrency={getDefaultCurrencyForLocale(locale)}

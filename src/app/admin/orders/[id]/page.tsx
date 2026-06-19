@@ -23,7 +23,7 @@ function formatAuditValue(value: string | null | undefined) {
 function getAuditSummary(entry: OrderAuditEntry) {
 	switch (entry.action) {
 		case "order_fulfillment_updated":
-			return "Fulfillment atualizado";
+			return "Expedição atualizada";
 		case "order_payment_status_webhook_updated":
 			return "Status de pagamento atualizado por webhook";
 	}
@@ -42,7 +42,7 @@ function getAuditChanges(entry: OrderAuditEntry) {
 
 	if (entry.action === "order_fulfillment_updated" && details.previousStatus !== details.nextStatus) {
 		changes.push({
-			label: "Status de fulfillment",
+			label: "Status de expedição",
 			previous: formatAuditValue(details.previousStatus),
 			next: formatAuditValue(details.nextStatus),
 		});
@@ -155,7 +155,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 				<AdminEditorialHero
 					eyebrow="Pedido"
 					title={`Leitura operacional do pedido ${p.id}.`}
-					description="Resumo financeiro, itens, fulfillment e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
+					description="Resumo financeiro, itens, expedição e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
 				/>
 			</Reveal>
 			<Reveal delay={0.04}>
@@ -176,7 +176,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 						helper="Quantidade total de unidades na compra."
 					/>
 					<AdminEditorialStat
-						label="Fulfillment"
+						label="Expedição"
 						value={fulfillmentLabel}
 						helper="Etapa operacional atual de produção e envio."
 					/>
@@ -231,7 +231,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
 						<div className="mb-4 space-y-1">
 							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
-								Fulfillment
+								Expedição
 							</div>
 							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
 								Atualize status e rastreio sabendo que a tela registra a mudança no histórico logo abaixo.
