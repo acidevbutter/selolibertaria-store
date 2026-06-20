@@ -7,7 +7,7 @@ describe("shipping", () => {
 			code: "Correios",
 			label: "Correios",
 			enabled: true,
-			priority: "2",
+			priority: 2,
 			mode: "http",
 			kind: "correios",
 			baseUrl: "https://api.correios.com.br",
@@ -25,15 +25,15 @@ describe("shipping", () => {
 			credentialsEncrypted: "encrypted-value",
 			serviceCode: "PAC",
 			serviceName: "Economy",
-			fixedAmount: "2500",
-			estimatedDays: "5",
+			fixedAmount: 2500,
+			estimatedDays: 5,
 			currency: "brl",
 			supportedCountries: ["br", "US", "br"],
 			requiresPostalCode: true,
-			defaultWeightGrams: "400",
-			defaultLengthCm: "25",
-			defaultWidthCm: "15",
-			defaultHeightCm: "8",
+			defaultWeightGrams: 400,
+			defaultLengthCm: 25,
+			defaultWidthCm: 15,
+			defaultHeightCm: 8,
 		});
 
 		expect(provider.code).toBe("correios");
@@ -52,7 +52,7 @@ describe("shipping", () => {
 		expect(provider.serviceName).toBe("Economy");
 		expect(provider.fixedAmount).toBe(2500);
 		expect(provider.estimatedDays).toBe(5);
-		expect(provider.currency).toBe("BRL");
+		expect(provider.currency).toBeNull();
 		expect(provider.supportedCountries).toEqual(["BR", "US"]);
 		expect(provider.requiresPostalCode).toBe(true);
 		expect(provider.defaultWeightGrams).toBe(400);

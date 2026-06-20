@@ -6,20 +6,22 @@ import { listAdminStripeCategories } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listSystemCategories } from "@/lib/product-categories";
-import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
-import { Input } from "@/ui/shadcn/input";
 import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/ui/shadcn/table";
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
+import { Button } from "@/ui/shadcn/button";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { Input } from "@/ui/shadcn/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 export const dynamic = "force-dynamic";
+
+function getCategorySourceLabel(source: string) {
+	return source === "stripe" ? "Catálogo" : "Manual";
+}
 
 export default async function AdminProductCategoriesPage() {
 	const session = await auth();
@@ -34,50 +36,86 @@ export default async function AdminProductCategoriesPage() {
 		[categories, stripeCategories] = await Promise.all([listSystemCategories(), listAdminStripeCategories()]);
 	} catch (err) {
 		categories = await listSystemCategories({ syncStripe: false });
-		error = err instanceof Error ? err.message : "Could not load categories.";
+		error = "Não foi possível carregar todas as categorias agora. A lista local continua disponível.";
 	}
 
 	const stripeStatsBySlug = new Map(stripeCategories.map((category) => [category.slug, category]));
+	const syncedCategories = categories.filter((category) => category.source === "stripe").length;
+	const variantCoverage = stripeCategories.reduce((total, category) => total + category.variants, 0);
 
 	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-			<div className="space-y-3">
-				<Link
-					href="/admin/products"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Products
-				</Link>
-				<div>
-					<h1 className="text-2xl font-semibold">Categories</h1>
-					<p className="text-sm text-muted-foreground">
-						Categories are stored in Stripe product metadata and reflected in selolibertaria navigation.
-					</p>
-				</div>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Categorias"
+				title="Mapa de categorias"
+				description="Renomeie, consolide e acompanhe as categorias que alimentam o catálogo e a navegação editorial."
+				actions={
+					<div className="flex flex-wrap gap-3">
+						<Link
+							href="/admin/products"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para livros
+						</Link>
+					</div>
+				}
+			/>
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Categorias"
+					value={categories.length}
+					helper="Registros ativos no sistema."
+				/>
+				<AdminEditorialStat
+					label="Sincronizadas"
+					value={syncedCategories}
+					helper="Vindas do catálogo atual."
+				/>
+				<AdminEditorialStat
+					label="Variantes"
+					value={variantCoverage}
+					helper="Itens cobertos por categoria."
+				/>
 			</div>
 
-			<Card>
+			<EditorialPanel className="space-y-6">
+				<CardHeader className="px-0 pt-0">
+					<CardTitle>Cadastrar nova categoria</CardTitle>
+				</CardHeader>
+				<CardContent className="px-0 pb-0">
+					<form action={createSystemCategoryAction} className="flex max-w-xl flex-col gap-3 sm:flex-row">
+						<Input
+							name="name"
+							placeholder="Nome da nova categoria"
+							required
+							className="rounded-none border-[color:var(--editorial-border)] bg-white"
+						/>
+						<Button type="submit" className="rounded-none">
+							Adicionar categoria
+						</Button>
+					</form>
+				</CardContent>
+			</EditorialPanel>
+
+			<EditorialPanel className="overflow-hidden p-0">
 				<CardHeader>
-					<CardTitle>System categories</CardTitle>
+					<CardTitle>Categorias do sistema</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form action={createSystemCategoryAction} className="mb-6 flex max-w-md gap-2">
-						<Input name="name" placeholder="New category name" required />
-						<Button type="submit">Add</Button>
-					</form>
 					{error ? (
 						<p className="text-sm text-muted-foreground">{error}</p>
 					) : (
-						<Table className="min-w-[680px]">
+						<Table className="min-w-[760px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Current name</TableHead>
+									<TableHead>Nome atual</TableHead>
 									<TableHead>Slug</TableHead>
-									<TableHead>Source</TableHead>
-									<TableHead>Products</TableHead>
-									<TableHead>Variants</TableHead>
-									<TableHead>Rename</TableHead>
+									<TableHead>Origem</TableHead>
+									<TableHead>Livros</TableHead>
+									<TableHead>Variantes</TableHead>
+									<TableHead>Renomear</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -85,7 +123,7 @@ export default async function AdminProductCategoriesPage() {
 									<TableRow key={category.slug}>
 										<TableCell className="font-medium">{category.name}</TableCell>
 										<TableCell className="font-mono text-xs">{category.slug}</TableCell>
-										<TableCell>{category.source}</TableCell>
+										<TableCell>{getCategorySourceLabel(category.source)}</TableCell>
 										<TableCell>{stripeStatsBySlug.get(category.slug)?.products ?? 0}</TableCell>
 										<TableCell>{stripeStatsBySlug.get(category.slug)?.variants ?? 0}</TableCell>
 										<TableCell>
@@ -94,11 +132,12 @@ export default async function AdminProductCategoriesPage() {
 												<Input
 													name="newCategory"
 													defaultValue={category.name}
-													aria-label={`Rename ${category.name}`}
+													aria-label={`Renomear ${category.name}`}
+													className="rounded-none border-[color:var(--editorial-border)] bg-white"
 													required
 												/>
-												<Button type="submit" variant="outline" size="sm">
-													Save
+												<Button type="submit" variant="outline" size="sm" className="rounded-none">
+													Salvar
 												</Button>
 											</form>
 										</TableCell>
@@ -107,18 +146,15 @@ export default async function AdminProductCategoriesPage() {
 								{categories.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											No categories found in the system.
+											Nenhuma categoria encontrada no sistema.
 										</TableCell>
 									</TableRow>
 								) : null}
 							</TableBody>
-							<TableCaption>
-								Stripe categories are synced into Mongo automatically; duplicate names are ignored.
-							</TableCaption>
 						</Table>
 					)}
 				</CardContent>
-			</Card>
-		</main>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

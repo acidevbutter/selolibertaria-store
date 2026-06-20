@@ -18,7 +18,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -38,32 +37,25 @@ export function AdminVariantsPanel({
 	archiveStripeVariantAction: (formData: FormData) => Promise<void>;
 }) {
 	const groupBasePrice = group.variants[0]?.priceDecimal ?? null;
-	const groupCurrency = group.variants[0]?.currency ?? "usd";
 
 	return (
 		<section className="space-y-4">
 			<div className="flex items-center justify-between">
 				<div className="space-y-1">
-					<h2 className="text-xl font-semibold">Variants</h2>
-					<p className="text-sm text-muted-foreground">
-						Review the current options here and open a focused modal when you need to create or edit one.
-					</p>
+					<h2 className="text-xl font-semibold">Variantes</h2>
 				</div>
 				<div className="flex items-center gap-3">
-					<div className="text-sm text-muted-foreground">{group.variants.length} variants</div>
+					<div className="text-sm text-muted-foreground">{group.variants.length} variantes</div>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button size="sm">
 								<Plus className="h-4 w-4" />
-								Add variant
+								Adicionar variante
 							</Button>
 						</DialogTrigger>
 						<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 							<DialogHeader>
-								<DialogTitle>Add variant</DialogTitle>
-								<DialogDescription>
-									Create a new variant that inherits the product details and optionally uses a custom price.
-								</DialogDescription>
+								<DialogTitle>Adicionar variante</DialogTitle>
 							</DialogHeader>
 							<form action={createStripeVariantAction} className="space-y-6">
 								<input type="hidden" name="currentSlug" value={group.slug} />
@@ -74,26 +66,26 @@ export function AdminVariantsPanel({
 									description={group.description}
 									images={group.images}
 								/>
-								<FormSection
-									title="Variant details"
-									description="Define the label, sorting order and stock for this option."
-								>
+								<FormSection title="Dados da variante">
 									<VariantFields />
-									<Field label="Stock" name="stock" hint="Use a whole number such as 25.">
-										<Input id="stock" name="stock" defaultValue={group.stock} inputMode="numeric" />
+									<Field label="Estoque" name="stock" hint="Use um número inteiro, como 25.">
+										<Input
+											id="stock"
+											name="stock"
+											defaultValue={group.stock}
+											inputMode="numeric"
+											className="max-w-[10rem]"
+										/>
 									</Field>
 								</FormSection>
-								<FormSection
-									title="Pricing"
-									description="Keep the group price or set a custom amount for this specific variant."
-								>
-									<VariantPriceFields basePrice={groupBasePrice} currency={groupCurrency} />
+								<FormSection title="Preço">
+									<VariantPriceFields basePrice={groupBasePrice} />
 								</FormSection>
 								<ActiveCheckbox defaultChecked />
 								<DialogFooter>
 									<Button type="submit">
 										<Plus className="h-4 w-4" />
-										Add variant
+										Adicionar variante
 									</Button>
 								</DialogFooter>
 							</form>
@@ -111,7 +103,7 @@ export function AdminVariantsPanel({
 					const priceLabel =
 						typeof variant.priceAmount === "number"
 							? formatMoney({ amount: variant.priceAmount, currency: variant.currency })
-							: "No price";
+							: "Sem preço";
 
 					return (
 						<Card key={variant.id}>
@@ -121,47 +113,45 @@ export function AdminVariantsPanel({
 										<CardTitle>{variant.variantLabel || group.name}</CardTitle>
 										<div className="flex flex-wrap items-center gap-2">
 											<Badge variant={variant.active ? "secondary" : "outline"}>
-												{variant.active ? "Active" : "Inactive"}
+												{variant.active ? "Ativa" : "Inativa"}
 											</Badge>
-											<Badge variant="outline">{usesCustomPrice ? "Custom price" : "Uses group price"}</Badge>
+											<Badge variant="outline">{usesCustomPrice ? "Preço próprio" : "Preço do grupo"}</Badge>
 										</div>
 									</div>
 									<div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
 										<div>
-											<div className="text-xs uppercase tracking-wide">Price</div>
+											<div className="text-xs uppercase tracking-wide">Preço</div>
 											<div className="font-medium text-foreground">{priceLabel}</div>
 										</div>
 										<div>
-											<div className="text-xs uppercase tracking-wide">Stock</div>
-											<div className="font-medium text-foreground">{variant.stock || "Not set"}</div>
+											<div className="text-xs uppercase tracking-wide">Estoque</div>
+											<div className="font-medium text-foreground">{variant.stock || "Não definido"}</div>
 										</div>
 										<div>
-											<div className="text-xs uppercase tracking-wide">Sort order</div>
-											<div className="font-medium text-foreground">{variant.variantOrder || "Auto"}</div>
+											<div className="text-xs uppercase tracking-wide">Ordem</div>
+											<div className="font-medium text-foreground">
+												{variant.variantOrder || "Automática"}
+											</div>
 										</div>
 									</div>
 								</div>
 							</CardHeader>
 							<CardContent className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
 								<div className="space-y-1 text-sm text-muted-foreground">
-									<div className="font-mono text-xs">{variant.priceId ?? "No active price id"}</div>
-									<div>{variant.description || "Uses the product description shared by the group."}</div>
+									<div className="font-mono text-xs">{variant.priceId ?? "Sem preço ativo"}</div>
+									<div>{variant.description || "Usa a descrição do livro."}</div>
 								</div>
 								<div className="flex flex-wrap gap-2">
 									<Dialog>
 										<DialogTrigger asChild>
 											<Button variant="outline" size="sm">
 												<Pencil className="h-4 w-4" />
-												Edit
+												Editar
 											</Button>
 										</DialogTrigger>
 										<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 											<DialogHeader>
-												<DialogTitle>Edit variant</DialogTitle>
-												<DialogDescription>
-													Update stock, status, order and pricing for this variant without leaving the product
-													page.
-												</DialogDescription>
+												<DialogTitle>Editar variante</DialogTitle>
 											</DialogHeader>
 											<form action={updateStripeVariantAction} className="space-y-6">
 												<input type="hidden" name="productId" value={variant.id} />
@@ -173,39 +163,33 @@ export function AdminVariantsPanel({
 													description={group.description}
 													images={group.images}
 												/>
-												<FormSection
-													title="Variant details"
-													description="Adjust the customer-facing option label and internal ordering."
-												>
+												<FormSection title="Dados da variante">
 													<div className="grid gap-4 md:grid-cols-2">
 														<Field
-															label="Stock"
+															label="Estoque"
 															name={`stock-${variant.id}`}
-															hint="Use a whole number such as 25."
+															hint="Use um número inteiro, como 25."
 														>
 															<Input
 																id={`stock-${variant.id}`}
 																name="stock"
 																defaultValue={variant.stock}
 																inputMode="numeric"
+																className="max-w-[10rem]"
 															/>
 														</Field>
 													</div>
 													<VariantFields variant={variant.variantLabel} variantOrder={variant.variantOrder} />
 												</FormSection>
-												<FormSection
-													title="Pricing"
-													description="Keep the group price or override it only for this variant."
-												>
+												<FormSection title="Preço">
 													<VariantPriceFields
 														basePrice={groupBasePrice}
-														currency={groupCurrency || variant.currency}
 														overridePrice={usesCustomPrice ? variant.priceDecimal : null}
 													/>
 												</FormSection>
 												<ActiveCheckbox defaultChecked={variant.active} />
 												<DialogFooter>
-													<SubmitButton>Save variant</SubmitButton>
+													<SubmitButton>Salvar variante</SubmitButton>
 												</DialogFooter>
 											</form>
 										</DialogContent>
@@ -215,7 +199,7 @@ export function AdminVariantsPanel({
 										<input type="hidden" name="currentSlug" value={group.slug} />
 										<Button type="submit" variant="outline" size="sm">
 											<Archive className="h-4 w-4" />
-											Archive
+											Arquivar
 										</Button>
 									</form>
 								</div>

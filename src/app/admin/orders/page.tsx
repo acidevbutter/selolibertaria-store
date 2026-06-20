@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import {
 	Table,
 	TableBody,
@@ -74,27 +80,57 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 		};
 	}
 	const items = (await db.collection("users").aggregate(pipeline).toArray()) as unknown as AggOrderItem[];
+	const paidCount = items.filter((item) => item.purchases.status === "paid").length;
+	const processingCount = items.filter((item) => item.purchases.status === "processing").length;
+	const defaultCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+		.trim()
+		.toUpperCase();
 
 	return (
-		<main className="mx-auto max-w-full sm:max-w-screen-md lg:max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-			<div className="space-y-2">
-				<h1 className="text-2xl font-semibold">Orders</h1>
-				<AdminFilters defaultStatus={status} defaultPeriod={period} defaultSort={sort} />
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Pedidos"
+				title="Pedidos"
+				description="Acompanhe status, pagamento e operação."
+				actions={
+					<div className="w-full max-w-3xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
+						<AdminFilters defaultStatus={status} defaultPeriod={period} defaultSort={sort} />
+					</div>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Pedidos listados"
+					value={items.length}
+					helper="Recorte atual limitado aos 50 pedidos mais recentes."
+				/>
+				<AdminEditorialStat
+					label="Pagos"
+					value={paidCount}
+					helper="Entradas com pagamento confirmado neste recorte."
+				/>
+				<AdminEditorialStat
+					label="Em processamento"
+					value={processingCount}
+					helper="Pedidos que ainda aguardam confirmação ou avanço."
+				/>
 			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Recent orders</CardTitle>
-				</CardHeader>
-				<CardContent>
+			<EditorialPanel className="p-0">
+				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+						Pedidos recentes
+					</div>
+				</div>
+				<div className="p-6 sm:p-8">
 					<div className="w-full overflow-x-auto">
 						<Table className="min-w-[640px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>User</TableHead>
-									<TableHead>Amount</TableHead>
+									<TableHead>Cliente</TableHead>
+									<TableHead>Valor</TableHead>
 									<TableHead>Status</TableHead>
-									<TableHead>Date</TableHead>
-									<TableHead>Order ID</TableHead>
+									<TableHead>Data</TableHead>
+									<TableHead>Pedido</TableHead>
 									<TableHead></TableHead>
 								</TableRow>
 							</TableHeader>
@@ -103,36 +139,39 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									<TableRow key={it.purchases.id}>
 										<TableCell className="break-all">{it.email}</TableCell>
 										<TableCell>
-											{new Intl.NumberFormat("en-US", {
+											{new Intl.NumberFormat("pt-BR", {
 												style: "currency",
-												currency: it.purchases.currency?.toUpperCase?.() || "USD",
+												currency: it.purchases.currency?.toUpperCase?.() || defaultCurrency,
 											}).format((it.purchases.amountTotal || 0) / 100)}
 										</TableCell>
 										<TableCell className="capitalize">
 											<StatusBadge status={it.purchases.status} />
 										</TableCell>
-										<TableCell>{new Date(it.purchases.createdAt).toLocaleString()}</TableCell>
+										<TableCell>{new Date(it.purchases.createdAt).toLocaleString("pt-BR")}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{it.purchases.id}</TableCell>
 										<TableCell className="text-right">
-											<Link className="underline" href={`/admin/orders/${it.purchases.id}`}>
-												Details
+											<Link
+												className="font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
+												href={`/admin/orders/${it.purchases.id}`}
+											>
+												Abrir
 											</Link>
 										</TableCell>
 									</TableRow>
 								))}
 								{items.length === 0 && (
 									<TableRow>
-										<TableCell colSpan={6} className="text-muted-foreground py-6">
-											No orders found.
+										<TableCell colSpan={6} className="py-6 text-[color:var(--editorial-muted)]">
+											Nenhum pedido encontrado.
 										</TableCell>
 									</TableRow>
 								)}
 							</TableBody>
-							<TableCaption>Showing up to 50 orders.</TableCaption>
+							<TableCaption>Mostrando até 50 pedidos.</TableCaption>
 						</Table>
 					</div>
-				</CardContent>
-			</Card>
-		</main>
+				</div>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

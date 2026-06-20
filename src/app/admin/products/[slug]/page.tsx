@@ -19,7 +19,12 @@ import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listProductAuditEntries } from "@/lib/product-audit";
 import { listSystemCategories } from "@/lib/product-categories";
-import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
@@ -42,40 +47,62 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	const currentOrder = Number.parseInt(group.order || "", 10);
 	const orderCount = Number.isFinite(currentOrder) ? groups.length : groups.length + 1;
 	const orderOptions = Array.from({ length: orderCount }, (_, index) => index + 1);
+	const activeVariants = group.variants.filter((variant) => variant.active).length;
 
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="space-y-3">
-				<Link
-					href="/admin/products"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Products
-				</Link>
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-					<div>
-						<EditorialEyebrow>Product editor</EditorialEyebrow>
-						<h1 className="editorial-serif text-3xl font-semibold">{group.name}</h1>
-						<p className="font-mono text-xs text-[color:var(--editorial-muted)]">{group.slug}</p>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Livro"
+				title={group.name}
+				description="Edite os dados compartilhados do livro, acompanhe variantes e consulte o histórico operacional sem sair do contexto do catálogo."
+				actions={
+					<div className="flex flex-wrap items-center gap-3">
+						<Link
+							href="/admin/products"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para livros
+						</Link>
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Slug
+							</div>
+							<div className="mt-2 font-mono text-xs text-[color:var(--editorial-muted)]">{group.slug}</div>
+						</div>
+						<Badge variant={group.active ? "secondary" : "outline"}>
+							{group.active ? "Ativo" : "Inativo"}
+						</Badge>
 					</div>
-					<Badge variant={group.active ? "secondary" : "outline"}>
-						{group.active ? "Active" : "Inactive"}
-					</Badge>
-				</div>
+				}
+			/>
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Variantes"
+					value={group.variants.length}
+					helper="Itens cadastrados neste livro."
+				/>
+				<AdminEditorialStat
+					label="Ativas"
+					value={activeVariants}
+					helper="Variantes disponíveis no catálogo."
+				/>
+				<AdminEditorialStat
+					label="Categoria"
+					value={group.category || "—"}
+					helper="Classificação principal do livro."
+				/>
 			</div>
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Product settings</CardTitle>
+					<CardTitle>Dados do livro</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<form action={updateStripeProductGroupAction} className="space-y-6">
 						<input type="hidden" name="currentSlug" value={group.slug} />
-						<FormSection
-							title="Shared product details"
-							description="These fields control the main product information inherited by every variant."
-						>
+						<FormSection title="Informações principais">
 							<ProductCoreFields
 								name={group.name}
 								slug={group.slug}
@@ -90,7 +117,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							/>
 						</FormSection>
 						<ActiveCheckbox defaultChecked={group.active} />
-						<SubmitButton>Save group</SubmitButton>
+						<SubmitButton>Salvar</SubmitButton>
 					</form>
 				</CardContent>
 			</EditorialPanel>
@@ -104,7 +131,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Edit history</CardTitle>
+					<CardTitle>Histórico</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<ul className="divide-y">
@@ -127,11 +154,11 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							</li>
 						))}
 						{history.length === 0 ? (
-							<li className="py-6 text-muted-foreground">No edits recorded yet.</li>
+							<li className="py-6 text-muted-foreground">Nenhuma edição registrada.</li>
 						) : null}
 					</ul>
 				</CardContent>
 			</EditorialPanel>
-		</main>
+		</AdminEditorialPage>
 	);
 }

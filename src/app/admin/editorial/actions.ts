@@ -12,6 +12,12 @@ import type {
 	EditorialProject,
 	EditorialSarauPage,
 } from "@/lib/editorial-content";
+import {
+	getEditorialEventRecordBySlug,
+	getEditorialProjectRecordBySlug,
+	getEditorialRecordForAdmin,
+	listEditorialRecordsForAdmin,
+} from "@/lib/editorial-content-store";
 import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
@@ -122,6 +128,7 @@ function parseStringList(formData: FormData, key: string) {
 function refreshEventPaths(slug?: string) {
 	revalidatePath("/");
 	revalidatePath("/events");
+	revalidatePath("/admin/editorial");
 	if (slug) revalidatePath(`/admin/editorial/events/${slug}`);
 	revalidatePath("/admin/editorial/events");
 }
@@ -129,6 +136,7 @@ function refreshEventPaths(slug?: string) {
 function refreshProjectPaths(slug?: string) {
 	revalidatePath("/");
 	revalidatePath("/projects");
+	revalidatePath("/admin/editorial");
 	if (slug) revalidatePath(`/admin/editorial/projects/${slug}`);
 	revalidatePath("/admin/editorial/projects");
 }
@@ -136,23 +144,27 @@ function refreshProjectPaths(slug?: string) {
 function refreshSarauPaths() {
 	revalidatePath("/");
 	revalidatePath("/sarau-safado");
+	revalidatePath("/admin/editorial");
 	revalidatePath("/admin/editorial/sarau-safado");
 }
 
 function refreshAboutPaths() {
 	revalidatePath("/");
 	revalidatePath("/about");
+	revalidatePath("/admin/editorial");
 	revalidatePath("/admin/editorial/about");
 }
 
 function refreshContactPaths() {
 	revalidatePath("/");
 	revalidatePath("/contact");
+	revalidatePath("/admin/editorial");
 	revalidatePath("/admin/editorial/contact");
 }
 
 function refreshHomePaths() {
 	revalidatePath("/");
+	revalidatePath("/admin/editorial");
 	revalidatePath("/admin/editorial/home");
 }
 
@@ -323,13 +335,11 @@ export async function deleteEditorialEventAction(formData: FormData) {
 }
 
 export async function getEditorialEventBySlug(slug: string) {
-	const db = await getDb();
-	return await db.collection<EditorialEvent>(COLLECTION).findOne({ type: "event", slug });
+	return await getEditorialEventRecordBySlug(slug);
 }
 
 export async function listEditorialEventRecords() {
-	const db = await getDb();
-	return await db.collection<EditorialEvent>(COLLECTION).find({ type: "event" }).sort({ order: 1 }).toArray();
+	return await listEditorialRecordsForAdmin("event");
 }
 
 export async function createEditorialProjectAction(formData: FormData) {
@@ -442,25 +452,15 @@ export async function deleteEditorialProjectAction(formData: FormData) {
 }
 
 export async function getEditorialProjectBySlug(slug: string) {
-	const db = await getDb();
-	return await db.collection<EditorialProject>(COLLECTION).findOne({ type: "project", slug });
+	return await getEditorialProjectRecordBySlug(slug);
 }
 
 export async function listEditorialProjectRecords() {
-	const db = await getDb();
-	return await db
-		.collection<EditorialProject>(COLLECTION)
-		.find({ type: "project" })
-		.sort({ order: 1 })
-		.toArray();
+	return await listEditorialRecordsForAdmin("project");
 }
 
 export async function getEditorialSarauRecord() {
-	const db = await getDb();
-	return await db.collection<EditorialSarauPage>(COLLECTION).findOne({
-		type: "page_sarau",
-		slug: "sarau-safado",
-	});
+	return await getEditorialRecordForAdmin("page_sarau");
 }
 
 export async function updateEditorialSarauAction(formData: FormData) {
@@ -530,11 +530,7 @@ export async function updateEditorialSarauAction(formData: FormData) {
 }
 
 export async function getEditorialAboutRecord() {
-	const db = await getDb();
-	return await db.collection<EditorialAboutPage>(COLLECTION).findOne({
-		type: "page_about",
-		slug: "about",
-	});
+	return await getEditorialRecordForAdmin("page_about");
 }
 
 export async function updateEditorialAboutAction(formData: FormData) {
@@ -600,11 +596,7 @@ export async function updateEditorialAboutAction(formData: FormData) {
 }
 
 export async function getEditorialContactRecord() {
-	const db = await getDb();
-	return await db.collection<EditorialContactPage>(COLLECTION).findOne({
-		type: "page_contact",
-		slug: "contact",
-	});
+	return await getEditorialRecordForAdmin("page_contact");
 }
 
 export async function updateEditorialContactAction(formData: FormData) {
@@ -677,11 +669,7 @@ export async function updateEditorialContactAction(formData: FormData) {
 }
 
 export async function getEditorialHomeRecord() {
-	const db = await getDb();
-	return await db.collection<EditorialHomePage>(COLLECTION).findOne({
-		type: "page_home",
-		slug: "home",
-	});
+	return await getEditorialRecordForAdmin("page_home");
 }
 
 export async function updateEditorialHomeAction(formData: FormData) {

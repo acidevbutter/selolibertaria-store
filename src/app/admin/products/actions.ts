@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import {
 	productCoreSchema,
 	productPricingSchema,
@@ -53,6 +54,7 @@ const getRequiredString = (formData: FormData, key: string) => {
 };
 
 const metadataValue = (value: string) => value.trim();
+const adminCurrency = parseCurrencyCode(null, env.STRIPE_CURRENCY);
 
 const parseSchema = <T>(schema: { parse: (input: unknown) => T }, input: unknown) => schema.parse(input);
 
@@ -154,14 +156,12 @@ export async function createStripeProductAction(formData: FormData) {
 	});
 	const pricing = parseSchema(productPricingSchema, {
 		price: formData.get("price"),
-		currency: formData.get("currency"),
 	});
 	const slug = slugify(core.slug || name);
 	const category = await resolveCategoryName(formData);
 	const description = core.description;
 	const images = parseImageList(formData.getAll("images"));
-	const currency = parseCurrencyCode(pricing.currency, "usd");
-	const amount = parsePriceAmount(pricing.price, currency);
+	const amount = parsePriceAmount(pricing.price, adminCurrency);
 	const variant = parseOptionalString(formData.get("variant"));
 	const variantOrder = parseOptionalString(formData.get("variantOrder"));
 	const stock = core.stock;
@@ -186,7 +186,7 @@ export async function createStripeProductAction(formData: FormData) {
 	const price = await stripe.prices.create({
 		product: product.id,
 		unit_amount: amount,
-		currency: currency.toLowerCase(),
+		currency: adminCurrency,
 	});
 	await stripe.products.update(product.id, { default_price: price.id });
 	await reorderStripeProductGroups({
@@ -309,14 +309,12 @@ export async function createStripeVariantAction(formData: FormData) {
 		variantOrder: formData.get("variantOrder"),
 		stock: formData.get("stock"),
 	});
-	const variantPricing = parseSchema(variantPricingSchema, {
+	parseSchema(variantPricingSchema, {
 		priceMode: formData.get("priceMode"),
 		priceOverride: formData.get("priceOverride"),
 		basePrice: formData.get("basePrice"),
-		currency: formData.get("currency"),
 	});
-	const currency = parseCurrencyCode(variantPricing.currency, "usd");
-	const amount = resolveVariantAmount({ group, formData, currency });
+	const amount = resolveVariantAmount({ group, formData, currency: adminCurrency });
 	const variant = variantValues.variant;
 	const variantOrder = variantValues.variantOrder;
 	const stock = variantValues.stock;
@@ -341,7 +339,7 @@ export async function createStripeVariantAction(formData: FormData) {
 	const price = await stripe.prices.create({
 		product: product.id,
 		unit_amount: amount,
-		currency: currency.toLowerCase(),
+		currency: adminCurrency,
 	});
 	await stripe.products.update(product.id, { default_price: price.id });
 	await recordProductAuditEntry({
@@ -356,7 +354,7 @@ export async function createStripeVariantAction(formData: FormData) {
 			variantOrder,
 			stock,
 			active,
-			currency,
+			currency: adminCurrency,
 		},
 		createdAt: new Date(),
 	});
@@ -387,13 +385,11 @@ export async function updateStripeVariantAction(formData: FormData) {
 		variantOrder: formData.get("variantOrder"),
 		stock: formData.get("stock"),
 	});
-	const variantPricing = parseSchema(variantPricingSchema, {
+	parseSchema(variantPricingSchema, {
 		priceMode: formData.get("priceMode"),
 		priceOverride: formData.get("priceOverride"),
 		basePrice: formData.get("basePrice"),
-		currency: formData.get("currency"),
 	});
-	const currency = parseCurrencyCode(variantPricing.currency, "usd");
 	const variant = variantValues.variant;
 	const variantOrder = variantValues.variantOrder;
 	const stock = variantValues.stock;
@@ -418,8 +414,8 @@ export async function updateStripeVariantAction(formData: FormData) {
 
 	await ensureProductPrice({
 		product,
-		amount: resolveVariantAmount({ group, formData, currency }),
-		currency,
+		amount: resolveVariantAmount({ group, formData, currency: adminCurrency }),
+		currency: adminCurrency,
 	});
 	await recordProductAuditEntry({
 		slug,
@@ -433,7 +429,7 @@ export async function updateStripeVariantAction(formData: FormData) {
 			variantOrder,
 			stock,
 			active,
-			currency,
+			currency: adminCurrency,
 		},
 		createdAt: new Date(),
 	});

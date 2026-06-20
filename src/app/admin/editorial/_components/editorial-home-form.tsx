@@ -48,7 +48,7 @@ export function EditorialHomeForm({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Editar Home</CardTitle>
+				<CardTitle>Editar página inicial</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6">

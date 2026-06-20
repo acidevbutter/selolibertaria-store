@@ -69,7 +69,7 @@ export const FooterClient = ({
 					<div className="flex flex-wrap items-center gap-3">
 						{socialLinks.map((link) => (
 							<YnsLink
-								key={link.label}
+								key={link.href}
 								href={link.href}
 								target="_blank"
 								rel="noreferrer"
@@ -103,7 +103,7 @@ export const FooterClient = ({
 							</h3>
 							<ul role="list" className="grid gap-1">
 								{section.links.map((link) => (
-									<li key={link.label}>
+									<li key={`${section.header}-${link.href}`}>
 										<YnsLink
 											className="text-primary-foreground/76 underline-offset-4 hover:text-primary-foreground hover:underline"
 											href={link.href}

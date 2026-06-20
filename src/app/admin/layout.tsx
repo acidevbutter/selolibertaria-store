@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { AdminThemeProvider } from "@/app/admin/_components/admin-theme-provider.client";
 import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
 import { AdminTopbar } from "@/app/admin/_components/topbar.client";
-import { auth } from "@/lib/auth";
+import { auth, logout } from "@/lib/auth";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
 
@@ -28,11 +28,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 		<AdminThemeProvider initialTheme={initialTheme}>
 			<div className="min-h-dvh bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]">
 				<div className="max-w-none">
-					<AdminTopbar role={role} />
+					<AdminTopbar role={role} logoutAction={logout} />
 					<div className="flex min-h-dvh items-start">
-						<AdminSidebar user={{ name: session.user.name, email: session.user.email, role }} />
-						<div className="min-h-dvh flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8 xl:px-12">
-							<div className="mb-4">
+						<AdminSidebar
+							user={{ name: session.user.name, email: session.user.email, role }}
+							logoutAction={logout}
+						/>
+						<div className="min-h-dvh flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8">
+							<div className="mb-5">
 								<Link
 									href="/"
 									className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"

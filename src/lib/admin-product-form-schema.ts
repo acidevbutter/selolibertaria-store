@@ -85,7 +85,6 @@ export const productCoreSchema = z.object({
 
 export const productPricingSchema = z.object({
 	price: priceSchema,
-	currency: currencySchema,
 });
 
 export const variantSchema = z.object({
@@ -99,7 +98,6 @@ export const variantPricingSchema = z
 		priceMode: z.enum(["inherit", "override"]).default("inherit"),
 		priceOverride: optionalTrimmedString,
 		basePrice: optionalTrimmedString,
-		currency: currencySchema,
 	})
 	.superRefine((value, ctx) => {
 		if (value.priceMode === "override" && !decimalStringRegex.test(value.priceOverride)) {

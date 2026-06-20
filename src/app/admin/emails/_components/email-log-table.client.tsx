@@ -80,18 +80,18 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 			} | null;
 
 			if (!res.ok) {
-				throw new Error(payload?.error || "Failed to resend email");
+				throw new Error(payload?.error || "Não foi possível reenviar o email.");
 			}
 
-			toast.success("Email resent", {
+			toast.success("Email reenviado", {
 				description: item.email
-					? `A new ${via === "api" ? "API" : "SMTP"} attempt was sent to ${item.email}.`
-					: `A new ${via === "api" ? "API" : "SMTP"} attempt was sent successfully.`,
+					? `Uma nova tentativa via ${via === "api" ? "API" : "SMTP"} foi enviada para ${item.email}.`
+					: `Uma nova tentativa via ${via === "api" ? "API" : "SMTP"} foi enviada com sucesso.`,
 			});
 			router.refresh();
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Failed to resend email";
-			toast.error(`${via === "api" ? "API" : "SMTP"} resend failed`, { description: message });
+			const message = error instanceof Error ? error.message : "Não foi possível reenviar o email.";
+			toast.error(`Falha no reenvio via ${via === "api" ? "API" : "SMTP"}`, { description: message });
 		} finally {
 			setRetryingKey(null);
 		}
@@ -107,10 +107,10 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 				<Table className="w-full table-fixed">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="w-[160px]">Date</TableHead>
+							<TableHead className="w-[160px]">Data</TableHead>
 							<TableHead className="w-[120px]">Status</TableHead>
-							<TableHead className="w-[180px]">Type</TableHead>
-							<TableHead>Recipient</TableHead>
+							<TableHead className="w-[180px]">Tipo</TableHead>
+							<TableHead>Destinatário</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -147,12 +147,12 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 						{items.length === 0 && (
 							<TableRow>
 								<TableCell colSpan={4} className="py-8 text-muted-foreground">
-									No emails were found for the current filters.
+									Nenhum email encontrado para os filtros atuais.
 								</TableCell>
 							</TableRow>
 						)}
 					</TableBody>
-					<TableCaption>Showing up to {limit} records, ordered from newest to oldest.</TableCaption>
+					<TableCaption>Mostrando até {limit} registros, do mais recente para o mais antigo.</TableCaption>
 				</Table>
 			</div>
 
@@ -167,9 +167,9 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 						<div className="grid h-full grid-cols-1 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]">
 							<div className="border-b p-6 lg:border-b-0 lg:border-r">
 								<DialogHeader>
-									<DialogTitle>{selected.subject || "No subject"}</DialogTitle>
+									<DialogTitle>{selected.subject || "Sem assunto"}</DialogTitle>
 									<DialogDescription>
-										Preview of the email sent to {selected.email || "undefined recipient"}.
+										Prévia do email enviado para {selected.email || "destinatário indefinido"}.
 									</DialogDescription>
 								</DialogHeader>
 
@@ -177,7 +177,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 									{selected.error ? (
 										<div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
 											<p className="mb-2 text-xs font-semibold uppercase tracking-wide text-destructive">
-												Send error
+												Erro de envio
 											</p>
 											<p className="text-sm text-destructive break-words">{selected.error}</p>
 										</div>
@@ -190,7 +190,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 											disabled={retryingKey !== null || !canRetry(selected)}
 											onClick={() => void retryEmail(selected, "api")}
 										>
-											{retryingKey === `${selected.id}:api` ? "Resending API..." : "Resend via API"}
+											{retryingKey === `${selected.id}:api` ? "Reenviando API..." : "Reenviar via API"}
 										</Button>
 										<Button
 											type="button"
@@ -199,7 +199,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 											disabled={retryingKey !== null || !canRetry(selected)}
 											onClick={() => void retryEmail(selected, "smtp")}
 										>
-											{retryingKey === `${selected.id}:smtp` ? "Resending SMTP..." : "Resend via SMTP"}
+											{retryingKey === `${selected.id}:smtp` ? "Reenviando SMTP..." : "Reenviar via SMTP"}
 										</Button>
 									</div>
 									<div>
@@ -207,13 +207,13 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										<StatusBadge status={selected.status || "unknown"} />
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Type</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Tipo</p>
 										<Badge variant="outline">{selected.kindLabel}</Badge>
 									</div>
 									<div className="space-y-1 text-xs">
 										{selected.purchaseId ? (
 											<div>
-												Order:{" "}
+												Pedido:{" "}
 												<Link className="underline" href={`/admin/orders/${selected.purchaseId}`}>
 													{selected.purchaseId}
 												</Link>
@@ -221,39 +221,39 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										) : null}
 										{selected.userId ? (
 											<div>
-												User:{" "}
+												Usuário:{" "}
 												<Link className="underline" href={`/admin/users/${selected.userId}`}>
 													{selected.userId}
 												</Link>
 											</div>
 										) : null}
-										{selected.orderStatus ? <div>Order status: {selected.orderStatus}</div> : null}
-										{selected.source ? <div>Source: {selected.source}</div> : null}
+										{selected.orderStatus ? <div>Status do pedido: {selected.orderStatus}</div> : null}
+										{selected.source ? <div>Origem: {selected.source}</div> : null}
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Used provider</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Canal usado</p>
 										<p>{providerLabel(selected.provider)}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Sent at</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Enviado em</p>
 										<p>{selected.sentAtLabel}</p>
 									</div>
 									<div>
 										<p className="mb-1 text-xs font-medium text-muted-foreground">Template</p>
-										<p>{selected.template || "undefined"}</p>
+										<p>{selected.template || "indefinido"}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Message ID</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">ID da mensagem</p>
 										<p className="font-mono text-xs break-all">{selected.messageId || "-"}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Recipients</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Destinatários</p>
 										<pre className="max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs">
 											{formatJson(selected.recipients || {})}
 										</pre>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Attempts</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Tentativas</p>
 										<pre className="max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs">
 											{formatJson(selected.attempts || [])}
 										</pre>
@@ -263,19 +263,19 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 
 							<div className="flex min-h-0 flex-col bg-muted/20">
 								<div className="border-b px-6 py-3 text-sm text-muted-foreground">
-									{selected.emailBody ? "Rendered preview" : "Plain text content"}
+									{selected.emailBody ? "Prévia renderizada" : "Conteúdo em texto puro"}
 								</div>
 								<div className="min-h-0 flex-1 p-4">
 									{selected.emailBody ? (
 										<iframe
-											title={`Email preview ${selected.subject || selected.id}`}
+											title={`Prévia do email ${selected.subject || selected.id}`}
 											srcDoc={selected.emailBody}
 											sandbox=""
 											className="h-full w-full rounded-md border bg-white"
 										/>
 									) : (
 										<pre className="h-full overflow-auto rounded-md border bg-background p-4 text-xs whitespace-pre-wrap">
-											{selected.textBody || "No content available."}
+											{selected.textBody || "Nenhum conteúdo disponível."}
 										</pre>
 									)}
 								</div>

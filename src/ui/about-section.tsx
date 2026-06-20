@@ -1,7 +1,6 @@
 import Image from "next/image";
 import type { ElementType } from "react";
 import { getTranslations } from "@/i18n/server";
-import { seloAbout } from "@/lib/selolibertaria-content";
 import { YnsLink } from "@/ui/yns-link";
 
 type AboutSectionProps = {
@@ -19,16 +18,16 @@ export async function AboutSection({
 	className,
 	showReadMore = true,
 	headingTag = "h2",
-	imageSrc = seloAbout.imageSrc,
-	imageAlt = seloAbout.imageAlt,
+	imageSrc,
+	imageAlt,
 	title,
 	body,
 	extended,
 }: AboutSectionProps) {
 	const t = await getTranslations("Selo");
 	const Heading: ElementType = headingTag;
-	const resolvedTitle = title ?? seloAbout.title;
-	const resolvedBody = body ?? seloAbout.body;
+	const resolvedTitle = title ?? t("about.sectionTitle");
+	const resolvedBody = body ?? t("about.sectionBody");
 	const resolvedExtended = extended ?? null;
 
 	return (
@@ -40,15 +39,21 @@ export async function AboutSection({
 		>
 			<div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-8 sm:px-12 md:grid-cols-2">
 				<div className="flex justify-center md:justify-start">
-					<Image
-						src={imageSrc}
-						alt={imageAlt}
-						width={420}
-						height={420}
-						className="border border-[color:var(--editorial-ink)] object-cover"
-						style={{ objectFit: "cover" }}
-						priority={false}
-					/>
+					{imageSrc ? (
+						<Image
+							src={imageSrc}
+							alt={imageAlt || resolvedTitle}
+							width={420}
+							height={420}
+							className="border border-[color:var(--editorial-ink)] object-cover"
+							style={{ objectFit: "cover" }}
+							priority={false}
+						/>
+					) : (
+						<div className="flex h-[420px] w-[420px] max-w-full items-center justify-center border border-[color:var(--editorial-ink)] bg-[color:rgba(216,208,196,0.22)] p-8 text-center text-[color:var(--editorial-muted)]">
+							<p className="max-w-xs text-lg leading-7">{resolvedTitle}</p>
+						</div>
+					)}
 				</div>
 
 				<div className="max-w-xl space-y-4">

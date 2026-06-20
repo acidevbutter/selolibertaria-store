@@ -6,6 +6,7 @@ import { buildFavoriteKey, listFavoriteKeysForUser } from "@/lib/favorites";
 import { deslugify, formatMoney } from "@/lib/utils";
 import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
 import { JsonLd, mappedProductsToJsonLd } from "@/ui/json-ld";
+import { Reveal } from "@/ui/motion/reveal";
 import { ProductCard } from "@/ui/products/product-card.client";
 
 export const ProductList = async ({ products }: { products: Product[] }) => {
@@ -16,20 +17,22 @@ export const ProductList = async ({ products }: { products: Product[] }) => {
 	return (
 		<>
 			<section className="space-y-6">
-				<EditorialPanel className="grid gap-5 sm:grid-cols-3">
-					<div>
-						<EditorialEyebrow>Seleção</EditorialEyebrow>
-						<p className="editorial-serif mt-3 text-2xl font-semibold sm:text-3xl">
-							Capas, edições e presença autoral.
+				<Reveal>
+					<EditorialPanel className="grid gap-5 sm:grid-cols-3">
+						<div>
+							<EditorialEyebrow>Seleção</EditorialEyebrow>
+							<p className="editorial-serif mt-3 text-2xl font-semibold sm:text-3xl">
+								Capas, edições e presença autoral.
+							</p>
+						</div>
+						<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+							A vitrine privilegia leitura rápida, capa em destaque e acesso direto à compra.
 						</p>
-					</div>
-					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-						A vitrine privilegia leitura rápida, capa em destaque e acesso direto à compra.
-					</p>
-					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-						Quando houver variantes, a escolha já acontece na grade para manter o fluxo leve.
-					</p>
-				</EditorialPanel>
+						<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+							Quando houver variantes, a escolha já acontece na grade para manter o fluxo leve.
+						</p>
+					</EditorialPanel>
+				</Reveal>
 
 				<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{products.map((product, idx) => {
@@ -116,33 +119,35 @@ export const ProductList = async ({ products }: { products: Product[] }) => {
 
 						return (
 							<li key={product.id} className="relative h-full">
-								<ProductCard
-									href={`/product/${product.slug}`}
-									name={product.name}
-									imageUrl={product.images[0] ?? null}
-									imageAlt={product.name}
-									productSlug={product.slug}
-									variantId={preferredVariant?.id ?? defaultVariant?.id ?? null}
-									favoriteActive={favoriteKeys.has(favoriteKey)}
-									priceLabel={selectedVariantPriceLabel}
-									compareAtLabel={selectedVariantCompareAtLabel}
-									promotionLabel={
-										preferredVariant
-											? (preferredVariant.pricing?.promotionLabel ?? null)
-											: (product.pricing?.promotionLabel ?? null)
-									}
-									canPurchase={canPurchase}
-									quickAddDisabled={quickAddDisabled}
-									variantOptions={variantOptions}
-									productInfo={{
-										id: product.id,
-										name: product.name,
-										images: product.images,
-										summary: product.summary ?? null,
-									}}
-									loading={idx < 3 ? "eager" : "lazy"}
-									priority={idx < 3}
-								/>
+								<Reveal delay={0.04 * idx}>
+									<ProductCard
+										href={`/product/${product.slug}`}
+										name={product.name}
+										imageUrl={product.images[0] ?? null}
+										imageAlt={product.name}
+										productSlug={product.slug}
+										variantId={preferredVariant?.id ?? defaultVariant?.id ?? null}
+										favoriteActive={favoriteKeys.has(favoriteKey)}
+										priceLabel={selectedVariantPriceLabel}
+										compareAtLabel={selectedVariantCompareAtLabel}
+										promotionLabel={
+											preferredVariant
+												? (preferredVariant.pricing?.promotionLabel ?? null)
+												: (product.pricing?.promotionLabel ?? null)
+										}
+										canPurchase={canPurchase}
+										quickAddDisabled={quickAddDisabled}
+										variantOptions={variantOptions}
+										productInfo={{
+											id: product.id,
+											name: product.name,
+											images: product.images,
+											summary: product.summary ?? null,
+										}}
+										loading={idx < 3 ? "eager" : "lazy"}
+										priority={idx < 3}
+									/>
+								</Reveal>
 							</li>
 						);
 					})}

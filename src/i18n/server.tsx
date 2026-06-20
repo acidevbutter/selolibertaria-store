@@ -1,12 +1,10 @@
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { env } from "@/env.mjs";
-import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	type AppLocale,
 	DEFAULT_LOCALE,
 	LOCALE_COOKIE_NAME,
-	matchLocale,
 	resolveLocale,
 	resolveLocaleFromAcceptLanguage,
 } from "./config";
@@ -44,17 +42,23 @@ const getMessagesByLocale = cache(async (locale: AppLocale) => {
 
 const getRequestLocale = cache(async (): Promise<AppLocale> => {
 	const cookieStore = await cookies();
-	const cookieLocale = matchLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
-	if (cookieLocale) return cookieLocale;
+	const cookieLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value?.trim();
+	if (cookieLocale) {
+		return resolveLocale(cookieLocale);
+	}
 
 	const headerStore = await headers();
-	const headerLocale = resolveLocaleFromAcceptLanguage(headerStore.get("accept-language"));
-	if (headerLocale) return headerLocale;
+	const browserLocale = resolveLocaleFromAcceptLanguage(headerStore.get("accept-language"));
+	if (browserLocale) {
+		return browserLocale;
+	}
 
-	const adminLocale = await getDefaultLocaleSetting();
-	if (adminLocale) return adminLocale;
+	const envLocale = env.NEXT_PUBLIC_LANGUAGE?.trim();
+	if (envLocale) {
+		return resolveLocale(envLocale);
+	}
 
-	return resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	return DEFAULT_LOCALE;
 });
 
 export const getLocale = async (): Promise<AppLocale> => getRequestLocale();

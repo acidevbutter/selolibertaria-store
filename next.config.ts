@@ -1,9 +1,7 @@
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import MDX from "@next/mdx";
 import type { NextConfig } from "next/types";
 
-const withMDX = MDX();
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const isProductionBuild = process.env.NODE_ENV === "production";
 
@@ -54,4 +52,4 @@ const nextConfig: NextConfig = {
 	],
 };
 
-export default withMDX(nextConfig);
+export default nextConfig;

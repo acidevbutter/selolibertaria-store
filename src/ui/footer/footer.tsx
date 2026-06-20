@@ -1,5 +1,6 @@
 import { getTranslations } from "@/i18n/server";
 import { seloSiteMeta, seloSocialLinks } from "@/lib/selolibertaria-content";
+import { getSupportEmailSetting } from "@/lib/settings-store";
 import { getStripeCategories } from "@/lib/stripe-categories";
 import FooterClient from "@/ui/footer/footer.client";
 
@@ -8,7 +9,10 @@ export async function Footer() {
 	const t = await getTranslations("Selo");
 	const globalT = await getTranslations("Global.footer.links");
 
-	const dynamicCategories = await getStripeCategories();
+	const [dynamicCategories, supportEmail] = await Promise.all([
+		getStripeCategories(),
+		getSupportEmailSetting(),
+	]);
 
 	const paymentIcons = [
 		{ label: "Stripe", src: "/images/icons/stripe.svg" },
@@ -27,7 +31,7 @@ export async function Footer() {
 			year={year}
 			socialLinks={seloSocialLinks}
 			brandName={seloSiteMeta.name}
-			brandEmail={seloSiteMeta.email}
+			brandEmail={supportEmail || seloSiteMeta.email}
 			brandEyebrow={t("footer.eyebrow")}
 			brandDescription={t("footer.description")}
 			sections={[

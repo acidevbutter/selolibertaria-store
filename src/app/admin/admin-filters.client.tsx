@@ -40,28 +40,28 @@ export function AdminFilters({ defaultStatus, defaultPeriod, defaultSort }: Prop
 						submit();
 					}}
 				>
-					<SelectTrigger className="w-[150px] sm:w-[180px]">
-						<SelectValue placeholder="All" />
+					<SelectTrigger className="w-[158px] sm:w-[184px]">
+						<SelectValue placeholder="Todos" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
-						<SelectItem value="paid">Paid</SelectItem>
-						<SelectItem value="succeeded">Succeeded</SelectItem>
-						<SelectItem value="requires_action">Requires action</SelectItem>
-						<SelectItem value="pending">Pending</SelectItem>
-						<SelectItem value="processing">Processing</SelectItem>
-						<SelectItem value="failed">Failed</SelectItem>
-						<SelectItem value="refunded">Refunded</SelectItem>
-						<SelectItem value="disputed">Disputed</SelectItem>
-						<SelectItem value="canceled">Canceled</SelectItem>
-						<SelectItem value="expired">Expired</SelectItem>
-						<SelectItem value="voided">Voided</SelectItem>
+						<SelectItem value="all">Todos</SelectItem>
+						<SelectItem value="paid">Pago</SelectItem>
+						<SelectItem value="succeeded">Concluído</SelectItem>
+						<SelectItem value="requires_action">Exige ação</SelectItem>
+						<SelectItem value="pending">Pendente</SelectItem>
+						<SelectItem value="processing">Em processamento</SelectItem>
+						<SelectItem value="failed">Falhou</SelectItem>
+						<SelectItem value="refunded">Reembolsado</SelectItem>
+						<SelectItem value="disputed">Em disputa</SelectItem>
+						<SelectItem value="canceled">Cancelado</SelectItem>
+						<SelectItem value="expired">Expirado</SelectItem>
+						<SelectItem value="voided">Anulado</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
 			<div className="flex items-center gap-2">
-				<span className="text-sm text-muted-foreground">Period</span>
+				<span className="text-sm text-muted-foreground">Período</span>
 				<Select
 					defaultValue={current.period}
 					onValueChange={(v) => {
@@ -70,21 +70,21 @@ export function AdminFilters({ defaultStatus, defaultPeriod, defaultSort }: Prop
 						submit();
 					}}
 				>
-					<SelectTrigger className="w-[140px] sm:w-[160px]">
-						<SelectValue placeholder="30 days" />
+					<SelectTrigger className="w-[152px] sm:w-[174px]">
+						<SelectValue placeholder="Últimos 30 dias" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="7d">Last 7 days</SelectItem>
-						<SelectItem value="30d">Last 30 days</SelectItem>
-						<SelectItem value="90d">Last 90 days</SelectItem>
-						<SelectItem value="365d">Last 365 days</SelectItem>
-						<SelectItem value="all">All time</SelectItem>
+						<SelectItem value="7d">Últimos 7 dias</SelectItem>
+						<SelectItem value="30d">Últimos 30 dias</SelectItem>
+						<SelectItem value="90d">Últimos 90 dias</SelectItem>
+						<SelectItem value="365d">Últimos 365 dias</SelectItem>
+						<SelectItem value="all">Todo o período</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
 			<div className="flex items-center gap-2">
-				<span className="text-sm text-muted-foreground">Sort</span>
+				<span className="text-sm text-muted-foreground">Ordenação</span>
 				<Select
 					defaultValue={current.sort}
 					onValueChange={(v) => {
@@ -93,14 +93,14 @@ export function AdminFilters({ defaultStatus, defaultPeriod, defaultSort }: Prop
 						submit();
 					}}
 				>
-					<SelectTrigger className="w-[170px] sm:w-[200px]">
-						<SelectValue placeholder="Date desc" />
+					<SelectTrigger className="w-[178px] sm:w-[212px]">
+						<SelectValue placeholder="Data mais recente" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="date-desc">Date (newest)</SelectItem>
-						<SelectItem value="date-asc">Date (oldest)</SelectItem>
-						<SelectItem value="amount-desc">Amount (high to low)</SelectItem>
-						<SelectItem value="amount-asc">Amount (low to high)</SelectItem>
+						<SelectItem value="date-desc">Data mais recente</SelectItem>
+						<SelectItem value="date-asc">Data mais antiga</SelectItem>
+						<SelectItem value="amount-desc">Valor do maior para o menor</SelectItem>
+						<SelectItem value="amount-asc">Valor do menor para o maior</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>

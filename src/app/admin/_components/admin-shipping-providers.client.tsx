@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { normalizePostalCode } from "@/lib/location/countries";
 import type {
 	ShippingProviderAuthType,
 	ShippingProviderEnvironment,
@@ -43,7 +44,6 @@ type ShippingProviderState = {
 	serviceName: string;
 	fixedAmount: string;
 	estimatedDays: string;
-	currency: string;
 	supportedCountries: string;
 	requiresPostalCode: boolean;
 	defaultWeightGrams: string;
@@ -89,7 +89,6 @@ function buildProviderFromPreset(kind: ShippingProviderKind, index = 0): Shippin
 		serviceName: "",
 		fixedAmount: "",
 		estimatedDays: "",
-		currency: preset.defaultCurrency ?? "",
 		supportedCountries: preset.defaultSupportedCountries.join(", "),
 		requiresPostalCode: preset.defaultRequiresPostalCode,
 		defaultWeightGrams: "300",
@@ -129,7 +128,6 @@ function buildInitialState(doc?: SettingsPayload["current"]): ShippingProviderSt
 			serviceName: provider?.serviceName ?? "",
 			fixedAmount: typeof provider?.fixedAmount === "number" ? String(provider.fixedAmount) : "",
 			estimatedDays: typeof provider?.estimatedDays === "number" ? String(provider.estimatedDays) : "",
-			currency: provider?.currency ?? base.currency,
 			supportedCountries: Array.isArray(provider?.supportedCountries)
 				? provider.supportedCountries.join(", ")
 				: base.supportedCountries,
@@ -157,6 +155,57 @@ function getRequiredCredentialKeys(fields: ShippingCredentialField[]) {
 	return fields.filter((field) => field.required).map((field) => field.key);
 }
 
+function formatProviderCode(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9\s_-]/g, "")
+		.replace(/[\s_]+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+function formatCountryCode(value: string) {
+	return value
+		.replace(/[^a-z]/gi, "")
+		.slice(0, 2)
+		.toUpperCase();
+}
+
+function formatSupportedCountries(value: string) {
+	return value
+		.split(/[;,]+/)
+		.map((entry) => formatCountryCode(entry))
+		.filter(Boolean)
+		.join(", ");
+}
+
+function formatBaseUrl(value: string) {
+	return value.trim().replace(/\/+$/g, "");
+}
+
+function formatEndpointValue(value: string) {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	if (/^https?:\/\//i.test(trimmed)) return trimmed;
+	return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+}
+
+function resolveCredentialCountry(provider: ShippingProviderState, key: string) {
+	if (key === "originPostalCode") return provider.credentials.originCountry || "BR";
+	if (key === "fromPostalCode") return provider.credentials.fromCountry || "US";
+	return "BR";
+}
+
+function formatCredentialValue(provider: ShippingProviderState, key: string, value: string) {
+	if (key === "originCountry" || key === "fromCountry") return formatCountryCode(value);
+	if (key === "originPostalCode" || key === "fromPostalCode") {
+		return normalizePostalCode(resolveCredentialCountry(provider, key), value);
+	}
+	return value.trim();
+}
+
 export default function AdminShippingProviders() {
 	const [providers, setProviders] = useState<ShippingProviderState[]>(() => [
 		buildProviderFromPreset("correios", 0),
@@ -178,7 +227,7 @@ export default function AdminShippingProviders() {
 					setProviders(buildInitialState(data.current));
 				}
 			} catch {
-				if (mounted) setStatus("Failed to load shipping providers.");
+				if (mounted) setStatus("Não foi possível carregar os provedores de frete.");
 			} finally {
 				if (mounted) setLoading(false);
 			}
@@ -233,6 +282,29 @@ export default function AdminShippingProviders() {
 		);
 	}
 
+	function formatProviderField(index: number, patch: Partial<ShippingProviderState>) {
+		setProviders((current) =>
+			current.map((provider, currentIndex) =>
+				currentIndex === index ? { ...provider, ...patch } : provider,
+			),
+		);
+	}
+
+	function formatProviderCredential(index: number, key: string) {
+		setProviders((current) =>
+			current.map((provider, currentIndex) => {
+				if (currentIndex !== index) return provider;
+				return {
+					...provider,
+					credentials: {
+						...provider.credentials,
+						[key]: formatCredentialValue(provider, key, provider.credentials[key] ?? ""),
+					},
+				};
+			}),
+		);
+	}
+
 	function updateProviderEndpoint(index: number, key: keyof EndpointState, value: string) {
 		setProviders((current) =>
 			current.map((provider, currentIndex) =>
@@ -264,7 +336,6 @@ export default function AdminShippingProviders() {
 							endpoints: next.endpoints,
 							credentials: {},
 							credentialsMasked: {},
-							currency: provider.currency || next.currency,
 							supportedCountries: next.supportedCountries,
 							requiresPostalCode: next.requiresPostalCode,
 						}
@@ -315,7 +386,6 @@ export default function AdminShippingProviders() {
 					serviceName: provider.serviceName.trim(),
 					fixedAmount: provider.fixedAmount.trim(),
 					estimatedDays: provider.estimatedDays.trim(),
-					currency: provider.currency.trim(),
 					supportedCountries: provider.supportedCountries
 						.split(",")
 						.map((entry) => entry.trim().toUpperCase())
@@ -334,15 +404,15 @@ export default function AdminShippingProviders() {
 				body: JSON.stringify(payload),
 			});
 			if (!res.ok) {
-				setStatus("Failed to save shipping providers.");
+				setStatus("Não foi possível salvar os provedores de frete.");
 				return;
 			}
 			const data = (await res.json()) as SettingsPayload;
 			setShippingEnabled(data.current?.shippingEnabled !== false);
 			setProviders(buildInitialState(data.current));
-			setStatus("Shipping providers saved.");
+			setStatus("Provedores de frete salvos.");
 		} catch {
-			setStatus("Failed to save shipping providers.");
+			setStatus("Não foi possível salvar os provedores de frete.");
 		} finally {
 			setSaving(false);
 			setTimeout(() => setStatus(null), 3500);
@@ -352,8 +422,8 @@ export default function AdminShippingProviders() {
 	return (
 		<div className="space-y-4">
 			<p className="text-sm text-muted-foreground">
-				Configure carrier-specific providers so checkout only needs credentials, origin data and fallback
-				priority.
+				Configure os provedores por transportadora para que o checkout precise apenas de credenciais, origem e
+				prioridade de fallback.
 			</p>
 			<div className="flex items-center gap-3 rounded-lg border p-4">
 				<Checkbox
@@ -363,9 +433,10 @@ export default function AdminShippingProviders() {
 					disabled={saving || loading}
 				/>
 				<div className="space-y-1">
-					<Label htmlFor="shipping-enabled">Enable shipping calculation</Label>
+					<Label htmlFor="shipping-enabled">Ativar cálculo de frete</Label>
 					<p className="text-sm text-muted-foreground">
-						When disabled, checkout and cart stop calculating shipping regardless of manual or API providers.
+						Quando desativado, checkout e carrinho param de calcular frete independentemente de provedores
+						manuais ou via API.
 					</p>
 				</div>
 			</div>
@@ -378,15 +449,19 @@ export default function AdminShippingProviders() {
 							<CardHeader className="space-y-3">
 								<div className="flex flex-wrap items-start justify-between gap-3">
 									<div>
-										<CardTitle>{provider.label || `Provider ${index + 1}`}</CardTitle>
+										<CardTitle>{provider.label || `Provedor ${index + 1}`}</CardTitle>
 										<p className="text-sm text-muted-foreground">{preset.description}</p>
 									</div>
 									<div className="flex items-center gap-2">
 										<span className="rounded-full border px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground">
-											{statusValue}
+											{statusValue === "ready"
+												? "pronto"
+												: statusValue === "incomplete"
+													? "incompleto"
+													: "desativado"}
 										</span>
 										<Button type="button" variant="outline" onClick={() => removeProvider(index)}>
-											Remove
+											Remover
 										</Button>
 									</div>
 								</div>
@@ -398,17 +473,17 @@ export default function AdminShippingProviders() {
 										checked={provider.enabled}
 										onCheckedChange={(checked) => updateProvider(index, { enabled: checked === true })}
 									/>
-									<Label htmlFor={`shipping-${index}-enabled`}>Enable provider</Label>
+									<Label htmlFor={`shipping-${index}-enabled`}>Ativar provedor</Label>
 								</div>
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-kind`}>Provider family</Label>
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
+										<Label htmlFor={`shipping-${index}-kind`}>Família do provedor</Label>
 										<Select
 											value={provider.kind}
 											onValueChange={(value) => updateProviderKind(index, value as ShippingProviderKind)}
 										>
-											<SelectTrigger id={`shipping-${index}-kind`}>
+											<SelectTrigger id={`shipping-${index}-kind`} className="max-w-[15rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
@@ -420,42 +495,52 @@ export default function AdminShippingProviders() {
 											</SelectContent>
 										</Select>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-mode`}>Mode</Label>
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
+										<Label htmlFor={`shipping-${index}-mode`}>Modo</Label>
 										<Select
 											value={provider.mode}
 											onValueChange={(value) => updateProvider(index, { mode: value as ShippingMode })}
 											disabled={provider.kind !== "custom"}
 										>
-											<SelectTrigger id={`shipping-${index}-mode`}>
+											<SelectTrigger id={`shipping-${index}-mode`} className="max-w-[12rem]">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="flat">Flat rate</SelectItem>
-												<SelectItem value="http">HTTP API</SelectItem>
+												<SelectItem value="flat">Valor fixo</SelectItem>
+												<SelectItem value="http">API HTTP</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-code`}>Code</Label>
+									<div className="grid gap-2 md:col-span-4 xl:col-span-2">
+										<Label htmlFor={`shipping-${index}-code`}>Código</Label>
 										<Input
 											id={`shipping-${index}-code`}
 											value={provider.code}
-											onChange={(event) => updateProvider(index, { code: event.target.value })}
+											onChange={(event) =>
+												updateProvider(index, { code: formatProviderCode(event.target.value) })
+											}
+											onBlur={(event) =>
+												formatProviderField(index, { code: formatProviderCode(event.target.value) })
+											}
 											placeholder="correios"
+											className="max-w-[10rem]"
+											autoCapitalize="none"
+											autoCorrect="off"
+											spellCheck={false}
 										/>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-label`}>Label</Label>
+									<div className="grid gap-2 md:col-span-6 xl:col-span-4">
+										<Label htmlFor={`shipping-${index}-label`}>Nome visível</Label>
 										<Input
 											id={`shipping-${index}-label`}
 											value={provider.label}
 											onChange={(event) => updateProvider(index, { label: event.target.value })}
 											placeholder="Correios"
+											className="max-w-[18rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-priority`}>Priority</Label>
+									<div className="grid gap-2 md:col-span-3 xl:col-span-1">
+										<Label htmlFor={`shipping-${index}-priority`}>Prioridade</Label>
 										<Input
 											id={`shipping-${index}-priority`}
 											type="number"
@@ -463,36 +548,32 @@ export default function AdminShippingProviders() {
 											onChange={(event) =>
 												updateProvider(index, { priority: Number.parseInt(event.target.value || "0", 10) })
 											}
-										/>
-									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-currency`}>Currency</Label>
-										<Input
-											id={`shipping-${index}-currency`}
-											value={provider.currency}
-											onChange={(event) =>
-												updateProvider(index, { currency: event.target.value.toUpperCase() })
-											}
-											placeholder="BRL"
-											maxLength={3}
+											className="max-w-[6rem]"
 										/>
 									</div>
 								</div>
 
 								{provider.mode === "http" ? (
 									<div className="space-y-4 rounded-lg border p-4">
-										<div className="grid gap-4 md:grid-cols-3">
-											<div className="grid gap-2 md:col-span-2">
-												<Label htmlFor={`shipping-${index}-base-url`}>Base URL</Label>
+										<div className="grid gap-4 md:grid-cols-12">
+											<div className="grid gap-2 md:col-span-8 xl:col-span-7">
+												<Label htmlFor={`shipping-${index}-base-url`}>URL base</Label>
 												<Input
 													id={`shipping-${index}-base-url`}
 													value={provider.baseUrl}
 													onChange={(event) => updateProvider(index, { baseUrl: event.target.value })}
+													onBlur={(event) =>
+														formatProviderField(index, { baseUrl: formatBaseUrl(event.target.value) })
+													}
 													placeholder="https://api.correios.com.br"
+													className="max-w-[34rem]"
+													autoCapitalize="none"
+													autoCorrect="off"
+													spellCheck={false}
 												/>
 											</div>
-											<div className="grid gap-2">
-												<Label htmlFor={`shipping-${index}-environment`}>Environment</Label>
+											<div className="grid gap-2 md:col-span-4 xl:col-span-3">
+												<Label htmlFor={`shipping-${index}-environment`}>Ambiente</Label>
 												<Select
 													value={provider.environment}
 													onValueChange={(value) =>
@@ -501,62 +582,90 @@ export default function AdminShippingProviders() {
 														})
 													}
 												>
-													<SelectTrigger id={`shipping-${index}-environment`}>
+													<SelectTrigger id={`shipping-${index}-environment`} className="max-w-[12rem]">
 														<SelectValue />
 													</SelectTrigger>
 													<SelectContent>
-														<SelectItem value="sandbox">Sandbox</SelectItem>
-														<SelectItem value="production">Production</SelectItem>
+														<SelectItem value="sandbox">Teste</SelectItem>
+														<SelectItem value="production">Produção</SelectItem>
 													</SelectContent>
 												</Select>
 											</div>
 										</div>
 
-										<div className="grid gap-4 md:grid-cols-2">
-											<div className="grid gap-2">
-												<Label htmlFor={`shipping-${index}-quote`}>Quote endpoint</Label>
+										<div className="grid gap-4 md:grid-cols-12">
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
+												<Label htmlFor={`shipping-${index}-quote`}>Endpoint de cotação</Label>
 												<Input
 													id={`shipping-${index}-quote`}
 													value={provider.endpoints.quote}
 													onChange={(event) => updateProviderEndpoint(index, "quote", event.target.value)}
+													onBlur={(event) =>
+														updateProviderEndpoint(index, "quote", formatEndpointValue(event.target.value))
+													}
 													placeholder="/preco/v1/nacional"
+													className="max-w-[22rem]"
+													autoCapitalize="none"
+													autoCorrect="off"
+													spellCheck={false}
 												/>
 											</div>
-											<div className="grid gap-2">
-												<Label htmlFor={`shipping-${index}-token`}>Token endpoint</Label>
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
+												<Label htmlFor={`shipping-${index}-token`}>Endpoint de token</Label>
 												<Input
 													id={`shipping-${index}-token`}
 													value={provider.endpoints.token}
 													onChange={(event) => updateProviderEndpoint(index, "token", event.target.value)}
+													onBlur={(event) =>
+														updateProviderEndpoint(index, "token", formatEndpointValue(event.target.value))
+													}
 													placeholder="/token/v1/autentica/contrato"
+													className="max-w-[22rem]"
+													autoCapitalize="none"
+													autoCorrect="off"
+													spellCheck={false}
 												/>
 											</div>
-											<div className="grid gap-2">
-												<Label htmlFor={`shipping-${index}-shipment`}>Shipment endpoint</Label>
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
+												<Label htmlFor={`shipping-${index}-shipment`}>Endpoint de envio</Label>
 												<Input
 													id={`shipping-${index}-shipment`}
 													value={provider.endpoints.shipment}
 													onChange={(event) => updateProviderEndpoint(index, "shipment", event.target.value)}
+													onBlur={(event) =>
+														updateProviderEndpoint(index, "shipment", formatEndpointValue(event.target.value))
+													}
 													placeholder="/shipment"
+													className="max-w-[22rem]"
+													autoCapitalize="none"
+													autoCorrect="off"
+													spellCheck={false}
 												/>
 											</div>
-											<div className="grid gap-2">
-												<Label htmlFor={`shipping-${index}-tracking`}>Tracking endpoint</Label>
+											<div className="grid gap-2 md:col-span-6 xl:col-span-5">
+												<Label htmlFor={`shipping-${index}-tracking`}>Endpoint de rastreio</Label>
 												<Input
 													id={`shipping-${index}-tracking`}
 													value={provider.endpoints.tracking}
 													onChange={(event) => updateProviderEndpoint(index, "tracking", event.target.value)}
+													onBlur={(event) =>
+														updateProviderEndpoint(index, "tracking", formatEndpointValue(event.target.value))
+													}
 													placeholder="/tracking"
+													className="max-w-[22rem]"
+													autoCapitalize="none"
+													autoCorrect="off"
+													spellCheck={false}
 												/>
 											</div>
 										</div>
 
-										<div className="grid gap-4 md:grid-cols-2">
+										<div className="grid gap-4 md:grid-cols-12">
 											{preset.credentialFields.map((field) => {
 												const fieldId = `shipping-${index}-credential-${field.key}`;
 												const maskedValue = provider.credentialsMasked[field.key];
 												return (
-													<div key={field.key} className="grid gap-2">
+													<div key={field.key} className="grid gap-2 md:col-span-6 xl:col-span-5">
 														<Label htmlFor={fieldId}>{field.label}</Label>
 														<Input
 															id={fieldId}
@@ -565,12 +674,17 @@ export default function AdminShippingProviders() {
 															onChange={(event) =>
 																updateProviderCredential(index, field.key, event.target.value)
 															}
-															placeholder={maskedValue ? `Configured: ${maskedValue}` : field.placeholder}
+															onBlur={() => formatProviderCredential(index, field.key)}
+															placeholder={maskedValue ? `Configurado: ${maskedValue}` : field.placeholder}
+															className="max-w-[22rem]"
+															autoCapitalize="none"
+															autoCorrect="off"
+															spellCheck={false}
 														/>
 														{field.helpText ? (
 															<p className="text-xs text-muted-foreground">{field.helpText}</p>
 														) : maskedValue ? (
-															<p className="text-xs text-muted-foreground">Current value: {maskedValue}</p>
+															<p className="text-xs text-muted-foreground">Valor salvo: {maskedValue}</p>
 														) : null}
 													</div>
 												);
@@ -579,37 +693,52 @@ export default function AdminShippingProviders() {
 									</div>
 								) : null}
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-service-code`}>Default service code</Label>
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
+										<Label htmlFor={`shipping-${index}-service-code`}>Código de serviço padrão</Label>
 										<Input
 											id={`shipping-${index}-service-code`}
 											value={provider.serviceCode}
-											onChange={(event) => updateProvider(index, { serviceCode: event.target.value })}
+											onChange={(event) =>
+												updateProvider(index, {
+													serviceCode: event.target.value.toUpperCase().replace(/\s+/g, ""),
+												})
+											}
+											onBlur={(event) =>
+												formatProviderField(index, {
+													serviceCode: event.target.value.toUpperCase().replace(/\s+/g, ""),
+												})
+											}
 											placeholder={provider.kind === "correios" ? "03220" : "service-code"}
+											className="max-w-[10rem]"
+											autoCapitalize="characters"
+											autoCorrect="off"
+											spellCheck={false}
 										/>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-service-name`}>Default service name</Label>
+									<div className="grid gap-2 md:col-span-5 xl:col-span-4">
+										<Label htmlFor={`shipping-${index}-service-name`}>Nome padrão do serviço</Label>
 										<Input
 											id={`shipping-${index}-service-name`}
 											value={provider.serviceName}
 											onChange={(event) => updateProvider(index, { serviceName: event.target.value })}
 											placeholder="SEDEX"
+											className="max-w-[16rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-estimated-days`}>Fallback estimated days</Label>
+									<div className="grid gap-2 md:col-span-3 xl:col-span-2">
+										<Label htmlFor={`shipping-${index}-estimated-days`}>Prazo estimado de fallback</Label>
 										<Input
 											id={`shipping-${index}-estimated-days`}
 											type="number"
 											value={provider.estimatedDays}
 											onChange={(event) => updateProvider(index, { estimatedDays: event.target.value })}
 											placeholder="3"
+											className="max-w-[7rem]"
 										/>
 									</div>
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-fixed-amount`}>Flat amount (cents)</Label>
+									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
+										<Label htmlFor={`shipping-${index}-fixed-amount`}>Valor fixo (centavos)</Label>
 										<Input
 											id={`shipping-${index}-fixed-amount`}
 											type="number"
@@ -617,21 +746,31 @@ export default function AdminShippingProviders() {
 											onChange={(event) => updateProvider(index, { fixedAmount: event.target.value })}
 											placeholder="2500"
 											disabled={provider.mode === "http"}
+											className="max-w-[10rem]"
 										/>
 									</div>
 								</div>
 
-								<div className="grid gap-4 md:grid-cols-2">
-									<div className="grid gap-2">
-										<Label htmlFor={`shipping-${index}-countries`}>Supported countries</Label>
+								<div className="grid gap-4 md:grid-cols-12">
+									<div className="grid gap-2 md:col-span-5 xl:col-span-4">
+										<Label htmlFor={`shipping-${index}-countries`}>Países atendidos</Label>
 										<Input
 											id={`shipping-${index}-countries`}
 											value={provider.supportedCountries}
 											onChange={(event) => updateProvider(index, { supportedCountries: event.target.value })}
+											onBlur={(event) =>
+												formatProviderField(index, {
+													supportedCountries: formatSupportedCountries(event.target.value),
+												})
+											}
 											placeholder="BR, US, CA"
+											className="max-w-[14rem]"
+											autoCapitalize="characters"
+											autoCorrect="off"
+											spellCheck={false}
 										/>
 									</div>
-									<div className="flex items-center gap-3 pt-8">
+									<div className="flex items-center gap-3 pt-8 md:col-span-5 xl:col-span-4">
 										<Checkbox
 											id={`shipping-${index}-postal`}
 											checked={provider.requiresPostalCode}
@@ -639,15 +778,15 @@ export default function AdminShippingProviders() {
 												updateProvider(index, { requiresPostalCode: checked === true })
 											}
 										/>
-										<Label htmlFor={`shipping-${index}-postal`}>Requires postal code</Label>
+										<Label htmlFor={`shipping-${index}-postal`}>Exige CEP</Label>
 									</div>
 								</div>
 
 								<div className="space-y-3 rounded-lg border p-4">
-									<p className="text-sm font-medium">Fallback parcel defaults</p>
-									<div className="grid gap-4 md:grid-cols-4">
-										<div className="grid gap-2">
-											<Label htmlFor={`shipping-${index}-weight`}>Weight (g)</Label>
+									<p className="text-sm font-medium">Padrões do pacote em fallback</p>
+									<div className="grid gap-4 md:grid-cols-12">
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
+											<Label htmlFor={`shipping-${index}-weight`}>Peso (g)</Label>
 											<Input
 												id={`shipping-${index}-weight`}
 												type="number"
@@ -655,33 +794,37 @@ export default function AdminShippingProviders() {
 												onChange={(event) =>
 													updateProvider(index, { defaultWeightGrams: event.target.value })
 												}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
-											<Label htmlFor={`shipping-${index}-length`}>Length (cm)</Label>
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
+											<Label htmlFor={`shipping-${index}-length`}>Comprimento (cm)</Label>
 											<Input
 												id={`shipping-${index}-length`}
 												type="number"
 												value={provider.defaultLengthCm}
 												onChange={(event) => updateProvider(index, { defaultLengthCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
-											<Label htmlFor={`shipping-${index}-width`}>Width (cm)</Label>
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
+											<Label htmlFor={`shipping-${index}-width`}>Largura (cm)</Label>
 											<Input
 												id={`shipping-${index}-width`}
 												type="number"
 												value={provider.defaultWidthCm}
 												onChange={(event) => updateProvider(index, { defaultWidthCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
-										<div className="grid gap-2">
-											<Label htmlFor={`shipping-${index}-height`}>Height (cm)</Label>
+										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
+											<Label htmlFor={`shipping-${index}-height`}>Altura (cm)</Label>
 											<Input
 												id={`shipping-${index}-height`}
 												type="number"
 												value={provider.defaultHeightCm}
 												onChange={(event) => updateProvider(index, { defaultHeightCm: event.target.value })}
+												className="max-w-[8rem]"
 											/>
 										</div>
 									</div>
@@ -693,10 +836,10 @@ export default function AdminShippingProviders() {
 			</div>
 			<div className="flex flex-wrap gap-3">
 				<Button type="button" variant="outline" onClick={addProvider} disabled={saving || loading}>
-					Add provider
+					Adicionar provedor
 				</Button>
 				<Button type="button" onClick={save} disabled={saving || loading}>
-					{saving ? "Saving..." : "Save providers"}
+					{saving ? "Salvando..." : "Salvar provedores"}
 				</Button>
 			</div>
 			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}

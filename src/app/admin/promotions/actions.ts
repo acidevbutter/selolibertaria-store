@@ -39,7 +39,7 @@ function parseOptionalPositiveInteger(raw: FormDataEntryValue | null) {
 	if (!value) return null;
 	const parsed = Number.parseInt(value, 10);
 	if (!Number.isFinite(parsed) || parsed <= 0) {
-		throw new Error("Enter a positive whole number.");
+		throw new Error("Informe um número inteiro positivo.");
 	}
 	return parsed;
 }
@@ -55,7 +55,7 @@ function parseBenefitValue(args: {
 			.replace(",", "."),
 	);
 	if (!Number.isFinite(parsed) || parsed < 0) {
-		throw new Error("Enter a valid discount value.");
+		throw new Error("Informe um valor de desconto válido.");
 	}
 	if (args.benefitType === "percentage_off") {
 		return Math.round(parsed);
@@ -73,11 +73,11 @@ function parsePromotionFormInput(formData: FormData) {
 			? (rawStackingMode as PromotionStackingMode)
 			: (null as PromotionStackingMode | null);
 	const status = String(formData.get("status") ?? "active") as PromotionStatus;
-	const currency = String(formData.get("currency") ?? env.STRIPE_CURRENCY ?? "BRL")
+	const currency = String(env.STRIPE_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
 	if (kind === "coupon" && !String(formData.get("code") ?? "").trim()) {
-		throw new Error("Coupons require a code.");
+		throw new Error("Cupons exigem um código.");
 	}
 
 	return {
@@ -131,7 +131,7 @@ function parsePromotionFormInput(formData: FormData) {
 export async function createPromotionAction(formData: FormData) {
 	const auth = await requireCapability("promotions.write");
 	if ("error" in auth) {
-		throw new Error("Unauthorized.");
+		throw new Error("Não autorizado.");
 	}
 
 	const parsed = parsePromotionFormInput(formData);
@@ -151,12 +151,12 @@ export async function createPromotionAction(formData: FormData) {
 export async function updatePromotionAction(formData: FormData) {
 	const auth = await requireCapability("promotions.write");
 	if ("error" in auth) {
-		throw new Error("Unauthorized.");
+		throw new Error("Não autorizado.");
 	}
 
 	const promotionId = String(formData.get("promotionId") ?? "").trim();
 	if (!promotionId) {
-		throw new Error("Promotion ID is required.");
+		throw new Error("O identificador da promoção é obrigatório.");
 	}
 
 	const parsed = parsePromotionFormInput(formData);
@@ -181,13 +181,13 @@ export async function updatePromotionAction(formData: FormData) {
 export async function changePromotionStatusAction(formData: FormData) {
 	const auth = await requireCapability("promotions.write");
 	if ("error" in auth) {
-		throw new Error("Unauthorized.");
+		throw new Error("Não autorizado.");
 	}
 
 	const promotionId = String(formData.get("promotionId") ?? "").trim();
 	const status = String(formData.get("status") ?? "paused") as PromotionStatus;
 	if (!promotionId) {
-		throw new Error("Promotion ID is required.");
+		throw new Error("O identificador da promoção é obrigatório.");
 	}
 
 	const promotion = await updatePromotionStatus({
@@ -207,7 +207,7 @@ export async function changePromotionStatusAction(formData: FormData) {
 export async function processFavoriteDiscountAlertsAction() {
 	const auth = await requireCapability("promotions.write");
 	if ("error" in auth) {
-		throw new Error("Unauthorized.");
+		throw new Error("Não autorizado.");
 	}
 	const activePromotions = await listActiveAutomaticPromotions();
 	for (const promotion of activePromotions) {

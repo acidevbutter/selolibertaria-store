@@ -1,6 +1,7 @@
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
-import { EditorialEyebrow } from "@/ui/editorial/editorial-primitives";
+import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeManifesto({ content }: { content?: EditorialHomePage["manifesto"] | null }) {
@@ -9,23 +10,27 @@ export async function HomeManifesto({ content }: { content?: EditorialHomePage["
 
 	return (
 		<section className="border-t border-[color:var(--editorial-border)] py-10 sm:py-14">
-			<div className="grid gap-8 px-4 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:px-8">
-				<div className="space-y-5">
-					<EditorialEyebrow>Manifesto</EditorialEyebrow>
-					<p className="max-w-4xl text-balance text-4xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">
-						{manifesto?.title || t("home.manifesto.title")}
+			<EditorialShell className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+				<Reveal>
+					<div className="space-y-5">
+						<EditorialEyebrow>Manifesto</EditorialEyebrow>
+						<p className="display-font max-w-4xl text-balance text-4xl leading-[0.9] font-black tracking-[-0.06em] sm:text-6xl">
+							{manifesto?.title || t("home.manifesto.title")}
+						</p>
+						<YnsLink
+							href={manifesto?.linkHref || "/about"}
+							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+						>
+							{manifesto?.linkLabel || t("home.manifesto.link")}
+						</YnsLink>
+					</div>
+				</Reveal>
+				<Reveal delay={0.08}>
+					<p className="max-w-md text-pretty text-base leading-8 text-[color:var(--editorial-muted)]">
+						{manifesto?.body || t("home.manifesto.body")}
 					</p>
-					<YnsLink
-						href={manifesto?.linkHref || "/about"}
-						className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
-					>
-						{manifesto?.linkLabel || t("home.manifesto.link")}
-					</YnsLink>
-				</div>
-				<p className="max-w-md text-pretty text-base leading-8 text-[color:var(--editorial-muted)]">
-					{manifesto?.body || t("home.manifesto.body")}
-				</p>
-			</div>
+				</Reveal>
+			</EditorialShell>
 		</section>
 	);
 }

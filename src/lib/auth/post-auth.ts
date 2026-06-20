@@ -1,6 +1,7 @@
 import "server-only";
 
 import { ObjectId } from "mongodb";
+import { isBackofficeRole } from "@/lib/authz";
 import { clearCartId, getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { commerce } from "@/lib/commerce-stripe";
 import { getDb } from "@/lib/mongodb";
@@ -83,7 +84,8 @@ export async function mergeGuestCartIntoUserCart(userId: string) {
 	await clearCartId();
 }
 
-export async function resolvePostAuthRedirect(userId: string) {
+export async function resolvePostAuthRedirect(userId: string, role?: string | null) {
+	if (isBackofficeRole(role)) return "/admin";
 	const db = await getDb();
 	const cookieItems = await getCartCookieItems();
 	if (cookieItems && cookieItems.length > 0) return "/checkout";

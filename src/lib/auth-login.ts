@@ -1,7 +1,7 @@
 import "server-only";
 
 import { ObjectId } from "mongodb";
-import { isUserBlocked, normalizeUserRole } from "@/lib/authz";
+import { isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
 import { createPersistentSession } from "@/lib/session";
 
 type LoginInput = {
@@ -56,7 +56,9 @@ export async function authenticateAndCreateSession({
 	email,
 	password,
 	cartRaw,
-}: LoginInput): Promise<{ ok: true; preferredCurrency?: string | null } | { ok: false; error: string }> {
+}: LoginInput): Promise<
+	{ ok: true; preferredCurrency?: string | null; role: UserRole } | { ok: false; error: string }
+> {
 	try {
 		const [{ getDb }, bcryptjs] = await Promise.all([import("@/lib/mongodb"), import("bcryptjs")]);
 		const bcrypt = (bcryptjs as typeof import("bcryptjs")).default;
@@ -137,13 +139,14 @@ export async function authenticateAndCreateSession({
 			console.debug("[login] no cart override");
 		}
 
+		const role = normalizeUserRole(user.role);
 		await createPersistentSession({
 			id: String(user._id),
 			email: normalizedEmail,
 			name: user.name,
-			role: normalizeUserRole(user.role),
+			role,
 		});
-		return { ok: true, preferredCurrency: user.preferredCurrency ?? null };
+		return { ok: true, preferredCurrency: user.preferredCurrency ?? null, role };
 	} catch (error) {
 		console.error("[login auth]", error);
 		return { ok: false, error: "Erro de autenticação" };

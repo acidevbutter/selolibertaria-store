@@ -1,18 +1,16 @@
 import { Activity } from "lucide-react";
 import type { ObjectId } from "mongodb";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/ui/shadcn/table";
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 import { StatusBadge } from "@/ui/status-badge";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +41,12 @@ function asString(value: string | string[] | undefined) {
 function toDateString(value?: Date | string | null) {
 	if (!value) return "-";
 	const date = value instanceof Date ? value : new Date(value);
-	return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString();
+	return Number.isNaN(date.getTime())
+		? "-"
+		: new Intl.DateTimeFormat("pt-BR", {
+				dateStyle: "short",
+				timeStyle: "medium",
+			}).format(date);
 }
 
 function formatJson(value: unknown) {
@@ -74,61 +77,68 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 		.limit(limit)
 		.toArray();
 
-	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-			<div className="space-y-2">
-				<div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
-					<Activity className="h-3.5 w-3.5" />
-					Stripe webhook log
-				</div>
-				<h1 className="text-2xl font-semibold">Webhooks</h1>
-				<p className="text-sm text-muted-foreground">
-					Every received webhook is logged here, including signature failures and processing errors.
-				</p>
-			</div>
+	const processedCount = items.filter((item) => item.status === "processed").length;
+	const failedCount = items.filter((item) => item.status === "failed").length;
+	const unverifiedCount = items.filter((item) => item.verified === false).length;
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Recently received</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="mb-4 flex flex-wrap gap-2 text-sm">
-						<a
-							href="/admin/webhooks?status=all"
-							className={status === "all" ? "font-medium underline" : "text-muted-foreground underline"}
-						>
-							All
-						</a>
-						<a
-							href="/admin/webhooks?status=processed"
-							className={status === "processed" ? "font-medium underline" : "text-muted-foreground underline"}
-						>
-							Processed
-						</a>
-						<a
-							href="/admin/webhooks?status=pending"
-							className={status === "pending" ? "font-medium underline" : "text-muted-foreground underline"}
-						>
-							Pending
-						</a>
-						<a
-							href="/admin/webhooks?status=failed"
-							className={status === "failed" ? "font-medium underline" : "text-muted-foreground underline"}
-						>
-							Failed
-						</a>
+	return (
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Webhooks"
+				title="Rastreamento de webhooks"
+				description="Acompanhe eventos recebidos, falhas de processamento e validação de assinatura."
+				actions={
+					<div className="flex flex-wrap gap-2">
+						{[
+							{ href: "/admin/webhooks?status=all", label: "Todos", active: status === "all" },
+							{
+								href: "/admin/webhooks?status=processed",
+								label: "Processados",
+								active: status === "processed",
+							},
+							{ href: "/admin/webhooks?status=pending", label: "Pendentes", active: status === "pending" },
+							{ href: "/admin/webhooks?status=failed", label: "Falhos", active: status === "failed" },
+						].map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								className={
+									item.active
+										? "inline-flex h-10 items-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)]"
+										: "inline-flex h-10 items-center rounded-none border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-white"
+								}
+							>
+								{item.label}
+							</Link>
+						))}
 					</div>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-4">
+				<AdminEditorialStat label="Registros" value={items.length} helper={`Até ${limit} itens.`} />
+				<AdminEditorialStat label="Processados" value={processedCount} helper="Sem erro." />
+				<AdminEditorialStat label="Falhos" value={failedCount} helper="Com falha." />
+				<AdminEditorialStat label="Não verificados" value={unverifiedCount} helper="Exigem revisão." />
+			</div>
+			<EditorialPanel className="p-0">
+				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
+					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+						<Activity className="h-4 w-4" />
+						Eventos recebidos
+					</div>
+				</div>
+				<div className="p-6 sm:p-8">
 					<div className="w-full overflow-x-auto">
 						<Table className="min-w-[980px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Received at</TableHead>
+									<TableHead>Recebido em</TableHead>
 									<TableHead>Status</TableHead>
-									<TableHead>Verified</TableHead>
-									<TableHead>Type</TableHead>
-									<TableHead>Event ID</TableHead>
-									<TableHead>Error</TableHead>
-									<TableHead>Details</TableHead>
+									<TableHead>Verificação</TableHead>
+									<TableHead>Tipo</TableHead>
+									<TableHead>ID do evento</TableHead>
+									<TableHead>Erro</TableHead>
+									<TableHead>Detalhes</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -138,7 +148,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										<TableCell>
 											<StatusBadge status={item.status || "unknown"} />
 										</TableCell>
-										<TableCell>{item.verified ? "Yes" : "No"}</TableCell>
+										<TableCell>{item.verified ? "Assinatura validada" : "Não validado"}</TableCell>
 										<TableCell className="font-mono text-xs">{item.type || "-"}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{item.eventId || "-"}</TableCell>
 										<TableCell className="max-w-[320px] text-xs text-destructive">
@@ -146,17 +156,19 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										</TableCell>
 										<TableCell>
 											<details className="max-w-[420px]">
-												<summary className="cursor-pointer text-sm underline">Open payload</summary>
+												<summary className="cursor-pointer text-sm underline underline-offset-4">
+													Abrir detalhes
+												</summary>
 												<div className="mt-3 space-y-3">
 													<div>
 														<p className="mb-1 text-xs font-medium text-muted-foreground">Headers</p>
-														<pre className="max-h-56 overflow-auto rounded-md border bg-muted p-3 text-xs">
+														<pre className="max-h-56 overflow-auto rounded-none border bg-muted p-3 text-xs">
 															{formatJson(item.headers || {})}
 														</pre>
 													</div>
 													<div>
 														<p className="mb-1 text-xs font-medium text-muted-foreground">Payload</p>
-														<pre className="max-h-80 overflow-auto rounded-md border bg-muted p-3 text-xs">
+														<pre className="max-h-80 overflow-auto rounded-none border bg-muted p-3 text-xs">
 															{formatJson(item.raw ?? null)}
 														</pre>
 													</div>
@@ -167,17 +179,16 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 								))}
 								{items.length === 0 && (
 									<TableRow>
-										<TableCell colSpan={7} className="py-8 text-muted-foreground">
-											No webhooks were found for this filter.
+										<TableCell colSpan={7} className="py-8 text-[color:var(--editorial-muted)]">
+											Nenhum webhook encontrado para este filtro.
 										</TableCell>
 									</TableRow>
 								)}
 							</TableBody>
-							<TableCaption>Showing up to {limit} webhooks, ordered from newest to oldest.</TableCaption>
 						</Table>
 					</div>
-				</CardContent>
-			</Card>
-		</main>
+				</div>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

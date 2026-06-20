@@ -7,12 +7,14 @@ export function CategorySelectField({
 	name = "category",
 	categories,
 	defaultValue = "",
-	placeholder = "Select a category",
+	placeholder = "Selecione uma categoria",
+	triggerClassName,
 }: {
 	name?: string;
 	categories: Array<{ name: string; slug: string }>;
 	defaultValue?: string;
 	placeholder?: string;
+	triggerClassName?: string;
 }) {
 	const [value, setValue] = useState(defaultValue);
 
@@ -20,7 +22,7 @@ export function CategorySelectField({
 		<>
 			<input type="hidden" name={name} value={value} />
 			<Select value={value} onValueChange={setValue}>
-				<SelectTrigger>
+				<SelectTrigger className={triggerClassName}>
 					<SelectValue placeholder={placeholder} />
 				</SelectTrigger>
 				<SelectContent>

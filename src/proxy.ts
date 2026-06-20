@@ -1,10 +1,15 @@
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { env } from "@/env.mjs";
 import { LOCALE_COOKIE_NAME, matchLocale } from "@/i18n/config";
 import { isBackofficeRole } from "@/lib/authz";
-import { coreDecrypt } from "@/lib/session-core";
+
+type ProxySessionPayload = {
+	expires?: number;
+	user?: {
+		role?: string | null;
+	};
+};
 
 function isPublicApiPath(pathname: string) {
 	return (
@@ -21,13 +26,29 @@ function isPublicApiPath(pathname: string) {
 	);
 }
 
+function getJwtSecret() {
+	const secret = process.env.JWT_SECRET?.trim();
+	if (!secret) {
+		throw new Error("JWT_SECRET must be defined");
+	}
+	return new TextEncoder().encode(secret);
+}
+
+async function decryptProxySession(token: string): Promise<ProxySessionPayload | null> {
+	try {
+		const result = await jwtVerify(token, getJwtSecret(), { algorithms: ["HS256"] });
+		return result.payload as ProxySessionPayload;
+	} catch {
+		return null;
+	}
+}
+
 async function verifyAuth(request: NextRequest) {
 	const auth = request.headers.get("authorization") || request.headers.get("Authorization");
 	if (auth?.startsWith("Bearer ")) {
 		const token = auth.slice(7).trim();
 		try {
-			const secret = new TextEncoder().encode(env.JWT_SECRET);
-			await jwtVerify(token, secret, { algorithms: ["HS256"] });
+			await jwtVerify(token, getJwtSecret(), { algorithms: ["HS256"] });
 			return { ok: true as const, clearSession: false as const };
 		} catch {
 			/* ignore */
@@ -35,8 +56,10 @@ async function verifyAuth(request: NextRequest) {
 	}
 	const session = request.cookies.get("session")?.value;
 	if (session) {
-		const data = await coreDecrypt(session);
-		if (data && data.expires > Date.now()) return { ok: true as const, clearSession: false as const };
+		const data = await decryptProxySession(session);
+		if (data?.expires && data.expires > Date.now()) {
+			return { ok: true as const, clearSession: false as const };
+		}
 		return { ok: false as const, clearSession: true as const };
 	}
 	return { ok: false as const, clearSession: false as const };
@@ -94,18 +117,22 @@ export async function proxy(request: NextRequest) {
 		}
 		return NextResponse.next();
 	}
+
 	if (isAdmin) {
 		const session = request.cookies.get("session")?.value;
 		if (!session) return NextResponse.redirect(new URL("/login", request.url));
-		const data = await coreDecrypt(session);
-		if (!data || data.expires <= Date.now()) {
+		const data = await decryptProxySession(session);
+		if (!data || !data.expires || data.expires <= Date.now()) {
 			const response = NextResponse.redirect(new URL("/login", request.url));
 			response.cookies.delete("session");
 			return response;
 		}
-		if (!isBackofficeRole(data.user.role)) return NextResponse.redirect(new URL("/forbidden", request.url));
+		if (!isBackofficeRole(data.user?.role)) {
+			return NextResponse.redirect(new URL("/forbidden", request.url));
+		}
 		return NextResponse.next();
 	}
+
 	return NextResponse.next();
 }
 

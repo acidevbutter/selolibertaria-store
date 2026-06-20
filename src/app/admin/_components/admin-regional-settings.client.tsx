@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "@/i18n/client";
 import { type AppLocale, LOCALE_OPTIONS } from "@/i18n/config";
 import { CountrySelect } from "@/ui/auth/country-select";
 import { Button } from "@/ui/shadcn/button";
@@ -14,7 +15,16 @@ type SettingsPayload = {
 	};
 };
 
+function formatLocaleOptionLabel(locale: (typeof LOCALE_OPTIONS)[number], displayLocale: string) {
+	const languageNames = new Intl.DisplayNames([displayLocale], { type: "language" });
+	const regionNames = new Intl.DisplayNames([displayLocale], { type: "region" });
+	const languageLabel = languageNames.of(locale.baseLanguage) ?? locale.label;
+	const regionLabel = regionNames.of(locale.defaultCountry) ?? locale.defaultCountry;
+	return `${languageLabel} (${regionLabel})`;
+}
+
 export default function AdminRegionalSettings() {
+	const locale = useLocale();
 	const [defaultCountry, setDefaultCountry] = useState("BR");
 	const [defaultLocale, setDefaultLocale] = useState<AppLocale>("en-US");
 	const [loading, setLoading] = useState(true);
@@ -31,7 +41,7 @@ export default function AdminRegionalSettings() {
 				if (mounted && data.current?.defaultCountry) setDefaultCountry(data.current.defaultCountry);
 				if (mounted && data.current?.defaultLocale) setDefaultLocale(data.current.defaultLocale);
 			} catch {
-				if (mounted) setStatus("Failed to load regional defaults.");
+				if (mounted) setStatus("Não foi possível carregar os padrões regionais.");
 			} finally {
 				if (mounted) setLoading(false);
 			}
@@ -52,12 +62,12 @@ export default function AdminRegionalSettings() {
 				body: JSON.stringify({ defaultCountry, defaultLocale }),
 			});
 			if (!res.ok) {
-				setStatus("Failed to save regional defaults.");
+				setStatus("Não foi possível salvar os padrões regionais.");
 				return;
 			}
-			setStatus("Regional defaults saved.");
+			setStatus("Padrões regionais salvos.");
 		} catch {
-			setStatus("Failed to save regional defaults.");
+			setStatus("Não foi possível salvar os padrões regionais.");
 		} finally {
 			setSaving(false);
 			setTimeout(() => setStatus(null), 3500);
@@ -68,37 +78,38 @@ export default function AdminRegionalSettings() {
 		<div className="space-y-4">
 			<div className="space-y-1">
 				<p className="text-sm text-muted-foreground">
-					Visitors use their device language when it matches a supported locale. The default language below is
-					used as the selolibertaria fallback.
+					A vitrine pública usa o idioma do dispositivo quando ele coincide com um idioma suportado. O idioma
+					padrão abaixo entra como fallback da aplicação.
 				</p>
 				<p className="text-sm text-muted-foreground">
-					The default country still seeds phone and address fields whenever a user has no saved region yet.
+					O país padrão continua preenchendo telefone e endereço quando a pessoa usuária ainda não tem região
+					salva.
 				</p>
 			</div>
-			<div className="grid gap-4 md:grid-cols-2 md:max-w-2xl">
-				<div className="grid gap-2 md:max-w-sm">
-					<Label htmlFor="admin-default-locale">Default selolibertaria language</Label>
+			<div className="grid gap-4 md:grid-cols-12 md:max-w-3xl">
+				<div className="grid gap-2 md:col-span-7 xl:col-span-6">
+					<Label htmlFor="admin-default-locale">Idioma padrão da loja</Label>
 					<Select value={defaultLocale} onValueChange={(value) => setDefaultLocale(value as AppLocale)}>
-						<SelectTrigger id="admin-default-locale">
-							<SelectValue placeholder="Select language" />
+						<SelectTrigger id="admin-default-locale" className="max-w-[22rem]">
+							<SelectValue placeholder="Selecione o idioma" />
 						</SelectTrigger>
 						<SelectContent>
-							{LOCALE_OPTIONS.map((locale) => (
-								<SelectItem key={locale.code} value={locale.code}>
-									{locale.label}
+							{LOCALE_OPTIONS.map((option) => (
+								<SelectItem key={option.code} value={option.code}>
+									{formatLocaleOptionLabel(option, locale)} · {option.code}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="grid gap-2 md:max-w-sm">
-					<Label htmlFor="admin-default-country">Default country</Label>
+				<div className="grid gap-2 md:col-span-5 xl:col-span-4">
+					<Label htmlFor="admin-default-country">País padrão</Label>
 					<CountrySelect id="admin-default-country" value={defaultCountry} onChange={setDefaultCountry} />
 				</div>
 			</div>
 			<div className="flex items-center gap-3">
 				<Button onClick={save} disabled={loading || saving}>
-					{saving ? "Saving..." : "Save regional defaults"}
+					{saving ? "Salvando..." : "Salvar padrões regionais"}
 				</Button>
 				{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 			</div>

@@ -11,6 +11,11 @@ import {
 } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+} from "@/ui/editorial/editorial-primitives";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
@@ -27,19 +32,41 @@ export default async function AdminEditorialProjectDetailsPage({
 	const project = await getEditorialProjectBySlug(slug);
 	if (!project) redirect("/admin/editorial/projects");
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="space-y-3">
-				<Link
-					href="/admin/editorial/projects"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Editorial
-				</Link>
-				<div>
-					<h1 className="text-2xl font-semibold">{project.title}</h1>
-					<p className="text-sm text-muted-foreground">{project.slug}</p>
-				</div>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Editorial"
+				title={project.title}
+				description="Edite narrativa, período, local e publicação do projeto com o mesmo contexto operacional do restante do admin."
+				actions={
+					<div className="flex flex-wrap gap-3">
+						<Link
+							href="/admin/editorial/projects"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para projetos
+						</Link>
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Slug
+							</div>
+							<div className="mt-2 font-mono text-xs text-[color:var(--editorial-muted)]">{project.slug}</div>
+						</div>
+					</div>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat label="Período" value={project.period || "—"} helper="Leitura curta de agenda." />
+				<AdminEditorialStat
+					label="Local"
+					value={project.location || "—"}
+					helper="Contexto territorial do projeto."
+				/>
+				<AdminEditorialStat
+					label="Publicação"
+					value={project.published ? "Publicado" : "Rascunho"}
+					helper="Estado atual na área pública."
+				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
 				<EditorialProjectForm
@@ -76,6 +103,6 @@ export default async function AdminEditorialProjectDetailsPage({
 					</Card>
 				</div>
 			</div>
-		</main>
+		</AdminEditorialPage>
 	);
 }

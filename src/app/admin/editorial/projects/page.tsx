@@ -8,9 +8,15 @@ import {
 } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 export const dynamic = "force-dynamic";
@@ -20,45 +26,69 @@ export default async function AdminEditorialProjectsPage() {
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
 	const projects = await listEditorialProjectRecords();
+	const publishedCount = projects.filter((project) => project.published).length;
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="flex items-end justify-between gap-4">
-				<div className="space-y-2">
-					<h1 className="text-2xl font-semibold">Editorial · Projetos</h1>
-					<p className="text-sm text-muted-foreground">Gerencie os projetos culturais do selo.</p>
-				</div>
-				<Button asChild>
-					<Link href="/admin/editorial/projects/new">
-						<Plus className="h-4 w-4" />
-						Novo projeto
-					</Link>
-				</Button>
-			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Projetos</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex flex-wrap gap-2">
-						<Button asChild variant="outline" size="sm">
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Editorial"
+				title="Projetos"
+				description="Organize programas, laboratórios e frentes culturais com a mesma leitura operacional do restante do admin."
+				actions={
+					<div className="flex flex-wrap gap-3">
+						<Button asChild className="rounded-none">
+							<Link href="/admin/editorial/projects/new">
+								<Plus className="h-4 w-4" />
+								Novo projeto
+							</Link>
+						</Button>
+						<Button asChild variant="outline" className="rounded-none">
 							<Link href="/admin/editorial">
 								<BookOpen className="h-4 w-4" />
 								Hub editorial
 							</Link>
 						</Button>
-						<Button asChild variant="outline" size="sm">
+					</div>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat label="Projetos" value={projects.length} helper="Itens operando nesta coleção." />
+				<AdminEditorialStat
+					label="Publicados"
+					value={publishedCount}
+					helper="Entradas visíveis na área pública."
+				/>
+				<AdminEditorialStat
+					label="Rascunhos"
+					value={projects.length - publishedCount}
+					helper="Edições ainda em preparação."
+				/>
+			</div>
+			<EditorialPanel className="space-y-6">
+				<CardHeader>
+					<CardTitle>Ações rápidas</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="flex flex-wrap gap-2">
+						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/events">
 								<CalendarRange className="h-4 w-4" />
 								Eventos
 							</Link>
 						</Button>
-						<Button asChild variant="outline" size="sm">
+						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/sarau-safado">
 								<BookOpen className="h-4 w-4" />
 								Sarau Safado
 							</Link>
 						</Button>
 					</div>
+				</CardContent>
+			</EditorialPanel>
+			<EditorialPanel className="overflow-hidden p-0">
+				<CardHeader>
+					<CardTitle>Projetos</CardTitle>
+				</CardHeader>
+				<CardContent>
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -131,7 +161,7 @@ export default async function AdminEditorialProjectsPage() {
 						</TableBody>
 					</Table>
 				</CardContent>
-			</Card>
-		</main>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

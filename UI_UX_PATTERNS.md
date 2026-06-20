@@ -29,6 +29,10 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - `src/app/(store)/product/[slug]/product-image-gallery.client.tsx`
 - `src/ui/footer/footer.client.tsx`
 - `src/app/user/page.tsx`
+- `src/app/admin/layout.tsx`
+- `src/app/admin/_components/sidebar.client.tsx`
+- `src/app/admin/_components/topbar.client.tsx`
+- `src/app/admin/page.tsx`
 - `src/app/admin/promotions/page.tsx`
 - `src/app/admin/emails/_components/email-log-table.client.tsx`
 - `src/app/admin/webhooks/page.tsx`
@@ -90,6 +94,11 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - Quando a pessoa usuária tiver uma moeda preferida salva, cadastro, perfil, favoritos, carrinho e checkout devem tentar refletir essa moeda de forma consistente; se a Stripe não oferecer aquela moeda no preço correspondente, a interface deve cair de forma silenciosa e coerente para a moeda padrão do produto, sem exibir mensagens técnicas.
 - Em `/checkout/processing`, o loading deve ser sempre temporário: a tela pode aguardar alguns segundos por confirmação autoritativa, mas deve redirecionar automaticamente para a área de pedidos após no máximo `15s` sem confirmação final; em estados autoritativos de disputa/análise, pode interromper o loading antes e orientar acompanhamento por e-mail e na área de pedidos.
 - Em dashboard, área de pedidos e modais associados, aliases técnicos de disputa ou revisão não devem aparecer crus para a pessoa usuária; a interface precisa consolidá-los em estados claros como `Disputed`, `Won` ou `Lost`.
+- No cockpit atual de `/admin`, a hierarquia deve ser: topbar curta com contexto e ações, filtros, quatro métricas principais com barra lateral colorida, fila operacional prioritária e coluna auxiliar com preview/atividade antes das análises profundas.
+- A sidebar do admin deve usar `264px`, fundo preto, marca compacta, subtítulo `admin editorial`, navegação em pills claras no item ativo e rodapé curto de sessão; a versão mobile deve repetir a mesma lógica dentro do sheet.
+- Em cards de prioridade do dashboard, a cor lateral comunica gravidade (`vinho` para pendência editorial/disputa, `ocre` para atenção, `verde` para fluxo saudável, `vermelho queimado` para falha), e o pill da linha deve repetir esse julgamento de forma legível.
+- Superfícies administrativas legadas, como `emails`, `webhooks` e `users`, devem ser trazidas para o mesmo sistema do dashboard antes de qualquer refatoração mais profunda: hero curto, métricas iniciais, filtros ou atalhos em bloco separado e tabela/painel principal com hierarquia mais seca.
+- Na continuação atual de Goal 2 e Goal 3, telas de detalhe como `/admin/users/[id]` e `/admin/orders/[id]` também devem entrar nesse sistema: hero curto, faixa inicial de métricas e painéis separados para leitura, ação e histórico.
 
 ## Padrões por superfície
 
@@ -153,6 +162,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 
 - A home do rebrand deve seguir a trilha `Editorial Noturno`.
 - Em redesigns aprovados como `Editorial V2`, aplicar a versão clara dessa linguagem: fundo papel `#F7F4EF`, texto `#0B0B0B`, acento vinho `#7A1E22`, apoio bege `#D8D0C4`, ritmo de revista e hero com respiro mais amplo.
+- Na implementação guiada por Figma da Goal 3, o hero da home deve ganhar proporção mais alta, CTA primária clara sobre fundo preto, composição de capa em destaque à direita e reveals discretos por bloco em vez de animações chamativas.
 - A primeira dobra precisa unir posicionamento e ação comercial no mesmo quadro.
 - O título principal da home deve comunicar explicitamente literatura, livraria-editora ou proposta cultural adulta; evitar hero genérico de lifestyle.
 - A CTA primária da home deve levar para livros ou loja.
@@ -173,6 +183,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
   - um bloco de leitura editorial ou princípio curatorial;
   - um bloco de continuidade com links claros para catálogo, agenda, contato ou páginas irmãs.
 - Quando `sarau-safado` receber imagem no hero via admin, essa mídia deve ocupar o fundo da abertura principal e o texto precisa ficar sobreposto em um bloco de leitura protegido por contraste, para que a imagem funcione como capa e não como card lateral.
+- Na Goal 3 guiada por Figma, `about`, `contact`, `events`, `projects` e `sarau-safado` devem compartilhar a mesma cadência de entrada da home: hero mais editorial, painéis com hover lift discreto e reveals leves por bloco.
 - Em listagens editoriais, vale alternar resumo e descrição em duas colunas internas do card para evitar uma leitura longa e monótona.
 - Blocos laterais com “eixos”, “sinais” ou “ritmo da programação” ajudam a dar densidade cultural sem transformar a página em manifesto puro.
 
@@ -205,6 +216,7 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
 - CTA de compra fica isolada e visualmente forte.
 - Em contexto Selo Libertária, a PDP deve combinar compra e atmosfera: trecho, contexto da obra, referências visuais ou críticas podem aparecer abaixo da dobra, sem disputar com a ação principal.
 - Abaixo da dobra, a PDP deve ter mais de um ritmo: contexto editorial, caminhos de continuidade e uma leitura curta sobre como aquela obra se insere no ecossistema do selo.
+- Na Goal 3 guiada por Figma, a PDP deve reforçar contraste entre capa, ficha de compra e bloco de citação, usando títulos maiores, divisórias claras e motion sutil de entrada/hover com respeito a `prefers-reduced-motion`.
 - No admin editorial do Selo Libertária, formulários longos devem seguir o mesmo padrão de seções curtas já usado em produtos: blocos separados para identidade, texto, mídia, publicação e itens repetíveis, reduzindo carga cognitiva mesmo quando a superfície for institucional, como `Sarau Safado`.
 - Em uploads de imagem do admin editorial, o comportamento preferencial deve ser explícito: selecionar arquivo, ver prévia local e concluir o envio ao salvar o formulário. O sistema não deve depender visualmente de upload automático silencioso para transmitir confiança.
 - Em uploads por arquivo no admin, a revisão da imagem deve acontecer em modal antes da confirmação final. O padrão esperado é: selecionar arquivo, abrir prévia ampliada, escolher entre `Salvar` ou `Descartar` e só então manter a seleção ou disparar o upload.
@@ -367,29 +379,40 @@ Ele complementa regras especializadas, como [AUTH_SOCIAL_BUTTON_PATTERN.md](./AU
   - metadados e ações na lateral;
   - preview renderizado ou conteúdo textual na área principal.
 - Reenvio por `API` e `SMTP` fica visível no próprio modal.
+- A página de emails deve abrir com leitura operacional curta, métricas rápidas de enviados/falhos/pendentes e um bloco de filtros antes da tabela, para que a pessoa operadora não precise “descobrir” o estado do sistema só lendo linhas.
 
 ### Webhooks
 
 - A tabela principal mostra status, verificação, tipo, `eventId` e erro.
 - Payloads extensos não devem aparecer inline.
 - O detalhamento usa `details/summary` com `pre` scrollável para headers e payload.
+- A página de webhooks deve tratar filtros de status como ações de navegação curtas e visíveis logo no hero, preservando a abertura de payload na própria linha para evitar telas secundárias desnecessárias.
 
 ### Pedidos
 
 - A página administrativa de pedido deve manter o bloco operacional de fulfillment perto do resumo principal, para que a pessoa operadora entenda o contexto antes de alterar status ou rastreio.
+- Em `/admin/orders/[id]`, o resumo inicial deve expor pelo menos status, total, volume de itens e etapa de fulfillment antes dos blocos detalhados.
 - O identificador principal visível de um pedido deve ser o id interno da aplicação, não um id técnico bruto da Stripe como `pi_...`.
 - Toda alteração manual relevante em pedido, especialmente fulfillment e tracking number, deve aparecer em um bloco próprio de histórico de edição logo abaixo do conteúdo operacional.
 - O histórico de pedido deve mostrar quem alterou, quando alterou e os valores anterior e novo de forma legível para auditoria rápida.
 - Após salvar fulfillment no admin, a tela do pedido deve refletir o novo histórico imediatamente, sem exigir recarga manual da página.
+- Na etapa atual da Goal 3, o detalhe de pedido deve usar labels em `pt-BR` e reveals discretos por seção, mantendo o mesmo acabamento editorial do restante do admin.
 
 ### Papéis internos e navegação
 
 - O backoffice deve tratar `admin` e futuros papéis internos, como `vendor`, como operadores e não como compradores.
 - A navegação administrativa deve revelar apenas áreas compatíveis com as capacidades do papel logado, reduzindo ruído e evitando expor ações sem permissão.
+- No `Admin System / Editorial V2`, a navegação deve viver em sidebar preta fixa com logo textual em caixa alta, trilho estreito de links e estado ativo marcado por acento vinho, enquanto o miolo usa fundo papel e respiro horizontal amplo.
+- Na Goal 6 do shell administrativo, `sidebar.client.tsx` e `topbar.client.tsx` devem virar consumidores de uma mesma camada de funções e primitives, compartilhando marca, sessão, agrupamentos, item ativo e estados de navegação em vez de duplicar markup e regras.
+- No shell do admin, a navegação lateral precisa oferecer hierarquia suficiente para leitura rápida: grupos curtos, label principal forte, eventual ícone discreto ou badge quando agregar escaneabilidade, e estado ativo consistente entre desktop e mobile.
+- O dashboard administrativo não pode sacrificar legibilidade tipográfica para parecer mais dramático; heading, descrição, filtros e CTAs devem abrir estáveis em desktop e mobile, sem sobreposição de letras nem grandes áreas vazias acima do conteúdo útil.
 - A ausência de permissão deve preferir remoção da entrada de navegação e, como segunda linha de defesa, resposta `403` no servidor.
 - A selolibertaria pública não deve ganhar CTAs de compra adaptadas para papéis internos; para esses perfis, o comportamento esperado é bloqueio operacional no backend e mensagens administrativas claras quando necessário.
 - Superfícies de gestão de usuários no admin devem separar claramente leitura de perfil, papel atual e estado de acesso; ações de promover, rebaixar, bloquear e desbloquear devem ficar agrupadas em um bloco operacional distinto e só aparecer para `admin`.
+- Em `/admin/users/[id]`, perfil, compras e gestão de acesso devem ficar em blocos independentes; a coluna de ações sensíveis não deve competir com a leitura do cadastro nem com o histórico de compras.
+- A listagem de usuários deve deixar papel e bloqueio escaneáveis na tabela principal, com métricas rápidas de perfis internos e contas bloqueadas no topo.
 - A página administrativa de produto deve expor histórico de edição em um bloco próprio abaixo da configuração principal e das variantes, mostrando quem alterou, quando alterou e um resumo técnico curto da mudança.
+- Cada tela administrativa principal deve começar por um hero curto com título forte, descrição operacional e, quando fizer sentido, filtros ou CTA no mesmo enquadramento; depois vêm cards de métrica e só então tabelas ou formulários longos.
 
 ## Padrões de disclosure e redução de ruído
 

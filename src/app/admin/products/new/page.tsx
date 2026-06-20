@@ -14,7 +14,13 @@ import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listSystemCategories } from "@/lib/product-categories";
-import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import {
+	AdminEditorialHero,
+	AdminEditorialNote,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
@@ -27,54 +33,59 @@ export default async function NewAdminProductPage() {
 	const orderOptions = Array.from({ length: groups.length + 1 }, (_, index) => index + 1);
 
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="space-y-3">
-				<Link
-					href="/admin/products"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Products
-				</Link>
-				<div>
-					<EditorialEyebrow>Product editor</EditorialEyebrow>
-					<h1 className="editorial-serif text-3xl font-semibold">New product</h1>
-					<p className="max-w-2xl text-sm leading-7 text-[color:var(--editorial-muted)]">
-						Create a product group, define its first variant and publish it with clearer availability
-						controls.
-					</p>
-				</div>
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Livro"
+				title="Novo livro"
+				description="Cadastre o bloco principal do produto, defina a primeira variante e publique o item sem perder o contexto do catálogo."
+				actions={
+					<Link
+						href="/admin/products"
+						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Voltar para livros
+					</Link>
+				}
+			/>
+
+			<div className="grid gap-5 lg:grid-cols-3">
+				<AdminEditorialStat
+					label="Categorias"
+					value={categories.length}
+					helper="Opções disponíveis para classificar o livro."
+				/>
+				<AdminEditorialStat
+					label="Posição inicial"
+					value={orderOptions[0] ?? 1}
+					helper="Ordem sugerida no catálogo atual."
+				/>
+				<AdminEditorialNote
+					title="Fluxo"
+					description="Preencha os dados principais, revise a primeira variante e salve para abrir a gestão completa do livro."
+				/>
 			</div>
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Create product</CardTitle>
+					<CardTitle>Cadastro</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<form action={createStripeProductAction} className="space-y-6">
-						<FormSection
-							title="Product details"
-							description="Set the shared information that all variants will inherit from this product."
-						>
-							<ProductCoreFields categories={categories} orderOptions={orderOptions} />
+						<FormSection title="Informações principais">
+							<ProductCoreFields categories={categories} orderOptions={orderOptions} autoFormatSlug />
 						</FormSection>
-						<FormSection
-							title="First variant"
-							description="Create the first option now so the product is ready for the catalog."
-						>
+						<FormSection title="Primeira variante">
 							<VariantFields />
 						</FormSection>
-						<FormSection
-							title="Pricing"
-							description="Define the initial price and currency for the first variant."
-						>
-							<PriceFields currency="usd" />
+						<FormSection title="Preço">
+							<PriceFields />
 						</FormSection>
 						<ActiveCheckbox defaultChecked />
-						<SubmitButton>Create product</SubmitButton>
+						<SubmitButton>Criar livro</SubmitButton>
 					</form>
 				</CardContent>
 			</EditorialPanel>
-		</main>
+		</AdminEditorialPage>
 	);
 }

@@ -5,6 +5,11 @@ import { EditorialEventForm } from "@/app/admin/editorial/_components/editorial-
 import { createEditorialEventAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import {
+	AdminEditorialHero,
+	AdminEditorialNote,
+	AdminEditorialPage,
+} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -14,24 +19,26 @@ export default async function NewEditorialEventPage() {
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
 
 	return (
-		<main className="mx-auto max-w-full space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-			<div className="space-y-3">
-				<Link
-					href="/admin/editorial/events"
-					className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					Editorial
-				</Link>
-				<div>
-					<h1 className="text-2xl font-semibold">Novo evento</h1>
-					<p className="text-sm text-muted-foreground">
-						Crie um evento editorial com texto, status, ordem e imagem principal.
-					</p>
-				</div>
-			</div>
-
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Editorial"
+				title="Novo evento"
+				description="Crie um evento com leitura curta, agenda, ordem editorial e imagem principal sem sair do fluxo do hub."
+				actions={
+					<Link
+						href="/admin/editorial/events"
+						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Voltar para eventos
+					</Link>
+				}
+			/>
+			<AdminEditorialNote
+				title="Fluxo"
+				description="Preencha identidade, agenda, imagem e publicação. Ao salvar, o evento volta para a coleção com ordem e status prontos para revisão."
+			/>
 			<EditorialEventForm action={createEditorialEventAction} submitLabel="Criar evento" />
-		</main>
+		</AdminEditorialPage>
 	);
 }

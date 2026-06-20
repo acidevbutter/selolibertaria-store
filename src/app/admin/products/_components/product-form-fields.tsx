@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useFormStatus } from "react-dom";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
 import { CategorySelectField } from "@/app/admin/products/_components/category-select-field.client";
@@ -13,14 +16,16 @@ export function Field({
 	name,
 	children,
 	hint,
+	className,
 }: {
 	label: string;
 	name: string;
 	children: ReactNode;
 	hint?: string;
+	className?: string;
 }) {
 	return (
-		<div className="space-y-2">
+		<div className={className ?? "space-y-2"}>
 			<Label
 				htmlFor={name}
 				className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
@@ -38,20 +43,22 @@ export function Textarea({
 	defaultValue,
 	rows = 3,
 	placeholder,
+	className,
 }: {
 	name: string;
-	defaultValue?: string;
+	defaultValue?: string | null;
 	rows?: number;
 	placeholder?: string;
+	className?: string;
 }) {
 	return (
 		<textarea
 			id={name}
 			name={name}
-			defaultValue={defaultValue}
+			defaultValue={defaultValue ?? undefined}
 			rows={rows}
 			placeholder={placeholder}
-			className="flex min-h-24 w-full border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+			className={`flex min-h-24 w-full border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className ?? ""}`}
 		/>
 	);
 }
@@ -60,19 +67,14 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 	return (
 		<div className="space-y-3 border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)] p-5">
 			<div className="space-y-1">
-				<h3 className="text-sm font-medium">Availability</h3>
-				<p className="text-xs text-muted-foreground">
-					Choose whether this item should stay available in the catalog.
-				</p>
+				<h3 className="text-sm font-medium">Disponibilidade</h3>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2">
 				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
 					<input type="radio" name="active" value="true" defaultChecked={defaultChecked} className="mt-0.5" />
 					<span className="space-y-1">
-						<span className="block font-medium">Active</span>
-						<span className="block text-xs text-muted-foreground">
-							The product stays visible and available for use in the admin flow.
-						</span>
+						<span className="block font-medium">Ativo</span>
+						<span className="block text-xs text-muted-foreground">Disponível no catálogo.</span>
 					</span>
 				</label>
 				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
@@ -84,10 +86,8 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 						className="mt-0.5"
 					/>
 					<span className="space-y-1">
-						<span className="block font-medium">Deactivate</span>
-						<span className="block text-xs text-muted-foreground">
-							Use this when the product or variant should no longer be active.
-						</span>
+						<span className="block font-medium">Desativar</span>
+						<span className="block text-xs text-muted-foreground">Oculta o item no catálogo.</span>
 					</span>
 				</label>
 			</div>
@@ -117,6 +117,32 @@ export function FormSection({
 	);
 }
 
+function formatSlugToKebab(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+function formatSlugWhileTyping(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+/g, "");
+}
+
+function applySlugAutoFormat(event: { currentTarget: HTMLInputElement }) {
+	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
+}
+
+function applySlugBlurFormat(event: { currentTarget: HTMLInputElement }) {
+	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
+}
+
 export function ProductCoreFields({
 	name = "",
 	slug = "",
@@ -128,6 +154,7 @@ export function ProductCoreFields({
 	categories = [],
 	orderOptions = [],
 	autoSubmitImages = false,
+	autoFormatSlug = false,
 }: {
 	name?: string;
 	slug?: string;
@@ -139,48 +166,53 @@ export function ProductCoreFields({
 	categories?: Array<{ name: string; slug: string }>;
 	orderOptions?: number[];
 	autoSubmitImages?: boolean;
+	autoFormatSlug?: boolean;
 }) {
 	const selectedCategorySlug =
 		categories.find((item) => item.slug === category || item.name.toLowerCase() === category.toLowerCase())
 			?.slug || "";
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2">
-			<Field label="Name" name="name">
-				<Input id="name" name="name" defaultValue={name} minLength={2} required />
+		<div className="grid gap-4 md:grid-cols-12">
+			<Field label="Nome" name="name" className="space-y-2 md:col-span-7 xl:col-span-6">
+				<Input id="name" name="name" defaultValue={name} minLength={2} required className="max-w-xl" />
 			</Field>
-			<Field label="Slug" name="slug" hint="Use kebab-case, for example camiseta-preta.">
+			<Field label="Slug" name="slug" className="space-y-2 md:col-span-5 xl:col-span-4">
 				<Input
 					id="slug"
 					name="slug"
 					defaultValue={slug}
-					placeholder="product-slug"
+					placeholder="livro-exemplo"
 					pattern={fieldPatterns.kebabCase}
-					title="Use kebab-case, for example camiseta-preta."
+					title="Use kebab-case, por exemplo livro-exemplo."
+					className="max-w-sm"
+					onChange={autoFormatSlug ? applySlugAutoFormat : undefined}
+					onInput={autoFormatSlug ? applySlugAutoFormat : undefined}
+					onBlur={autoFormatSlug ? applySlugBlurFormat : undefined}
 				/>
 			</Field>
-			<Field label="Category" name="category" hint="Choose the category used to organize this product.">
-				<CategorySelectField categories={categories} defaultValue={selectedCategorySlug} />
+			<Field label="Categoria" name="category" className="space-y-2 md:col-span-4 xl:col-span-3">
+				<CategorySelectField
+					categories={categories}
+					defaultValue={selectedCategorySlug}
+					triggerClassName="max-w-xs"
+				/>
 			</Field>
-			<Field
-				label="Display order"
-				name="order"
-				hint="Choosing a taken position pushes the current product and the following ones down automatically."
-			>
+			<Field label="Ordem" name="order" className="space-y-2 md:col-span-4 xl:col-span-3">
 				<select
 					id="order"
 					name="order"
 					defaultValue={order || String(orderOptions[0] ?? 1)}
-					className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background focus:outline-hidden focus:ring-1 focus:ring-ring"
+					className="flex h-9 w-full max-w-[11rem] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background focus:outline-hidden focus:ring-1 focus:ring-ring"
 				>
 					{orderOptions.map((option) => (
 						<option key={option} value={String(option)}>
-							Position {option}
+							Posição {option}
 						</option>
 					))}
 				</select>
 			</Field>
-			<Field label="Stock" name="stock" hint="Use a whole number such as 25.">
+			<Field label="Estoque" name="stock" className="space-y-2 md:col-span-4 xl:col-span-2">
 				<Input
 					id="stock"
 					name="stock"
@@ -190,16 +222,17 @@ export function ProductCoreFields({
 					defaultValue={stock}
 					inputMode="numeric"
 					placeholder="25"
+					className="max-w-[9rem]"
 				/>
 			</Field>
-			<div className="md:col-span-2">
-				<Field label="Description" name="description">
-					<Textarea name="description" defaultValue={description} />
+			<div className="md:col-span-12 xl:col-span-8">
+				<Field label="Descrição" name="description">
+					<Textarea name="description" defaultValue={description} className="max-w-4xl" />
 				</Field>
 			</div>
-			<div className="md:col-span-2">
+			<div className="md:col-span-12">
 				<Field
-					label="Images"
+					label="Imagens"
 					name="images"
 					hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 				>
@@ -212,7 +245,7 @@ export function ProductCoreFields({
 
 export function ImagePreviewField({ images, alt }: { images: string[]; alt: string }) {
 	return (
-		<Field label="Image preview" name={`${alt}-preview`}>
+		<Field label="Prévia das imagens" name={`${alt}-preview`}>
 			<AdminProductImagePreview images={images} alt={alt} />
 		</Field>
 	);
@@ -221,7 +254,7 @@ export function ImagePreviewField({ images, alt }: { images: string[]; alt: stri
 export function ImageUrlsField({ name = "images", images }: { name?: string; images: string[] }) {
 	return (
 		<Field
-			label="Images"
+			label="Imagens"
 			name={name}
 			hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 		>
@@ -230,10 +263,10 @@ export function ImageUrlsField({ name = "images", images }: { name?: string; ima
 	);
 }
 
-export function PriceFields({ price, currency = "usd" }: { price?: number | null; currency?: string }) {
+export function PriceFields({ price }: { price?: number | null }) {
 	return (
-		<div className="grid gap-4 md:grid-cols-2">
-			<Field label="Price" name="price" hint="Saving a changed price creates a new Stripe Price.">
+		<div className="grid gap-4 md:grid-cols-12">
+			<Field label="Preço" name="price" className="space-y-2 md:col-span-4 xl:col-span-3">
 				<Input
 					id="price"
 					name="price"
@@ -242,17 +275,7 @@ export function PriceFields({ price, currency = "usd" }: { price?: number | null
 					min="0"
 					defaultValue={typeof price === "number" ? String(price) : ""}
 					required
-				/>
-			</Field>
-			<Field label="Currency" name="currency">
-				<Input
-					id="currency"
-					name="currency"
-					defaultValue={currency.toLowerCase()}
-					maxLength={3}
-					pattern={fieldPatterns.currency}
-					title="Use a 3-letter currency code, such as usd or brl."
-					required
+					className="max-w-[10rem]"
 				/>
 			</Field>
 		</div>
@@ -275,14 +298,11 @@ export function InheritedVariantFields({
 	return (
 		<div className="space-y-4 rounded-md border p-4">
 			<div className="space-y-1">
-				<h3 className="text-sm font-medium">Inherited from product</h3>
-				<p className="text-xs text-muted-foreground">
-					Name, slug, category, description, and images stay in sync with the group.
-				</p>
+				<h3 className="text-sm font-medium">Herdado do livro</h3>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
-					<Label>Name</Label>
+					<Label>Nome</Label>
 					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{name}</div>
 				</div>
 				<div className="space-y-2">
@@ -290,17 +310,17 @@ export function InheritedVariantFields({
 					<div className="rounded-md border bg-muted/40 px-3 py-2 font-mono text-sm">{slug}</div>
 				</div>
 				<div className="space-y-2">
-					<Label>Category</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{category || "No category"}</div>
+					<Label>Categoria</Label>
+					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{category || "Sem categoria"}</div>
 				</div>
 				<div className="space-y-2">
-					<Label>Description</Label>
+					<Label>Descrição</Label>
 					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
-						{description || "No description"}
+						{description || "Sem descrição"}
 					</div>
 				</div>
 			</div>
-			<ImagePreviewField images={images} alt={name || slug || "Product image"} />
+			<ImagePreviewField images={images} alt={name || slug || "Imagem do produto"} />
 		</div>
 	);
 }
@@ -313,11 +333,17 @@ export function VariantFields({
 	variantOrder?: string;
 }) {
 	return (
-		<div className="grid gap-4 md:grid-cols-2">
-			<Field label="Variant label" name="variant">
-				<Input id="variant" name="variant" defaultValue={variant} placeholder="Red, XL, Framed..." />
+		<div className="grid gap-4 md:grid-cols-12">
+			<Field label="Nome da variante" name="variant" className="space-y-2 md:col-span-7 xl:col-span-5">
+				<Input
+					id="variant"
+					name="variant"
+					defaultValue={variant}
+					placeholder="Capa dura, bolso, edição 2..."
+					className="max-w-md"
+				/>
 			</Field>
-			<Field label="Variant order" name="variantOrder">
+			<Field label="Ordem da variante" name="variantOrder" className="space-y-2 md:col-span-5 xl:col-span-3">
 				<Input
 					id="variantOrder"
 					name="variantOrder"
@@ -326,6 +352,7 @@ export function VariantFields({
 					defaultValue={variantOrder}
 					inputMode="decimal"
 					placeholder="1"
+					className="max-w-[10rem]"
 				/>
 			</Field>
 		</div>
@@ -333,7 +360,13 @@ export function VariantFields({
 }
 
 export function SubmitButton({ children }: { children: ReactNode }) {
-	return <Button type="submit">{children}</Button>;
+	const { pending } = useFormStatus();
+
+	return (
+		<Button type="submit" disabled={pending}>
+			{pending ? "Salvando..." : children}
+		</Button>
+	);
 }
 
 export { VariantPriceFields };

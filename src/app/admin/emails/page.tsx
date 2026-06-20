@@ -5,8 +5,13 @@ import { redirect } from "next/navigation";
 import { EmailLogTable } from "@/app/admin/emails/_components/email-log-table.client";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
 import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +58,7 @@ function toDateString(value?: Date | string | null) {
 	if (!value) return "-";
 	const date = value instanceof Date ? value : new Date(value);
 	if (Number.isNaN(date.getTime())) return "-";
-	return new Intl.DateTimeFormat("en-US", {
+	return new Intl.DateTimeFormat("pt-BR", {
 		dateStyle: "short",
 		timeStyle: "medium",
 	}).format(date);
@@ -102,17 +107,17 @@ function buildQuery({ status, kind, q }: { status?: string; kind?: string; q?: s
 function formatKindLabel(kind?: string | null) {
 	switch ((kind || "").toLowerCase()) {
 		case "email_confirmation":
-			return "Email confirmation";
+			return "Confirmação de email";
 		case "order_status":
-			return "Order status";
+			return "Status de pedido";
 		case "password_reset":
-			return "Password reset";
+			return "Redefinição de senha";
 		case "test":
-			return "Test";
+			return "Teste";
 		case "transactional":
-			return "Transactional";
+			return "Transacional";
 		default:
-			return "Legacy/undefined";
+			return "Legado / indefinido";
 	}
 }
 
@@ -189,7 +194,7 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 		status: item.status || "unknown",
 		kindLabel: formatKindLabel(item.kind),
 		email: item.email || "-",
-		subject: item.subject || "No subject",
+		subject: item.subject || "Sem assunto",
 		previewBody: summarizeBody(item.emailBody),
 		purchaseId: item.purchaseId || null,
 		userId: item.userId || null,
@@ -206,133 +211,131 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	}));
 
 	return (
-		<main className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-			<div className="space-y-2">
-				<div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
-					<Mail className="h-3.5 w-3.5" />
-					Email history
+		<AdminEditorialPage>
+			<AdminEditorialHero
+				eyebrow="Emails"
+				title="Emails transacionais"
+				description="Acompanhe envios, falhas e retentativas."
+				actions={
+					<div className="w-full max-w-5xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
+						<form
+							method="get"
+							className="grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_180px_220px_auto] xl:items-end"
+						>
+							<div className="min-w-[220px]">
+								<label
+									htmlFor="email-search"
+									className="mb-2 block text-sm text-[color:var(--editorial-muted)]"
+								>
+									Buscar por email, pedido, mensagem ou origem
+								</label>
+								<Input
+									id="email-search"
+									name="q"
+									defaultValue={q}
+									placeholder="cliente@email.com, pedido, template..."
+									className="rounded-none border-[color:var(--editorial-border)] bg-white"
+								/>
+							</div>
+							<div>
+								<label htmlFor="status" className="mb-2 block text-sm text-[color:var(--editorial-muted)]">
+									Status
+								</label>
+								<select
+									id="status"
+									name="status"
+									defaultValue={status}
+									className="flex h-10 w-full rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+								>
+									<option value="all">Todos</option>
+									<option value="sent">Enviados</option>
+									<option value="failed">Falhos</option>
+									<option value="pending">Pendentes</option>
+								</select>
+							</div>
+							<div>
+								<label htmlFor="kind" className="mb-2 block text-sm text-[color:var(--editorial-muted)]">
+									Tipo
+								</label>
+								<select
+									id="kind"
+									name="kind"
+									defaultValue={kind}
+									className="flex h-10 w-full rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+								>
+									<option value="all">Todos</option>
+									<option value="order_status">Status de pedido</option>
+									<option value="email_confirmation">Confirmação de email</option>
+									<option value="password_reset">Redefinição de senha</option>
+									<option value="transactional">Transacional</option>
+									<option value="test">Teste</option>
+									<option value="unknown">Legado / indefinido</option>
+								</select>
+							</div>
+							<input type="hidden" name="limit" value={String(limit)} />
+							<div className="flex flex-wrap gap-2">
+								<Button
+									type="submit"
+									className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+								>
+									Aplicar
+								</Button>
+								<Button asChild variant="outline" className="rounded-none">
+									<Link href="/admin/emails">Limpar</Link>
+								</Button>
+							</div>
+						</form>
+					</div>
+				}
+			/>
+			<div className="grid gap-5 lg:grid-cols-4">
+				<AdminEditorialStat
+					label="Registros"
+					value={totalMatching}
+					helper="Base filtrada para auditoria operacional."
+				/>
+				<AdminEditorialStat label="Enviados" value={sentCount} helper="Mensagens concluídas com sucesso." />
+				<AdminEditorialStat
+					label="Falhos"
+					value={failedCount}
+					helper="Envios que pedem revisão ou retentativa."
+				/>
+				<AdminEditorialStat
+					label="Pendentes"
+					value={pendingCount}
+					helper="Mensagens ainda sem desfecho final."
+				/>
+			</div>
+			<EditorialPanel className="p-0">
+				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
+					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+						<Mail className="h-4 w-4" />
+						Entrega e histórico
+					</div>
 				</div>
-				<h1 className="text-2xl font-semibold">Emails</h1>
-				<p className="text-sm text-muted-foreground">
-					All transactional sends are logged here with status, subject, recipient, and order context when
-					available.
-				</p>
-			</div>
-
-			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-				<Card>
-					<CardHeader className="pb-2">
-						<CardTitle className="text-sm text-muted-foreground">Records</CardTitle>
-					</CardHeader>
-					<CardContent className="text-2xl font-semibold">{totalMatching}</CardContent>
-				</Card>
-				<Card>
-					<CardHeader className="pb-2">
-						<CardTitle className="text-sm text-muted-foreground">Sent</CardTitle>
-					</CardHeader>
-					<CardContent className="text-2xl font-semibold">{sentCount}</CardContent>
-				</Card>
-				<Card>
-					<CardHeader className="pb-2">
-						<CardTitle className="text-sm text-muted-foreground">Failed</CardTitle>
-					</CardHeader>
-					<CardContent className="text-2xl font-semibold">{failedCount}</CardContent>
-				</Card>
-				<Card>
-					<CardHeader className="pb-2">
-						<CardTitle className="text-sm text-muted-foreground">Pending</CardTitle>
-					</CardHeader>
-					<CardContent className="text-2xl font-semibold">{pendingCount}</CardContent>
-				</Card>
-			</div>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Filters</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form method="get" className="flex flex-col gap-3 lg:flex-row lg:items-end">
-						<div className="flex-1 min-w-[220px]">
-							<label htmlFor="email-search" className="mb-2 block text-sm text-muted-foreground">
-								Search by email, order, message, or source
-							</label>
-							<Input
-								id="email-search"
-								name="q"
-								defaultValue={q}
-								placeholder="customer@example.com, pi_..., order, template..."
-							/>
-						</div>
-						<div className="min-w-[180px]">
-							<label htmlFor="status" className="mb-2 block text-sm text-muted-foreground">
-								Status
-							</label>
-							<select
-								id="status"
-								name="status"
-								defaultValue={status}
-								className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
-							>
-								<option value="all">All</option>
-								<option value="sent">Sent</option>
-								<option value="failed">Failed</option>
-								<option value="pending">Pending</option>
-							</select>
-						</div>
-						<div className="min-w-[220px]">
-							<label htmlFor="kind" className="mb-2 block text-sm text-muted-foreground">
-								Type
-							</label>
-							<select
-								id="kind"
-								name="kind"
-								defaultValue={kind}
-								className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
-							>
-								<option value="all">All</option>
-								<option value="order_status">Order status</option>
-								<option value="email_confirmation">Email confirmation</option>
-								<option value="password_reset">Password reset</option>
-								<option value="transactional">Transactional</option>
-								<option value="test">Test</option>
-								<option value="unknown">Legacy/undefined</option>
-							</select>
-						</div>
-						<input type="hidden" name="limit" value={String(limit)} />
-						<Button type="submit">Apply</Button>
-						<Button asChild variant="outline">
-							<Link href="/admin/emails">Clear</Link>
-						</Button>
-					</form>
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Recent sends</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<div className="space-y-4 p-6 sm:p-8">
 					<EmailLogTable items={tableItems} limit={limit} />
 
-					<div className="mt-4 flex items-center justify-between gap-3">
-						<p className="text-sm text-muted-foreground">
-							Showing {items.length} of {totalMatching} records.
+					<div className="flex flex-col gap-3 border-t border-[color:var(--editorial-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-sm text-[color:var(--editorial-muted)]">
+							Mostrando {items.length > 0 ? skip + 1 : 0} - {skip + items.length} de {totalMatching}{" "}
+							registro(s).
 						</p>
 						<div className="flex items-center gap-2">
 							{previousHref ? (
-								<Button asChild variant="outline">
-									<Link href={previousHref}>Previous</Link>
+								<Button asChild variant="outline" className="rounded-none">
+									<Link href={previousHref}>Anterior</Link>
 								</Button>
 							) : null}
 							{nextHref ? (
-								<Button asChild variant="outline">
-									<Link href={nextHref}>Next</Link>
+								<Button asChild variant="outline" className="rounded-none">
+									<Link href={nextHref}>Próximo</Link>
 								</Button>
 							) : null}
 						</div>
 					</div>
-				</CardContent>
-			</Card>
-		</main>
+				</div>
+			</EditorialPanel>
+		</AdminEditorialPage>
 	);
 }

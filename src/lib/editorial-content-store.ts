@@ -1,16 +1,11 @@
 import "server-only";
 
 import type { Filter } from "mongodb";
-import type {
-	EditorialAboutPage,
-	EditorialContactPage,
-	EditorialDocument,
-	EditorialHomePage,
-	EditorialSarauPage,
-} from "@/lib/editorial-content";
+import type { EditorialDocument } from "@/lib/editorial-content";
 import {
 	getMockEditorialAboutPage,
 	getMockEditorialContactPage,
+	getMockEditorialDocuments,
 	getMockEditorialEvents,
 	getMockEditorialHomePage,
 	getMockEditorialProjects,
@@ -32,12 +27,31 @@ async function listEditorialFromDb<T extends EditorialDocument["type"]>(type: T)
 		.toArray();
 }
 
+function selectFirstPublished<T extends { published: boolean }>(items: T[]) {
+	return items.find((item) => item.published) ?? null;
+}
+
+function getFallbackDocument<T extends EditorialDocument["type"]>(type: T) {
+	return getMockEditorialDocuments().find(
+		(item): item is Extract<EditorialDocument, { type: T }> => item.type === type,
+	);
+}
+
 export async function listEditorialEvents() {
 	try {
 		const items = await listEditorialFromDb("event");
 		if (items.length > 0) return items;
 	} catch {}
 	return getMockEditorialEvents();
+}
+
+export async function getEditorialEventRecordBySlug(slug: string) {
+	try {
+		const items = await listEditorialFromDb("event");
+		const item = items.find((entry) => entry.slug === slug);
+		if (item) return item;
+	} catch {}
+	return getMockEditorialEvents().find((item) => item.slug === slug) ?? null;
 }
 
 export async function listEditorialProjects() {
@@ -48,13 +62,19 @@ export async function listEditorialProjects() {
 	return getMockEditorialProjects();
 }
 
+export async function getEditorialProjectRecordBySlug(slug: string) {
+	try {
+		const items = await listEditorialFromDb("project");
+		const item = items.find((entry) => entry.slug === slug);
+		if (item) return item;
+	} catch {}
+	return getMockEditorialProjects().find((item) => item.slug === slug) ?? null;
+}
+
 export async function getEditorialSarauPage() {
 	try {
-		const db = await getDb();
-		const item = await db.collection<EditorialSarauPage>(COLLECTION).findOne({
-			type: "page_sarau",
-			slug: "sarau-safado",
-		});
+		const items = await listEditorialFromDb("page_sarau");
+		const item = selectFirstPublished(items);
 		if (item) return item;
 	} catch {}
 	return getMockEditorialSarauPage();
@@ -62,11 +82,8 @@ export async function getEditorialSarauPage() {
 
 export async function getEditorialAboutPage() {
 	try {
-		const db = await getDb();
-		const item = await db.collection<EditorialAboutPage>(COLLECTION).findOne({
-			type: "page_about",
-			slug: "about",
-		});
+		const items = await listEditorialFromDb("page_about");
+		const item = selectFirstPublished(items);
 		if (item) return item;
 	} catch {}
 	return getMockEditorialAboutPage();
@@ -74,11 +91,8 @@ export async function getEditorialAboutPage() {
 
 export async function getEditorialContactPage() {
 	try {
-		const db = await getDb();
-		const item = await db.collection<EditorialContactPage>(COLLECTION).findOne({
-			type: "page_contact",
-			slug: "contact",
-		});
+		const items = await listEditorialFromDb("page_contact");
+		const item = selectFirstPublished(items);
 		if (item) return item;
 	} catch {}
 	return getMockEditorialContactPage();
@@ -86,12 +100,32 @@ export async function getEditorialContactPage() {
 
 export async function getEditorialHomePage() {
 	try {
-		const db = await getDb();
-		const item = await db.collection<EditorialHomePage>(COLLECTION).findOne({
-			type: "page_home",
-			slug: "home",
-		});
+		const items = await listEditorialFromDb("page_home");
+		const item = selectFirstPublished(items);
 		if (item) return item;
 	} catch {}
 	return getMockEditorialHomePage();
+}
+
+export async function listEditorialRecordsForAdmin<T extends EditorialDocument["type"]>(type: T) {
+	try {
+		const items = await listEditorialFromDb(type);
+		if (items.length > 0) return items;
+	} catch {}
+
+	const fallback = getMockEditorialDocuments().filter(
+		(item): item is Extract<EditorialDocument, { type: T }> => item.type === type,
+	);
+
+	return fallback.sort((left, right) => left.order - right.order);
+}
+
+export async function getEditorialRecordForAdmin<T extends EditorialDocument["type"]>(type: T) {
+	try {
+		const items = await listEditorialFromDb(type);
+		const item = items[0] ?? null;
+		if (item) return item;
+	} catch {}
+
+	return getFallbackDocument(type) ?? null;
 }

@@ -169,7 +169,7 @@ export function normalizeShippingProviderInput(
 						? Number(value.estimatedDays)
 						: null
 					: null,
-		currency: value.currency?.trim().toUpperCase() || null,
+		currency: null,
 		supportedCountries: normalizeSupportedCountries(value.supportedCountries),
 		requiresPostalCode: value.requiresPostalCode === true,
 		defaultWeightGrams:

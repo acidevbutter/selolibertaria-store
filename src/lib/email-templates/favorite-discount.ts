@@ -21,44 +21,44 @@ export function favoriteDiscountEmailHtml({
 	promotionLabel,
 	supportEmail,
 }: Props) {
-	const greeting = name ? `Hello, ${escapeEmailHtml(name)}.` : "Hello.";
+	const greeting = name ? `Olá, ${escapeEmailHtml(name)}.` : "Olá.";
 	const variantHtml = variantLabel
-		? `<p class="note-card"><strong>Favorited variant</strong><br />${escapeEmailHtml(variantLabel)}</p>`
+		? `<p class="note-card"><strong>Variante favoritada</strong><br />${escapeEmailHtml(variantLabel)}</p>`
 		: "";
 	const bodyHtml = `
 		<p class="lead">${greeting}</p>
-		<p>An item from your favorites list just went on sale at Selo Libertaria.</p>
+		<p>Um item da sua lista de favoritos acabou de entrar em promoção no Selo Libertária.</p>
 		<span class="status-pill">${escapeEmailHtml(promotionLabel)}</span>
 		<div class="meta-grid">
 			<div class="meta-box">
-				<span class="meta-label">Product</span>
+				<span class="meta-label">Produto</span>
 				<span class="meta-value">${escapeEmailHtml(productName)}</span>
 			</div>
 			<div class="meta-box">
-				<span class="meta-label">New price</span>
+				<span class="meta-label">Novo preço</span>
 				<span class="meta-value price-emphasis">${escapeEmailHtml(effectivePrice)}</span>
 			</div>
 		</div>
 		<div class="info-card">
-			<strong>Previous price</strong>
+			<strong>Preço anterior</strong>
 			<p style="margin:8px 0 0">${escapeEmailHtml(basePrice)}</p>
 		</div>
 		${variantHtml}
 		<div class="cta-wrap">
-			${emailButtonHtml({ href: productUrl, label: "View product" })}
+			${emailButtonHtml({ href: productUrl, label: "Ver produto" })}
 		</div>
 		<div class="link-block">
-			If you no longer want to receive discount alerts for favorited items, go to your profile and disable
-			promotional emails.
+			Se você não quiser mais receber alertas de desconto para itens favoritados, vá ao seu perfil e desative os
+			emails promocionais.
 		</div>
 	`;
 
 	return emailShellHtml({
-		title: "Your favorite item is on sale",
-		eyebrow: "Favorite alert",
-		preheader: `${productName} is now discounted`,
+		title: "Seu item favorito entrou em promoção",
+		eyebrow: "Alerta de favorito",
+		preheader: `${productName} está com desconto`,
 		bodyHtml,
 		supportEmail,
-		footerNote: "You are receiving this email because promotional alerts are enabled on your account.",
+		footerNote: "Você está recebendo este email porque alertas promocionais estão ativos na sua conta.",
 	});
 }

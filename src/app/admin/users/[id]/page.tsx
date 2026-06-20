@@ -1,11 +1,18 @@
 import { ObjectId } from "mongodb";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { setUserBlockedAction, updateUserRoleAction } from "@/app/admin/users/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability, isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
+import {
+	AdminEditorialHero,
+	AdminEditorialPage,
+	AdminEditorialStat,
+	EditorialPanel,
+} from "@/ui/editorial/editorial-primitives";
+import { Reveal } from "@/ui/motion/reveal";
 import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 function isValidObjectId(id: string | undefined | null): id is string {
 	return !!id && /^[0-9a-fA-F]{24}$/.test(id);
@@ -44,136 +51,240 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 	const canManageStaff = hasCapability(session.user.role, "staff.manage");
 	const role = normalizeUserRole(user.role);
 	const blocked = isUserBlocked(user);
+	const purchaseCount = user.purchases?.length ?? 0;
+	const addressSummary = user.address
+		? [
+				user.address.line1,
+				user.address.city,
+				user.address.state,
+				user.address.postalCode,
+				user.address.country,
+			]
+				.filter(Boolean)
+				.join(", ")
+		: null;
 
 	return (
-		<main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-			<div>
-				<h1 className="text-2xl font-semibold">User details</h1>
-			</div>
-			<Card>
-				<CardHeader>
-					<CardTitle>Profile</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-1">
-					<div>
-						<span className="text-muted-foreground">Email:</span>{" "}
-						<span className="break-all">{user.email}</span>
-					</div>
-					<div>
-						<span className="text-muted-foreground">Role:</span> {role}
-					</div>
-					<div>
-						<span className="text-muted-foreground">Access:</span>{" "}
-						<span className={blocked ? "text-destructive" : "text-emerald-600"}>
-							{blocked ? "Blocked" : "Active"}
-						</span>
-					</div>
-					{user.name && (
-						<div>
-							<span className="text-muted-foreground">Name:</span> {user.name}
-						</div>
-					)}
-					{user.phone && (
-						<div>
-							<span className="text-muted-foreground">Phone:</span> {user.phone}
-						</div>
-					)}
-					{user.address && (
-						<div className="text-sm text-muted-foreground">
-							Address:{" "}
-							{[
-								user.address.line1,
-								user.address.city,
-								user.address.state,
-								user.address.postalCode,
-								user.address.country,
-							]
-								.filter(Boolean)
-								.join(", ")}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-			{canManageStaff ? (
-				<Card>
-					<CardHeader>
-						<CardTitle>Access management</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-6">
-						<div className="space-y-2 text-sm text-muted-foreground">
-							<p>
-								Only admins can change roles or block access. Any change revokes the user's active sessions
-								immediately.
-							</p>
-							{blocked && user.access?.blockedReason ? (
-								<p className="text-destructive">Reason: {user.access.blockedReason}</p>
-							) : null}
-						</div>
-						<form action={updateUserRoleAction} className="space-y-3 rounded-xl border p-4">
-							<input type="hidden" name="userId" value={id} />
-							<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-								<label className="grid gap-2">
-									<span className="text-sm font-medium">Role</span>
-									<select
-										name="role"
-										defaultValue={role}
-										className="min-w-48 rounded-md border bg-background px-3 py-2 text-sm"
-									>
-										<option value="customer">Customer</option>
-										<option value="vendor">Vendor</option>
-										<option value="admin">Admin</option>
-									</select>
-								</label>
-								<Button type="submit">Update role</Button>
+		<AdminEditorialPage>
+			<Reveal>
+				<AdminEditorialHero
+					eyebrow="Usuário"
+					title={`Leitura operacional de ${user.name || user.email}.`}
+					description="Perfil, papel atual, estado de acesso e histórico de compras aparecem em blocos previsíveis para suporte e gestão interna."
+					actions={
+						<Link
+							href="/admin/users"
+							className="inline-flex h-11 items-center justify-center rounded-none border border-[color:var(--editorial-border)] px-5 text-sm font-semibold text-[color:var(--editorial-ink)] transition-colors hover:bg-[#fbf7f1]"
+						>
+							Voltar para usuários
+						</Link>
+					}
+				/>
+			</Reveal>
+			<Reveal delay={0.04}>
+				<div className="grid gap-5 lg:grid-cols-4">
+					<AdminEditorialStat
+						label="Papel"
+						value={role.toUpperCase()}
+						helper="Permissão atual reconhecida pelo sistema."
+					/>
+					<AdminEditorialStat
+						label="Acesso"
+						value={blocked ? "Bloqueado" : "Ativo"}
+						helper="Estado operacional desta conta."
+					/>
+					<AdminEditorialStat
+						label="Compras"
+						value={purchaseCount}
+						helper="Pedidos associados a este cadastro."
+					/>
+					<AdminEditorialStat
+						label="Gestão interna"
+						value={canManageStaff ? "Liberada" : "Somente leitura"}
+						helper="Ações sensíveis dependem do papel da sessão atual."
+					/>
+				</div>
+			</Reveal>
+			<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+				<div className="space-y-6">
+					<Reveal delay={0.08}>
+						<EditorialPanel className="space-y-5">
+							<div className="space-y-1">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Perfil
+								</div>
+								<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+									Dados principais do cadastro
+								</h2>
 							</div>
-						</form>
-						<form action={setUserBlockedAction} className="space-y-3 rounded-xl border p-4">
-							<input type="hidden" name="userId" value={id} />
-							<input type="hidden" name="blocked" value={blocked ? "false" : "true"} />
-							<label className="grid gap-2">
-								<span className="text-sm font-medium">{blocked ? "Unblock note" : "Block reason"}</span>
-								<textarea
-									name="reason"
-									rows={3}
-									defaultValue={user.access?.blockedReason ?? ""}
-									placeholder={
-										blocked
-											? "Optionally update the unblock note"
-											: "Describe why this account is being blocked"
-									}
-									className="rounded-md border bg-background px-3 py-2 text-sm"
-								/>
-							</label>
-							<Button type="submit" variant={blocked ? "secondary" : "destructive"}>
-								{blocked ? "Unblock user" : "Block user"}
-							</Button>
-						</form>
-					</CardContent>
-				</Card>
-			) : null}
-			<Card>
-				<CardHeader>
-					<CardTitle>Purchases</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<ul className="divide-y">
-						{(user.purchases || []).map((p: { id: string; status: string; createdAt: string | Date }) => (
-							<li key={p.id} className="py-3 flex items-center justify-between gap-3">
-								<div>
-									<div className="font-medium capitalize">{p.status}</div>
-									<div className="text-sm text-muted-foreground">
-										{new Date(p.createdAt).toLocaleString()}
+							<div className="grid gap-4 sm:grid-cols-2">
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Email
+									</div>
+									<div className="break-all text-sm text-[color:var(--editorial-ink)]">{user.email}</div>
+								</div>
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Nome
+									</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">{user.name || "—"}</div>
+								</div>
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Telefone
+									</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">{user.phone || "—"}</div>
+								</div>
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Estado de acesso
+									</div>
+									<div
+										className={
+											blocked
+												? "text-sm font-medium text-destructive"
+												: "text-sm font-medium text-emerald-700"
+										}
+									>
+										{blocked ? "Bloqueado" : "Ativo"}
 									</div>
 								</div>
-								<div className="text-sm font-mono break-all">{p.id}</div>
-							</li>
-						))}
-						{(!user.purchases || user.purchases.length === 0) && (
-							<li className="py-6 text-muted-foreground">No purchases.</li>
-						)}
-					</ul>
-				</CardContent>
-			</Card>
-		</main>
+								<div className="space-y-1 sm:col-span-2">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Endereço
+									</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">
+										{addressSummary || "Nenhum endereço salvo."}
+									</div>
+								</div>
+							</div>
+						</EditorialPanel>
+					</Reveal>
+
+					<Reveal delay={0.12}>
+						<EditorialPanel className="p-0">
+							<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Compras
+								</div>
+							</div>
+							<div className="p-6 sm:p-8">
+								<ul className="divide-y divide-[color:var(--editorial-border)]">
+									{(user.purchases || []).map(
+										(p: { id: string; status: string; createdAt: string | Date }) => (
+											<li key={p.id} className="flex items-center justify-between gap-3 py-4">
+												<div className="min-w-0">
+													<div className="font-medium capitalize text-[color:var(--editorial-ink)]">
+														{p.status}
+													</div>
+													<div className="text-sm text-[color:var(--editorial-muted)]">
+														{new Intl.DateTimeFormat("pt-BR", {
+															dateStyle: "short",
+															timeStyle: "short",
+														}).format(new Date(p.createdAt))}
+													</div>
+												</div>
+												<div className="text-right">
+													<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
+														{p.id}
+													</div>
+													<Link
+														href={`/admin/orders/${p.id}`}
+														className="mt-2 inline-flex text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
+													>
+														Abrir pedido
+													</Link>
+												</div>
+											</li>
+										),
+									)}
+									{(!user.purchases || user.purchases.length === 0) && (
+										<li className="py-6 text-[color:var(--editorial-muted)]">Nenhuma compra registrada.</li>
+									)}
+								</ul>
+							</div>
+						</EditorialPanel>
+					</Reveal>
+				</div>
+
+				{canManageStaff ? (
+					<Reveal delay={0.1}>
+						<EditorialPanel className="space-y-6">
+							<div className="space-y-2">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Gestão de acesso
+								</div>
+								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Somente admins podem alterar papel ou bloquear acesso. Toda mudança revoga sessões ativas
+									imediatamente.
+								</p>
+								{blocked && user.access?.blockedReason ? (
+									<p className="text-sm leading-6 text-destructive">
+										Motivo atual: {user.access.blockedReason}
+									</p>
+								) : null}
+							</div>
+							<form
+								action={updateUserRoleAction}
+								className="space-y-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+							>
+								<input type="hidden" name="userId" value={id} />
+								<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+									<label className="grid gap-2">
+										<span className="text-sm font-medium">Papel</span>
+										<select
+											name="role"
+											defaultValue={role}
+											className="min-w-48 rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+										>
+											<option value="customer">Cliente</option>
+											<option value="vendor">Vendedor</option>
+											<option value="admin">Administrador</option>
+										</select>
+									</label>
+									<Button
+										type="submit"
+										className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+									>
+										Atualizar papel
+									</Button>
+								</div>
+							</form>
+							<form
+								action={setUserBlockedAction}
+								className="space-y-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+							>
+								<input type="hidden" name="userId" value={id} />
+								<input type="hidden" name="blocked" value={blocked ? "false" : "true"} />
+								<label className="grid gap-2">
+									<span className="text-sm font-medium">
+										{blocked ? "Nota de desbloqueio" : "Motivo do bloqueio"}
+									</span>
+									<textarea
+										name="reason"
+										rows={3}
+										defaultValue={user.access?.blockedReason ?? ""}
+										placeholder={
+											blocked
+												? "Opcionalmente registre a observação do desbloqueio"
+												: "Descreva por que esta conta está sendo bloqueada"
+										}
+										className="rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+									/>
+								</label>
+								<Button
+									type="submit"
+									variant={blocked ? "secondary" : "destructive"}
+									className="rounded-none"
+								>
+									{blocked ? "Desbloquear usuário" : "Bloquear usuário"}
+								</Button>
+							</form>
+						</EditorialPanel>
+					</Reveal>
+				) : null}
+			</div>
+		</AdminEditorialPage>
 	);
 }
