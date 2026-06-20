@@ -7,7 +7,7 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { Card, CardContent } from "@/ui/shadcn/card";
 import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
 import AdminShippingProviders from "../_components/admin-shipping-providers.client";
