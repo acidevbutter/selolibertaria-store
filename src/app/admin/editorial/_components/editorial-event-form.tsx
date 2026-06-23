@@ -60,7 +60,7 @@ export function EditorialEventForm({
 
 					<FormSection
 						title="Identidade e agenda"
-						description="Defina título, contexto de exibição, ordem e leitura curta do evento."
+						description="Defina título, status, ordem e resumo do evento."
 					>
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Título" name="title">
@@ -110,11 +110,8 @@ export function EditorialEventForm({
 						</div>
 					</FormSection>
 
-					<FormSection
-						title="Imagem principal"
-						description="Use o mesmo fluxo de upload dos produtos para revisar a mídia antes de salvá-la no evento."
-					>
-						<Field label="Upload" name="imageSrc">
+					<FormSection title="Imagem principal" description="Revise a imagem antes de salvar o evento.">
+						<Field label="Imagem" name="imageSrc">
 							<AdminImageUrlList
 								name="imageSrc"
 								initialValues={event?.image?.src ? [event.image.src] : []}
@@ -133,7 +130,7 @@ export function EditorialEventForm({
 
 					<FormSection
 						title="Publicação"
-						description="Escolha se a edição deve assumir imediatamente a vitrine pública principal ou permanecer em rascunho."
+						description="Escolha se o evento já deve aparecer no site ou ficar em rascunho."
 					>
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
@@ -147,7 +144,7 @@ export function EditorialEventForm({
 								<span className="space-y-1">
 									<span className="block font-medium">Publicado</span>
 									<span className="block text-xs text-muted-foreground">
-										O evento pode aparecer como fonte primária na área pública.
+										O evento já pode aparecer no site.
 									</span>
 								</span>
 							</label>
@@ -162,7 +159,7 @@ export function EditorialEventForm({
 								<span className="space-y-1">
 									<span className="block font-medium">Rascunho</span>
 									<span className="block text-xs text-muted-foreground">
-										Mantém salvo no Mongo sem virar a fonte pública principal.
+										Mantém salvo sem publicar no site.
 									</span>
 								</span>
 							</label>
@@ -170,8 +167,7 @@ export function EditorialEventForm({
 					</FormSection>
 
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
-						A prévia da imagem fica vinculada ao formulário e o envio definitivo acontece quando você salvar
-						esta página.
+						A prévia da imagem fica no formulário e o envio definitivo acontece ao salvar esta página.
 					</div>
 					<SubmitButton>{submitLabel}</SubmitButton>
 				</form>

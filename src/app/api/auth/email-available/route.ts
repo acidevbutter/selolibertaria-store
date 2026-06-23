@@ -13,6 +13,11 @@ export async function POST(req: Request) {
 			.findOne({ email: email.toLowerCase() }, { projection: { _id: 1 } });
 		return new Response(JSON.stringify({ available: !existing }), { status: 200 });
 	} catch {
-		return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400 });
+		return new Response(
+			JSON.stringify({ error: "Invalid request", code: "EMAIL_AVAILABILITY_INVALID_REQUEST" }),
+			{
+				status: 400,
+			},
+		);
 	}
 }

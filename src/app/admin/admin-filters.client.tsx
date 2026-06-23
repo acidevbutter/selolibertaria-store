@@ -47,10 +47,10 @@ export function AdminFilters({ defaultStatus, defaultPeriod, defaultSort }: Prop
 						<SelectItem value="all">Todos</SelectItem>
 						<SelectItem value="paid">Pago</SelectItem>
 						<SelectItem value="succeeded">Concluído</SelectItem>
-						<SelectItem value="requires_action">Exige ação</SelectItem>
+						<SelectItem value="requires_action">Ação necessária</SelectItem>
 						<SelectItem value="pending">Pendente</SelectItem>
 						<SelectItem value="processing">Em processamento</SelectItem>
-						<SelectItem value="failed">Falhou</SelectItem>
+						<SelectItem value="failed">Com falha</SelectItem>
 						<SelectItem value="refunded">Reembolsado</SelectItem>
 						<SelectItem value="disputed">Em disputa</SelectItem>
 						<SelectItem value="canceled">Cancelado</SelectItem>

@@ -62,7 +62,7 @@ export function EditorialSarauForm({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Editar Sarau Safado</CardTitle>
+				<CardTitle>Editar página do Sarau Safado</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6">
@@ -112,7 +112,7 @@ export function EditorialSarauForm({
 								</Field>
 							</div>
 						</div>
-						<Field label="Upload" name="heroImageSrc">
+						<Field label="Imagem" name="heroImageSrc">
 							<AdminImageUrlList
 								name="heroImageSrc"
 								initialValues={page.hero?.image?.src ? [page.hero.image.src] : []}

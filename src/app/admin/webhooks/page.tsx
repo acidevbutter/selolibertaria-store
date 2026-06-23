@@ -2,8 +2,11 @@ import { Activity } from "lucide-react";
 import type { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -38,12 +41,12 @@ function asString(value: string | string[] | undefined) {
 	return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
 }
 
-function toDateString(value?: Date | string | null) {
+function toDateString(value: Date | string | null | undefined, locale: string) {
 	if (!value) return "-";
 	const date = value instanceof Date ? value : new Date(value);
 	return Number.isNaN(date.getTime())
 		? "-"
-		: new Intl.DateTimeFormat("pt-BR", {
+		: new Intl.DateTimeFormat(locale, {
 				dateStyle: "short",
 				timeStyle: "medium",
 			}).format(date);
@@ -61,6 +64,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const resolved = (await searchParams) || {};
 	const limit = Math.min(Math.max(Number(asString(resolved.limit) || "50"), 1), 200);
@@ -84,9 +88,9 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Webhooks"
-				title="Rastreamento de webhooks"
-				description="Acompanhe eventos recebidos, falhas de processamento e validação de assinatura."
+				eyebrow="Recebimento"
+				title="Recebimento de webhooks"
+				description="Acompanhe eventos recebidos, falhas e validação de assinatura."
 				actions={
 					<div className="flex flex-wrap gap-2">
 						{[
@@ -97,7 +101,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 								active: status === "processed",
 							},
 							{ href: "/admin/webhooks?status=pending", label: "Pendentes", active: status === "pending" },
-							{ href: "/admin/webhooks?status=failed", label: "Falhos", active: status === "failed" },
+							{ href: "/admin/webhooks?status=failed", label: "Com falha", active: status === "failed" },
 						].map((item) => (
 							<Link
 								key={item.href}
@@ -115,10 +119,18 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-4">
-				<AdminEditorialStat label="Registros" value={items.length} helper={`Até ${limit} itens.`} />
-				<AdminEditorialStat label="Processados" value={processedCount} helper="Sem erro." />
-				<AdminEditorialStat label="Falhos" value={failedCount} helper="Com falha." />
-				<AdminEditorialStat label="Não verificados" value={unverifiedCount} helper="Exigem revisão." />
+				<AdminEditorialStat
+					label="Registros"
+					value={items.length}
+					helper={`Últimos ${limit} eventos carregados.`}
+				/>
+				<AdminEditorialStat label="Processados" value={processedCount} helper="Recebidos sem falha." />
+				<AdminEditorialStat label="Com falha" value={failedCount} helper="Precisam de revisão." />
+				<AdminEditorialStat
+					label="Não verificados"
+					value={unverifiedCount}
+					helper="Assinatura sem validação."
+				/>
 			</div>
 			<EditorialPanel className="p-0">
 				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
@@ -144,11 +156,11 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 							<TableBody>
 								{items.map((item) => (
 									<TableRow key={String(item._id)}>
-										<TableCell>{toDateString(item.receivedAt)}</TableCell>
+										<TableCell>{toDateString(item.receivedAt, locale)}</TableCell>
 										<TableCell>
 											<StatusBadge status={item.status || "unknown"} />
 										</TableCell>
-										<TableCell>{item.verified ? "Assinatura validada" : "Não validado"}</TableCell>
+										<TableCell>{item.verified ? "Assinatura validada" : "Assinatura sem validação"}</TableCell>
 										<TableCell className="font-mono text-xs">{item.type || "-"}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{item.eventId || "-"}</TableCell>
 										<TableCell className="max-w-[320px] text-xs text-destructive">
@@ -157,17 +169,21 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										<TableCell>
 											<details className="max-w-[420px]">
 												<summary className="cursor-pointer text-sm underline underline-offset-4">
-													Abrir detalhes
+													Ver detalhes
 												</summary>
 												<div className="mt-3 space-y-3">
 													<div>
-														<p className="mb-1 text-xs font-medium text-muted-foreground">Headers</p>
+														<p className="mb-1 text-xs font-medium text-muted-foreground">
+															Cabeçalhos da requisição
+														</p>
 														<pre className="max-h-56 overflow-auto rounded-none border bg-muted p-3 text-xs">
 															{formatJson(item.headers || {})}
 														</pre>
 													</div>
 													<div>
-														<p className="mb-1 text-xs font-medium text-muted-foreground">Payload</p>
+														<p className="mb-1 text-xs font-medium text-muted-foreground">
+															Conteúdo recebido
+														</p>
 														<pre className="max-h-80 overflow-auto rounded-none border bg-muted p-3 text-xs">
 															{formatJson(item.raw ?? null)}
 														</pre>
@@ -180,7 +196,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 								{items.length === 0 && (
 									<TableRow>
 										<TableCell colSpan={7} className="py-8 text-[color:var(--editorial-muted)]">
-											Nenhum webhook encontrado para este filtro.
+											Nenhum registro encontrado para este filtro.
 										</TableCell>
 									</TableRow>
 								)}

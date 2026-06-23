@@ -22,6 +22,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function formatCollectionSummary(count: number, singular: string, plural: string) {
+	return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function formatPublishedSummary(count: number) {
+	return `${count} ${count === 1 ? "publicado" : "publicados"}`;
+}
+
 export default async function AdminEditorialOverviewPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
@@ -40,25 +48,28 @@ export default async function AdminEditorialOverviewPage() {
 		{
 			title: "Eventos",
 			description: "Agenda, encontros, oficinas e ativações do selo.",
-			countLabel: `${events.length} item(ns)`,
-			statusLabel: `${events.filter((item) => item.published).length} publicado(s)`,
+			countLabel: formatCollectionSummary(events.length, "evento", "eventos"),
+			statusLabel: formatPublishedSummary(events.filter((item) => item.published).length),
 			href: "/admin/editorial/events",
+			actionLabel: "Gerenciar eventos",
 			icon: CalendarRange,
 		},
 		{
 			title: "Projetos",
 			description: "Programas culturais, festivais, laboratórios e ações recorrentes.",
-			countLabel: `${projects.length} item(ns)`,
-			statusLabel: `${projects.filter((item) => item.published).length} publicado(s)`,
+			countLabel: formatCollectionSummary(projects.length, "projeto", "projetos"),
+			statusLabel: formatPublishedSummary(projects.filter((item) => item.published).length),
 			href: "/admin/editorial/projects",
+			actionLabel: "Gerenciar projetos",
 			icon: FolderKanban,
 		},
 		{
 			title: "Sarau Safado",
-			description: "Página institucional do programa principal do selo.",
+			description: "Programa principal do selo e sua página institucional.",
 			countLabel: "Página institucional",
 			statusLabel: sarau?.published ? "Publicado" : "Rascunho",
 			href: "/admin/editorial/sarau-safado",
+			actionLabel: "Editar página do Sarau Safado",
 			icon: BookOpen,
 		},
 		{
@@ -67,6 +78,7 @@ export default async function AdminEditorialOverviewPage() {
 			countLabel: "Página institucional",
 			statusLabel: about?.published ? "Publicado" : "Rascunho",
 			href: "/admin/editorial/about",
+			actionLabel: "Editar página sobre",
 			icon: Info,
 		},
 		{
@@ -75,6 +87,7 @@ export default async function AdminEditorialOverviewPage() {
 			countLabel: "Página institucional",
 			statusLabel: contact?.published ? "Publicado" : "Rascunho",
 			href: "/admin/editorial/contact",
+			actionLabel: "Editar página de contato",
 			icon: Mail,
 		},
 		{
@@ -83,6 +96,7 @@ export default async function AdminEditorialOverviewPage() {
 			countLabel: "Blocos institucionais",
 			statusLabel: home?.published ? "Publicado" : "Rascunho",
 			href: "/admin/editorial/home",
+			actionLabel: "Editar página inicial",
 			icon: House,
 		},
 	];
@@ -93,7 +107,7 @@ export default async function AdminEditorialOverviewPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
-				title="Editorial"
+				title="Painel editorial"
 				description="Gerencie páginas, agenda e conteúdo institucional."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
@@ -102,11 +116,7 @@ export default async function AdminEditorialOverviewPage() {
 					value={sections.length}
 					helper="Página inicial, páginas institucionais e coleções editoriais."
 				/>
-				<AdminEditorialStat
-					label="Publicadas"
-					value={publishedCount}
-					helper="Entradas com publicação ativa na área pública."
-				/>
+				<AdminEditorialStat label="Publicadas" value={publishedCount} helper="Entradas visíveis no site." />
 				<AdminEditorialStat
 					label="Coleções dinâmicas"
 					value={events.length + projects.length}
@@ -139,7 +149,7 @@ export default async function AdminEditorialOverviewPage() {
 										asChild
 										className="w-full rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
 									>
-										<Link href={section.href}>Abrir seção</Link>
+										<Link href={section.href}>{section.actionLabel}</Link>
 									</Button>
 								</CardContent>
 							</Card>

@@ -27,9 +27,9 @@ export function OAuthCompletionForm({ providerLabel }: Props) {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ email, name: name || undefined }),
 			});
-			const data = (await res.json().catch(() => ({}))) as { error?: string; redirectTo?: string };
+			const data = (await res.json().catch(() => ({}))) as { redirectTo?: string };
 			if (!res.ok) {
-				setStatus(typeof data.error === "string" ? data.error : t("error"));
+				setStatus(t("error"));
 				return;
 			}
 			window.location.assign(data.redirectTo || "/");

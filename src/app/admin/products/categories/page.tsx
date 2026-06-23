@@ -20,7 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export const dynamic = "force-dynamic";
 
 function getCategorySourceLabel(source: string) {
-	return source === "stripe" ? "Catálogo" : "Manual";
+	return source === "stripe" ? "Catálogo integrado" : "Criada no admin";
 }
 
 export default async function AdminProductCategoriesPage() {
@@ -85,12 +85,15 @@ export default async function AdminProductCategoriesPage() {
 					<CardTitle>Cadastrar nova categoria</CardTitle>
 				</CardHeader>
 				<CardContent className="px-0 pb-0">
-					<form action={createSystemCategoryAction} className="flex max-w-xl flex-col gap-3 sm:flex-row">
+					<form
+						action={createSystemCategoryAction}
+						className="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end"
+					>
 						<Input
 							name="name"
 							placeholder="Nome da nova categoria"
 							required
-							className="rounded-none border-[color:var(--editorial-border)] bg-white"
+							className="max-w-md rounded-none border-[color:var(--editorial-border)] bg-white"
 						/>
 						<Button type="submit" className="rounded-none">
 							Adicionar categoria
@@ -127,17 +130,20 @@ export default async function AdminProductCategoriesPage() {
 										<TableCell>{stripeStatsBySlug.get(category.slug)?.products ?? 0}</TableCell>
 										<TableCell>{stripeStatsBySlug.get(category.slug)?.variants ?? 0}</TableCell>
 										<TableCell>
-											<form action={renameStripeCategoryAction} className="flex min-w-[260px] gap-2">
+											<form
+												action={renameStripeCategoryAction}
+												className="flex min-w-[260px] max-w-md flex-col gap-2 sm:flex-row sm:items-end"
+											>
 												<input type="hidden" name="oldCategory" value={category.name} />
 												<Input
 													name="newCategory"
 													defaultValue={category.name}
 													aria-label={`Renomear ${category.name}`}
-													className="rounded-none border-[color:var(--editorial-border)] bg-white"
+													className="max-w-sm rounded-none border-[color:var(--editorial-border)] bg-white"
 													required
 												/>
 												<Button type="submit" variant="outline" size="sm" className="rounded-none">
-													Salvar
+													Salvar nome
 												</Button>
 											</form>
 										</TableCell>
@@ -146,7 +152,7 @@ export default async function AdminProductCategoriesPage() {
 								{categories.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											Nenhuma categoria encontrada no sistema.
+											Nenhuma categoria disponível neste momento.
 										</TableCell>
 									</TableRow>
 								) : null}

@@ -10,7 +10,7 @@ const STATUS_LABELS: Record<string, string> = {
 	succeeded: "Concluído",
 	won: "Resolvido",
 	disputed: "Em disputa",
-	failed: "Falhou",
+	failed: "Com falha",
 	lost: "Perdido",
 	pending: "Pendente",
 	processing: "Em processamento",
@@ -18,13 +18,15 @@ const STATUS_LABELS: Record<string, string> = {
 	unpaid: "Não pago",
 	canceled: "Cancelado",
 	voided: "Cancelado",
-	unknown: "Indefinido",
+	unknown: "Sem status definido",
+	requires_action: "Ação necessária",
 };
 
 export function StatusBadge({ status }: { status: string }) {
 	const s = normalizeDisplayPaymentStatus(status);
 	const normalizedLabel = (s || status || "").replaceAll("_", " ").trim().toLowerCase();
-	const label = STATUS_LABELS[s] || STATUS_LABELS[normalizedLabel] || normalizedLabel || "Indefinido";
+	const label =
+		STATUS_LABELS[s] || STATUS_LABELS[normalizedLabel] || normalizedLabel || "Sem status definido";
 	if (s === "paid" || s === "processed" || s === "sent" || s === "succeeded" || s === "won")
 		return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">{label}</Badge>;
 	if (s === "disputed")

@@ -2,9 +2,12 @@ import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { setUserBlockedAction, updateUserRoleAction } from "@/app/admin/users/actions";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability, isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -13,15 +16,28 @@ import {
 } from "@/ui/editorial/editorial-primitives";
 import { Reveal } from "@/ui/motion/reveal";
 import { Button } from "@/ui/shadcn/button";
+import { StatusBadge } from "@/ui/status-badge";
 
 function isValidObjectId(id: string | undefined | null): id is string {
 	return !!id && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
+function getRoleLabel(role: UserRole | undefined) {
+	switch (normalizeUserRole(role)) {
+		case "admin":
+			return "Administrador";
+		case "vendor":
+			return "Vendedor";
+		default:
+			return "Cliente";
+	}
 }
 
 export default async function AdminUserDetails({ params }: { params: Promise<{ id: string }> }) {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "customers.read")) redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const { id } = await params;
 	if (!isValidObjectId(id)) redirect("/admin/users");
@@ -50,6 +66,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 	if (!user) redirect("/admin/users");
 	const canManageStaff = hasCapability(session.user.role, "staff.manage");
 	const role = normalizeUserRole(user.role);
+	const roleLabel = getRoleLabel(user.role);
 	const blocked = isUserBlocked(user);
 	const purchaseCount = user.purchases?.length ?? 0;
 	const addressSummary = user.address
@@ -69,8 +86,8 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 			<Reveal>
 				<AdminEditorialHero
 					eyebrow="Usuário"
-					title={`Leitura operacional de ${user.name || user.email}.`}
-					description="Perfil, papel atual, estado de acesso e histórico de compras aparecem em blocos previsíveis para suporte e gestão interna."
+					title={user.name || user.email}
+					description="Revise perfil, acesso e histórico de compras em uma leitura direta."
 					actions={
 						<Link
 							href="/admin/users"
@@ -85,13 +102,13 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 				<div className="grid gap-5 lg:grid-cols-4">
 					<AdminEditorialStat
 						label="Papel"
-						value={role.toUpperCase()}
-						helper="Permissão atual reconhecida pelo sistema."
+						value={roleLabel}
+						helper="Permissão atual desta conta."
 					/>
 					<AdminEditorialStat
 						label="Acesso"
 						value={blocked ? "Bloqueado" : "Ativo"}
-						helper="Estado operacional desta conta."
+						helper="Situação atual desta conta."
 					/>
 					<AdminEditorialStat
 						label="Compras"
@@ -99,9 +116,9 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 						helper="Pedidos associados a este cadastro."
 					/>
 					<AdminEditorialStat
-						label="Gestão interna"
-						value={canManageStaff ? "Liberada" : "Somente leitura"}
-						helper="Ações sensíveis dependem do papel da sessão atual."
+						label="Ações sensíveis"
+						value={canManageStaff ? "Liberadas" : "Somente leitura"}
+						helper="Disponibilidade de ações sensíveis nesta tela."
 					/>
 				</div>
 			</Reveal>
@@ -120,7 +137,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 							<div className="grid gap-4 sm:grid-cols-2">
 								<div className="space-y-1">
 									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-										Email
+										E-mail
 									</div>
 									<div className="break-all text-sm text-[color:var(--editorial-ink)]">{user.email}</div>
 								</div>
@@ -128,13 +145,17 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
 										Nome
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">{user.name || "—"}</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">
+										{user.name || "Nome não informado"}
+									</div>
 								</div>
 								<div className="space-y-1">
 									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
 										Telefone
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">{user.phone || "—"}</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">
+										{user.phone || "Telefone não informado"}
+									</div>
 								</div>
 								<div className="space-y-1">
 									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
@@ -175,11 +196,11 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 										(p: { id: string; status: string; createdAt: string | Date }) => (
 											<li key={p.id} className="flex items-center justify-between gap-3 py-4">
 												<div className="min-w-0">
-													<div className="font-medium capitalize text-[color:var(--editorial-ink)]">
-														{p.status}
+													<div className="font-medium text-[color:var(--editorial-ink)]">
+														<StatusBadge status={p.status} />
 													</div>
 													<div className="text-sm text-[color:var(--editorial-muted)]">
-														{new Intl.DateTimeFormat("pt-BR", {
+														{new Intl.DateTimeFormat(locale, {
 															dateStyle: "short",
 															timeStyle: "short",
 														}).format(new Date(p.createdAt))}
@@ -193,7 +214,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 														href={`/admin/orders/${p.id}`}
 														className="mt-2 inline-flex text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
 													>
-														Abrir pedido
+														Ver pedido
 													</Link>
 												</div>
 											</li>

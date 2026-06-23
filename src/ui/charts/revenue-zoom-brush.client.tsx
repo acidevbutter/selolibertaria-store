@@ -12,6 +12,7 @@ export type XYPoint = { x: number; y: number };
 type RevenueZoomBrushProps = {
 	points: XYPoint[];
 	currency: string;
+	locale: string;
 	mainHeight?: number;
 	brushHeight?: number;
 };
@@ -19,6 +20,7 @@ type RevenueZoomBrushProps = {
 export function RevenueZoomBrush({
 	points,
 	currency,
+	locale,
 	mainHeight = 260,
 	brushHeight = 100,
 }: RevenueZoomBrushProps) {
@@ -27,7 +29,7 @@ export function RevenueZoomBrush({
 
 	const commonTooltipY = (val: number) => {
 		try {
-			return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(val / 100);
+			return new Intl.NumberFormat(locale, { style: "currency", currency }).format(val / 100);
 		} catch {
 			return `${(val / 100).toFixed(2)} ${currency}`;
 		}
@@ -49,7 +51,7 @@ export function RevenueZoomBrush({
 			dataLabels: { enabled: false },
 			tooltip: { y: { formatter: commonTooltipY } },
 		}),
-		[currency, theme],
+		[currency, locale, theme],
 	);
 
 	const brushOptions: ApexOptions = useMemo(

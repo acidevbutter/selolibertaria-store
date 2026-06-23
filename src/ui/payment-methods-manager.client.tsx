@@ -46,11 +46,8 @@ export function PaymentMethodsManager() {
 		setState({ type: "loading" });
 		try {
 			const res = await fetch("/api/user/payment-methods", { cache: "no-store" });
-			const payload = (await res.json().catch(() => ({}))) as {
-				paymentMethods?: SavedPaymentMethod[];
-				error?: string;
-			};
-			if (!res.ok) throw new Error(payload.error || t("errors.load"));
+			const payload = (await res.json().catch(() => ({}))) as { paymentMethods?: SavedPaymentMethod[] };
+			if (!res.ok) throw new Error(t("errors.load"));
 			setState({ type: "loaded", paymentMethods: payload.paymentMethods || [] });
 		} catch (error) {
 			setState({
@@ -74,8 +71,7 @@ export function PaymentMethodsManager() {
 			const res = await fetch(`/api/user/payment-methods/${paymentMethodId}`, {
 				method: "DELETE",
 			});
-			const payload = (await res.json().catch(() => ({}))) as { error?: string };
-			if (!res.ok) throw new Error(payload.error || t("errors.remove"));
+			if (!res.ok) throw new Error(t("errors.remove"));
 			await loadPaymentMethods();
 		} catch (error) {
 			setState({

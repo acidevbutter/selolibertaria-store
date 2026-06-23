@@ -10,11 +10,11 @@ function safeT() {
 		return (k: string) => {
 			switch (k) {
 				case "title":
-					return "Something went wrong";
+					return "Algo deu errado";
 				case "moreDetails":
-					return "More details";
+					return "Mais detalhes";
 				case "tryAgainButton":
-					return "Try again";
+					return "Tentar novamente";
 				default:
 					return k;
 			}

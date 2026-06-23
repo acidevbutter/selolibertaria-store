@@ -18,17 +18,26 @@ export async function GET(req: Request) {
 	const postalCode = url.searchParams.get("postalCode")?.trim() || "";
 
 	if (!country || !postalCode) {
-		return NextResponse.json({ error: "Missing country or postal code" }, { status: 400 });
+		return NextResponse.json(
+			{ error: "Missing country or postal code", code: "POSTAL_LOOKUP_MISSING_INPUT" },
+			{ status: 400 },
+		);
 	}
 
 	if (country !== "BR") {
-		return NextResponse.json({ error: "Postal lookup not available for this country" }, { status: 404 });
+		return NextResponse.json(
+			{ error: "Postal lookup not available for this country", code: "POSTAL_LOOKUP_UNSUPPORTED_COUNTRY" },
+			{ status: 404 },
+		);
 	}
 
 	try {
 		const digits = postalCode.replace(/\D+/g, "");
 		if (digits.length !== 8) {
-			return NextResponse.json({ error: "Invalid postal code" }, { status: 400 });
+			return NextResponse.json(
+				{ error: "Invalid postal code", code: "POSTAL_LOOKUP_INVALID_CODE" },
+				{ status: 400 },
+			);
 		}
 		let sawUnavailableProvider = false;
 		for (const lookupProvider of [lookupViaCep, lookupBrasilApi]) {
@@ -43,12 +52,18 @@ export async function GET(req: Request) {
 		}
 
 		if (sawUnavailableProvider) {
-			return NextResponse.json({ error: "Lookup failed" }, { status: 502 });
+			return NextResponse.json(
+				{ error: "Lookup failed", code: "POSTAL_LOOKUP_PROVIDER_UNAVAILABLE" },
+				{ status: 502 },
+			);
 		}
-		return NextResponse.json({ error: "Postal code not found" }, { status: 404 });
+		return NextResponse.json(
+			{ error: "Postal code not found", code: "POSTAL_LOOKUP_NOT_FOUND" },
+			{ status: 404 },
+		);
 	} catch (error) {
 		console.error("[postal-lookup]", error);
-		return NextResponse.json({ error: "Lookup failed" }, { status: 500 });
+		return NextResponse.json({ error: "Lookup failed", code: "POSTAL_LOOKUP_FAILED" }, { status: 500 });
 	}
 }
 

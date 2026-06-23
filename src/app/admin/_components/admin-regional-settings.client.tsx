@@ -26,7 +26,7 @@ function formatLocaleOptionLabel(locale: (typeof LOCALE_OPTIONS)[number], displa
 export default function AdminRegionalSettings() {
 	const locale = useLocale();
 	const [defaultCountry, setDefaultCountry] = useState("BR");
-	const [defaultLocale, setDefaultLocale] = useState<AppLocale>("en-US");
+	const [defaultLocale, setDefaultLocale] = useState<AppLocale>(locale as AppLocale);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [status, setStatus] = useState<string | null>(null);
@@ -78,12 +78,12 @@ export default function AdminRegionalSettings() {
 		<div className="space-y-4">
 			<div className="space-y-1">
 				<p className="text-sm text-muted-foreground">
-					A vitrine pública usa o idioma do dispositivo quando ele coincide com um idioma suportado. O idioma
-					padrão abaixo entra como fallback da aplicação.
+					O site usa o idioma do dispositivo quando ele coincide com um idioma suportado. O idioma padrão
+					abaixo entra quando isso não acontece.
 				</p>
 				<p className="text-sm text-muted-foreground">
-					O país padrão continua preenchendo telefone e endereço quando a pessoa usuária ainda não tem região
-					salva.
+					O país padrão continua preenchendo telefone e endereço quando a pessoa usuária ainda não salvou uma
+					região.
 				</p>
 			</div>
 			<div className="grid gap-4 md:grid-cols-12 md:max-w-3xl">

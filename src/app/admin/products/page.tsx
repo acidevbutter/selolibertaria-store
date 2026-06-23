@@ -2,9 +2,12 @@ import { PackagePlus, Tags } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import {
 	AdminEditorialHero,
@@ -32,13 +35,14 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 
 	const sp = (await searchParams) || {};
 	const query = asString(sp.q).toLowerCase();
+	const displayLocale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 	let groups: Awaited<ReturnType<typeof listAdminStripeProductGroups>> = [];
 	let error: string | null = null;
 
 	try {
 		groups = await listAdminStripeProductGroups();
 	} catch (err) {
-		error = err instanceof Error ? err.message : "Não foi possível carregar o catálogo no momento.";
+		error = "Não foi possível carregar o catálogo no momento.";
 	}
 
 	const filtered = query
@@ -86,9 +90,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Livros" value={filtered.length} helper="Itens listados." />
+				<AdminEditorialStat label="Livros" value={filtered.length} helper="Resultados do filtro atual." />
 				<AdminEditorialStat label="Ativos" value={activeCount} helper="Disponíveis para venda." />
-				<AdminEditorialStat label="Variantes" value={variantCount} helper="Total de variações." />
+				<AdminEditorialStat
+					label="Variantes"
+					value={variantCount}
+					helper="Somadas entre os livros listados."
+				/>
 			</div>
 
 			{error ? (
@@ -130,8 +138,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 									const priceLabel =
 										firstPrice && lastPrice
 											? firstPrice.amount === lastPrice.amount
-												? formatMoney(firstPrice)
-												: `${formatMoney(firstPrice)} - ${formatMoney(lastPrice)}`
+												? formatMoney({ ...firstPrice, locale: displayLocale })
+												: `${formatMoney({ ...firstPrice, locale: displayLocale })} - ${formatMoney({ ...lastPrice, locale: displayLocale })}`
 											: "Sem preço";
 
 									return (
@@ -145,7 +153,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>{group.category || "—"}</TableCell>
+											<TableCell>{group.category || "Categoria não informada"}</TableCell>
 											<TableCell>{group.variants.length}</TableCell>
 											<TableCell>{priceLabel}</TableCell>
 											<TableCell>
@@ -158,7 +166,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
 													href={`/admin/products/${group.slug}`}
 												>
-													Editar
+													Editar livro
 												</Link>
 											</TableCell>
 										</TableRow>
@@ -167,7 +175,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 								{filtered.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											Nenhum produto encontrado.
+											Nenhum livro encontrado.
 										</TableCell>
 									</TableRow>
 								) : null}

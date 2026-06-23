@@ -87,7 +87,9 @@ export async function POST(req: Request) {
 		const emailLower = data.email.toLowerCase();
 		const existing = await db.collection("users").findOne({ email: emailLower });
 		if (existing) {
-			return new Response(JSON.stringify({ error: "E-mail já cadastrado" }), { status: 409 });
+			return new Response(JSON.stringify({ error: "E-mail já cadastrado", code: "REGISTER_EMAIL_TAKEN" }), {
+				status: 409,
+			});
 		}
 
 		const passwordHash = await bcrypt.hash(data.password, 10);
@@ -212,9 +214,14 @@ export async function POST(req: Request) {
 		return response;
 	} catch (err) {
 		if (err instanceof z.ZodError) {
-			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
+			return new Response(JSON.stringify({ error: err.flatten(), code: "REGISTER_INVALID_REQUEST" }), {
+				status: 400,
+			});
 		}
 		console.error("[POST /api/auth/register]", err);
-		return new Response(JSON.stringify({ error: "Falha ao cadastrar" }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: "Não foi possível concluir o cadastro.", code: "REGISTER_FAILED" }),
+			{ status: 500 },
+		);
 	}
 }

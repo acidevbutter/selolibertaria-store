@@ -48,7 +48,7 @@ export function EditorialAboutForm({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Editar Sobre</CardTitle>
+				<CardTitle>Editar página sobre</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6">
@@ -115,7 +115,7 @@ export function EditorialAboutForm({
 								</Field>
 							</div>
 						</div>
-						<Field label="Upload" name="sectionImageSrc">
+						<Field label="Imagem" name="sectionImageSrc">
 							<AdminImageUrlList
 								name="sectionImageSrc"
 								initialValues={page.section?.image?.src ? [page.section.image.src] : []}

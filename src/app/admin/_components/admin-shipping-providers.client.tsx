@@ -422,8 +422,7 @@ export default function AdminShippingProviders() {
 	return (
 		<div className="space-y-4">
 			<p className="text-sm text-muted-foreground">
-				Configure os provedores por transportadora para que o checkout precise apenas de credenciais, origem e
-				prioridade de fallback.
+				Configure os provedores por transportadora com credenciais, origem e ordem de reserva.
 			</p>
 			<div className="flex items-center gap-3 rounded-lg border p-4">
 				<Checkbox
@@ -455,10 +454,10 @@ export default function AdminShippingProviders() {
 									<div className="flex items-center gap-2">
 										<span className="rounded-full border px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground">
 											{statusValue === "ready"
-												? "pronto"
+												? "Pronto"
 												: statusValue === "incomplete"
-													? "incompleto"
-													: "desativado"}
+													? "Incompleto"
+													: "Desativado"}
 										</span>
 										<Button type="button" variant="outline" onClick={() => removeProvider(index)}>
 											Remover
@@ -478,7 +477,7 @@ export default function AdminShippingProviders() {
 
 								<div className="grid gap-4 md:grid-cols-12">
 									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
-										<Label htmlFor={`shipping-${index}-kind`}>Família do provedor</Label>
+										<Label htmlFor={`shipping-${index}-kind`}>Tipo de provedor</Label>
 										<Select
 											value={provider.kind}
 											onValueChange={(value) => updateProviderKind(index, value as ShippingProviderKind)}
@@ -496,7 +495,7 @@ export default function AdminShippingProviders() {
 										</Select>
 									</div>
 									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
-										<Label htmlFor={`shipping-${index}-mode`}>Modo</Label>
+										<Label htmlFor={`shipping-${index}-mode`}>Modo de cálculo</Label>
 										<Select
 											value={provider.mode}
 											onValueChange={(value) => updateProvider(index, { mode: value as ShippingMode })}
@@ -675,7 +674,7 @@ export default function AdminShippingProviders() {
 																updateProviderCredential(index, field.key, event.target.value)
 															}
 															onBlur={() => formatProviderCredential(index, field.key)}
-															placeholder={maskedValue ? `Configurado: ${maskedValue}` : field.placeholder}
+															placeholder={maskedValue ? `Valor salvo: ${maskedValue}` : field.placeholder}
 															className="max-w-[22rem]"
 															autoCapitalize="none"
 															autoCorrect="off"
@@ -695,7 +694,7 @@ export default function AdminShippingProviders() {
 
 								<div className="grid gap-4 md:grid-cols-12">
 									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
-										<Label htmlFor={`shipping-${index}-service-code`}>Código de serviço padrão</Label>
+										<Label htmlFor={`shipping-${index}-service-code`}>Código padrão do serviço</Label>
 										<Input
 											id={`shipping-${index}-service-code`}
 											value={provider.serviceCode}
@@ -709,7 +708,7 @@ export default function AdminShippingProviders() {
 													serviceCode: event.target.value.toUpperCase().replace(/\s+/g, ""),
 												})
 											}
-											placeholder={provider.kind === "correios" ? "03220" : "service-code"}
+											placeholder={provider.kind === "correios" ? "03220" : "COD123"}
 											className="max-w-[10rem]"
 											autoCapitalize="characters"
 											autoCorrect="off"
@@ -727,7 +726,7 @@ export default function AdminShippingProviders() {
 										/>
 									</div>
 									<div className="grid gap-2 md:col-span-3 xl:col-span-2">
-										<Label htmlFor={`shipping-${index}-estimated-days`}>Prazo estimado de fallback</Label>
+										<Label htmlFor={`shipping-${index}-estimated-days`}>Prazo de reserva (dias)</Label>
 										<Input
 											id={`shipping-${index}-estimated-days`}
 											type="number"
@@ -738,7 +737,7 @@ export default function AdminShippingProviders() {
 										/>
 									</div>
 									<div className="grid gap-2 md:col-span-4 xl:col-span-3">
-										<Label htmlFor={`shipping-${index}-fixed-amount`}>Valor fixo (centavos)</Label>
+										<Label htmlFor={`shipping-${index}-fixed-amount`}>Valor fixo do frete</Label>
 										<Input
 											id={`shipping-${index}-fixed-amount`}
 											type="number"
@@ -748,6 +747,7 @@ export default function AdminShippingProviders() {
 											disabled={provider.mode === "http"}
 											className="max-w-[10rem]"
 										/>
+										<p className="text-xs text-muted-foreground">Use centavos, como 2500 para 25,00.</p>
 									</div>
 								</div>
 
@@ -783,7 +783,7 @@ export default function AdminShippingProviders() {
 								</div>
 
 								<div className="space-y-3 rounded-lg border p-4">
-									<p className="text-sm font-medium">Padrões do pacote em fallback</p>
+									<p className="text-sm font-medium">Medidas padrão do pacote de reserva</p>
 									<div className="grid gap-4 md:grid-cols-12">
 										<div className="grid gap-2 md:col-span-3 xl:col-span-2">
 											<Label htmlFor={`shipping-${index}-weight`}>Peso (g)</Label>
@@ -839,7 +839,7 @@ export default function AdminShippingProviders() {
 					Adicionar provedor
 				</Button>
 				<Button type="button" onClick={save} disabled={saving || loading}>
-					{saving ? "Salvando..." : "Salvar provedores"}
+					{saving ? "Salvando..." : "Salvar frete"}
 				</Button>
 			</div>
 			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}

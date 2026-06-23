@@ -82,6 +82,6 @@ export function AdminThemeProvider({
 
 export function useAdminTheme() {
 	const ctx = useContext(AdminThemeContext);
-	if (!ctx) throw new Error("useAdminTheme must be used within AdminThemeProvider");
+	if (!ctx) throw new Error("useAdminTheme precisa ser usado dentro de AdminThemeProvider.");
 	return ctx;
 }

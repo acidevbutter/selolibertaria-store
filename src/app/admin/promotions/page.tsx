@@ -7,6 +7,7 @@ import {
 } from "@/app/admin/promotions/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import {
 	formatPromotionTargets,
 	listPromotionsForAdmin,
@@ -16,6 +17,7 @@ import {
 	type PromotionStackingMode,
 	type PromotionStatus,
 } from "@/lib/promotions";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { getDecimalFromStripeAmount } from "@/lib/utils";
 import {
 	AdminEditorialHero,
@@ -58,6 +60,21 @@ interface PromotionFormDefaults {
 	notifyFavorites: boolean;
 }
 
+function getPromotionStatusLabel(status: PromotionStatus) {
+	switch (status) {
+		case "active":
+			return "Ativa";
+		case "scheduled":
+			return "Agendada";
+		case "draft":
+			return "Rascunho";
+		case "paused":
+			return "Pausada";
+		default:
+			return status;
+	}
+}
+
 function PromotionFormSection(args: {
 	title: string;
 	description: string;
@@ -87,11 +104,11 @@ function formatBenefit(value: number, benefitType: string, currency?: string | n
 	return `${getDecimalFromStripeAmount({ amount: value, currency: currency || adminCurrency })}`;
 }
 
-function formatDateTime(date?: Date | string | null) {
-	if (!date) return "Sem data";
+function formatDateTime(date: Date | string | null | undefined, locale: string) {
+	if (!date) return "Sem data informada";
 	const parsed = date instanceof Date ? date : new Date(date);
-	if (Number.isNaN(parsed.getTime())) return "Sem data";
-	return new Intl.DateTimeFormat("pt-BR", {
+	if (Number.isNaN(parsed.getTime())) return "Sem data informada";
+	return new Intl.DateTimeFormat(locale, {
 		dateStyle: "short",
 		timeStyle: "short",
 	}).format(parsed);
@@ -107,7 +124,7 @@ function formatDateTimeLocalValue(date?: Date | string | null) {
 
 function formatUsageRules(promotion: AdminPromotion) {
 	const code = promotion.codes[0];
-	if (!code && !promotion.eligibility) return "Sem regras adicionais";
+	if (!code && !promotion.eligibility) return "Sem regra adicional";
 
 	const rules: string[] = [];
 	if (typeof code?.globalLimit === "number") {
@@ -120,7 +137,7 @@ function formatUsageRules(promotion: AdminPromotion) {
 		rules.push("Apenas primeira compra");
 	}
 	if (promotion.eligibility?.requireVerifiedEmail) {
-		rules.push("Exige email verificado");
+		rules.push("Exige e-mail verificado");
 	}
 	if (typeof promotion.eligibility?.minSubtotal === "number" && promotion.eligibility.minSubtotal > 0) {
 		rules.push(
@@ -130,7 +147,7 @@ function formatUsageRules(promotion: AdminPromotion) {
 			})}`,
 		);
 	}
-	return rules.length > 0 ? rules.join(" | ") : "Sem regras adicionais";
+	return rules.length > 0 ? rules.join(" · ") : "Sem regra adicional";
 }
 
 function buildPromotionFormDefaults(promotion?: AdminPromotion): PromotionFormDefaults {
@@ -263,10 +280,10 @@ function PromotionForm(args: {
 						<label className="grid gap-2">
 							<span className="text-sm font-medium">Status atual</span>
 							<input
-								value={defaults.status}
+								value={getPromotionStatusLabel(defaults.status)}
 								readOnly
 								disabled
-								className="rounded-lg border bg-muted px-3 py-2 text-muted-foreground"
+								className="max-w-[12rem] rounded-lg border bg-muted px-3 py-2 text-muted-foreground"
 							/>
 						</label>
 					) : (
@@ -289,7 +306,7 @@ function PromotionForm(args: {
 
 			<PromotionFormSection
 				title="Desconto e publicação"
-				description="Modelo do desconto, alcance do benefício e prioridade de aplicação."
+				description="Formato do desconto, alcance do benefício e prioridade de aplicação."
 				defaultOpen
 			>
 				<div className="grid gap-4 lg:grid-cols-2">
@@ -309,7 +326,7 @@ function PromotionForm(args: {
 						<input
 							name="priority"
 							defaultValue={defaults.priority}
-							className="max-w-[8rem] rounded-lg border px-3 py-2"
+							className="max-w-[7rem] rounded-lg border px-3 py-2"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -330,8 +347,8 @@ function PromotionForm(args: {
 							name="benefitValue"
 							required
 							defaultValue={defaults.benefitValue}
-							className="max-w-[10rem] rounded-lg border px-3 py-2"
-							placeholder="10 ou 19.90"
+							className="max-w-[9rem] rounded-lg border px-3 py-2"
+							placeholder="10 ou 19,90"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -339,8 +356,8 @@ function PromotionForm(args: {
 						<input
 							name="minSubtotal"
 							defaultValue={defaults.minSubtotal}
-							className="max-w-[10rem] rounded-lg border px-3 py-2"
-							placeholder="0.00"
+							className="max-w-[9rem] rounded-lg border px-3 py-2"
+							placeholder="19,90"
 						/>
 					</label>
 				</div>
@@ -356,7 +373,7 @@ function PromotionForm(args: {
 						<input
 							name="code"
 							defaultValue={defaults.code}
-							className="max-w-[12rem] rounded-lg border px-3 py-2"
+							className="max-w-[11rem] rounded-lg border px-3 py-2 uppercase"
 							placeholder="RATO10"
 							autoCapitalize="characters"
 							autoCorrect="off"
@@ -371,7 +388,7 @@ function PromotionForm(args: {
 						<select
 							name="stackingMode"
 							defaultValue={defaults.stackingMode}
-							className="max-w-[16rem] rounded-lg border px-3 py-2"
+							className="max-w-[15rem] rounded-lg border px-3 py-2"
 						>
 							<option value="combine_with_automatic">Acumula com promoções</option>
 							<option value="exclusive">Não acumula</option>
@@ -386,7 +403,7 @@ function PromotionForm(args: {
 							name="startsAt"
 							type="datetime-local"
 							defaultValue={defaults.startsAt}
-							className="max-w-[16rem] rounded-lg border px-3 py-2"
+							className="max-w-[15rem] rounded-lg border px-3 py-2"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -395,7 +412,7 @@ function PromotionForm(args: {
 							name="endsAt"
 							type="datetime-local"
 							defaultValue={defaults.endsAt}
-							className="max-w-[16rem] rounded-lg border px-3 py-2"
+							className="max-w-[15rem] rounded-lg border px-3 py-2"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -404,7 +421,7 @@ function PromotionForm(args: {
 							name="couponStartsAt"
 							type="datetime-local"
 							defaultValue={defaults.couponStartsAt}
-							className="max-w-[16rem] rounded-lg border px-3 py-2"
+							className="max-w-[15rem] rounded-lg border px-3 py-2"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -413,7 +430,7 @@ function PromotionForm(args: {
 							name="couponEndsAt"
 							type="datetime-local"
 							defaultValue={defaults.couponEndsAt}
-							className="max-w-[16rem] rounded-lg border px-3 py-2"
+							className="max-w-[15rem] rounded-lg border px-3 py-2"
 						/>
 					</label>
 					<label className="grid gap-2">
@@ -423,7 +440,7 @@ function PromotionForm(args: {
 							type="number"
 							min="1"
 							defaultValue={defaults.couponGlobalLimit}
-							className="max-w-[10rem] rounded-lg border px-3 py-2"
+							className="max-w-[8rem] rounded-lg border px-3 py-2"
 							placeholder="Ex.: 100"
 						/>
 					</label>
@@ -434,7 +451,7 @@ function PromotionForm(args: {
 							type="number"
 							min="1"
 							defaultValue={defaults.couponPerCustomerLimit}
-							className="max-w-[10rem] rounded-lg border px-3 py-2"
+							className="max-w-[8rem] rounded-lg border px-3 py-2"
 							placeholder="Ex.: 1"
 						/>
 					</label>
@@ -460,9 +477,9 @@ function PromotionForm(args: {
 							className="mt-1 h-4 w-4 rounded border-gray-300"
 						/>
 						<span>
-							<span className="block font-medium">Exigir email verificado</span>
+							<span className="block font-medium">Exigir e-mail verificado</span>
 							<span className="mt-1 block text-xs text-muted-foreground">
-								Bloqueia o uso para contas com email ainda não verificado.
+								Bloqueia o uso para contas com e-mail ainda não verificado.
 							</span>
 						</span>
 					</label>
@@ -475,13 +492,13 @@ function PromotionForm(args: {
 			>
 				<div className="grid gap-4 lg:grid-cols-2">
 					<label className="grid gap-2 lg:col-span-2">
-						<span className="text-sm font-medium">Slugs de produtos</span>
+						<span className="text-sm font-medium">Slugs de livros</span>
 						<textarea
 							name="productSlugs"
 							rows={2}
 							defaultValue={defaults.productSlugs}
 							className="max-w-2xl rounded-lg border px-3 py-2"
-							placeholder="produto-1, produto-2"
+							placeholder="livro-1, livro-2"
 							autoCapitalize="none"
 							autoCorrect="off"
 							spellCheck={false}
@@ -507,19 +524,20 @@ function PromotionForm(args: {
 						</span>
 					</label>
 					<label className="grid gap-2 lg:col-span-2">
-						<span className="text-sm font-medium">IDs das variantes</span>
+						<span className="text-sm font-medium">Variantes específicas</span>
 						<textarea
 							name="variantIds"
 							rows={2}
 							defaultValue={defaults.variantIds}
 							className="max-w-2xl rounded-lg border px-3 py-2"
-							placeholder="price_123, price_456"
+							placeholder="id-da-variante-1, id-da-variante-2"
 							autoCapitalize="none"
 							autoCorrect="off"
 							spellCheck={false}
 						/>
 						<span className="text-xs text-muted-foreground">
-							Você pode separar por vírgula ou quebra de linha. IDs vazios são descartados ao salvar.
+							Use apenas quando precisar mirar variantes individuais. Você pode separar por vírgula ou quebra
+							de linha, e valores vazios são descartados ao salvar.
 						</span>
 					</label>
 					<label className="flex items-start gap-3 rounded-lg border p-4 text-sm lg:col-span-2">
@@ -532,7 +550,7 @@ function PromotionForm(args: {
 						<span>
 							<span className="block font-medium">Gerar alertas para favoritos afetados</span>
 							<span className="mt-1 block text-xs text-muted-foreground">
-								Quando esta promoção automática estiver ativa, favoritos elegíveis entram na fila de email.
+								Quando esta promoção automática estiver ativa, favoritos elegíveis entram na fila de e-mail.
 							</span>
 						</span>
 					</label>
@@ -549,6 +567,7 @@ function PromotionForm(args: {
 }
 
 export default async function AdminPromotionsPage() {
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 	const promotions = await listPromotionsForAdmin();
 	const createDefaults = buildPromotionFormDefaults();
 	const activeCount = promotions.filter((promotion) => promotion.status === "active").length;
@@ -596,8 +615,8 @@ export default async function AdminPromotionsPage() {
 						<CardTitle>Nova promoção</CardTitle>
 						<CardDescription>
 							Crie uma campanha automática ou um cupom. Valores monetários devem ser informados em formato
-							decimal, como <code className="ml-1">19.90</code>. Nesta fase, todos os valores seguem a moeda
-							padrão definida no ambiente. Para cupons, você também pode definir validade e limites de uso.
+							decimal, como <code className="ml-1">19,90</code>. Para cupons, você também pode definir
+							validade e limites de uso.
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -626,7 +645,7 @@ export default async function AdminPromotionsPage() {
 									<div className="flex flex-wrap items-start justify-between gap-3">
 										<div className="space-y-1">
 											<CardTitle className="text-xl">{promotion.name}</CardTitle>
-											<CardDescription>{promotion.description || "Sem descrição."}</CardDescription>
+											<CardDescription>{promotion.description || "Sem resumo informado."}</CardDescription>
 										</div>
 										<div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
 											<span className="rounded-full border px-3 py-1">
@@ -670,7 +689,7 @@ export default async function AdminPromotionsPage() {
 											<div className="mt-1 font-medium">
 												{promotion.codes.length > 0
 													? promotion.codes.map((code) => code.code).join(", ")
-													: "Sem código"}
+													: "Sem cupom"}
 											</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
@@ -690,8 +709,8 @@ export default async function AdminPromotionsPage() {
 												Janela da promoção
 											</div>
 											<div className="mt-1 font-medium">
-												{formatDateTime(promotion.schedule?.startsAt)} até{" "}
-												{formatDateTime(promotion.schedule?.endsAt)}
+												{formatDateTime(promotion.schedule?.startsAt, locale)} até{" "}
+												{formatDateTime(promotion.schedule?.endsAt, locale)}
 											</div>
 										</div>
 										<div className="rounded-lg border p-3 text-sm">
@@ -700,7 +719,7 @@ export default async function AdminPromotionsPage() {
 											</div>
 											<div className="mt-1 font-medium">
 												{promotion.codes[0]
-													? `${formatDateTime(promotion.codes[0].startsAt)} até ${formatDateTime(promotion.codes[0].endsAt)}`
+													? `${formatDateTime(promotion.codes[0].startsAt, locale)} até ${formatDateTime(promotion.codes[0].endsAt, locale)}`
 													: "Não se aplica"}
 											</div>
 										</div>
@@ -736,7 +755,7 @@ export default async function AdminPromotionsPage() {
 											<PromotionForm
 												action={updatePromotionAction}
 												defaults={defaults}
-												submitLabel="Salvar alterações"
+												submitLabel="Salvar promoção"
 												promotionId={promotion._id?.toString()}
 												lockKind
 											/>

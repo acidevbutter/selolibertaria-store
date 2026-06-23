@@ -11,7 +11,8 @@ export async function POST(request: Request) {
 		return Response.json(
 			{
 				error:
-					"Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+					"Cloudinary não está configurado. Adicione CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET.",
+				code: "ADMIN_MEDIA_UPLOAD_CLOUDINARY_NOT_CONFIGURED",
 			},
 			{ status: 500 },
 		);
@@ -21,15 +22,24 @@ export async function POST(request: Request) {
 	const file = formData.get("file");
 
 	if (!(file instanceof File)) {
-		return Response.json({ error: "An image file is required." }, { status: 400 });
+		return Response.json(
+			{ error: "Selecione um arquivo de imagem.", code: "ADMIN_MEDIA_UPLOAD_FILE_REQUIRED" },
+			{ status: 400 },
+		);
 	}
 
 	if (!file.type.startsWith("image/")) {
-		return Response.json({ error: "Only image files can be uploaded." }, { status: 400 });
+		return Response.json(
+			{ error: "Envie apenas arquivos de imagem.", code: "ADMIN_MEDIA_UPLOAD_INVALID_TYPE" },
+			{ status: 400 },
+		);
 	}
 
 	if (file.size > MAX_UPLOAD_SIZE) {
-		return Response.json({ error: "The image must be 8 MB or smaller." }, { status: 400 });
+		return Response.json(
+			{ error: "A imagem deve ter no máximo 8 MB.", code: "ADMIN_MEDIA_UPLOAD_FILE_TOO_LARGE" },
+			{ status: 400 },
+		);
 	}
 	try {
 		const result = await uploadImageFileToCloudinary(file);
@@ -46,6 +56,7 @@ export async function POST(request: Request) {
 					error instanceof Error
 						? `Não foi possível enviar a imagem: ${error.message}`
 						: "Não foi possível enviar a imagem.",
+				code: "ADMIN_MEDIA_UPLOAD_FAILED",
 			},
 			{ status: 500 },
 		);

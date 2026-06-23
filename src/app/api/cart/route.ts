@@ -114,6 +114,6 @@ export async function GET() {
 		return NextResponse.json({ cart: payload.cart });
 	} catch (error) {
 		console.error("GET /api/cart error", error);
-		return NextResponse.json({ error: "Failed to load cart" }, { status: 500 });
+		return NextResponse.json({ error: "Failed to load cart", code: "CART_LOAD_FAILED" }, { status: 500 });
 	}
 }

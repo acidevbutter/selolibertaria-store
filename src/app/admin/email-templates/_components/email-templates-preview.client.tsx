@@ -7,13 +7,15 @@ import { orderStatusEmailHtml } from "@/lib/email-templates/order-status";
 import { passwordResetEmailHtml } from "@/lib/email-templates/password-reset";
 import { transactionalEmailHtml } from "@/lib/email-templates/transactional";
 import { getCustomerOrderStatusContent } from "@/lib/order-status-notification";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
 
 type TemplateDefinition = {
 	category: string;
 	description: string;
 	id: string;
 	label: string;
-	render: (supportEmail: string) => string;
+	render: (supportEmail: string, currency: string) => string;
 };
 
 const templates: TemplateDefinition[] = [
@@ -21,11 +23,11 @@ const templates: TemplateDefinition[] = [
 		category: "Conta",
 		id: "confirmation",
 		label: "Confirmação de conta",
-		description: "Mensagem usada para validar o email da pessoa usuária no primeiro acesso.",
+		description: "Mensagem usada para validar o e-mail da pessoa usuária no primeiro acesso.",
 		render: (supportEmail) =>
 			confirmationEmailHtml({
 				name: "Leitora",
-				verifyUrl: "https://devbutterstore.local/verify?token=abc123",
+				verifyUrl: "https://selolibertaria.local/verify?token=abc123",
 				supportEmail,
 			}),
 	},
@@ -33,11 +35,11 @@ const templates: TemplateDefinition[] = [
 		category: "Conta",
 		id: "password-reset",
 		label: "Redefinição de senha",
-		description: "Fluxo transacional de recuperação de acesso com link temporário.",
+		description: "Mensagem de recuperação de acesso com link temporário.",
 		render: (supportEmail) =>
 			passwordResetEmailHtml({
 				name: "Leitora",
-				resetUrl: "https://devbutterstore.local/reset-password?token=xyz",
+				resetUrl: "https://selolibertaria.local/reset-password?token=xyz",
 				supportEmail,
 			}),
 	},
@@ -46,7 +48,7 @@ const templates: TemplateDefinition[] = [
 		id: "order-status",
 		label: "Status do pedido",
 		description: "Atualização automática de pagamento, envio e rastreio para o cliente.",
-		render: (supportEmail) => {
+		render: (supportEmail, currency) => {
 			const content = getCustomerOrderStatusContent({
 				status: "shipped",
 				trackingNumber: "BR123456789",
@@ -56,13 +58,13 @@ const templates: TemplateDefinition[] = [
 				name: "Leitora",
 				orderId: "1001",
 				content,
-				currency: "BRL",
+				currency,
 				fulfillment: { status: "shipped", trackingNumber: "BR123456789" },
 				items: [
-					{ name: "T-shirt", qty: 2, unitAmount: 2000, image: "/images/devbutterstore-mark.svg" },
-					{ name: "Poster", qty: 1, unitAmount: 1500, image: "/yns-cover.jpg" },
+					{ name: "Ninfas do Tietê", qty: 1, unitAmount: 3990, image: "/images/ninfas-example.png" },
+					{ name: "Marcador editorial", qty: 1, unitAmount: 1200, image: "/images/storefront-mark.svg" },
 				],
-				totalCents: 5500,
+				totalCents: 5190,
 				supportEmail,
 			});
 		},
@@ -77,7 +79,7 @@ const templates: TemplateDefinition[] = [
 				name: "Leitora",
 				productName: "Ninfas do Tietê",
 				variantLabel: "Edição brochura",
-				productUrl: "https://devbutterstore.local/product/ninfas-do-tiete",
+				productUrl: "https://selolibertaria.local/product/ninfas-do-tiete",
 				basePrice: "R$ 129,90",
 				effectivePrice: "R$ 99,90",
 				promotionLabel: "Lançamento relâmpago",
@@ -88,7 +90,7 @@ const templates: TemplateDefinition[] = [
 		category: "Operação",
 		id: "transactional",
 		label: "Mensagem transacional",
-		description: "Template genérico para recados operacionais ou comunicações internas aprovadas.",
+		description: "Modelo genérico para recados internos ou comunicados aprovados.",
 		render: (supportEmail) =>
 			transactionalEmailHtml({
 				title: "Boas-vindas ao Selo Libertária",
@@ -98,7 +100,13 @@ const templates: TemplateDefinition[] = [
 	},
 ];
 
-export function EmailTemplatesPreviewClient({ supportEmail }: { supportEmail: string }) {
+export function EmailTemplatesPreviewClient({
+	supportEmail,
+	currency,
+}: {
+	supportEmail: string;
+	currency: string;
+}) {
 	const [selected, setSelected] = useState<string>(templates[0]?.id ?? "");
 	const [search, setSearch] = useState("");
 	const [previewVersion, setPreviewVersion] = useState(0);
@@ -114,33 +122,33 @@ export function EmailTemplatesPreviewClient({ supportEmail }: { supportEmail: st
 	const selectedValue =
 		filteredTemplates.find((template) => template.id === selected)?.id ?? filteredTemplates[0]?.id ?? "";
 	const current = filteredTemplates.find((template) => template.id === selectedValue) ?? null;
-	const html = current ? current.render(supportEmail) : "";
+	const html = current ? current.render(supportEmail, currency) : "";
 	const currentIndex = templates.findIndex((template) => template.id === current?.id);
 
 	return (
 		<div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
 			<section className="space-y-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5">
 				<div className="space-y-2">
-					<h2 className="editorial-serif text-2xl font-semibold">Biblioteca de templates</h2>
+					<h2 className="editorial-serif text-2xl font-semibold">Biblioteca de modelos</h2>
 					<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-						Escolha um template para revisar a estrutura, a copy e a assinatura operacional.
+						Escolha um modelo para revisar a estrutura, a copy e a assinatura.
 					</p>
 				</div>
 				<div className="space-y-2">
 					<label htmlFor="email-template-search" className="text-sm font-medium">
-						Buscar template
+						Buscar modelo
 					</label>
-					<input
+					<Input
 						id="email-template-search"
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						placeholder="Conta, pedido, promoção..."
-						className="flex h-10 w-full rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm outline-hidden transition-colors focus:border-[color:var(--editorial-accent)]"
+						className="rounded-none bg-white"
 					/>
 				</div>
 				<div className="space-y-2">
 					<label htmlFor="email-template-select" className="text-sm font-medium">
-						Template ativo
+						Modelo em revisão
 					</label>
 					<select
 						id="email-template-select"
@@ -195,7 +203,7 @@ export function EmailTemplatesPreviewClient({ supportEmail }: { supportEmail: st
 					})}
 					{filteredTemplates.length === 0 ? (
 						<div className="border border-dashed border-[color:var(--editorial-border)] bg-white px-4 py-6 text-sm text-[color:var(--editorial-muted)]">
-							Nenhum template encontrado para essa busca.
+							Nenhum modelo encontrado para essa busca.
 						</div>
 					) : null}
 				</div>
@@ -208,49 +216,47 @@ export function EmailTemplatesPreviewClient({ supportEmail }: { supportEmail: st
 						<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
 							{current?.description ?? "Refine a busca ou limpe o filtro para visualizar uma prévia."}
 						</p>
-						<div className="flex flex-wrap gap-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
-							<span className="border border-[color:var(--editorial-border)] px-2 py-1">
-								Grupo {currentIndex >= 0 ? currentIndex + 1 : 1} de {templates.length}
-							</span>
-							{current ? (
+						{current ? (
+							<div className="flex flex-wrap gap-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
 								<span className="border border-[color:var(--editorial-border)] px-2 py-1">
 									{current.category}
 								</span>
-							) : null}
-						</div>
+							</div>
+						) : null}
 					</div>
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm">
 						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
-							Email de suporte
+							E-mail de suporte
 						</div>
 						<div className="mt-2 font-medium text-[color:var(--editorial-ink)]">
-							{supportEmail || "Não configurado no momento"}
+							{supportEmail || "Ainda não configurado"}
 						</div>
 					</div>
 				</div>
 
 				<div className="flex flex-wrap gap-3">
-					<button
+					<Button
 						type="button"
-						className="inline-flex h-10 items-center justify-center border border-[color:var(--editorial-border)] bg-white px-4 text-sm font-semibold text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
+						variant="outline"
+						className="rounded-none bg-white"
 						onClick={() => setPreviewVersion((value) => value + 1)}
 						disabled={!current}
 					>
-						Atualizar preview
-					</button>
+						Atualizar prévia
+					</Button>
 				</div>
 
 				{current ? (
 					<iframe
 						key={`${current.id}:${previewVersion}:${supportEmail}`}
-						title={`Prévia do template ${current.label}`}
+						title={`Prévia do modelo ${current.label}`}
 						srcDoc={html}
 						sandbox=""
 						className="min-h-[760px] w-full border border-[color:var(--editorial-border)] bg-white"
 					/>
 				) : (
 					<div className="grid min-h-[760px] place-items-center border border-dashed border-[color:var(--editorial-border)] bg-white px-6 text-center text-sm leading-6 text-[color:var(--editorial-muted)]">
-						Nenhum template corresponde ao filtro atual. Limpe a busca para retomar a revisão.
+						Nenhum modelo corresponde ao filtro atual. Limpe a busca para continuar.
 					</div>
 				)}
 			</section>

@@ -44,7 +44,7 @@ export function OAuthButtons({ providers }: Props) {
 		<div className="grid w-full gap-3">
 			<div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
 				<span className="h-px flex-1 bg-[color:var(--editorial-border)]" />
-				<span>OU</span>
+				<span>{t("divider")}</span>
 				<span className="h-px flex-1 bg-[color:var(--editorial-border)]" />
 			</div>
 			<div className="grid gap-2.5">

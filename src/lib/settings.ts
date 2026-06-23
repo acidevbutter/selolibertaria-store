@@ -51,7 +51,6 @@ export type ShippingProviderSettings = {
 	serviceName?: string | null;
 	fixedAmount?: number | null;
 	estimatedDays?: number | null;
-	currency?: string | null;
 	supportedCountries?: string[];
 	requiresPostalCode?: boolean;
 	defaultWeightGrams?: number | null;

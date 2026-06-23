@@ -57,7 +57,6 @@ const shippingProviderInputSchema = z.object({
 	serviceName: z.string().optional(),
 	fixedAmount: z.union([z.number(), z.string()]).optional(),
 	estimatedDays: z.union([z.number(), z.string()]).optional(),
-	currency: z.string().optional(),
 	supportedCountries: z.array(z.string()).optional(),
 	requiresPostalCode: z.boolean().optional(),
 	defaultWeightGrams: z.union([z.number(), z.string()]).optional(),
@@ -109,7 +108,10 @@ export async function PATCH(req: Request) {
 	const db = await getDb();
 	const parsed = settingsPatchSchema.safeParse(await req.json());
 	if (!parsed.success) {
-		return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+		return NextResponse.json(
+			{ error: parsed.error.flatten(), code: "ADMIN_SETTINGS_INVALID_REQUEST" },
+			{ status: 400 },
+		);
 	}
 	const body = parsed.data;
 	const existing = await db.collection<SettingsDoc>("settings").findOne({});
@@ -157,7 +159,7 @@ export async function PATCH(req: Request) {
 					: (previous.credentialsEncrypted ?? null);
 			nextShippingProviders[index] = {
 				code: (providerPatch.code?.trim() || previous.code || `provider-${index + 1}`).trim(),
-				label: providerPatch.label?.trim() || previous.label || `Provider ${index + 1}`,
+				label: providerPatch.label?.trim() || previous.label || `Provedor ${index + 1}`,
 				enabled: providerPatch.enabled ?? previous.enabled ?? true,
 				priority:
 					typeof providerPatch.priority === "number"
@@ -222,10 +224,6 @@ export async function PATCH(req: Request) {
 								: null
 							: null
 						: (previous.estimatedDays ?? null),
-				currency:
-					providerPatch.currency !== undefined
-						? providerPatch.currency?.trim().toUpperCase() || null
-						: (previous.currency ?? preset.defaultCurrency ?? null),
 				supportedCountries:
 					providerPatch.supportedCountries !== undefined
 						? providerPatch.supportedCountries

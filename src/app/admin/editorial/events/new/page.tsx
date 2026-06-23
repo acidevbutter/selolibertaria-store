@@ -23,7 +23,7 @@ export default async function NewEditorialEventPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Novo evento"
-				description="Crie um evento com leitura curta, agenda, ordem editorial e imagem principal sem sair do fluxo do hub."
+				description="Crie um evento com agenda, ordem e imagem principal."
 				actions={
 					<Link
 						href="/admin/editorial/events"
@@ -35,8 +35,8 @@ export default async function NewEditorialEventPage() {
 				}
 			/>
 			<AdminEditorialNote
-				title="Fluxo"
-				description="Preencha identidade, agenda, imagem e publicação. Ao salvar, o evento volta para a coleção com ordem e status prontos para revisão."
+				title="Como usar"
+				description="Preencha identidade, agenda, imagem e publicação. Ao salvar, o evento volta para a lista para revisão."
 			/>
 			<EditorialEventForm action={createEditorialEventAction} submitLabel="Criar evento" />
 		</AdminEditorialPage>

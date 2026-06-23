@@ -58,11 +58,15 @@ function isValidObjectId(id: string | undefined | null): id is string {
 
 function parseObjectId(idRaw: string | undefined) {
 	if (!isValidObjectId(idRaw))
-		return { error: new Response(JSON.stringify({ error: "Invalid ID" }), { status: 400 }) };
+		return {
+			error: new Response(JSON.stringify({ error: "ID inválido", code: "USER_INVALID_ID" }), { status: 400 }),
+		};
 	try {
 		return { value: new ObjectId(idRaw) };
 	} catch {
-		return { error: new Response(JSON.stringify({ error: "Invalid ID" }), { status: 400 }) };
+		return {
+			error: new Response(JSON.stringify({ error: "ID inválido", code: "USER_INVALID_ID" }), { status: 400 }),
+		};
 	}
 }
 
@@ -101,9 +105,12 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
 			{ projection: { passwordHash: 0 } },
 		);
 	if (!user) {
-		const res = new Response(JSON.stringify({ error: "Not found", code: "USER_NOT_FOUND", id: idRaw }), {
-			status: 404,
-		});
+		const res = new Response(
+			JSON.stringify({ error: "Usuária não encontrada", code: "USER_NOT_FOUND", id: idRaw }),
+			{
+				status: 404,
+			},
+		);
 		res.headers.set("x-route-hit", "users/[id]/GET");
 		return res;
 	}
@@ -142,6 +149,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 			const res = new Response(
 				JSON.stringify({
 					error: "E-mail não verificado. Não é possível editar o perfil antes da confirmação.",
+					code: "USER_EMAIL_NOT_VERIFIED",
 				}),
 				{
 					status: 403,
@@ -175,7 +183,9 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 				.collection("users")
 				.findOne({ email: emailLower, _id: { $ne: parsed.value } });
 			if (existing) {
-				return new Response(JSON.stringify({ error: "E-mail já está em uso" }), { status: 409 });
+				return new Response(JSON.stringify({ error: "E-mail já está em uso", code: "USER_EMAIL_TAKEN" }), {
+					status: 409,
+				});
 			}
 			update.email = emailLower;
 		}
@@ -223,10 +233,15 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 		return json;
 	} catch (err) {
 		if (err instanceof z.ZodError) {
-			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
+			return new Response(JSON.stringify({ error: err.flatten(), code: "USER_UPDATE_INVALID_REQUEST" }), {
+				status: 400,
+			});
 		}
 		console.error("[PUT /api/users/:id]", err);
-		return new Response(JSON.stringify({ error: "Falha ao atualizar" }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: "Não foi possível atualizar o perfil.", code: "USER_UPDATE_FAILED" }),
+			{ status: 500 },
+		);
 	}
 }
 
@@ -239,6 +254,8 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
 	const db = await getDb();
 	const res = await db.collection("users").deleteOne({ _id: parsed.value });
 	if (!res.deletedCount)
-		return new Response(JSON.stringify({ error: "Usuária não encontrada" }), { status: 404 });
+		return new Response(JSON.stringify({ error: "Usuária não encontrada", code: "USER_DELETE_NOT_FOUND" }), {
+			status: 404,
+		});
 	return new Response(null, { status: 204 });
 }

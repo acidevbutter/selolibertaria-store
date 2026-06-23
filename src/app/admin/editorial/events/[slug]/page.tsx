@@ -40,7 +40,7 @@ export default async function AdminEditorialEventDetailsPage({
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title={event.title}
-				description="Edite agenda, imagem, status e publicação do evento com contexto rápido de leitura."
+				description="Edite agenda, imagem, status e publicação do evento."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -63,18 +63,18 @@ export default async function AdminEditorialEventDetailsPage({
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat
 					label="Status"
-					value={event.status || "—"}
-					helper="Leitura curta para a área pública."
+					value={event.status || "Não informado"}
+					helper="Como o evento aparece no site."
 				/>
 				<AdminEditorialStat
 					label="Período"
-					value={event.period || "—"}
+					value={event.period || "Não informado"}
 					helper="Faixa ou agenda principal do evento."
 				/>
 				<AdminEditorialStat
 					label="Publicação"
 					value={event.published ? "Publicado" : "Rascunho"}
-					helper="Controle imediato da vitrine pública."
+					helper="Estado atual no site."
 				/>
 			</div>
 

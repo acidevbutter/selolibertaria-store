@@ -41,12 +41,6 @@ function createInitialAddress(defaultCountry: string): AddressValue {
 const fieldClassName =
 	"h-12 rounded-none border-[color:var(--editorial-border)] bg-transparent px-4 text-base text-[color:var(--editorial-ink)] shadow-none placeholder:text-[color:var(--editorial-muted)] focus-visible:ring-0 focus-visible:border-[color:var(--editorial-ink)]";
 
-const stepMeta = {
-	1: { label: "1 de 3", helper: "" },
-	2: { label: "2 de 3", helper: "Seu endereço fica no segundo passo, sem apertar a primeira decisão." },
-	3: { label: "3 de 3", helper: "Últimos ajustes antes de concluir e continuar sua jornada." },
-} as const;
-
 const registerSteps: RegisterStep[] = [1, 2, 3];
 
 export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, onRegistered }: Props) {
@@ -208,8 +202,11 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 				body: JSON.stringify(payload),
 			});
 			if (!res.ok) {
-				const data = (await res.json().catch(() => ({}))) as { error?: string };
-				setError(typeof data.error === "string" ? data.error : t("errors.failed"));
+				if (res.status === 409) {
+					setError(t("errors.emailTaken"));
+					return;
+				}
+				setError(t("errors.failed"));
 				return;
 			}
 			await storeCredentialForBrowser();
@@ -241,6 +238,20 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 	}
 
 	const submitDisabled = pending || emailStatus === "taken" || !isStrong || password !== confirmPassword;
+	const stepMeta: Record<RegisterStep, { label: string; helper: string }> = {
+		1: {
+			label: t("steps.1.label"),
+			helper: t("steps.1.helper"),
+		},
+		2: {
+			label: t("steps.2.label"),
+			helper: t("steps.2.helper"),
+		},
+		3: {
+			label: t("steps.3.label"),
+			helper: t("steps.3.helper"),
+		},
+	};
 
 	return (
 		<form onSubmit={handleSubmit} autoComplete="on" className="space-y-8">
@@ -466,7 +477,7 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 						onClick={goNext}
 						className="h-12 rounded-none bg-[color:var(--editorial-ink)] px-8 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]/92"
 					>
-						{step === 1 ? "Continuar" : "Continuar para preferências"}
+						{step === 1 ? t("actions.continue") : t("actions.continueToPreferences")}
 					</Button>
 				) : (
 					<Button

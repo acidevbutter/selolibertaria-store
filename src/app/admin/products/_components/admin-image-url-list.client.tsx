@@ -122,7 +122,7 @@ export function AdminImageUrlList({
 		const payload = (await response.json()) as { error?: string; url?: string };
 
 		if (!response.ok || !payload.url) {
-			throw new Error(payload.error || "Could not upload the image.");
+			throw new Error(payload.error || "Não foi possível enviar a imagem.");
 		}
 
 		appendValue(payload.url);
@@ -201,7 +201,7 @@ export function AdminImageUrlList({
 			))}
 			<div className="flex flex-col gap-3 rounded-md border border-dashed p-3 md:flex-row md:items-center md:justify-between">
 				<div className="space-y-1">
-					<p className="text-sm font-medium">Upload de imagem</p>
+					<p className="text-sm font-medium">Imagem</p>
 					<p className="text-xs text-muted-foreground">
 						{uploadMode === "on-submit"
 							? "Escolha a imagem, revise a prévia e conclua o envio ao salvar o formulário."
@@ -283,7 +283,7 @@ export function AdminImageUrlList({
 					))
 				) : pendingPreviewUrls.length === 0 ? (
 					<div className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground">
-						Sem imagem
+						Sem imagem disponível
 					</div>
 				) : null}
 				{pendingPreviewUrls.map((src, index) => (
@@ -382,7 +382,8 @@ export function AdminImageUrlList({
 					<DialogHeader>
 						<DialogTitle>Prévia da imagem</DialogTitle>
 						<DialogDescription>
-							Revise a imagem selecionada. Você também pode excluí-la do formulário e do storage.
+							Revise a imagem selecionada. Você também pode excluí-la do formulário e da biblioteca de
+							mídia.
 						</DialogDescription>
 					</DialogHeader>
 					{selectedImage ? (
@@ -390,7 +391,7 @@ export function AdminImageUrlList({
 							<div className="overflow-hidden rounded-lg bg-background">
 								<Image
 									src={selectedImage}
-									alt="Expanded image"
+									alt="Prévia ampliada da imagem"
 									width={1600}
 									height={1600}
 									className="max-h-[75vh] w-full object-contain"
@@ -408,7 +409,7 @@ export function AdminImageUrlList({
 									}}
 									disabled={isDeletingImage}
 								>
-									Fechar
+									Fechar prévia
 								</Button>
 								<Button
 									type="button"
@@ -428,8 +429,8 @@ export function AdminImageUrlList({
 					<DialogHeader>
 						<DialogTitle>Excluir imagem?</DialogTitle>
 						<DialogDescription>
-							Tem certeza que quer excluir esta imagem? Essa ação remove a mídia do formulário e também da API
-							de storage.
+							Tem certeza que quer excluir esta imagem? Essa ação remove a mídia do formulário e também da
+							biblioteca de mídia.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

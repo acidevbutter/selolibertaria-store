@@ -27,7 +27,7 @@ export default async function AdminEditorialHomePage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Página inicial"
-				description="Edite os blocos institucionais principais da página inicial sem misturar esse fluxo com catálogo, eventos ou projetos."
+				description="Edite os blocos institucionais principais da página inicial."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -45,13 +45,9 @@ export default async function AdminEditorialHomePage() {
 				<AdminEditorialStat
 					label="Publicação"
 					value={page.published ? "Publicado" : "Rascunho"}
-					helper="Estado atual da página inicial institucional."
+					helper="Estado atual no site."
 				/>
-				<AdminEditorialStat
-					label="Ordem"
-					value={page.order ?? 1}
-					helper="Prioridade editorial desta superfície."
-				/>
+				<AdminEditorialStat label="Ordem" value={page.order ?? 1} helper="Prioridade desta página." />
 				<AdminEditorialStat
 					label="Blocos"
 					value="Página inicial"
@@ -59,7 +55,11 @@ export default async function AdminEditorialHomePage() {
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-				<EditorialHomeForm action={updateEditorialHomeAction} page={page} submitLabel="Salvar página" />
+				<EditorialHomeForm
+					action={updateEditorialHomeAction}
+					page={page}
+					submitLabel="Salvar página inicial"
+				/>
 				<EditorialMetaCard
 					published={page.published}
 					order={page.order}

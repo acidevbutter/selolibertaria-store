@@ -24,7 +24,6 @@ export type ShippingProviderPreset = {
 	defaultEndpoints: Required<ShippingProviderEndpoints>;
 	defaultSupportedCountries: string[];
 	defaultRequiresPostalCode: boolean;
-	defaultCurrency?: string;
 	credentialFields: ShippingCredentialField[];
 };
 
@@ -81,7 +80,6 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		},
 		defaultSupportedCountries: ["BR"],
 		defaultRequiresPostalCode: true,
-		defaultCurrency: "BRL",
 		credentialFields: [
 			{
 				key: "username",
@@ -131,7 +129,6 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		},
 		defaultSupportedCountries: ["BR"],
 		defaultRequiresPostalCode: true,
-		defaultCurrency: "BRL",
 		credentialFields: [
 			{
 				key: "token",
@@ -169,7 +166,6 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		},
 		defaultSupportedCountries: [],
 		defaultRequiresPostalCode: true,
-		defaultCurrency: "USD",
 		credentialFields: [
 			{
 				key: "apiKey",

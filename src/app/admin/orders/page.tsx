@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -30,6 +32,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const db = await getDb();
 	const sp = (await searchParams) || {};
@@ -107,7 +110,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 				<AdminEditorialStat
 					label="Pagos"
 					value={paidCount}
-					helper="Entradas com pagamento confirmado neste recorte."
+					helper="Entradas com pagamento confirmado neste filtro."
 				/>
 				<AdminEditorialStat
 					label="Em processamento"
@@ -126,7 +129,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 						<Table className="min-w-[640px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Cliente</TableHead>
+									<TableHead>E-mail do cliente</TableHead>
 									<TableHead>Valor</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Data</TableHead>
@@ -139,7 +142,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									<TableRow key={it.purchases.id}>
 										<TableCell className="break-all">{it.email}</TableCell>
 										<TableCell>
-											{new Intl.NumberFormat("pt-BR", {
+											{new Intl.NumberFormat(locale, {
 												style: "currency",
 												currency: it.purchases.currency?.toUpperCase?.() || defaultCurrency,
 											}).format((it.purchases.amountTotal || 0) / 100)}
@@ -147,14 +150,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 										<TableCell className="capitalize">
 											<StatusBadge status={it.purchases.status} />
 										</TableCell>
-										<TableCell>{new Date(it.purchases.createdAt).toLocaleString("pt-BR")}</TableCell>
+										<TableCell>{new Date(it.purchases.createdAt).toLocaleString(locale)}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{it.purchases.id}</TableCell>
 										<TableCell className="text-right">
 											<Link
 												className="font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
 												href={`/admin/orders/${it.purchases.id}`}
 											>
-												Abrir
+												Ver pedido
 											</Link>
 										</TableCell>
 									</TableRow>

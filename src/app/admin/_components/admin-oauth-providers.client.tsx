@@ -24,9 +24,13 @@ type SettingsPayload = {
 };
 
 const providerMeta: Array<{ id: ProviderId; label: string; helper: string }> = [
-	{ id: "google", label: "Google", helper: "Login com Google usando email e perfil da conta." },
+	{ id: "google", label: "Google", helper: "Login com Google usando e-mail e perfil da conta." },
 	{ id: "facebook", label: "Facebook", helper: "Login social da Meta para acesso na web." },
-	{ id: "instagram", label: "Instagram", helper: "Fluxo com complemento de email quando necessário." },
+	{
+		id: "instagram",
+		label: "Instagram",
+		helper: "Complementa o e-mail da conta quando a plataforma não o devolve.",
+	},
 ];
 
 function normalizeOAuthText(value: string) {
@@ -215,7 +219,8 @@ export default function AdminOAuthProviders() {
 										value={provider.clientId}
 										onChange={(event) => updateProvider(meta.id, { clientId: event.target.value })}
 										onBlur={() => formatProviderField(meta.id, "clientId")}
-										placeholder="Cole o ID do cliente do provedor"
+										placeholder="ID informado pelo provedor"
+										className="max-w-xl"
 										autoCapitalize="none"
 										autoCorrect="off"
 										spellCheck={false}
@@ -231,9 +236,10 @@ export default function AdminOAuthProviders() {
 										onBlur={() => formatProviderField(meta.id, "clientSecret")}
 										placeholder={
 											provider.clientSecretMasked
-												? "Preencha apenas para substituir"
-												: "Cole o segredo do cliente"
+												? "Preencha apenas se quiser substituir"
+												: "Segredo informado pelo provedor"
 										}
+										className="max-w-xl"
 										autoCapitalize="none"
 										autoCorrect="off"
 										spellCheck={false}

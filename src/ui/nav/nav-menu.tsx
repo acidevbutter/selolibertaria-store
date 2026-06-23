@@ -16,9 +16,10 @@ export const NavMenu = async ({
 	includeSessionLink = true,
 }: NavMenuProps = {}) => {
 	const session = includeSessionLink ? await auth() : null;
+	const globalT = await getTranslations("Global.nav.auth");
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
-	const authLabel = !session ? "Entrar" : isAdminSession ? "Admin" : "Minha conta";
+	const authLabel = !session ? globalT("signIn") : isAdminSession ? globalT("admin") : globalT("myAccount");
 	const t = await getTranslations("Selo");
 	const dynamicCategories = includeDynamicCategories ? await getStripeCategories() : [];
 	const desktopLinks = [

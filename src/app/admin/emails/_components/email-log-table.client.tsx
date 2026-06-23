@@ -55,7 +55,7 @@ function formatJson(value: unknown) {
 }
 
 function providerLabel(provider: string | null) {
-	if (provider === "brevo") return "API (Brevo)";
+	if (provider === "brevo") return "API do Brevo";
 	if (provider === "smtp") return "SMTP";
 	return "-";
 }
@@ -80,18 +80,18 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 			} | null;
 
 			if (!res.ok) {
-				throw new Error(payload?.error || "Não foi possível reenviar o email.");
+				throw new Error(payload?.error || "Não foi possível reenviar o e-mail.");
 			}
 
-			toast.success("Email reenviado", {
+			toast.success("E-mail reenviado", {
 				description: item.email
-					? `Uma nova tentativa via ${via === "api" ? "API" : "SMTP"} foi enviada para ${item.email}.`
-					: `Uma nova tentativa via ${via === "api" ? "API" : "SMTP"} foi enviada com sucesso.`,
+					? `Uma nova tentativa pelo canal ${via === "api" ? "API" : "SMTP"} foi enviada para ${item.email}.`
+					: `Uma nova tentativa pelo canal ${via === "api" ? "API" : "SMTP"} foi enviada com sucesso.`,
 			});
 			router.refresh();
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Não foi possível reenviar o email.";
-			toast.error(`Falha no reenvio via ${via === "api" ? "API" : "SMTP"}`, { description: message });
+			const message = error instanceof Error ? error.message : "Não foi possível reenviar o e-mail.";
+			toast.error(`Falha no reenvio pelo canal ${via === "api" ? "API" : "SMTP"}`, { description: message });
 		} finally {
 			setRetryingKey(null);
 		}
@@ -147,7 +147,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 						{items.length === 0 && (
 							<TableRow>
 								<TableCell colSpan={4} className="py-8 text-muted-foreground">
-									Nenhum email encontrado para os filtros atuais.
+									Nenhum e-mail encontrado para os filtros atuais.
 								</TableCell>
 							</TableRow>
 						)}
@@ -165,11 +165,11 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 				<DialogContent className="h-[88vh] max-w-7xl overflow-hidden p-0">
 					{selected ? (
 						<div className="grid h-full grid-cols-1 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]">
-							<div className="border-b p-6 lg:border-b-0 lg:border-r">
+								<div className="border-b p-6 lg:border-b-0 lg:border-r">
 								<DialogHeader>
-									<DialogTitle>{selected.subject || "Sem assunto"}</DialogTitle>
+									<DialogTitle>{selected.subject || "Assunto não informado"}</DialogTitle>
 									<DialogDescription>
-										Prévia do email enviado para {selected.email || "destinatário indefinido"}.
+										E-mail enviado para {selected.email || "destinatário não identificado"}.
 									</DialogDescription>
 								</DialogHeader>
 
@@ -177,9 +177,9 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 									{selected.error ? (
 										<div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
 											<p className="mb-2 text-xs font-semibold uppercase tracking-wide text-destructive">
-												Erro de envio
+												Falha de envio
 											</p>
-											<p className="text-sm text-destructive break-words">{selected.error}</p>
+										<p className="break-words text-sm text-destructive">{selected.error}</p>
 										</div>
 									) : null}
 									<div className="flex items-center gap-2">
@@ -227,11 +227,11 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 												</Link>
 											</div>
 										) : null}
-										{selected.orderStatus ? <div>Status do pedido: {selected.orderStatus}</div> : null}
-										{selected.source ? <div>Origem: {selected.source}</div> : null}
+										{selected.orderStatus ? <div>Situação do pedido: {selected.orderStatus}</div> : null}
+										{selected.source ? <div>Origem do envio: {selected.source}</div> : null}
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Canal usado</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Canal de envio</p>
 										<p>{providerLabel(selected.provider)}</p>
 									</div>
 									<div>
@@ -239,8 +239,8 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										<p>{selected.sentAtLabel}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Template</p>
-										<p>{selected.template || "indefinido"}</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Modelo do e-mail</p>
+										<p>{selected.template || "Não informado"}</p>
 									</div>
 									<div>
 										<p className="mb-1 text-xs font-medium text-muted-foreground">ID da mensagem</p>
@@ -253,7 +253,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										</pre>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Tentativas</p>
+										<p className="mb-1 text-xs font-medium text-muted-foreground">Histórico de tentativas</p>
 										<pre className="max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs">
 											{formatJson(selected.attempts || [])}
 										</pre>
@@ -263,12 +263,12 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 
 							<div className="flex min-h-0 flex-col bg-muted/20">
 								<div className="border-b px-6 py-3 text-sm text-muted-foreground">
-									{selected.emailBody ? "Prévia renderizada" : "Conteúdo em texto puro"}
+									{selected.emailBody ? "Prévia do e-mail" : "Versão em texto"}
 								</div>
 								<div className="min-h-0 flex-1 p-4">
 									{selected.emailBody ? (
 										<iframe
-											title={`Prévia do email ${selected.subject || selected.id}`}
+											title={`Prévia do e-mail ${selected.subject || selected.id}`}
 											srcDoc={selected.emailBody}
 											sandbox=""
 											className="h-full w-full rounded-md border bg-white"

@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useTranslations } from "@/i18n/client";
 
 export default function ResetPasswordPage() {
-	const t = useTranslations("Register");
+	const registerT = useTranslations("Register");
+	const t = useTranslations("ResetPassword");
 	const search = useSearchParams();
 	const token = search.get("token") || "";
 	const [status, setStatus] = useState<string | null>(null);
@@ -44,13 +45,13 @@ export default function ResetPasswordPage() {
 				const data = (await res.json()) as { valid?: boolean; error?: string };
 				if (mounted) {
 					setTokenValid(!!data?.valid);
-					if (!data?.valid && data?.error) setStatus(data.error);
+					if (!data?.valid) setStatus(t("errors.invalidOrExpired"));
 					setValidating(false);
 				}
 			} catch (err) {
 				if (mounted) {
 					setTokenValid(false);
-					setStatus("Não foi possível validar o token");
+					setStatus(t("errors.validate"));
 					setValidating(false);
 				}
 			}
@@ -63,15 +64,15 @@ export default function ResetPasswordPage() {
 
 	return (
 		<div className="max-w-md mx-auto p-6">
-			<h2 className="text-xl font-semibold mb-4">Redefinir senha</h2>
+			<h2 className="mb-4 text-xl font-semibold">{t("title")}</h2>
 			{validating ? (
-				<p className="text-sm text-muted-foreground">Validando token...</p>
+				<p className="text-sm text-muted-foreground">{t("status.validating")}</p>
 			) : tokenValid === false ? (
 				<div>
-					<p className="text-sm text-red-500">{status || "Token inválido ou expirado."}</p>
+					<p className="text-sm text-red-500">{status || t("errors.invalidOrExpired")}</p>
 					<div className="mt-3">
 						<Button variant="secondary" onClick={() => router.push("/login")}>
-							Voltar para o login
+							{t("actions.backToLogin")}
 						</Button>
 					</div>
 				</div>
@@ -80,8 +81,8 @@ export default function ResetPasswordPage() {
 					onSubmit={async (e) => {
 						e.preventDefault();
 						setStatus(null);
-						if (!isStrong) return setStatus("A senha não atende aos requisitos de segurança");
-						if (passwordValue !== confirmValue) return setStatus("As senhas não coincidem");
+						if (!isStrong) return setStatus(t("errors.passwordWeak"));
+						if (passwordValue !== confirmValue) return setStatus(t("errors.passwordMismatch"));
 						try {
 							const res = await fetch("/api/auth/reset-password", {
 								method: "POST",
@@ -93,23 +94,22 @@ export default function ResetPasswordPage() {
 								router.push("/login?reset=1");
 								return;
 							} else {
-								const data = (await res.json()) as { error?: string };
-								setStatus(data?.error || "Falha ao redefinir a senha");
+								setStatus(t("errors.submit"));
 							}
 						} catch (err) {
-							setStatus("Erro inesperado");
+							setStatus(t("errors.unexpected"));
 						}
 					}}
 				>
 					<div className="grid gap-2">
-						<Label htmlFor="password">Nova senha</Label>
+						<Label htmlFor="password">{t("fields.password")}</Label>
 						<Input
 							name="password"
 							type="password"
 							value={passwordValue}
 							onChange={(e) => setPasswordValue((e.target as HTMLInputElement).value)}
 						/>
-						<Label htmlFor="confirm">Confirmar senha</Label>
+						<Label htmlFor="confirm">{t("fields.confirmPassword")}</Label>
 						<Input
 							name="confirm"
 							type="password"
@@ -117,35 +117,34 @@ export default function ResetPasswordPage() {
 							onChange={(e) => setConfirmValue((e.target as HTMLInputElement).value)}
 						/>
 						<div className="text-sm text-muted-foreground">
-							<div>{t("passwordStrength.title")}</div>
+							<div>{registerT("passwordStrength.title")}</div>
 							<ul className="list-disc ml-5">
 								<li className={strength.length ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.length")}
+									{registerT("passwordStrength.rules.length")}
 								</li>
 								<li className={strength.upper ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.upper")}
+									{registerT("passwordStrength.rules.upper")}
 								</li>
 								<li className={strength.lower ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.lower")}
+									{registerT("passwordStrength.rules.lower")}
 								</li>
 								<li className={strength.digit ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.digit")}
+									{registerT("passwordStrength.rules.digit")}
 								</li>
 								<li className={strength.special ? "text-green-500" : "text-red-500"}>
-									{t("passwordStrength.rules.special")}
+									{registerT("passwordStrength.rules.special")}
 								</li>
 							</ul>
 						</div>
 						<div className="flex gap-2 mt-2">
 							<Button type="submit" disabled={!isStrong || passwordValue !== confirmValue}>
-								Definir nova senha
+								{t("actions.submit")}
 							</Button>
 						</div>
 						{status && <p className="text-sm mt-2">{status}</p>}
 					</div>
 				</form>
 			)}
-			{/* immediate redirect handled on success */}
 		</div>
 	);
 }
