@@ -203,6 +203,32 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 							</TableBody>
 						</Table>
 					</div>
+					{items.length === 0 ? (
+						<div className="mt-4 flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+							<div className="space-y-1">
+								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+									Ainda não há registros de recebimento neste filtro.
+								</p>
+								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Valide uma compra recente ou revise os pedidos para confirmar se os eventos estão chegando como esperado.
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-2">
+								<Link
+									href="/admin/orders"
+									className="inline-flex h-10 items-center justify-center rounded-none border border-[color:var(--editorial-border)] bg-white px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-[#f4eee5]"
+								>
+									Ver pedidos
+								</Link>
+								<Link
+									href="/admin/emails"
+									className="inline-flex h-10 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
+								>
+									Ver e-mails
+								</Link>
+							</div>
+						</div>
+					) : null}
 				</div>
 			</EditorialPanel>
 		</AdminEditorialPage>

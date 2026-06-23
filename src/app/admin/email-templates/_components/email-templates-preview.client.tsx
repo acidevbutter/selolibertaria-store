@@ -1,120 +1,34 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { confirmationEmailHtml } from "@/lib/email-templates/confirmation";
-import { favoriteDiscountEmailHtml } from "@/lib/email-templates/favorite-discount";
-import { orderStatusEmailHtml } from "@/lib/email-templates/order-status";
-import { passwordResetEmailHtml } from "@/lib/email-templates/password-reset";
-import { transactionalEmailHtml } from "@/lib/email-templates/transactional";
-import { getCustomerOrderStatusContent } from "@/lib/order-status-notification";
+import { emailTemplatePreviewDefinitions } from "@/lib/admin-email-template-previews";
 import { Button } from "@/ui/shadcn/button";
 import { Input } from "@/ui/shadcn/input";
 
-type TemplateDefinition = {
-	category: string;
-	description: string;
-	id: string;
-	label: string;
-	render: (supportEmail: string, currency: string) => string;
-};
-
-const templates: TemplateDefinition[] = [
-	{
-		category: "Conta",
-		id: "confirmation",
-		label: "Confirmação de conta",
-		description: "Mensagem usada para validar o e-mail da pessoa usuária no primeiro acesso.",
-		render: (supportEmail) =>
-			confirmationEmailHtml({
-				name: "Leitora",
-				verifyUrl: "https://selolibertaria.local/verify?token=abc123",
-				supportEmail,
-			}),
-	},
-	{
-		category: "Conta",
-		id: "password-reset",
-		label: "Redefinição de senha",
-		description: "Mensagem de recuperação de acesso com link temporário.",
-		render: (supportEmail) =>
-			passwordResetEmailHtml({
-				name: "Leitora",
-				resetUrl: "https://selolibertaria.local/reset-password?token=xyz",
-				supportEmail,
-			}),
-	},
-	{
-		category: "Pedido",
-		id: "order-status",
-		label: "Status do pedido",
-		description: "Atualização automática de pagamento, envio e rastreio para o cliente.",
-		render: (supportEmail, currency) => {
-			const content = getCustomerOrderStatusContent({
-				status: "shipped",
-				trackingNumber: "BR123456789",
-			});
-			if (!content) return "";
-			return orderStatusEmailHtml({
-				name: "Leitora",
-				orderId: "1001",
-				content,
-				currency,
-				fulfillment: { status: "shipped", trackingNumber: "BR123456789" },
-				items: [
-					{ name: "Ninfas do Tietê", qty: 1, unitAmount: 3990, image: "/images/ninfas-example.png" },
-					{ name: "Marcador editorial", qty: 1, unitAmount: 1200, image: "/images/storefront-mark.svg" },
-				],
-				totalCents: 5190,
-				supportEmail,
-			});
-		},
-	},
-	{
-		category: "Marketing",
-		id: "favorite-discount-alert",
-		label: "Desconto em favorito",
-		description: "Comunicação opcional disparada quando um item favoritado entra em promoção.",
-		render: (supportEmail) =>
-			favoriteDiscountEmailHtml({
-				name: "Leitora",
-				productName: "Ninfas do Tietê",
-				variantLabel: "Edição brochura",
-				productUrl: "https://selolibertaria.local/product/ninfas-do-tiete",
-				basePrice: "R$ 129,90",
-				effectivePrice: "R$ 99,90",
-				promotionLabel: "Lançamento relâmpago",
-				supportEmail,
-			}),
-	},
-	{
-		category: "Operação",
-		id: "transactional",
-		label: "Mensagem transacional",
-		description: "Modelo genérico para recados internos ou comunicados aprovados.",
-		render: (supportEmail) =>
-			transactionalEmailHtml({
-				title: "Boas-vindas ao Selo Libertária",
-				bodyHtml: `<p>Olá, <strong>Leitora</strong>.</p><p>Obrigada por acompanhar o selo.</p>`,
-				supportEmail,
-			}),
-	},
-];
-
 export function EmailTemplatesPreviewClient({
 	supportEmail,
+	supportEmailSource,
 	currency,
+	baseUrl,
+	defaultTestRecipient,
 }: {
 	supportEmail: string;
+	supportEmailSource: string;
 	currency: string;
+	baseUrl: string;
+	defaultTestRecipient: string;
 }) {
-	const [selected, setSelected] = useState<string>(templates[0]?.id ?? "");
+	const [selected, setSelected] = useState<string>(emailTemplatePreviewDefinitions[0]?.id ?? "");
 	const [search, setSearch] = useState("");
 	const [previewVersion, setPreviewVersion] = useState(0);
+	const [testRecipient, setTestRecipient] = useState(defaultTestRecipient);
+	const [testStatus, setTestStatus] = useState<string | null>(null);
+	const [isSendingTest, setIsSendingTest] = useState(false);
 
 	const filteredTemplates = useMemo(() => {
 		const query = search.trim().toLowerCase();
-		if (!query) return templates;
-		return templates.filter((template) =>
+		if (!query) return emailTemplatePreviewDefinitions;
+		return emailTemplatePreviewDefinitions.filter((template) =>
 			`${template.label} ${template.description} ${template.category}`.toLowerCase().includes(query),
 		);
 	}, [search]);
@@ -122,8 +36,41 @@ export function EmailTemplatesPreviewClient({
 	const selectedValue =
 		filteredTemplates.find((template) => template.id === selected)?.id ?? filteredTemplates[0]?.id ?? "";
 	const current = filteredTemplates.find((template) => template.id === selectedValue) ?? null;
-	const html = current ? current.render(supportEmail, currency) : "";
-	const currentIndex = templates.findIndex((template) => template.id === current?.id);
+	const html = current ? current.render({ supportEmail, currency, baseUrl }) : "";
+
+	async function sendTestEmail() {
+		if (!current) return;
+		const recipient = testRecipient.trim().toLowerCase();
+		if (!recipient) {
+			setTestStatus("Informe um e-mail de destino para enviar a prévia.");
+			return;
+		}
+
+		setIsSendingTest(true);
+		setTestStatus(null);
+
+		try {
+			const response = await fetch("/api/admin/email-templates/test", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ templateId: current.id, to: recipient }),
+			});
+			const data = (await response.json().catch(() => null)) as { error?: string; messageId?: string } | null;
+			if (!response.ok) {
+				setTestStatus(data?.error ?? "Não foi possível enviar o e-mail de teste agora.");
+				return;
+			}
+			setTestStatus(
+				data?.messageId
+					? `E-mail de teste enviado. ID da mensagem: ${data.messageId}`
+					: "E-mail de teste enviado com sucesso.",
+			);
+		} catch {
+			setTestStatus("Não foi possível enviar o e-mail de teste agora.");
+		} finally {
+			setIsSendingTest(false);
+		}
+	}
 
 	return (
 		<div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
@@ -150,7 +97,7 @@ export function EmailTemplatesPreviewClient({
 					<label htmlFor="email-template-select" className="text-sm font-medium">
 						Modelo em revisão
 					</label>
-					<select
+						<select
 						id="email-template-select"
 						value={selectedValue}
 						onChange={(event) => setSelected(event.target.value)}
@@ -206,8 +153,8 @@ export function EmailTemplatesPreviewClient({
 							Nenhum modelo encontrado para essa busca.
 						</div>
 					) : null}
-				</div>
-			</section>
+					</div>
+				</section>
 
 			<section className="space-y-4 border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-5">
 				<div className="flex flex-col gap-4 border-b border-[color:var(--editorial-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
@@ -221,18 +168,81 @@ export function EmailTemplatesPreviewClient({
 								<span className="border border-[color:var(--editorial-border)] px-2 py-1">
 									{current.category}
 								</span>
+								<span className="border border-[color:var(--editorial-border)] px-2 py-1">
+									Assunto: {current.testSubject}
+								</span>
 							</div>
 						) : null}
 					</div>
-					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm">
-						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
-							E-mail de suporte
+					<div className="grid gap-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm">
+						<div>
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								E-mail de suporte
+							</div>
+							<div className="mt-2 font-medium text-[color:var(--editorial-ink)]">
+								{supportEmail || "Ainda não configurado"}
+							</div>
 						</div>
-						<div className="mt-2 font-medium text-[color:var(--editorial-ink)]">
-							{supportEmail || "Ainda não configurado"}
+						<div className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+							Origem atual: {supportEmailSource}
 						</div>
 					</div>
 				</div>
+
+				{current ? (
+					<div className="grid gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+						<div className="space-y-3">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Variáveis de exemplo
+							</div>
+							<div className="grid gap-2 sm:grid-cols-2">
+								{current.variables.map((variable) => (
+									<div key={`${current.id}:${variable.name}`} className="border border-[color:var(--editorial-border)] bg-white px-3 py-3">
+										<div className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+											{variable.name}
+										</div>
+										<div className="mt-2 text-sm text-[color:var(--editorial-ink)]">{variable.example}</div>
+									</div>
+								))}
+							</div>
+						</div>
+						<div className="space-y-3">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								Envio de teste
+							</div>
+							<label htmlFor="email-template-test-recipient" className="text-sm font-medium">
+								Enviar para
+							</label>
+							<Input
+								id="email-template-test-recipient"
+								type="email"
+								value={testRecipient}
+								onChange={(event) => setTestRecipient(event.target.value)}
+								placeholder="operacao@selolibertaria.com"
+								className="rounded-none bg-white"
+								autoCapitalize="none"
+								autoCorrect="off"
+								spellCheck={false}
+							/>
+							<Button
+								type="button"
+								className="w-full rounded-none"
+								onClick={sendTestEmail}
+								disabled={!current || isSendingTest}
+							>
+								{isSendingTest ? "Enviando teste..." : "Enviar e-mail de teste"}
+							</Button>
+							<p className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+								O envio usa o HTML real deste modelo e registra a tentativa no histórico de comunicação.
+							</p>
+							{testStatus ? (
+								<div className="border border-[color:var(--editorial-border)] bg-white px-3 py-3 text-sm text-[color:var(--editorial-ink)]">
+									{testStatus}
+								</div>
+							) : null}
+						</div>
+					</div>
+				) : null}
 
 				<div className="flex flex-wrap gap-3">
 					<Button

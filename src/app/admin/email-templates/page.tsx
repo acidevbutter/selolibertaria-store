@@ -1,9 +1,11 @@
 import { Mail } from "lucide-react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { EmailTemplatesPreviewClient } from "@/app/admin/email-templates/_components/email-templates-preview.client";
-import { env } from "@/env.mjs";
+import { env, publicUrl } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
@@ -20,7 +22,13 @@ export default async function EmailTemplatesPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "settings.write")) redirect("/forbidden");
-	const supportEmail = (await getSupportEmailSetting()) ?? "";
+	const configuredSupportEmail = await getSupportEmailSetting();
+	const supportEmail = configuredSupportEmail ?? seloSiteMeta.email;
+	const supportEmailSource = configuredSupportEmail ? "Configurações do admin" : "Padrão do projeto";
+	const requestHeaders = await headers();
+	const forwardedProto = requestHeaders.get("x-forwarded-proto");
+	const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+	const baseUrl = host ? `${forwardedProto ?? "http"}://${host}` : publicUrl;
 	const currency = String(env.STRIPE_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
@@ -29,7 +37,7 @@ export default async function EmailTemplatesPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="E-mails"
-				title="Modelos de e-mail"
+				title="Modelos de email"
 				description="Revise a linguagem, a estrutura e a assinatura dos e-mails transacionais antes de alterar o envio real."
 				actions={
 					<div className="inline-flex items-center gap-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)]">
@@ -44,14 +52,20 @@ export default async function EmailTemplatesPage() {
 				<AdminEditorialStat label="Prévia" value="Isolada" helper="Sem disparar e-mails reais." />
 				<AdminEditorialStat
 					label="E-mail de suporte"
-					value={supportEmail || "Não informado"}
-					helper="Assinatura usada nos exemplos desta tela."
+					value={supportEmail}
+					helper={`Assinatura usada nos exemplos desta tela. Origem: ${supportEmailSource.toLowerCase()}.`}
 				/>
 			</div>
 
 			<EditorialPanel className="p-0">
 				<div className="p-6 sm:p-8">
-					<EmailTemplatesPreviewClient supportEmail={supportEmail} currency={currency} />
+					<EmailTemplatesPreviewClient
+						supportEmail={supportEmail}
+						supportEmailSource={supportEmailSource}
+						currency={currency}
+						baseUrl={baseUrl}
+						defaultTestRecipient={session.user.email ?? ""}
+					/>
 				</div>
 			</EditorialPanel>
 		</AdminEditorialPage>

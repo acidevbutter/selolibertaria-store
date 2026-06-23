@@ -16,6 +16,7 @@ type Props = {
 	}>;
 	totalCents?: number | null;
 	supportEmail?: string;
+	baseUrl?: string;
 };
 
 export function orderStatusEmailHtml({
@@ -27,9 +28,10 @@ export function orderStatusEmailHtml({
 	items,
 	totalCents,
 	supportEmail,
+	baseUrl,
 }: Props) {
 	const safeName = name ? ` ${escapeEmailHtml(name)}` : "";
-	const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+	const resolvedBaseUrl = baseUrl || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
 	function formatCurrency(amountCents?: number | null, currencyCode?: string) {
 		try {
@@ -86,7 +88,7 @@ export function orderStatusEmailHtml({
 			const imageUrl = item.image
 				? item.image.startsWith("http")
 					? item.image
-					: `${baseUrl}${item.image.startsWith("/") ? item.image : `/${item.image}`}`
+					: `${resolvedBaseUrl}${item.image.startsWith("/") ? item.image : `/${item.image}`}`
 				: null;
 			const imageHtml = imageUrl
 				? `<img class="item-image" src="${escapeEmailHtml(imageUrl)}" alt="${escapeEmailHtml(item.name)}" />`
@@ -149,6 +151,7 @@ export function orderStatusEmailHtml({
 		preheader: `${content.heading} - pedido #${orderId}`,
 		bodyHtml,
 		supportEmail,
+		baseUrl,
 		footerNote: "Você está recebendo esta mensagem porque o status do seu pedido foi realmente atualizado.",
 	});
 }

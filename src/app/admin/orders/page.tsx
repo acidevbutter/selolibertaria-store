@@ -173,6 +173,32 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 							<TableCaption>Mostrando até 50 pedidos.</TableCaption>
 						</Table>
 					</div>
+					{items.length === 0 ? (
+						<div className="mt-4 flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+							<div className="space-y-1">
+								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+									Ainda não há pedidos neste recorte.
+								</p>
+								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Volte para a loja, confira se os livros estão visíveis e rode um fluxo de compra para validar a operação.
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-2">
+								<Link
+									href="/"
+									className="inline-flex h-10 items-center justify-center rounded-none border border-[color:var(--editorial-border)] bg-white px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-[#f4eee5]"
+								>
+									Ver loja
+								</Link>
+								<Link
+									href="/admin/products"
+									className="inline-flex h-10 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
+								>
+									Ver livros
+								</Link>
+							</div>
+						</div>
+					) : null}
 				</div>
 			</EditorialPanel>
 		</AdminEditorialPage>

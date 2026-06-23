@@ -315,6 +315,29 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				</div>
 				<div className="space-y-4 p-6 sm:p-8">
 					<EmailLogTable items={tableItems} limit={limit} />
+					{tableItems.length === 0 ? (
+						<div className="flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+							<div className="space-y-1">
+								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+									Ainda não há envios neste recorte.
+								</p>
+								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Revise os modelos, confirme o e-mail de suporte e dispare um teste para verificar a trilha completa.
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-2">
+								<Button asChild variant="outline" className="rounded-none bg-white">
+									<Link href="/admin/settings">Ver configurações</Link>
+								</Button>
+								<Button
+									asChild
+									className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+								>
+									<Link href="/admin/email-templates">Ver modelos de e-mail</Link>
+								</Button>
+							</div>
+						</div>
+					) : null}
 
 					<div className="flex flex-col gap-3 border-t border-[color:var(--editorial-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
 						<p className="text-sm text-[color:var(--editorial-muted)]">

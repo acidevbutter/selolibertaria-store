@@ -9,6 +9,7 @@ type Props = {
 	effectivePrice: string;
 	promotionLabel: string;
 	supportEmail?: string;
+	baseUrl?: string;
 };
 
 export function favoriteDiscountEmailHtml({
@@ -20,6 +21,7 @@ export function favoriteDiscountEmailHtml({
 	effectivePrice,
 	promotionLabel,
 	supportEmail,
+	baseUrl,
 }: Props) {
 	const greeting = name ? `Olá, ${escapeEmailHtml(name)}.` : "Olá.";
 	const variantHtml = variantLabel
@@ -59,6 +61,7 @@ export function favoriteDiscountEmailHtml({
 		preheader: `${productName} está com desconto`,
 		bodyHtml,
 		supportEmail,
+		baseUrl,
 		footerNote: "Você está recebendo este email porque alertas promocionais estão ativos na sua conta.",
 	});
 }

@@ -28,6 +28,10 @@ const fertigoPro = localFont({
 	display: "swap",
 });
 
+const shouldLoadVercelClientTelemetry =
+	process.env.NODE_ENV === "production" &&
+	(Boolean(process.env.VERCEL) || Boolean(process.env.NEXT_PUBLIC_VERCEL_ENV));
+
 export const generateMetadata = async (): Promise<Metadata> => {
 	return {
 		title: seloSiteMeta.title,
@@ -104,8 +108,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 						data-website-id={env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
 					/>
 				)}
-				<SpeedInsights />
-				<Analytics />
+				{shouldLoadVercelClientTelemetry ? <SpeedInsights /> : null}
+				{shouldLoadVercelClientTelemetry ? <Analytics /> : null}
 			</body>
 		</html>
 	);
