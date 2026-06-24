@@ -1,4 +1,5 @@
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
+import { EditorialSlugInput } from "@/app/admin/editorial/_components/editorial-slug-input.client";
 import {
 	Field,
 	FormSection,
@@ -8,37 +9,6 @@ import {
 import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
-
-function formatSlugToKebab(value: string) {
-	return value
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.toLowerCase()
-		.trim()
-		.replace(/[^a-z0-9\s-]/g, "")
-		.replace(/[\s_]+/g, "-")
-		.replace(/-+/g, "-")
-		.replace(/^-|-$/g, "");
-}
-
-function formatSlugWhileTyping(value: string) {
-	return value
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.toLowerCase()
-		.replace(/[^a-z0-9\s-]/g, "")
-		.replace(/[\s_]+/g, "-")
-		.replace(/-+/g, "-")
-		.replace(/^-+/, "");
-}
-
-function handleSlugInput(event: React.FormEvent<HTMLInputElement>) {
-	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
-}
-
-function handleSlugBlur(event: React.FocusEvent<HTMLInputElement>) {
-	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
-}
 
 export function EditorialEventForm({
 	action,
@@ -67,15 +37,10 @@ export function EditorialEventForm({
 								<Input id="title" name="title" defaultValue={event?.title ?? ""} required />
 							</Field>
 							<Field label="Slug" name="slug" hint="Se vazio, será gerado a partir do título.">
-								<Input
+								<EditorialSlugInput
 									id="slug"
 									name="slug"
 									defaultValue={event?.slug ?? ""}
-									onInput={handleSlugInput}
-									onBlur={handleSlugBlur}
-									autoCapitalize="none"
-									autoCorrect="off"
-									spellCheck={false}
 								/>
 							</Field>
 							<Field label="Status" name="status">

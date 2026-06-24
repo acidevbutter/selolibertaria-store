@@ -19,7 +19,7 @@ export const NavMenu = async ({
 	const globalT = await getTranslations("Global.nav.auth");
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
-	const authLabel = !session ? globalT("signIn") : isAdminSession ? globalT("admin") : globalT("myAccount");
+	const authLabel = !session ? globalT("signIn") : globalT("account");
 	const t = await getTranslations("Selo");
 	const dynamicCategories = includeDynamicCategories ? await getStripeCategories() : [];
 	const desktopLinks = [
@@ -36,6 +36,8 @@ export const NavMenu = async ({
 		...desktopLinks.slice(2),
 		...dynamicCategories.slice(0, 3).map(({ name, slug }) => ({ label: name, href: `/category/${slug}` })),
 	];
+	const desktopCtaHref = includeSessionLink ? authHref : PUBLIC_NAVIGATION.shop;
+	const desktopCtaLabel = includeSessionLink ? authLabel : t("nav.shop");
 	return (
 		<>
 			<div className="hidden lg:block">
@@ -52,10 +54,10 @@ export const NavMenu = async ({
 					))}
 					<li>
 						<YnsLink
-							href={PUBLIC_NAVIGATION.shop}
+							href={desktopCtaHref}
 							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 						>
-							Comprar
+							{desktopCtaLabel}
 						</YnsLink>
 					</li>
 				</ul>

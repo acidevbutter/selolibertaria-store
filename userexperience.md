@@ -40,6 +40,7 @@
 - Nessas páginas, a pessoa usuária deve entender rápido por que aquela área existe dentro do ecossistema do selo e como ela se conecta aos livros.
 - A experiência não deve parecer uma sequência uniforme de cartões com mesmo peso visual; precisa haver entrada, aprofundamento e saída.
 - Na etapa atual da Goal 3, a passagem entre hero, blocos curatoriais e continuidade deve ficar mais fluida nessas páginas, usando motion discreto para reforçar leitura e não para espetacularizar a navegação.
+- Em desktop, o último CTA do header nessas rotas institucionais deve aparecer com rótulo estável de autenticação (`Entrar` ou `Conta`); oferecer apenas `Comprar` nesse ponto desorienta a expectativa de acesso.
 - No `Sarau Safado`, a primeira dobra deve se comportar como uma capa legível: a imagem de fundo atrai e contextualiza, enquanto o texto sobreposto precisa permanecer fácil de ler sem competir com a fotografia.
 - Links de continuidade para catálogo, agenda, projetos, contato ou Sarau Safado devem aparecer de forma natural para evitar becos sem saída.
 - No admin, a edição editorial precisa ser direta e pouco ansiosa: a pessoa deve entender rapidamente o que controla hero, texto principal, blocos curatoriais, imagem e publicação sem depender de conhecimento técnico.

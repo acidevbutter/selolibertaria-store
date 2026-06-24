@@ -36,6 +36,7 @@
 - O padrão preferencial é: entrada forte, bloco curatorial de apoio, listagem principal com melhor hierarquia interna e fechamento com links de continuidade.
 - Na iteração atual da Goal 3, as páginas institucionais devem herdar a mesma linguagem de motion da home, com heróis mais firmes, cards editoriais com hover lift leve e entradas em cascata discretas.
 - Na fase concluída da Goal 3, `products`, `search` e `category/[slug]` também devem abrir com o mesmo enquadramento editorial: eyebrow, título forte, descrição curta, bloco curatorial lateral e três cards de apoio antes da grade.
+- No header público desktop dessas páginas, a CTA final deve refletir sessão e acesso com rótulo estável (`Entrar` ou `Conta`) em vez de repetir um CTA comercial fixo; a ação de compra já existe na navegação principal.
 - No `Sarau Safado`, a imagem enviada no hero pelo admin deve virar a capa de fundo da abertura, enquanto eyebrow, título e texto ficam sobrepostos em um bloco de alto contraste ancorado na própria imagem.
 - Quando a página tiver muitos textos corridos, dividir título/resumo e descrição em áreas distintas dentro do mesmo card melhora ritmo e escaneabilidade.
 

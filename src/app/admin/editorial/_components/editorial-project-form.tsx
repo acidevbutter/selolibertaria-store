@@ -1,40 +1,10 @@
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
+import { EditorialSlugInput } from "@/app/admin/editorial/_components/editorial-slug-input.client";
 import type { EditorialProject } from "@/lib/editorial-content";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
-
-function formatSlugToKebab(value: string) {
-	return value
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.toLowerCase()
-		.trim()
-		.replace(/[^a-z0-9\s-]/g, "")
-		.replace(/[\s_]+/g, "-")
-		.replace(/-+/g, "-")
-		.replace(/^-|-$/g, "");
-}
-
-function formatSlugWhileTyping(value: string) {
-	return value
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.toLowerCase()
-		.replace(/[^a-z0-9\s-]/g, "")
-		.replace(/[\s_]+/g, "-")
-		.replace(/-+/g, "-")
-		.replace(/^-+/, "");
-}
-
-function handleSlugInput(event: React.FormEvent<HTMLInputElement>) {
-	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
-}
-
-function handleSlugBlur(event: React.FocusEvent<HTMLInputElement>) {
-	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
-}
 
 function Textarea({
 	name,
@@ -87,15 +57,10 @@ export function EditorialProjectForm({
 							<Input id="title" name="title" defaultValue={project?.title ?? ""} required />
 						</Field>
 						<Field label="Slug" name="slug">
-							<Input
+							<EditorialSlugInput
 								id="slug"
 								name="slug"
 								defaultValue={project?.slug ?? ""}
-								onInput={handleSlugInput}
-								onBlur={handleSlugBlur}
-								autoCapitalize="none"
-								autoCorrect="off"
-								spellCheck={false}
 							/>
 						</Field>
 						<Field label="Período" name="period">
