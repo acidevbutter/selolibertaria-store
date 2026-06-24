@@ -10,6 +10,7 @@
 ## Rebrand Selo Libertária
 
 - A experiência deve comunicar, já na primeira dobra, que se trata de uma livraria para adultos com proposta literária e cultural.
+- O acervo visual real do selo deve aparecer cedo na navegação: mocks de livro sustentam confiança de catálogo, e ilustrações em preto e branco funcionam como extensão de atmosfera, nunca como decoração aleatória desconectada do conteúdo.
 - No redesign `Editorial V2`, a experiência deve parecer mais curada e calma: menos ruído visual, mais hierarquia tipográfica, capas maiores e blocos com leitura em cadência de revista, sem esconder compra, busca, favoritos, carrinho ou admin.
 - O calor da marca deve vir de curadoria, atmosfera, tipografia, imagem e ritmo, não de apelos gráficos óbvios.
 - A pessoa usuária deve sentir ao mesmo tempo desejo de explorar e confiança para comprar.
@@ -32,6 +33,7 @@
 - Na etapa atual guiada por Figma, a transição entre hero, manifesto e vitrine deve parecer mais suave e intencional, com reveals discretos que ajudem a leitura em vez de chamar atenção para a animação.
 - O ritmo ideal alterna tensão e respiro: impacto, compra, contexto, prova cultural, intimidade e continuidade.
 - A arquitetura da página deve refletir esse ritmo também no código: uma seção por intenção de experiência, evitando componentes gigantes com responsabilidades misturadas.
+- Na sessão `Home Desktop` do Figma, a experiência esperada é mais direta e encadeada: entrar pela marca, reconhecer um livro protagonista, receber o manifesto, enxergar o destaque de compra, perceber o catálogo como prateleira curta e terminar no convite do `Sarau Safado` antes do footer. Se a home adicionar muitos blocos institucionais extras nesse percurso, a leitura perde força.
 
 ## Páginas institucionais do Selo Libertária
 
@@ -238,6 +240,8 @@
 - Na navegação, esse efeito é ainda mais sensível: quando o menu chama uma área de `Webhooks`, mas a própria tela já opera como `Recebimento`, a pessoa sente uma quebra antes mesmo de começar a tarefa.
 - Mesmo fallbacks pequenos importam: quando um select ou badge volta a `Indefinido` ou `Sem tipo definido`, a sensação de limpeza quebra de novo. Fechar esses cantos preserva a coerência percebida.
 - O mesmo vale para a moldura fixa da área administrativa: quando a sidebar e a barra mobile falam só em `painel editorial` ou `sessão`, a orientação fica mais genérica do que precisa. Rótulos como `Navegação`, `Conta atual` e `Voltar para a loja` reduzem atrito logo na entrada de qualquer rota.
+- Na home pública, misturar navegação em inglês com blocos mockados em português quebra a confiança logo na primeira dobra. Quando o locale ativo não for `pt-BR`, é melhor cair nas mensagens traduzidas da aplicação do que manter conteúdo editorial provisório em outro idioma.
+- O mesmo vale para a pré-carga: se um splash pode ficar preso cobrindo o hero, a pessoa usuária interpreta a tela como quebrada antes mesmo de ler a proposta do site. A animação precisa ter um caminho de saída garantido mesmo quando a hidratação atrasa ou falha.
 - O mesmo acontece com preço: quando o admin pede valor monetário, mas o campo responde melhor a `19.90` do que a `19,90`, a pessoa sente uma fricção desnecessária em um dos fluxos mais recorrentes do catálogo. Aceitar vírgula e manter o valor legível no padrão local reduz erro e hesitação.
 - Em revisão de imagem, termos como `armazenamento configurado` quebram a naturalidade da tarefa porque puxam a atenção para a infraestrutura. Falar em `biblioteca de mídia` mantém a pessoa no contexto da operação, não da implementação.
 - O mesmo vale para o hub editorial: quando a entrada da área mostra `item(ns)` ou ações genéricas demais, a pessoa percebe a interface como provisória antes mesmo de começar a editar conteúdo. Resumos naturais e CTAs específicos deixam a navegação mais confiante.

@@ -91,7 +91,12 @@ export const emailTemplatePreviewDefinitions: EmailTemplatePreviewDefinition[] =
 				currency,
 				fulfillment: { status: "shipped", trackingNumber: "BR123456789" },
 				items: [
-					{ name: "Ninfas do Tietê", qty: 1, unitAmount: 3990, image: "/images/ninfas-example.png" },
+					{
+						name: "Virus do Beijo",
+						qty: 1,
+						unitAmount: 3990,
+						image: "/images/selolibertaria/virus-do-beijo-cover.png",
+					},
 					{ name: "Marcador editorial", qty: 1, unitAmount: 1200, image: "/images/selolibertaria.png" },
 				],
 				totalCents: 5190,

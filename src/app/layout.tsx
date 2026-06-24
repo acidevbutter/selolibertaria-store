@@ -63,6 +63,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 					dangerouslySetInnerHTML={{
 						__html:
 							"(() => {\n" +
+							"  var cleanup = function() {\n" +
+							"    var pre = document.getElementById('selolibertaria-splash-pre');\n" +
+							"    var style = document.getElementById('selolibertaria-splash-style');\n" +
+							"    if (pre && pre.parentNode) pre.parentNode.removeChild(pre);\n" +
+							"    if (style && style.parentNode) style.parentNode.removeChild(style);\n" +
+							"  };\n" +
 							"  var path = window.location.pathname || '/';\n" +
 							"  if (path.startsWith('/admin') || path.startsWith('/login')) return;\n" +
 							"  try {\n" +
@@ -79,6 +85,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 							"  percent.textContent = '0%';\n" +
 							"  div.appendChild(percent);\n" +
 							"  document.documentElement.appendChild(div);\n" +
+							"  window.addEventListener('load', function() { window.setTimeout(cleanup, 1800); }, { once: true });\n" +
+							"  window.setTimeout(cleanup, 4500);\n" +
 							"})();",
 					}}
 				/>

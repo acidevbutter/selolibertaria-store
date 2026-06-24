@@ -19,6 +19,7 @@
 ## Home do rebrand
 
 - A home deve começar com uma dobra de alto impacto visual e copy curta.
+- Na direção atual do Selo Libertária, os placeholders foram substituídos por mocks de livro e ilustrações em `png`, então hero, galeria e blocos institucionais devem reutilizar esse acervo nomeado em `public/images/selolibertaria/` em vez de imagens genéricas soltas.
 - A primeira CTA é comercial; a segunda CTA é cultural.
 - Blocos da home devem alternar produto, manifesto, agenda/projetos e prova visual.
 - Capas, retratos e fotos de performance devem receber mais protagonismo do que ícones ou ilustrações genéricas.
@@ -27,6 +28,7 @@
 - Na iteração atual da Goal 3, o hero deve usar CTA primária clara, título com escala mais próxima do Figma, quadro principal de capa à direita e reveals curtos por bloco para adicionar acabamento sem ruído.
 - A densidade da home deve variar intencionalmente: hero forte, vitrine curada, manifesto respirado, agenda/projetos médios, mosaico imersivo e fechamento leve.
 - A implementação ideal da home deve ser modularizada em componentes próprios de `src/ui/home/`, deixando `src/app/(store)/page.tsx` como composição limpa de seções.
+- Na referência `Home Desktop` do `Editorial V2`, a home deve abrir com header de wordmark e símbolo reais, hero preto com uma única capa dominante à direita, manifesto em faixa clara de duas colunas, destaque escuro do livro principal, catálogo em grade curta de três capas e painel claro do `Sarau Safado`; blocos extras antes do footer enfraquecem a fidelidade e devem ser evitados.
 
 ## Páginas institucionais do Selo Libertária
 
@@ -203,6 +205,8 @@
 - Em formulários administrativos da Goal 4, campos estruturados devem oferecer autoformatação visível e previsível, como slug normalizado, telefone e CEP mascarados e URLs/códigos com limpeza básica de entrada, sempre sem esconder o valor efetivamente persistido.
 - Na mesma fase, o admin não deve expor seletor geral de moeda em settings: a interface assume somente a moeda definida pelo ambiente e evita prometer conversão antes da etapa final.
 - O shell de login também faz parte desse contrato visual: hero, footer e links legais precisam respeitar a camada de i18n em vez de hardcodes locais, para não criar uma porta de entrada híbrida quando a aplicação resolver outro idioma.
+- Na home pública, a mesma regra vale para conteúdo editorial de fallback: se o locale ativo não for `pt-BR`, a dobra inicial não pode misturar navegação em inglês com hero, agenda ou CTA mockadas em português; enquanto o conteúdo do admin não for localizado, a interface deve preferir as mensagens traduzidas da aplicação.
+- Na mesma abertura da home, overlays transitórios como splash de carregamento precisam ter saída garantida mesmo sem hidratação completa; qualquer camada de pré-carga que permaneça por cima do hero conta como regressão visual crítica.
 - Na moldura de `email-templates`, use `Emails` e `Modelos` em vez de reaproveitar `Templates` em inglês quando a própria tela já se apresenta como `Templates de email`.
 - Em `admin/users`, a tabela também não deve vazar papéis crus do domínio. A interface precisa listar `Administrador`, `Vendedor` e `Cliente` como rótulos visíveis, mantendo `admin` e afins apenas na camada de implementação.
 - Em superfícies editoriais do admin, títulos e descrições também devem evitar anglicismos ou nomes híbridos desnecessários; `Página inicial` e `restante do admin` comunicam melhor do que `Home` e `backoffice` quando a tela toda já está em `pt-BR`.

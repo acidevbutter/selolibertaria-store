@@ -25,30 +25,39 @@ export const NavMenu = async ({
 	const desktopLinks = [
 		{ label: t("nav.shop"), href: PUBLIC_NAVIGATION.shop },
 		{ label: t("nav.projects"), href: PUBLIC_NAVIGATION.projects },
-		{ label: t("nav.events"), href: PUBLIC_NAVIGATION.events },
 		{ label: t("nav.sarau"), href: PUBLIC_NAVIGATION.sarau },
 		{ label: t("nav.about"), href: PUBLIC_NAVIGATION.about },
+		{ label: t("nav.contact"), href: PUBLIC_NAVIGATION.contact },
 	];
 	const mobileLinks = [
 		{ label: t("nav.home"), href: PUBLIC_NAVIGATION.home },
-		...desktopLinks,
-		{ label: t("nav.contact"), href: PUBLIC_NAVIGATION.contact },
+		...desktopLinks.slice(0, 2),
+		{ label: t("nav.events"), href: PUBLIC_NAVIGATION.events },
+		...desktopLinks.slice(2),
 		...dynamicCategories.slice(0, 3).map(({ name, slug }) => ({ label: name, href: `/category/${slug}` })),
 	];
 	return (
 		<>
 			<div className="hidden lg:block">
-				<ul className="flex flex-row items-center justify-end gap-x-10 xl:gap-x-12">
+				<ul className="flex flex-row items-center justify-end gap-x-7 xl:gap-x-9">
 					{desktopLinks.map((link) => (
 						<li key={link.href}>
 							<YnsLink
 								href={link.href}
-								className="nav-link group inline-flex h-9 w-max items-center justify-center bg-transparent py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:text-[color:var(--editorial-accent)] focus:text-[color:var(--editorial-accent)] focus:outline-hidden"
+								className="nav-link group inline-flex h-9 w-max items-center justify-center bg-transparent py-2 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-ink)] transition-colors hover:text-[color:var(--editorial-accent)] focus:text-[color:var(--editorial-accent)] focus:outline-hidden"
 							>
 								{link.label}
 							</YnsLink>
 						</li>
 					))}
+					<li>
+						<YnsLink
+							href={PUBLIC_NAVIGATION.shop}
+							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+						>
+							Comprar
+						</YnsLink>
+					</li>
 				</ul>
 			</div>
 			<div className="flex items-center lg:hidden">
