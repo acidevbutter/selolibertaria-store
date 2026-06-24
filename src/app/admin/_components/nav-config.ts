@@ -25,8 +25,8 @@ export const adminNavItems: NavItem[] = [
 	{ href: "/admin/editorial", label: "Editorial", icon: BookOpen, capability: "editorial.write" },
 	{ href: "/admin/promotions", label: "Promoções", icon: Percent, capability: "promotions.read" },
 	{ href: "/admin/users", label: "Usuários", icon: Users, capability: "customers.read" },
-	{ href: "/admin/emails", label: "Emails", icon: Mail, capability: "emails.read" },
+	{ href: "/admin/emails", label: "E-mails", icon: Mail, capability: "emails.read" },
 	{ href: "/admin/settings", label: "Configurações", icon: Settings, capability: "settings.write" },
-	{ href: "/admin/email-templates", label: "Modelos de email", icon: Settings, capability: "settings.write" },
-	{ href: "/admin/webhooks", label: "Webhooks", icon: Activity, capability: "webhooks.read" },
+	{ href: "/admin/email-templates", label: "Modelos de e-mail", icon: Settings, capability: "settings.write" },
+	{ href: "/admin/webhooks", label: "Recebimento", icon: Activity, capability: "webhooks.read" },
 ];

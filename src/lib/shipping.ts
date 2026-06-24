@@ -149,7 +149,7 @@ function buildFlatQuote(
 		serviceCode: provider.serviceCode ?? provider.code,
 		serviceName: provider.serviceName ?? provider.label,
 		amount,
-		currency: (provider.currency ?? currency).toUpperCase(),
+		currency: currency.toUpperCase(),
 		estimatedDays: typeof provider.estimatedDays === "number" ? provider.estimatedDays : null,
 		method: provider.mode ?? "flat",
 	};
@@ -158,9 +158,9 @@ function buildFlatQuote(
 function buildPickupQuote(currency: string): ShippingQuote {
 	return {
 		providerCode: "pickup",
-		providerLabel: "Store pickup",
+		providerLabel: "Retirada na loja",
 		serviceCode: "pickup",
-		serviceName: "Pick up at the store",
+		serviceName: "Retirar na loja",
 		amount: 0,
 		currency: currency.toUpperCase(),
 		estimatedDays: 1,
@@ -230,7 +230,7 @@ function normalizeHttpService(
 		serviceCode,
 		serviceName,
 		amount,
-		currency: typeof record.currency === "string" ? record.currency.toUpperCase() : currency.toUpperCase(),
+		currency: currency.toUpperCase(),
 		estimatedDays,
 		method: provider.mode ?? "http",
 	};
@@ -558,7 +558,7 @@ export async function resolveShippingQuotesForDestination(args: {
 		};
 	}
 	if (!providers.length) {
-		return { quotes: [], selected: null, provider: null, error: "No shipping providers configured." };
+		return { quotes: [], selected: null, provider: null, error: "Nenhum provedor de frete foi configurado." };
 	}
 
 	const destination = args.destination ?? {};

@@ -8,7 +8,8 @@ type LoginDraft = {
 	createdAt: number;
 };
 
-const LOGIN_DRAFT_KEY = "devbutterstore_login_draft";
+const LOGIN_DRAFT_KEY = "selolibertaria_login_draft";
+const LEGACY_LOGIN_DRAFT_KEY = "devbutterstore_login_draft";
 const LOGIN_DRAFT_MAX_AGE_MS = 5 * 60 * 1000;
 
 export function CredentialSaveOnAuth() {
@@ -28,6 +29,9 @@ export function CredentialSaveOnAuth() {
 			let rawDraft: string | null = null;
 			try {
 				rawDraft = window.sessionStorage.getItem(LOGIN_DRAFT_KEY);
+				if (!rawDraft) {
+					rawDraft = window.sessionStorage.getItem(LEGACY_LOGIN_DRAFT_KEY);
+				}
 			} catch {
 				return;
 			}
@@ -38,6 +42,7 @@ export function CredentialSaveOnAuth() {
 				draft = JSON.parse(rawDraft) as LoginDraft;
 			} catch {
 				window.sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+				window.sessionStorage.removeItem(LEGACY_LOGIN_DRAFT_KEY);
 				return;
 			}
 
@@ -48,6 +53,7 @@ export function CredentialSaveOnAuth() {
 				Date.now() - draft.createdAt > LOGIN_DRAFT_MAX_AGE_MS
 			) {
 				window.sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+				window.sessionStorage.removeItem(LEGACY_LOGIN_DRAFT_KEY);
 				return;
 			}
 
@@ -64,6 +70,7 @@ export function CredentialSaveOnAuth() {
 				});
 				await navigator.credentials.store(credential);
 				window.sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+				window.sessionStorage.removeItem(LEGACY_LOGIN_DRAFT_KEY);
 			} catch {
 				// Ignore browser credential storage failures; login already succeeded.
 			}

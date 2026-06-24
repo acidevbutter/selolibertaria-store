@@ -54,7 +54,7 @@ export default async function AdminUsersPage() {
 				description="Acompanhe acesso, papéis e bloqueios."
 			/>
 			<div className="grid gap-5 lg:grid-cols-4">
-				<AdminEditorialStat label="Listados" value={users.length} helper="Até 50 cadastros mais recentes." />
+				<AdminEditorialStat label="Listados" value={users.length} helper="Até 50 pessoas no filtro atual." />
 				<AdminEditorialStat
 					label="Administradores"
 					value={adminCount}
@@ -63,13 +63,9 @@ export default async function AdminUsersPage() {
 				<AdminEditorialStat
 					label="Vendedores"
 					value={vendorCount}
-					helper="Perfis internos com escopo comercial."
+					helper="Perfis internos ligados a operação comercial."
 				/>
-				<AdminEditorialStat
-					label="Bloqueados"
-					value={blockedCount}
-					helper="Cadastros com acesso interrompido."
-				/>
+				<AdminEditorialStat label="Bloqueados" value={blockedCount} helper="Contas com acesso suspenso." />
 			</div>
 			<EditorialPanel className="p-0">
 				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
@@ -82,7 +78,7 @@ export default async function AdminUsersPage() {
 						<Table className="min-w-[720px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Email</TableHead>
+									<TableHead>E-mail</TableHead>
 									<TableHead>Nome</TableHead>
 									<TableHead>Papel</TableHead>
 									<TableHead>Status</TableHead>
@@ -95,7 +91,7 @@ export default async function AdminUsersPage() {
 									return (
 										<TableRow key={String(u._id)}>
 											<TableCell className="font-medium break-all sm:break-normal">{u.email}</TableCell>
-											<TableCell>{u.name || "—"}</TableCell>
+											<TableCell>{u.name || "Nome não informado"}</TableCell>
 											<TableCell className="uppercase text-[11px] tracking-[0.18em] text-[color:var(--editorial-muted)]">
 												{formatRoleLabel(role)}
 											</TableCell>
@@ -115,7 +111,7 @@ export default async function AdminUsersPage() {
 													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
 													href={`/admin/users/${String(u._id)}`}
 												>
-													Abrir
+													Ver usuário
 												</Link>
 											</TableCell>
 										</TableRow>

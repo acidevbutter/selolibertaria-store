@@ -143,6 +143,25 @@ function applySlugBlurFormat(event: { currentTarget: HTMLInputElement }) {
 	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
 }
 
+function formatDecimalWhileTyping(value: string) {
+	const normalized = value.replace(/\s+/g, "").replace(/\./g, ",").replace(/[^0-9,]/g, "");
+	const [integerPart = "", ...decimalParts] = normalized.split(",");
+	const decimalPart = decimalParts.join("");
+	return decimalPart ? `${integerPart},${decimalPart}` : integerPart;
+}
+
+function formatDecimalOnBlur(value: string) {
+	return formatDecimalWhileTyping(value).replace(/^,/, "").replace(/,$/, "");
+}
+
+function applyDecimalAutoFormat(event: { currentTarget: HTMLInputElement }) {
+	event.currentTarget.value = formatDecimalWhileTyping(event.currentTarget.value);
+}
+
+function applyDecimalBlurFormat(event: { currentTarget: HTMLInputElement }) {
+	event.currentTarget.value = formatDecimalOnBlur(event.currentTarget.value);
+}
+
 export function ProductCoreFields({
 	name = "",
 	slug = "",
@@ -234,7 +253,7 @@ export function ProductCoreFields({
 				<Field
 					label="Imagens"
 					name="images"
-					hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
+					hint="Selecione imagens do computador para enviar e organizar a galeria do livro."
 				>
 					<AdminImageUrlList name="images" initialValues={images} autoSubmitOnUpload={autoSubmitImages} />
 				</Field>
@@ -256,7 +275,7 @@ export function ImageUrlsField({ name = "images", images }: { name?: string; ima
 		<Field
 			label="Imagens"
 			name={name}
-			hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
+			hint="Selecione imagens do computador para enviar e organizar a galeria do livro."
 		>
 			<AdminImageUrlList name={name} initialValues={images} />
 		</Field>
@@ -266,16 +285,25 @@ export function ImageUrlsField({ name = "images", images }: { name?: string; ima
 export function PriceFields({ price }: { price?: number | null }) {
 	return (
 		<div className="grid gap-4 md:grid-cols-12">
-			<Field label="Preço" name="price" className="space-y-2 md:col-span-4 xl:col-span-3">
+			<Field
+				label="Preço"
+				name="price"
+				className="space-y-2 md:col-span-4 xl:col-span-3"
+				hint="Use valor decimal, como 19,90."
+			>
 				<Input
 					id="price"
 					name="price"
-					type="number"
-					step="0.01"
-					min="0"
-					defaultValue={typeof price === "number" ? String(price) : ""}
+					type="text"
+					inputMode="decimal"
+					pattern={fieldPatterns.decimal}
+					defaultValue={typeof price === "number" ? String(price).replace(".", ",") : ""}
 					required
+					placeholder="19,90"
 					className="max-w-[10rem]"
+					onChange={applyDecimalAutoFormat}
+					onInput={applyDecimalAutoFormat}
+					onBlur={applyDecimalBlurFormat}
 				/>
 			</Field>
 		</div>
@@ -311,16 +339,18 @@ export function InheritedVariantFields({
 				</div>
 				<div className="space-y-2">
 					<Label>Categoria</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{category || "Sem categoria"}</div>
+					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+						{category || "Categoria não informada"}
+					</div>
 				</div>
 				<div className="space-y-2">
 					<Label>Descrição</Label>
 					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
-						{description || "Sem descrição"}
+						{description || "Usa o resumo do livro."}
 					</div>
 				</div>
 			</div>
-			<ImagePreviewField images={images} alt={name || slug || "Imagem do produto"} />
+			<ImagePreviewField images={images} alt={name || slug || "Imagem do livro"} />
 		</div>
 	);
 }

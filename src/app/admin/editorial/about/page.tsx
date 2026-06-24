@@ -27,7 +27,7 @@ export default async function AdminEditorialAboutPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Sobre"
-				description="Edite a narrativa institucional principal do selo, os blocos de contexto e o fechamento da página de apresentação."
+				description="Edite a narrativa principal do selo e os blocos da página de apresentação."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -45,13 +45,9 @@ export default async function AdminEditorialAboutPage() {
 				<AdminEditorialStat
 					label="Publicação"
 					value={page.published ? "Publicado" : "Rascunho"}
-					helper="Estado atual da página na área pública."
+					helper="Estado atual no site."
 				/>
-				<AdminEditorialStat
-					label="Ordem"
-					value={page.order ?? 1}
-					helper="Prioridade editorial desta superfície."
-				/>
+				<AdminEditorialStat label="Ordem" value={page.order ?? 1} helper="Prioridade desta página." />
 				<AdminEditorialStat
 					label="Blocos"
 					value="Contexto"
@@ -59,7 +55,11 @@ export default async function AdminEditorialAboutPage() {
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-				<EditorialAboutForm action={updateEditorialAboutAction} page={page} submitLabel="Salvar página" />
+				<EditorialAboutForm
+					action={updateEditorialAboutAction}
+					page={page}
+					submitLabel="Salvar página sobre"
+				/>
 				<EditorialMetaCard
 					published={page.published}
 					order={page.order}

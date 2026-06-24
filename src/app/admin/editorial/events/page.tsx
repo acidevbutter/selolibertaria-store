@@ -6,8 +6,11 @@ import {
 	moveEditorialEventAction,
 	toggleEditorialEventPublishedAction,
 } from "@/app/admin/editorial/actions";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -25,6 +28,7 @@ export default async function AdminEditorialEventsPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const events = await listEditorialEventRecords();
 	const publishedCount = events.filter((event) => event.published).length;
@@ -34,7 +38,7 @@ export default async function AdminEditorialEventsPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Eventos"
-				description="Gerencie agenda, publicação e ordem pública da programação cultural do selo."
+				description="Gerencie agenda, publicação e ordem dos eventos do selo."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Button asChild className="rounded-none">
@@ -46,7 +50,7 @@ export default async function AdminEditorialEventsPage() {
 						<Button asChild variant="outline" className="rounded-none">
 							<Link href="/admin/editorial">
 								<PenSquare className="h-4 w-4" />
-								Hub editorial
+								Ver painel editorial
 							</Link>
 						</Button>
 					</div>
@@ -54,12 +58,8 @@ export default async function AdminEditorialEventsPage() {
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens ativos nesta coleção." />
-				<AdminEditorialStat
-					label="Publicados"
-					value={publishedCount}
-					helper="Entradas visíveis na área pública."
-				/>
+				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens neste recorte." />
+				<AdminEditorialStat label="Publicados" value={publishedCount} helper="Entradas visíveis no site." />
 				<AdminEditorialStat
 					label="Rascunhos"
 					value={events.length - publishedCount}
@@ -76,24 +76,24 @@ export default async function AdminEditorialEventsPage() {
 						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/projects">
 								<FolderKanban className="h-4 w-4" />
-								Projetos
+								Ver projetos
 							</Link>
 						</Button>
 						<Button asChild variant="outline" size="sm" className="rounded-none">
 							<Link href="/admin/editorial/sarau-safado">
 								<CalendarRange className="h-4 w-4" />
-								Sarau Safado
+								Ver Sarau Safado
 							</Link>
 						</Button>
 					</div>
 					<div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<PenSquare className="h-3.5 w-3.5" />
-							Ordem e publicação já respondem na área pública
+							Ordem e publicação aparecem no site
 						</span>
 						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
 							<ImagePlus className="h-3.5 w-3.5" />
-							Upload editorial reutiliza o fluxo de produtos
+							Imagens seguem a mesma revisão visual do catálogo
 						</span>
 					</div>
 				</CardContent>
@@ -127,9 +127,9 @@ export default async function AdminEditorialEventsPage() {
 											<p className="text-xs text-muted-foreground">{event.slug}</p>
 										</div>
 									</TableCell>
-									<TableCell>{event.status || "—"}</TableCell>
-									<TableCell>{event.period || "—"}</TableCell>
-									<TableCell>{event.location || "—"}</TableCell>
+									<TableCell>{event.status || "Não informado"}</TableCell>
+									<TableCell>{event.period || "Não informado"}</TableCell>
+									<TableCell>{event.location || "Não informado"}</TableCell>
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<Badge variant={event.published ? "secondary" : "outline"}>
@@ -139,11 +139,11 @@ export default async function AdminEditorialEventsPage() {
 									</TableCell>
 									<TableCell className="text-xs text-muted-foreground">
 										{event.updatedAt
-											? new Intl.DateTimeFormat("pt-BR", {
+											? new Intl.DateTimeFormat(locale, {
 													dateStyle: "short",
 													timeStyle: "short",
 												}).format(new Date(event.updatedAt))
-											: "—"}
+											: "Não informado"}
 									</TableCell>
 									<TableCell className="text-right">
 										<div className="flex justify-end gap-2">
@@ -169,7 +169,9 @@ export default async function AdminEditorialEventsPage() {
 												</Button>
 											</form>
 											<Button asChild size="sm" variant="outline">
-												<Link href={`/admin/editorial/events/${encodeURIComponent(event.slug)}`}>Editar</Link>
+												<Link href={`/admin/editorial/events/${encodeURIComponent(event.slug)}`}>
+													Editar evento
+												</Link>
 											</Button>
 										</div>
 									</TableCell>

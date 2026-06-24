@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminNavItems, type NavItem } from "@/app/admin/_components/nav-config";
+import { useTranslations } from "@/i18n/client";
 import { hasCapability, type UserRole } from "@/lib/authz";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export function AdminSidebar({
 	logoutAction: () => Promise<void>;
 }) {
 	const pathname = usePathname();
+	const t = useTranslations("AdminShell");
 	const [navigating, setNavigating] = useState(false);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(user?.role, item.capability));
 	useEffect(() => {
@@ -33,19 +35,19 @@ export function AdminSidebar({
 						<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 							LIBERTÁRIA
 						</div>
-						<div className="text-xs font-medium leading-4 text-[#beb3a8]">painel editorial</div>
+						<div className="text-xs font-medium leading-4 text-[#beb3a8]">{t("brandSubtitle")}</div>
 					</div>
 				</Link>
 				<div className="mt-5 flex items-center justify-between gap-3">
 					<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-						Painel editorial
+						{t("sectionTitle")}
 					</div>
 					<form action={logoutAction}>
 						<button
 							type="submit"
 							className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
 						>
-							Sair
+							{t("logout")}
 						</button>
 					</form>
 				</div>
@@ -82,9 +84,11 @@ export function AdminSidebar({
 			<div className="mt-auto px-7 pb-6 pt-4">
 				<div className="h-px w-[208px] bg-[#2a2422]" />
 				<div className="pt-7 text-xs text-white/60">
-					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9f948c]">Sessão</div>
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9f948c]">
+						{t("sessionTitle")}
+					</div>
 					<div className="mt-2 text-sm font-semibold text-[#fffdf8]">
-						{user?.name ?? user?.email ?? "Authenticated"}
+						{user?.name ?? user?.email ?? t("authenticatedFallback")}
 					</div>
 					<div className="mt-1 truncate text-xs text-[#beb3a8]">{user?.email ?? ""}</div>
 				</div>

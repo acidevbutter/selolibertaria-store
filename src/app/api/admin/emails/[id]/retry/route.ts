@@ -19,14 +19,14 @@ interface CommunicationLogDoc {
 }
 
 function extractErrorMessage(value: unknown) {
-	if (!value) return "Failed";
+	if (!value) return "Não foi possível reenviar o email.";
 	if (typeof value === "string") return value;
 	if (value instanceof Error) return value.message;
 	if (typeof value === "object" && "error" in value) {
 		const errorValue = (value as { error?: unknown }).error;
 		if (typeof errorValue === "string") return errorValue;
 	}
-	return "Failed";
+	return "Não foi possível reenviar o email.";
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -35,7 +35,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
 	const { id } = await params;
 	if (!ObjectId.isValid(id)) {
-		return new Response(JSON.stringify({ error: "Invalid email log id" }), { status: 400 });
+		return new Response(
+			JSON.stringify({ error: "ID do email inválido.", code: "ADMIN_EMAIL_RETRY_INVALID_ID" }),
+			{ status: 400 },
+		);
 	}
 
 	try {
@@ -46,16 +49,34 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 		const doc = await communication.findOne({ _id: new ObjectId(id) });
 
 		if (!doc) {
-			return new Response(JSON.stringify({ error: "Email log not found" }), { status: 404 });
+			return new Response(
+				JSON.stringify({ error: "Registro de email não encontrado.", code: "ADMIN_EMAIL_RETRY_NOT_FOUND" }),
+				{ status: 404 },
+			);
 		}
 		if (!doc.email) {
-			return new Response(JSON.stringify({ error: "Email log has no recipient" }), { status: 400 });
+			return new Response(
+				JSON.stringify({
+					error: "Este registro de email não tem destinatário.",
+					code: "ADMIN_EMAIL_RETRY_RECIPIENT_MISSING",
+				}),
+				{ status: 400 },
+			);
 		}
 		if (!doc.subject) {
-			return new Response(JSON.stringify({ error: "Email log has no subject" }), { status: 400 });
+			return new Response(
+				JSON.stringify({ error: "Este registro de email não tem assunto.", code: "ADMIN_EMAIL_RETRY_SUBJECT_MISSING" }),
+				{ status: 400 },
+			);
 		}
 		if (!doc.emailBody && !doc.textBody) {
-			return new Response(JSON.stringify({ error: "Email log has no content to retry" }), { status: 400 });
+			return new Response(
+				JSON.stringify({
+					error: "Este registro de email não tem conteúdo para nova tentativa.",
+					code: "ADMIN_EMAIL_RETRY_CONTENT_MISSING",
+				}),
+				{ status: 400 },
+			);
 		}
 
 		const result = await sendEmail({
@@ -78,7 +99,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 		if (!result.sent) {
 			return new Response(
 				JSON.stringify({
-					error: result.error || "Retry failed",
+					error: result.error || "Não foi possível concluir a nova tentativa.",
+					code: "ADMIN_EMAIL_RETRY_FAILED",
 					persistenceError: result.persistenceError,
 				}),
 				{ status: 502 },
@@ -103,6 +125,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 			{ status: 200 },
 		);
 	} catch (error) {
-		return new Response(JSON.stringify({ error: extractErrorMessage(error) }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: extractErrorMessage(error), code: "ADMIN_EMAIL_RETRY_UNEXPECTED" }),
+			{ status: 500 },
+		);
 	}
 }

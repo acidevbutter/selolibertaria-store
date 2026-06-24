@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 interface FavoriteToggleProps {
@@ -21,6 +22,7 @@ export function FavoriteToggle({
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
+	const t = useTranslations("FavoriteToggle");
 	const [active, setActive] = useState(initialActive);
 	const [loading, setLoading] = useState(false);
 
@@ -41,7 +43,7 @@ export function FavoriteToggle({
 				return;
 			}
 			if (!response.ok) {
-				throw new Error("Falha ao atualizar favorito");
+				throw new Error(t("errors.update"));
 			}
 			const payload = (await response.json()) as { active?: boolean };
 			setActive(Boolean(payload.active));
@@ -58,7 +60,7 @@ export function FavoriteToggle({
 			type="button"
 			onClick={handleClick}
 			aria-pressed={active}
-			aria-label={active ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+			aria-label={active ? t("actions.remove") : t("actions.add")}
 			className={cn(
 				"inline-flex h-10 w-10 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-sm transition-colors hover:border-red-500 hover:text-red-600",
 				active && "border-red-500 text-red-600",

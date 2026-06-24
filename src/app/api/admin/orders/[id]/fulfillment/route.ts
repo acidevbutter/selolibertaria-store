@@ -14,7 +14,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 	if ("error" in auth) return auth.error;
 	const session = auth.session;
 	const { id } = await params;
-	if (!id) return new Response("Missing id", { status: 400 });
+	if (!id) {
+		return Response.json({ error: "Informe o ID do pedido.", code: "ADMIN_ORDER_FULFILLMENT_ID_REQUIRED" }, { status: 400 });
+	}
 
 	const body = (await req.json().catch(() => ({}))) as {
 		status?: FulfillmentStatus;
@@ -22,8 +24,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 	};
 	const nextStatus = body.status ?? undefined;
 	const trackingNumber = body.trackingNumber ?? undefined;
-	if (!nextStatus && trackingNumber === undefined) return new Response("No changes", { status: 400 });
-	if (nextStatus && !ORDER.includes(nextStatus)) return new Response("Invalid status", { status: 400 });
+	if (!nextStatus && trackingNumber === undefined) {
+		return Response.json({ error: "Nenhuma alteração foi informada.", code: "ADMIN_ORDER_FULFILLMENT_NO_CHANGES" }, { status: 400 });
+	}
+	if (nextStatus && !ORDER.includes(nextStatus)) {
+		return Response.json({ error: "Situação de expedição inválida.", code: "ADMIN_ORDER_FULFILLMENT_INVALID_STATUS" }, { status: 400 });
+	}
 
 	const db = await getDb();
 	const users = db.collection("users");
@@ -53,8 +59,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 				};
 		  }
 		| undefined;
-	if (!found) return new Response("Not found", { status: 404 });
-	if (!matchesOrderIdentifier(found.purchases, id)) return new Response("Not found", { status: 404 });
+	if (!found) {
+		return Response.json({ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" }, { status: 404 });
+	}
+	if (!matchesOrderIdentifier(found.purchases, id)) {
+		return Response.json({ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" }, { status: 404 });
+	}
 
 	const orderId = found.purchases.id;
 
@@ -63,7 +73,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 	if (nextStatus && current) {
 		const currIdx = ORDER.indexOf(current);
 		const nextIdx = ORDER.indexOf(nextStatus);
-		if (nextIdx < currIdx) return new Response("Cannot move backward", { status: 409 });
+		if (nextIdx < currIdx) {
+			return Response.json(
+				{ error: "Não é possível voltar a expedição para uma etapa anterior.", code: "ADMIN_ORDER_FULFILLMENT_BACKWARD_TRANSITION" },
+				{ status: 409 },
+			);
+		}
 	}
 
 	const set: Record<string, unknown> = {};

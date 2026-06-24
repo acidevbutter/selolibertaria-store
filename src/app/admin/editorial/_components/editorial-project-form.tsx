@@ -129,7 +129,7 @@ export function EditorialProjectForm({
 						<div className="space-y-1">
 							<h2 className="text-base font-semibold">Imagem principal</h2>
 						</div>
-						<Field label="Upload" name="imageSrc">
+						<Field label="Imagem" name="imageSrc">
 							<AdminImageUrlList
 								name="imageSrc"
 								initialValues={project?.image?.src ? [project.image.src] : []}

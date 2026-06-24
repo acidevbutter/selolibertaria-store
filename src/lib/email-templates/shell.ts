@@ -7,6 +7,7 @@ type EmailShellOptions = {
 	eyebrow?: string;
 	supportEmail?: string;
 	footerNote?: string;
+	baseUrl?: string;
 };
 
 export function escapeEmailHtml(value: unknown) {
@@ -28,14 +29,15 @@ export function emailShellHtml({
 	eyebrow,
 	supportEmail,
 	footerNote,
+	baseUrl,
 }: EmailShellOptions) {
 	const year = new Date().getFullYear();
 	const safeSupport = escapeEmailHtml(supportEmail ?? seloSiteMeta.email);
 	const safeTitle = escapeEmailHtml(title);
 	const safeEyebrow = escapeEmailHtml(eyebrow ?? seloSiteMeta.name);
 	const safeFooterNote = footerNote ? escapeEmailHtml(footerNote) : "";
-	const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-	const logoUrl = `${baseUrl}/images/selolibertaria.png`;
+	const resolvedBaseUrl = baseUrl || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+	const logoUrl = `${resolvedBaseUrl}/images/selolibertaria.png`;
 	const preheaderHtml = preheader
 		? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">${escapeEmailHtml(preheader)}</div>`
 		: "";

@@ -48,7 +48,7 @@ export function EditorialContactForm({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Editar Contato</CardTitle>
+				<CardTitle>Editar página de contato</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6">

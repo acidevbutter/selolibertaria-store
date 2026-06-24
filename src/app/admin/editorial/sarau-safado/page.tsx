@@ -27,7 +27,7 @@ export default async function AdminEditorialSarauPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Sarau Safado"
-				description="Edite a página institucional do programa principal do selo com a mesma leitura operacional usada nas outras superfícies editoriais."
+				description="Edite a página institucional do programa principal do selo."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -45,13 +45,9 @@ export default async function AdminEditorialSarauPage() {
 				<AdminEditorialStat
 					label="Publicação"
 					value={page.published ? "Publicado" : "Rascunho"}
-					helper="Estado atual da página na área pública."
+					helper="Estado atual no site."
 				/>
-				<AdminEditorialStat
-					label="Ordem"
-					value={page.order ?? 1}
-					helper="Prioridade editorial desta superfície."
-				/>
+				<AdminEditorialStat label="Ordem" value={page.order ?? 1} helper="Prioridade desta página." />
 				<AdminEditorialStat
 					label="Blocos"
 					value="Programa"
@@ -59,7 +55,11 @@ export default async function AdminEditorialSarauPage() {
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-				<EditorialSarauForm action={updateEditorialSarauAction} page={page} submitLabel="Salvar página" />
+				<EditorialSarauForm
+					action={updateEditorialSarauAction}
+					page={page}
+					submitLabel="Salvar página do Sarau Safado"
+				/>
 				<EditorialMetaCard
 					published={page.published}
 					order={page.order}

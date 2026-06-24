@@ -29,14 +29,14 @@ export default async function AdminSettingsPage() {
 				description="Centralize idioma, suporte, autenticação e frete em blocos curtos, com contexto claro antes de cada ajuste."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Blocos" value="5" helper="Ajustes organizados por tema operacional." />
+				<AdminEditorialStat label="Blocos" value="5" helper="Ajustes organizados por tema." />
 				<AdminEditorialStat
 					label="Padrão regional"
 					value="Idioma e país"
-					helper="A loja resolve esses defaults antes de preferências salvas da pessoa usuária."
+					helper="Usados quando a pessoa usuária ainda não definiu preferências."
 				/>
 				<AdminEditorialNote
-					title="Leitura rápida"
+					title="Visão rápida"
 					description="Abra apenas a seção necessária para reduzir ruído visual e preservar contexto ao salvar cada ajuste."
 				/>
 			</div>
@@ -55,10 +55,10 @@ export default async function AdminSettingsPage() {
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Abrir
+								Expandir
 							</span>
 							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Fechar
+								Recolher
 							</span>
 						</summary>
 						<Card className="border-none bg-transparent shadow-none">
@@ -80,15 +80,15 @@ export default async function AdminSettingsPage() {
 									Idioma e país padrão
 								</div>
 								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Controla o fallback de idioma e a região inicial usada em formulários quando a pessoa ainda
-									não definiu seus próprios dados.
+									Define o idioma padrão e a região inicial dos formulários quando a pessoa ainda não salvou
+									seus dados.
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Abrir
+								Expandir
 							</span>
 							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Fechar
+								Recolher
 							</span>
 						</summary>
 						<Card className="border-none bg-transparent shadow-none">
@@ -107,18 +107,17 @@ export default async function AdminSettingsPage() {
 									Suporte
 								</p>
 								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Email operacional
+									E-mail de suporte
 								</div>
 								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Usado nos templates transacionais e nos pontos de contato do admin quando a operação precisa
-									de um canal padrão.
+									Usado nos e-mails transacionais e nos pontos de contato do admin.
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Abrir
+								Expandir
 							</span>
 							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Fechar
+								Recolher
 							</span>
 						</summary>
 						<Card className="border-none bg-transparent shadow-none">
@@ -144,10 +143,10 @@ export default async function AdminSettingsPage() {
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Abrir
+								Expandir
 							</span>
 							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Fechar
+								Recolher
 							</span>
 						</summary>
 						<Card className="border-none bg-transparent shadow-none">
@@ -169,15 +168,14 @@ export default async function AdminSettingsPage() {
 									Provedores de frete
 								</div>
 								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Configure provedores, prioridade e fallback em um único bloco, sem expor moeda como escolha
-									operacional nesta fase.
+									Configure provedores, prioridade e regras de reserva em um único bloco.
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Abrir
+								Expandir
 							</span>
 							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Fechar
+								Recolher
 							</span>
 						</summary>
 						<Card className="border-none bg-transparent shadow-none">

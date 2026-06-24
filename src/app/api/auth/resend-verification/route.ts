@@ -10,10 +10,22 @@ export async function POST(req: Request) {
 	try {
 		const db = await getDb();
 		const userId = auth.session?.sub;
-		if (!userId) return new Response(JSON.stringify({ error: "Não autorizado" }), { status: 401 });
+		if (!userId)
+			return new Response(
+				JSON.stringify({ error: "Não autorizado", code: "RESEND_VERIFICATION_UNAUTHORIZED" }),
+				{
+					status: 401,
+				},
+			);
 		const oid = new ObjectId(String(userId));
 		const user = await db.collection("users").findOne({ _id: oid });
-		if (!user) return new Response(JSON.stringify({ error: "Usuária não encontrada" }), { status: 404 });
+		if (!user)
+			return new Response(
+				JSON.stringify({ error: "Usuária não encontrada", code: "RESEND_VERIFICATION_USER_NOT_FOUND" }),
+				{
+					status: 404,
+				},
+			);
 		if (user.verified) return new Response(JSON.stringify({ ok: true, message: "E-mail já verificado" }));
 
 		const now = new Date();
@@ -63,18 +75,29 @@ export async function POST(req: Request) {
 						sent: !!result.sent,
 						error: result.error,
 						persistenceError: result.persistenceError,
+						code: "RESEND_VERIFICATION_SEND_FAILED",
 					}),
 					{ status: 500 },
 				);
 			}
 		} catch (err) {
 			console.error("Failed to send verification email", err);
-			return new Response(JSON.stringify({ error: "Falha ao enviar o e-mail" }), { status: 500 });
+			return new Response(
+				JSON.stringify({ error: "Falha ao enviar o e-mail", code: "RESEND_VERIFICATION_SEND_FAILED" }),
+				{
+					status: 500,
+				},
+			);
 		}
 
 		return new Response(JSON.stringify({ ok: true }));
 	} catch (err) {
 		console.error(err);
-		return new Response(JSON.stringify({ error: "Erro no servidor" }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: "Erro no servidor", code: "RESEND_VERIFICATION_SERVER_ERROR" }),
+			{
+				status: 500,
+			},
+		);
 	}
 }

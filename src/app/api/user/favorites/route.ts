@@ -12,12 +12,22 @@ export async function POST(req: NextRequest) {
 		const productSlug = body.productSlug?.trim();
 		const variantId = body.variantId?.trim() || null;
 		if (!productSlug) {
-			return new Response(JSON.stringify({ error: "Slug do produto ausente" }), { status: 400 });
+			return new Response(
+				JSON.stringify({ error: "Slug do produto ausente", code: "FAVORITE_PRODUCT_SLUG_MISSING" }),
+				{
+					status: 400,
+				},
+			);
 		}
 
 		const product = await commerce.product.get({ slug: productSlug });
 		if (!product) {
-			return new Response(JSON.stringify({ error: "Produto não encontrado" }), { status: 404 });
+			return new Response(
+				JSON.stringify({ error: "Produto não encontrado", code: "FAVORITE_PRODUCT_NOT_FOUND" }),
+				{
+					status: 404,
+				},
+			);
 		}
 
 		const selectedVariant = product.variants?.find((variant) => variant.id === variantId) ?? null;
@@ -34,6 +44,11 @@ export async function POST(req: NextRequest) {
 		return Response.json(result);
 	} catch (error) {
 		console.error("[POST /api/user/favorites]", error);
-		return new Response(JSON.stringify({ error: "Falha ao atualizar favoritos" }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: "Falha ao atualizar favoritos", code: "FAVORITE_UPDATE_FAILED" }),
+			{
+				status: 500,
+			},
+		);
 	}
 }

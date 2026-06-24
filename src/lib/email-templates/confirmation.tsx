@@ -4,9 +4,10 @@ type Props = {
 	name?: string;
 	verifyUrl: string;
 	supportEmail?: string;
+	baseUrl?: string;
 };
 
-export function confirmationEmailHtml({ name, verifyUrl, supportEmail }: Props) {
+export function confirmationEmailHtml({ name, verifyUrl, supportEmail, baseUrl }: Props) {
 	const safeName = name ? ` ${escapeEmailHtml(name)}` : "";
 	const button = emailButtonHtml({ href: verifyUrl, label: "Confirmar e-mail" });
 	const bodyHtml = `
@@ -28,6 +29,7 @@ export function confirmationEmailHtml({ name, verifyUrl, supportEmail }: Props) 
 		preheader: "Confirme seu e-mail para ativar sua conta do Selo Libertária.",
 		bodyHtml,
 		supportEmail,
+		baseUrl,
 		footerNote: "Mensagem automática de segurança enviada pelo Selo Libertária para proteger sua conta.",
 	});
 }

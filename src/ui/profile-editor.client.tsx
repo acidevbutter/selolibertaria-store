@@ -142,8 +142,13 @@ export function ProfileEditor({
 				body: JSON.stringify(payload),
 			});
 			if (!res.ok) {
-				const errJson = (await res.json().catch(() => ({}))) as { error?: string };
-				throw new Error(errJson.error || t("errors.failed"));
+				if (res.status === 403) {
+					throw new Error(t("errors.emailNotVerified"));
+				}
+				if (res.status === 409) {
+					throw new Error(t("errors.emailTaken"));
+				}
+				throw new Error(t("errors.failed"));
 			}
 			const saved = (await res.json()) as UserProfileData;
 			// if email updated, verification resets client-side knowledge
@@ -176,21 +181,19 @@ export function ProfileEditor({
 		setResendState({ sending: true, message: null });
 		try {
 			const res = await fetch("/api/auth/resend-verification", { method: "POST" });
-			type ResendPayload = { ok?: boolean; error?: string; message?: string } | Record<string, unknown>;
+			type ResendPayload = { ok?: boolean } | Record<string, unknown>;
 			const payload = (await res.json().catch(() => ({}))) as ResendPayload;
 			if (!res.ok) {
-				const msg = payload?.error || payload?.message || t("verification.resendFailed");
-				setResendState({ sending: false, message: String(msg) });
+				setResendState({ sending: false, message: t("verification.resendFailed") });
 				return;
 			}
 			if (payload?.ok === false) {
-				setResendState({ sending: false, message: String(payload?.error || t("verification.resendFailed")) });
+				setResendState({ sending: false, message: t("verification.resendFailed") });
 				return;
 			}
 			setResendState({ sending: false, message: t("verification.resent") });
 		} catch (err: unknown) {
-			const msg = err instanceof Error ? err.message : t("verification.resendFailed");
-			setResendState({ sending: false, message: msg });
+			setResendState({ sending: false, message: t("verification.resendFailed") });
 		}
 	}
 

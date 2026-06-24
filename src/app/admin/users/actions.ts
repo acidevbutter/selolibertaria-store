@@ -11,7 +11,7 @@ import { revokeAllUserSessions } from "@/lib/session";
 function parseUserId(formData: FormData) {
 	const userId = String(formData.get("userId") ?? "").trim();
 	if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-		throw new Error("Invalid user id.");
+		throw new Error("ID de usuário inválido.");
 	}
 	return userId;
 }
@@ -45,20 +45,20 @@ export async function updateUserRoleAction(formData: FormData) {
 	const nextRole = normalizeUserRole(String(formData.get("role") ?? "").trim() || "customer");
 
 	if (userId === String(session.sub)) {
-		throw new Error("You cannot change your own role.");
+		throw new Error("Você não pode alterar o próprio papel.");
 	}
 
 	const db = await getDb();
 	const users = db.collection("users");
 	const existing = await users.findOne<{ _id: ObjectId; role?: UserRole }>({ _id: new ObjectId(userId) });
 	if (!existing) {
-		throw new Error("User not found.");
+		throw new Error("Usuário não encontrado.");
 	}
 
 	if (normalizeUserRole(existing.role) === "admin" && nextRole !== "admin") {
 		const adminCount = await countActiveAdmins();
 		if (adminCount <= 1) {
-			throw new Error("At least one active admin must remain.");
+			throw new Error("Pelo menos um administrador ativo deve permanecer.");
 		}
 	}
 
@@ -83,20 +83,20 @@ export async function setUserBlockedAction(formData: FormData) {
 	const reason = String(formData.get("reason") ?? "").trim() || null;
 
 	if (userId === String(session.sub) && shouldBlock) {
-		throw new Error("You cannot block your own account.");
+		throw new Error("Você não pode bloquear a própria conta.");
 	}
 
 	const db = await getDb();
 	const users = db.collection("users");
 	const existing = await users.findOne<{ _id: ObjectId; role?: UserRole }>({ _id: new ObjectId(userId) });
 	if (!existing) {
-		throw new Error("User not found.");
+		throw new Error("Usuário não encontrado.");
 	}
 
 	if (normalizeUserRole(existing.role) === "admin" && shouldBlock) {
 		const adminCount = await countActiveAdmins();
 		if (adminCount <= 1) {
-			throw new Error("At least one active admin must remain.");
+			throw new Error("Pelo menos um administrador ativo deve permanecer.");
 		}
 	}
 

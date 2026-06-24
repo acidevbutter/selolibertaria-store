@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { AdminThemeProvider } from "@/app/admin/_components/admin-theme-provider.client";
 import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
 import { AdminTopbar } from "@/app/admin/_components/topbar.client";
+import { getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
@@ -18,6 +19,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 	if (!isBackofficeRole(role)) redirect("/forbidden");
 
 	let initialTheme: "light" | "dark" = "light";
+	const t = await getTranslations("AdminShell");
 	try {
 		const db = await getDb();
 		const doc = await db.collection<{ current?: { theme?: "light" | "dark" } }>("settings").findOne({});
@@ -41,7 +43,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 									className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
 								>
 									<ArrowLeft className="h-4 w-4" />
-									Voltar ao site
+									{t("backToSite")}
 								</Link>
 							</div>
 							{children}

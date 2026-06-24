@@ -20,7 +20,7 @@ export function PaidVsFailedDonut({ paid, failed, height = 200 }: PaidVsFailedDo
 		() => ({
 			theme: { mode: theme },
 			chart: { type: "donut", animations: { enabled: true } },
-			labels: ["Paid", "Failed"],
+			labels: ["Pago", "Falhou"],
 			colors: [theme === "dark" ? "#34d399" : "#22c55e", "#ef4444"],
 			legend: { show: true, position: "bottom" },
 			dataLabels: { enabled: false },

@@ -6,8 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function AdminThemeSelector() {
 	const { theme, setTheme } = useAdminTheme();
 	return (
-		<div className="max-w-xs">
-			<label className="mb-2 block text-sm font-medium">Tema do admin</label>
+		<div className="max-w-sm space-y-2">
+			<div className="space-y-1">
+				<label className="block text-sm font-medium">Tema do admin</label>
+				<p className="text-sm text-muted-foreground">
+					Escolha a leitura visual do admin sem alterar a experiência pública da loja.
+				</p>
+			</div>
 			<Select
 				value={theme}
 				onValueChange={async (v) => {
@@ -15,7 +20,7 @@ export function AdminThemeSelector() {
 					setTheme(next); // updates context + persists to DB via provider
 				}}
 			>
-				<SelectTrigger>
+				<SelectTrigger className="max-w-[12rem]">
 					<SelectValue placeholder="Selecione o tema" />
 				</SelectTrigger>
 				<SelectContent>

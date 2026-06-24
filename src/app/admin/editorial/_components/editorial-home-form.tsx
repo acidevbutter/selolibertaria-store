@@ -155,7 +155,7 @@ export function EditorialHomeForm({
 								</Field>
 							</div>
 						</div>
-						<Field label="Upload" name="heroFeatureImageSrc">
+						<Field label="Imagem" name="heroFeatureImageSrc">
 							<AdminImageUrlList
 								name="heroFeatureImageSrc"
 								initialValues={page.hero?.featureImage?.src ? [page.hero.featureImage.src] : []}
@@ -258,7 +258,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 						</div>
-						<Field label="Upload" name="authorImageSrc">
+						<Field label="Imagem" name="authorImageSrc">
 							<AdminImageUrlList
 								name="authorImageSrc"
 								initialValues={page.author?.image?.src ? [page.author.image.src] : []}

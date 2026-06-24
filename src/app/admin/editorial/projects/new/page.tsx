@@ -20,7 +20,7 @@ export default async function NewEditorialProjectPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Novo projeto"
-				description="Abra uma nova frente cultural com contexto editorial, periodo, local e imagem principal."
+				description="Crie um projeto com período, local e imagem principal."
 				actions={
 					<Link
 						href="/admin/editorial/projects"
@@ -32,8 +32,8 @@ export default async function NewEditorialProjectPage() {
 				}
 			/>
 			<AdminEditorialNote
-				title="Fluxo"
-				description="Preencha identidade, narrativa e publicação. O projeto retorna para a coleção já pronto para ordenação e revisão."
+				title="Como usar"
+				description="Preencha identidade, narrativa e publicação. Ao salvar, o projeto volta para a lista para revisão."
 			/>
 			<EditorialProjectForm action={createEditorialProjectAction} submitLabel="Criar projeto" />
 		</AdminEditorialPage>

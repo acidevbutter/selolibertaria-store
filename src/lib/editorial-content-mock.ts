@@ -29,6 +29,12 @@ const buildMockEvents = (): EditorialEvent[] =>
 		status: event.status,
 		period: event.period,
 		location: event.location,
+		image: event.imageSrc
+			? {
+					src: event.imageSrc,
+					alt: event.imageAlt,
+				}
+			: undefined,
 		published: true,
 		order: index + 1,
 		createdBy: "system:mock",
@@ -44,6 +50,12 @@ const buildMockProjects = (): EditorialProject[] =>
 		description: project.description,
 		period: project.period,
 		location: project.location,
+		image: project.imageSrc
+			? {
+					src: project.imageSrc,
+					alt: project.imageAlt,
+				}
+			: undefined,
 		published: true,
 		order: index + 1,
 		createdBy: "system:mock",

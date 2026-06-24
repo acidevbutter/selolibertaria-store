@@ -5,12 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminNavItems } from "@/app/admin/_components/nav-config";
+import { useTranslations } from "@/i18n/client";
 import { hasCapability, type UserRole } from "@/lib/authz";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/ui/shadcn/sheet";
 
 export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAction: () => Promise<void> }) {
 	const pathname = usePathname();
+	const t = useTranslations("AdminShell");
 	const [navigating, setNavigating] = useState(false);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(role, item.capability));
 	useEffect(() => {
@@ -23,19 +25,19 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 					<div className="h-9 w-9 rounded-xl bg-[#fffdf8]" />
 					<div className="space-y-0.5">
 						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
-						<div className="text-[11px] font-medium text-[#beb3a8]">painel editorial</div>
+						<div className="text-[11px] font-medium text-[#beb3a8]">{t("brandSubtitle")}</div>
 					</div>
 				</Link>
 				<Sheet>
 					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
 						<Menu className="h-5 w-5" />
-						<span className="sr-only">Abrir menu</span>
+						<span className="sr-only">{t("openMenu")}</span>
 					</SheetTrigger>
 					<SheetContent
 						side="left"
 						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
 					>
-						<SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+						<SheetTitle className="sr-only">{t("navTitle")}</SheetTitle>
 						<div className="px-7 pb-7 pt-7">
 							<div className="flex items-start gap-4">
 								<div className="h-11 w-11 shrink-0 rounded-xl bg-[#fffdf8]" />
@@ -43,19 +45,19 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 										LIBERTÁRIA
 									</div>
-									<div className="text-xs font-medium leading-4 text-[#beb3a8]">painel editorial</div>
+									<div className="text-xs font-medium leading-4 text-[#beb3a8]">{t("brandSubtitle")}</div>
 								</div>
 							</div>
 							<div className="mt-5 flex items-center justify-between gap-3">
 								<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-									Painel editorial
+									{t("sectionTitle")}
 								</div>
 								<form action={logoutAction}>
 									<button
 										type="submit"
 										className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
 									>
-										Sair
+										{t("logout")}
 									</button>
 								</form>
 							</div>

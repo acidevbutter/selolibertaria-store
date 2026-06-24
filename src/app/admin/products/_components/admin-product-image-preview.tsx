@@ -25,7 +25,7 @@ export function AdminProductImagePreview({
 						: "flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground"
 				}
 			>
-				Sem imagem
+				Sem imagem disponível
 			</div>
 		);
 	}
@@ -83,7 +83,7 @@ export function AdminProductImagePreview({
 					))}
 				</div>
 				{images.length > 4 ? (
-					<p className="text-xs text-muted-foreground">Mostrando 4 de {images.length} imagens.</p>
+					<p className="text-xs text-muted-foreground">Mostrando 4 de {images.length} imagens desta galeria.</p>
 				) : null}
 			</div>
 			<ImagePreviewDialog
@@ -111,7 +111,7 @@ function ImagePreviewDialog({
 			<DialogContent className="max-w-5xl border-none bg-transparent p-0 shadow-none">
 				<DialogHeader className="sr-only">
 					<DialogTitle>{alt}</DialogTitle>
-					<DialogDescription>Prévia da imagem</DialogDescription>
+					<DialogDescription>Prévia ampliada da imagem selecionada.</DialogDescription>
 				</DialogHeader>
 				{selectedImage ? (
 					<div className="overflow-hidden rounded-lg bg-background">

@@ -37,7 +37,7 @@ export default async function NewAdminProductPage() {
 			<AdminEditorialHero
 				eyebrow="Livro"
 				title="Novo livro"
-				description="Cadastre o bloco principal do produto, defina a primeira variante e publique o item sem perder o contexto do catálogo."
+				description="Cadastre os dados principais do livro, defina a primeira variante e publique o item sem perder o contexto do catálogo."
 				actions={
 					<Link
 						href="/admin/products"
@@ -61,7 +61,7 @@ export default async function NewAdminProductPage() {
 					helper="Ordem sugerida no catálogo atual."
 				/>
 				<AdminEditorialNote
-					title="Fluxo"
+					title="Como usar"
 					description="Preencha os dados principais, revise a primeira variante e salve para abrir a gestão completa do livro."
 				/>
 			</div>

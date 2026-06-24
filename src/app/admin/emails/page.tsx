@@ -3,8 +3,11 @@ import type { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmailLogTable } from "@/app/admin/emails/_components/email-log-table.client";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -54,11 +57,11 @@ function asString(value: string | string[] | undefined) {
 	return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
 }
 
-function toDateString(value?: Date | string | null) {
+function toDateString(value: Date | string | null | undefined, locale: string) {
 	if (!value) return "-";
 	const date = value instanceof Date ? value : new Date(value);
 	if (Number.isNaN(date.getTime())) return "-";
-	return new Intl.DateTimeFormat("pt-BR", {
+	return new Intl.DateTimeFormat(locale, {
 		dateStyle: "short",
 		timeStyle: "medium",
 	}).format(date);
@@ -107,7 +110,7 @@ function buildQuery({ status, kind, q }: { status?: string; kind?: string; q?: s
 function formatKindLabel(kind?: string | null) {
 	switch ((kind || "").toLowerCase()) {
 		case "email_confirmation":
-			return "Confirmação de email";
+			return "Confirmação de e-mail";
 		case "order_status":
 			return "Status de pedido";
 		case "password_reset":
@@ -117,7 +120,7 @@ function formatKindLabel(kind?: string | null) {
 		case "transactional":
 			return "Transacional";
 		default:
-			return "Legado / indefinido";
+			return "Sem tipo informado";
 	}
 }
 
@@ -161,6 +164,7 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const resolved = (await searchParams) || {};
 	const status = (asString(resolved.status) || "all").toLowerCase();
@@ -190,11 +194,11 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 			: null;
 	const tableItems = items.map((item) => ({
 		id: String(item._id),
-		sentAtLabel: toDateString(item.sentAt),
+		sentAtLabel: toDateString(item.sentAt, locale),
 		status: item.status || "unknown",
 		kindLabel: formatKindLabel(item.kind),
 		email: item.email || "-",
-		subject: item.subject || "Sem assunto",
+		subject: item.subject || "Assunto não informado",
 		previewBody: summarizeBody(item.emailBody),
 		purchaseId: item.purchaseId || null,
 		userId: item.userId || null,
@@ -213,9 +217,9 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Emails"
-				title="Emails transacionais"
-				description="Acompanhe envios, falhas e retentativas."
+				eyebrow="E-mails"
+				title="E-mails transacionais"
+				description="Acompanhe envios, falhas e novas tentativas."
 				actions={
 					<div className="w-full max-w-5xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
 						<form
@@ -227,13 +231,13 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 									htmlFor="email-search"
 									className="mb-2 block text-sm text-[color:var(--editorial-muted)]"
 								>
-									Buscar por email, pedido, mensagem ou origem
+									Buscar por e-mail, pedido, mensagem ou origem
 								</label>
 								<Input
 									id="email-search"
 									name="q"
 									defaultValue={q}
-									placeholder="cliente@email.com, pedido, template..."
+									placeholder="cliente@email.com, pedido, tipo da mensagem..."
 									className="rounded-none border-[color:var(--editorial-border)] bg-white"
 								/>
 							</div>
@@ -249,7 +253,7 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 								>
 									<option value="all">Todos</option>
 									<option value="sent">Enviados</option>
-									<option value="failed">Falhos</option>
+									<option value="failed">Com falha</option>
 									<option value="pending">Pendentes</option>
 								</select>
 							</div>
@@ -265,11 +269,11 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 								>
 									<option value="all">Todos</option>
 									<option value="order_status">Status de pedido</option>
-									<option value="email_confirmation">Confirmação de email</option>
+									<option value="email_confirmation">Confirmação de e-mail</option>
 									<option value="password_reset">Redefinição de senha</option>
 									<option value="transactional">Transacional</option>
 									<option value="test">Teste</option>
-									<option value="unknown">Legado / indefinido</option>
+									<option value="unknown">Sem tipo informado</option>
 								</select>
 							</div>
 							<input type="hidden" name="limit" value={String(limit)} />
@@ -289,16 +293,12 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-4">
-				<AdminEditorialStat
-					label="Registros"
-					value={totalMatching}
-					helper="Base filtrada para auditoria operacional."
-				/>
+				<AdminEditorialStat label="Registros" value={totalMatching} helper="Resultados do filtro atual." />
 				<AdminEditorialStat label="Enviados" value={sentCount} helper="Mensagens concluídas com sucesso." />
 				<AdminEditorialStat
-					label="Falhos"
+					label="Com falha"
 					value={failedCount}
-					helper="Envios que pedem revisão ou retentativa."
+					helper="Envios que pedem revisão ou nova tentativa."
 				/>
 				<AdminEditorialStat
 					label="Pendentes"
@@ -310,11 +310,34 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
 					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 						<Mail className="h-4 w-4" />
-						Entrega e histórico
+						Envios recentes
 					</div>
 				</div>
 				<div className="space-y-4 p-6 sm:p-8">
 					<EmailLogTable items={tableItems} limit={limit} />
+					{tableItems.length === 0 ? (
+						<div className="flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+							<div className="space-y-1">
+								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+									Ainda não há envios neste recorte.
+								</p>
+								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Revise os modelos, confirme o e-mail de suporte e dispare um teste para verificar a trilha completa.
+								</p>
+							</div>
+							<div className="flex flex-wrap gap-2">
+								<Button asChild variant="outline" className="rounded-none bg-white">
+									<Link href="/admin/settings">Ver configurações</Link>
+								</Button>
+								<Button
+									asChild
+									className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+								>
+									<Link href="/admin/email-templates">Ver modelos de e-mail</Link>
+								</Button>
+							</div>
+						</div>
+					) : null}
 
 					<div className="flex flex-col gap-3 border-t border-[color:var(--editorial-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
 						<p className="text-sm text-[color:var(--editorial-muted)]">

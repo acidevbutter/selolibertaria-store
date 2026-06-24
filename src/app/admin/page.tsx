@@ -1,9 +1,12 @@
 import { AlertTriangle, ArrowRight, CreditCard, Package2, ShieldAlert, Wallet } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { RevenueSparkline } from "@/ui/charts/revenue-sparkline.client";
 import { RevenueZoomBrush } from "@/ui/charts/revenue-zoom-brush.client";
 import { Reveal } from "@/ui/motion/reveal";
@@ -26,15 +29,19 @@ function asStr(value: unknown): string | undefined {
 			: undefined;
 }
 
-function formatMoney(amount: number, currency: string) {
+function formatMoney(amount: number, currency: string, locale: string) {
 	try {
-		return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(amount / 100);
+		return new Intl.NumberFormat(locale, { style: "currency", currency }).format(amount / 100);
 	} catch {
 		return `${(amount / 100).toFixed(2)} ${currency}`;
 	}
 }
 
-function formatMoneyList(lines: Array<{ currency: string; amountCents: number }>, emptyLabel = "—") {
+function formatMoneyList(
+	lines: Array<{ currency: string; amountCents: number }>,
+	locale: string,
+	emptyLabel = "—",
+) {
 	if (lines.length === 0) return <div className="text-4xl font-semibold tracking-tight">{emptyLabel}</div>;
 
 	return (
@@ -44,7 +51,7 @@ function formatMoneyList(lines: Array<{ currency: string; amountCents: number }>
 					key={line.currency}
 					className={index === 0 ? "text-4xl font-semibold tracking-tight" : "text-lg text-muted-foreground"}
 				>
-					{formatMoney(line.amountCents, line.currency)}
+					{formatMoney(line.amountCents, line.currency, locale)}
 				</div>
 			))}
 		</div>
@@ -245,6 +252,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "admin.access")) redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
 
 	const sp = (await searchParams) || {};
 	const status = (asStr(sp?.status) ?? "all").toLowerCase();
@@ -273,7 +281,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 				dashboard.paymentFunnel.awaitingAction > 0
 					? `${dashboard.paymentFunnel.awaitingAction} pagamento(s) aguardam confirmação ou troca de método.`
 					: "Nenhum pagamento está parado aguardando ação manual.",
-			pill: dashboard.paymentFunnel.awaitingAction > 0 ? "Revisar" : "OK",
+			pill: dashboard.paymentFunnel.awaitingAction > 0 ? "Revisar" : "Em dia",
 			tone: dashboard.paymentFunnel.awaitingAction > 0 ? "warning" : "success",
 			accentClass: dashboard.paymentFunnel.awaitingAction > 0 ? "bg-[#a76a1d]" : "bg-[#23634a]",
 		},
@@ -283,17 +291,17 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 				dashboard.fulfillmentQueue.paidWithoutFulfillment > 0
 					? `${dashboard.fulfillmentQueue.paidWithoutFulfillment} pedido(s) pagos ainda não entraram no fluxo de expedição.`
 					: "Todos os pedidos pagos já avançaram para a operação.",
-			pill: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "Atenção" : "OK",
+			pill: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "Atenção" : "Em dia",
 			tone: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "danger" : "success",
 			accentClass: dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "bg-[#a02a2a]" : "bg-[#23634a]",
 		},
 		{
-			section: "Webhooks",
+			section: "Recebimento",
 			description:
 				webhookAttention > 0
 					? `${dashboard.opsHealth.webhooksFailed} falha(s) e ${dashboard.opsHealth.webhooksPending} pendência(s) no recebimento de eventos.`
-					: "Eventos recebidos sem fila pendente ou falha operacional.",
-			pill: dashboard.opsHealth.webhooksFailed > 0 ? "Falha" : webhookAttention > 0 ? "Checar" : "OK",
+					: "Sem pendências ou falhas recentes no recebimento de eventos.",
+			pill: dashboard.opsHealth.webhooksFailed > 0 ? "Falha" : webhookAttention > 0 ? "Checar" : "Em dia",
 			tone: dashboard.opsHealth.webhooksFailed > 0 ? "danger" : webhookAttention > 0 ? "warning" : "success",
 			accentClass:
 				dashboard.opsHealth.webhooksFailed > 0
@@ -303,12 +311,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						: "bg-[#23634a]",
 		},
 		{
-			section: "Emails",
+			section: "E-mails",
 			description:
 				emailAttention > 0
 					? `${dashboard.opsHealth.emailFailed} envio(s) falharam e ${dashboard.opsHealth.emailPending} seguem pendentes.`
-					: "Comunicação transacional sem filas travadas no recorte atual.",
-			pill: dashboard.opsHealth.emailFailed > 0 ? "Falha" : emailAttention > 0 ? "Checar" : "OK",
+					: "Sem filas travadas nos envios recentes.",
+			pill: dashboard.opsHealth.emailFailed > 0 ? "Falha" : emailAttention > 0 ? "Checar" : "Em dia",
 			tone: dashboard.opsHealth.emailFailed > 0 ? "danger" : emailAttention > 0 ? "warning" : "success",
 			accentClass:
 				dashboard.opsHealth.emailFailed > 0
@@ -321,9 +329,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 			section: "Disputas",
 			description:
 				dashboard.recentDisputesCount > 0
-					? `${dashboard.recentDisputesCount} disputa(s) no período filtrado exigem leitura próxima.`
-					: "Nenhuma disputa recente registrada neste recorte.",
-			pill: dashboard.recentDisputesCount > 0 ? "Pendente" : "OK",
+					? `${dashboard.recentDisputesCount} disputa(s) no período pedem atenção.`
+					: "Nenhuma disputa recente neste período.",
+			pill: dashboard.recentDisputesCount > 0 ? "Pendente" : "Em dia",
 			tone: dashboard.recentDisputesCount > 0 ? "default" : "success",
 			accentClass: dashboard.recentDisputesCount > 0 ? "bg-[#7a1e22]" : "bg-[#23634a]",
 		},
@@ -340,7 +348,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 									Painel de operação
 								</h1>
 								<p className="max-w-3xl text-sm leading-6 text-[#746b63]">
-									Acompanhe prioridades, catálogo e operação.
+									Acompanhe prioridades, catálogo e andamento da operação.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-3">
@@ -348,13 +356,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 									href="/"
 									className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#ded5ca] bg-[#fffdf8] px-5 text-sm font-semibold text-[#171414] transition-colors hover:bg-[#f4eee5]"
 								>
-									Pré-visualizar
+									Ver loja
 								</Link>
 								<Link
 									href="/admin/editorial"
 									className="inline-flex h-11 items-center justify-center rounded-[10px] bg-[#7a1e22] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#612226]"
 								>
-									Abrir editorial
+									Ir para editorial
 								</Link>
 							</div>
 						</div>
@@ -366,7 +374,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 
 						{dashboard.hasMultipleCurrencies ? (
 							<div className="border border-[rgba(11,11,11,0.14)] bg-[color:var(--editorial-beige)]/35 p-4 text-sm leading-6 text-[color:var(--editorial-ink)]">
-								Os totais permanecem separados por moeda para evitar misturar valores nominais incompatíveis.
+								Há totais com origens diferentes no período, então os valores aparecem em linhas separadas.
 							</div>
 						) : null}
 
@@ -374,25 +382,25 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<DashboardMetricCard
 								label="Pendências"
 								value={urgentOrders}
-								helper="Pagamentos em revisão, disputas e pedidos pagos que ainda não entraram na operação."
+								helper="Pagamentos em revisão, disputas e pedidos pagos que ainda não seguiram para expedição."
 								accentClass="bg-[#7a1e22]"
 							/>
 							<DashboardMetricCard
 								label="Pedidos"
 								value={dashboard.filteredPurchases}
-								helper="Pedidos considerados no recorte atual do painel."
+								helper="Pedidos dentro do filtro atual."
 								accentClass="bg-[#a76a1d]"
 							/>
 							<DashboardMetricCard
-								label="Webhooks"
+								label="Recebimento"
 								value={webhookAttention}
-								helper="Falhas e pendências no recebimento que podem travar a reconciliação automática."
+								helper="Falhas e pendências no recebimento de eventos."
 								accentClass="bg-[#a02a2a]"
 							/>
 							<DashboardMetricCard
-								label="Emails"
+								label="E-mails"
 								value={emailAttention}
-								helper="Envios pendentes ou com falha que afetam a comunicação transacional."
+								helper="Envios pendentes ou com falha."
 								accentClass="bg-[#23634a]"
 							/>
 						</div>
@@ -406,10 +414,10 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 										</div>
 										<p className="max-w-2xl text-sm leading-6 text-[#746b63]">
 											Tudo que exige decisão rápida antes de seguir para o site, para o pós-compra ou para a
-											operação interna.
+											equipe.
 										</p>
 									</div>
-									<PriorityPill label="Modo revisão" tone="default" />
+									<PriorityPill label="Em revisão" tone="default" />
 								</div>
 								<div className="mt-6 space-y-3">
 									{priorityRows.map((row) => (
@@ -433,13 +441,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 										href="/admin/orders"
 										className="inline-flex h-11 items-center justify-center rounded-[10px] bg-[#7a1e22] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#612226]"
 									>
-										Abrir pedidos
+										Ver pedidos
 									</Link>
 									<Link
 										href="/admin/editorial"
 										className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#ded5ca] bg-[#fffdf8] px-5 text-sm font-semibold text-[#171414] transition-colors hover:bg-[#f4eee5]"
 									>
-										Abrir editorial
+										Ver editorial
 									</Link>
 								</div>
 							</div>
@@ -459,7 +467,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 													do Tietê
 												</div>
 												<p className="text-xs leading-5 text-[#746b63]">
-													Leitura rápida da loja para checar vitrine, narrativa e CTA principal.
+													Leitura rápida da loja para checar vitrine e CTA principal.
 												</p>
 												<span className="inline-flex h-7 items-center rounded-[7px] bg-[#7a1e22] px-4 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
 													Comprar
@@ -481,7 +489,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 											Atividade recente
 										</div>
 										<p className="text-sm leading-6 text-[#746b63]">
-											Últimos pedidos do recorte atual para checagem rápida de ritmo e status.
+											Últimos pedidos do filtro atual para checagem rápida de ritmo e status.
 										</p>
 									</div>
 									<div className="mt-6 space-y-5">
@@ -494,11 +502,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 												/>
 												<div className="min-w-0 space-y-1">
 													<div className="text-sm font-semibold text-[#171414]">
-														{formatMoney(purchase.amountTotal, purchase.currency)} ·{" "}
-														{purchase.userEmail || "Cliente sem email"}
+														{formatMoney(purchase.amountTotal, purchase.currency, locale)} ·{" "}
+														{purchase.userEmail || "Cliente sem e-mail"}
 													</div>
 													<div className="truncate text-xs leading-5 text-[#746b63]">
-														{purchase.id} · {new Date(purchase.createdAt).toLocaleString("pt-BR")}
+														{purchase.id} · {new Date(purchase.createdAt).toLocaleString(locale)}
 													</div>
 												</div>
 											</div>
@@ -521,21 +529,21 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 					<SectionHeader
 						eyebrow="Resumo financeiro"
 						title="Sinais centrais da operação"
-						description="Leitura ampla de receita, volume, desconto e alcance para entender o dia sem atravessar várias telas."
+						description="Veja receita, volume, desconto e alcance sem atravessar várias telas."
 					/>
 
 					<div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-4">
 						<StatCard
 							icon={<Wallet className="h-5 w-5" />}
 							label="Faturamento pago"
-							value={formatMoneyList(dashboard.revenueByCurrency)}
+							value={formatMoneyList(dashboard.revenueByCurrency, locale)}
 							helper="Receita confirmada no período selecionado."
 						/>
 						<StatCard
 							icon={<CreditCard className="h-5 w-5" />}
 							label="Ticket médio"
-							value={formatMoneyList(dashboard.averageOrderValueByCurrency)}
-							helper="Valor médio por pedido pago, separado por moeda quando necessário."
+							value={formatMoneyList(dashboard.averageOrderValueByCurrency, locale)}
+							helper="Valor médio por pedido pago no período selecionado."
 						/>
 						<StatCard
 							icon={<Package2 className="h-5 w-5" />}
@@ -553,7 +561,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						<StatCard
 							icon={<ShieldAlert className="h-5 w-5" />}
 							label="Receita líquida"
-							value={formatMoneyList(dashboard.netRevenueByCurrency)}
+							value={formatMoneyList(dashboard.netRevenueByCurrency, locale)}
 							helper="Faturamento pago já descontado do volume reembolsado."
 						/>
 					</div>
@@ -562,14 +570,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						<StatCard
 							icon={<ArrowRight className="h-5 w-5" />}
 							label="Desconto aplicado"
-							value={formatMoneyList(dashboard.discountByCurrency)}
-							helper="Pressão total de desconto aplicada ao recorte filtrado."
+							value={formatMoneyList(dashboard.discountByCurrency, locale)}
+							helper="Total de desconto aplicado no período."
 							tone="warning"
 						/>
 						<StatCard
 							icon={<AlertTriangle className="h-5 w-5" />}
 							label="Valor reembolsado"
-							value={formatMoneyList(dashboard.refundedByCurrency)}
+							value={formatMoneyList(dashboard.refundedByCurrency, locale)}
 							helper={`${dashboard.recentRefundsCount} pedido(s) reembolsado(s) no período selecionado.`}
 							tone="danger"
 						/>
@@ -577,7 +585,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							icon={<Package2 className="h-5 w-5" />}
 							label="Base da loja"
 							value={<div className="text-5xl font-semibold tracking-tight">{dashboard.usersCount}</div>}
-							helper={`${dashboard.buyersCount} clientes compraram dentro do recorte atual.`}
+							helper={`${dashboard.buyersCount} clientes compraram no período.`}
 						/>
 					</div>
 				</section>
@@ -590,9 +598,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<SectionHeader
 								eyebrow="Pedidos"
 								title="Funil de pagamento"
-								description="Veja o que converteu, o que está travado e onde o fluxo financeiro perde ritmo."
+								description="Veja o que converteu, o que travou e onde o fluxo financeiro perde ritmo."
 								actionHref="/admin/orders"
-								actionLabel="Abrir pedidos"
+								actionLabel="Ver pedidos"
 							/>
 						</CardHeader>
 						<CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -624,7 +632,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<QueueMetric
 								label="Disputado"
 								value={dashboard.paymentFunnel.disputed}
-								help="Chargebacks e estados de disputa que pedem leitura próxima."
+								help="Chargebacks e disputas que pedem atenção."
 								emphasis={dashboard.paymentFunnel.disputed > 0 ? "danger" : "normal"}
 							/>
 						</CardContent>
@@ -647,7 +655,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<QueueMetric
 								label="Pago sem avanço"
 								value={dashboard.fulfillmentQueue.paidWithoutFulfillment}
-								help="Pedidos pagos que ainda não entraram no fluxo operacional."
+								help="Pedidos pagos que ainda não seguiram para expedição."
 								emphasis={dashboard.fulfillmentQueue.paidWithoutFulfillment > 0 ? "danger" : "normal"}
 							/>
 							<QueueMetric
@@ -666,18 +674,19 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 					<SectionHeader
 						eyebrow="Tendência"
 						title="Receita paga ao longo do tempo"
-						description="Área ampla para leitura da curva de faturamento sem comprimir o histórico."
+						description="Veja a curva de faturamento com mais espaço para leitura."
 					/>
 
 					<Card>
 						<CardContent className="p-4 sm:p-6">
 							<div className="mb-6 rounded-2xl border bg-muted/15 p-5">
-								<div className="text-sm text-muted-foreground">Prévia do recorte</div>
+								<div className="text-sm text-muted-foreground">Prévia do período</div>
 								<div className="mt-3">
 									<RevenueSparkline
 										seriesCents={dashboard.revenueSeriesCents}
 										labels={dashboard.revenueSeriesDays}
 										currency={dashboard.primaryCurrency}
+										locale={locale}
 										height={96}
 									/>
 								</div>
@@ -686,6 +695,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<RevenueZoomBrush
 								points={dashboard.revenueZoomBrushPoints}
 								currency={dashboard.primaryCurrency}
+								locale={locale}
 							/>
 						</CardContent>
 					</Card>
@@ -696,17 +706,17 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 				<section className="space-y-5">
 					<SectionHeader
 						eyebrow="Confiabilidade"
-						title="Saúde operacional"
+						title="Saúde da operação"
 						description="Problemas técnicos que podem corroer conversão, comunicação ou cadência de expedição sem chamar atenção."
 					/>
 
 					<div className="grid gap-5 lg:grid-cols-3">
 						<HealthRow
-							label="Falhas de webhook"
+							label="Falhas no recebimento"
 							value={dashboard.opsHealth.webhooksFailed}
 							supplement={`${dashboard.opsHealth.webhooksPending} evento(s) ainda pendente(s) no período filtrado.`}
 							href="/admin/webhooks"
-							linkLabel="Inspecionar webhooks"
+							linkLabel="Ver recebimento"
 							tone={
 								dashboard.opsHealth.webhooksFailed > 0
 									? "danger"
@@ -716,11 +726,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							}
 						/>
 						<HealthRow
-							label="Falhas de email"
+							label="Falhas de e-mail"
 							value={dashboard.opsHealth.emailFailed}
-							supplement={`${dashboard.opsHealth.emailPending} envio(s) transacional(is) ainda pendente(s).`}
+							supplement={`${dashboard.opsHealth.emailPending} envio(s) ainda pendente(s).`}
 							href="/admin/emails"
-							linkLabel="Inspecionar emails"
+							linkLabel="Inspecionar e-mails"
 							tone={
 								dashboard.opsHealth.emailFailed > 0
 									? "danger"
@@ -732,7 +742,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 						<HealthRow
 							label="Ações manuais em pedidos"
 							value={dashboard.opsHealth.manualTouches}
-							supplement="Edições de expedição registradas no período."
+							supplement="Mudanças de expedição registradas no período."
 							tone="default"
 						/>
 					</div>
@@ -746,7 +756,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 							<SectionHeader
 								eyebrow="Atividade"
 								title="Compras recentes"
-								description="Pedidos mais recentes do recorte atual, com respiro suficiente para leitura rápida."
+								description="Pedidos mais recentes do filtro atual."
 							/>
 						</CardHeader>
 						<CardContent>
@@ -771,13 +781,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 													</div>
 												</TableCell>
 												<TableCell className="py-4 align-top text-sm font-medium">
-													{formatMoney(purchase.amountTotal, purchase.currency)}
+													{formatMoney(purchase.amountTotal, purchase.currency, locale)}
 												</TableCell>
 												<TableCell className="py-4 align-top">
 													<StatusBadge status={purchase.status} />
 												</TableCell>
 												<TableCell className="py-4 align-top text-sm text-muted-foreground">
-													{new Date(purchase.createdAt).toLocaleString("pt-BR")}
+													{new Date(purchase.createdAt).toLocaleString(locale)}
 												</TableCell>
 												<TableCell className="py-4 align-top font-mono text-xs leading-6 break-all text-muted-foreground">
 													{purchase.id}
@@ -787,7 +797,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 														className="text-sm font-medium underline underline-offset-4"
 														href={`/admin/orders/${purchase.id}`}
 													>
-														Abrir
+														Ver pedido
 													</Link>
 												</TableCell>
 											</TableRow>
@@ -831,8 +841,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 												<div className="text-sm text-muted-foreground">Total gasto</div>
 												<div className="mt-1 text-lg font-semibold leading-7">
 													{dashboard.hasMultipleCurrencies
-														? "Multimoeda"
-														: formatMoney(customer.totalSpentCents, dashboard.primaryCurrency)}
+														? "Mais de um total"
+														: formatMoney(customer.totalSpentCents, dashboard.primaryCurrency, locale)}
 												</div>
 											</div>
 										</div>

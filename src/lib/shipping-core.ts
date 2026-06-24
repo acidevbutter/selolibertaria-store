@@ -120,7 +120,7 @@ export function normalizeShippingProviderInput(
 	value: ShippingProviderInput,
 	index = 0,
 ): ShippingProviderSettings {
-	const label = value.label?.trim() || `Provider ${index + 1}`;
+	const label = value.label?.trim() || `Provedor ${index + 1}`;
 	const code = normalizeShippingProviderCode(value.code?.trim() || "", label);
 	const preset = getShippingProviderPreset(value.kind);
 	const credentials =
@@ -169,7 +169,6 @@ export function normalizeShippingProviderInput(
 						? Number(value.estimatedDays)
 						: null
 					: null,
-		currency: null,
 		supportedCountries: normalizeSupportedCountries(value.supportedCountries),
 		requiresPostalCode: value.requiresPostalCode === true,
 		defaultWeightGrams:

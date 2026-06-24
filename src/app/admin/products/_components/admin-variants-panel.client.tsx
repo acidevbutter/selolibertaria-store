@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -27,16 +28,21 @@ import { Input } from "@/ui/shadcn/input";
 
 export function AdminVariantsPanel({
 	group,
+	locale,
+	adminCurrency,
 	createStripeVariantAction,
 	updateStripeVariantAction,
 	archiveStripeVariantAction,
 }: {
 	group: AdminStripeProductGroup;
+	locale: string;
+	adminCurrency: string;
 	createStripeVariantAction: (formData: FormData) => Promise<void>;
 	updateStripeVariantAction: (formData: FormData) => Promise<void>;
 	archiveStripeVariantAction: (formData: FormData) => Promise<void>;
 }) {
 	const groupBasePrice = group.variants[0]?.priceDecimal ?? null;
+	const groupCurrency = group.variants[0]?.currency ?? adminCurrency;
 
 	return (
 		<section className="space-y-4">
@@ -45,7 +51,9 @@ export function AdminVariantsPanel({
 					<h2 className="text-xl font-semibold">Variantes</h2>
 				</div>
 				<div className="flex items-center gap-3">
-					<div className="text-sm text-muted-foreground">{group.variants.length} variantes</div>
+					<div className="text-sm text-muted-foreground">
+						{group.variants.length} {group.variants.length === 1 ? "variante" : "variantes"}
+					</div>
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button size="sm">
@@ -56,6 +64,10 @@ export function AdminVariantsPanel({
 						<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 							<DialogHeader>
 								<DialogTitle>Adicionar variante</DialogTitle>
+								<DialogDescription>
+									Crie uma nova variante herdando os dados principais do livro e ajuste apenas os campos
+									operacionais necessários.
+								</DialogDescription>
 							</DialogHeader>
 							<form action={createStripeVariantAction} className="space-y-6">
 								<input type="hidden" name="currentSlug" value={group.slug} />
@@ -79,7 +91,7 @@ export function AdminVariantsPanel({
 									</Field>
 								</FormSection>
 								<FormSection title="Preço">
-									<VariantPriceFields basePrice={groupBasePrice} />
+									<VariantPriceFields basePrice={groupBasePrice} currency={groupCurrency} locale={locale} />
 								</FormSection>
 								<ActiveCheckbox defaultChecked />
 								<DialogFooter>
@@ -102,7 +114,7 @@ export function AdminVariantsPanel({
 						variant.priceDecimal !== groupBasePrice;
 					const priceLabel =
 						typeof variant.priceAmount === "number"
-							? formatMoney({ amount: variant.priceAmount, currency: variant.currency })
+							? formatMoney({ amount: variant.priceAmount, currency: variant.currency, locale })
 							: "Sem preço";
 
 					return (
@@ -115,7 +127,7 @@ export function AdminVariantsPanel({
 											<Badge variant={variant.active ? "secondary" : "outline"}>
 												{variant.active ? "Ativa" : "Inativa"}
 											</Badge>
-											<Badge variant="outline">{usesCustomPrice ? "Preço próprio" : "Preço do grupo"}</Badge>
+											<Badge variant="outline">{usesCustomPrice ? "Preço próprio" : "Preço do livro"}</Badge>
 										</div>
 									</div>
 									<div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
@@ -125,12 +137,12 @@ export function AdminVariantsPanel({
 										</div>
 										<div>
 											<div className="text-xs uppercase tracking-wide">Estoque</div>
-											<div className="font-medium text-foreground">{variant.stock || "Não definido"}</div>
+											<div className="font-medium text-foreground">{variant.stock || "Não informado"}</div>
 										</div>
 										<div>
 											<div className="text-xs uppercase tracking-wide">Ordem</div>
 											<div className="font-medium text-foreground">
-												{variant.variantOrder || "Automática"}
+												{variant.variantOrder || "Ordem automática"}
 											</div>
 										</div>
 									</div>
@@ -138,7 +150,6 @@ export function AdminVariantsPanel({
 							</CardHeader>
 							<CardContent className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
 								<div className="space-y-1 text-sm text-muted-foreground">
-									<div className="font-mono text-xs">{variant.priceId ?? "Sem preço ativo"}</div>
 									<div>{variant.description || "Usa a descrição do livro."}</div>
 								</div>
 								<div className="flex flex-wrap gap-2">
@@ -146,12 +157,16 @@ export function AdminVariantsPanel({
 										<DialogTrigger asChild>
 											<Button variant="outline" size="sm">
 												<Pencil className="h-4 w-4" />
-												Editar
+												Editar variante
 											</Button>
 										</DialogTrigger>
 										<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 											<DialogHeader>
 												<DialogTitle>Editar variante</DialogTitle>
+												<DialogDescription>
+													Revise estoque, ordem, preço e disponibilidade desta variante sem alterar os dados
+													compartilhados do livro.
+												</DialogDescription>
 											</DialogHeader>
 											<form action={updateStripeVariantAction} className="space-y-6">
 												<input type="hidden" name="productId" value={variant.id} />
@@ -184,6 +199,8 @@ export function AdminVariantsPanel({
 												<FormSection title="Preço">
 													<VariantPriceFields
 														basePrice={groupBasePrice}
+														currency={groupCurrency}
+														locale={locale}
 														overridePrice={usesCustomPrice ? variant.priceDecimal : null}
 													/>
 												</FormSection>
@@ -199,7 +216,7 @@ export function AdminVariantsPanel({
 										<input type="hidden" name="currentSlug" value={group.slug} />
 										<Button type="submit" variant="outline" size="sm">
 											<Archive className="h-4 w-4" />
-											Arquivar
+											Arquivar variante
 										</Button>
 									</form>
 								</div>

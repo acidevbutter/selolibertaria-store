@@ -72,7 +72,7 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 								<div className="relative w-full max-w-[620px]">
 									<div className="relative aspect-[0.84] overflow-hidden">
 										<Image
-											src="/images/ninfas-example.png"
+											src="/images/selolibertaria/virus-do-beijo-standing-mock.png"
 											alt={t("hero.coverAlt")}
 											fill
 											className="object-contain"
@@ -88,7 +88,7 @@ export default function LoginShell({ defaultCountry, defaultCurrency, providers 
 											logo me despeço.
 										</p>
 										<div className="mt-5 h-px w-14 bg-[color:var(--editorial-accent)]" />
-										<p className="mt-3 text-sm text-[color:var(--editorial-muted)]">Ninfas do Tiete</p>
+										<p className="mt-3 text-sm text-[color:var(--editorial-muted)]">Virus do Beijo</p>
 									</div>
 								</div>
 							</div>

@@ -27,7 +27,7 @@ export default async function AdminEditorialContactPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Contato"
-				description="Mantenha hero, canais diretos e caminhos públicos da página de contato no mesmo fluxo operacional do resto do admin."
+				description="Edite hero, canais diretos e caminhos públicos da página de contato."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -45,13 +45,9 @@ export default async function AdminEditorialContactPage() {
 				<AdminEditorialStat
 					label="Publicação"
 					value={page.published ? "Publicado" : "Rascunho"}
-					helper="Estado atual da página na área pública."
+					helper="Estado atual no site."
 				/>
-				<AdminEditorialStat
-					label="Ordem"
-					value={page.order ?? 1}
-					helper="Prioridade editorial desta superfície."
-				/>
+				<AdminEditorialStat label="Ordem" value={page.order ?? 1} helper="Prioridade desta página." />
 				<AdminEditorialStat
 					label="Blocos"
 					value="Canais"
@@ -59,7 +55,11 @@ export default async function AdminEditorialContactPage() {
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-				<EditorialContactForm action={updateEditorialContactAction} page={page} submitLabel="Salvar página" />
+				<EditorialContactForm
+					action={updateEditorialContactAction}
+					page={page}
+					submitLabel="Salvar página de contato"
+				/>
 				<EditorialMetaCard
 					published={page.published}
 					order={page.order}

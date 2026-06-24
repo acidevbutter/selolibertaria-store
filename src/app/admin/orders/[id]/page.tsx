@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
 import { listOrderAuditEntries, type OrderAuditEntry } from "@/lib/order-audit";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -16,7 +19,7 @@ import { StatusBadge } from "@/ui/status-badge";
 import UpdateFulfillment from "../_components/update-fulfillment.client";
 
 function formatAuditValue(value: string | null | undefined) {
-	if (!value) return "Não definido";
+	if (!value) return "Não informado";
 	return value;
 }
 
@@ -25,7 +28,7 @@ function getAuditSummary(entry: OrderAuditEntry) {
 		case "order_fulfillment_updated":
 			return "Expedição atualizada";
 		case "order_payment_status_webhook_updated":
-			return "Status de pagamento atualizado por webhook";
+			return "Status de pagamento atualizado por evento recebido";
 	}
 }
 
@@ -73,19 +76,19 @@ function getAuditChanges(entry: OrderAuditEntry) {
 	return changes;
 }
 
-function formatMoney(amount: number, currency: string) {
+function formatMoney(amount: number, currency: string, locale: string, fallbackCurrency: string) {
 	try {
-		return new Intl.NumberFormat("pt-BR", {
+		return new Intl.NumberFormat(locale, {
 			style: "currency",
-			currency: currency?.toUpperCase?.() || "BRL",
+			currency: currency?.toUpperCase?.() || fallbackCurrency,
 		}).format((amount || 0) / 100);
 	} catch {
-		return `${((amount || 0) / 100).toFixed(2)} ${currency?.toUpperCase?.() || "BRL"}`;
+		return `${((amount || 0) / 100).toFixed(2)} ${currency?.toUpperCase?.() || fallbackCurrency}`;
 	}
 }
 
-function formatDateTime(value: string | Date) {
-	return new Intl.DateTimeFormat("pt-BR", {
+function formatDateTime(value: string | Date, locale: string) {
+	return new Intl.DateTimeFormat(locale, {
 		dateStyle: "short",
 		timeStyle: "short",
 	}).format(new Date(value));
@@ -104,11 +107,30 @@ function getFulfillmentLabel(status?: "received" | "producing" | "shipped") {
 	}
 }
 
+function getActorRoleLabel(role?: string | null) {
+	switch (role) {
+		case "admin":
+			return "Administrador";
+		case "vendor":
+			return "Vendedor";
+		case "customer":
+			return "Cliente";
+		case "system":
+			return "Automação";
+		default:
+			return "Equipe";
+	}
+}
+
 export default async function AdminOrderDetails({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const fallbackCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+		.trim()
+		.toUpperCase();
 
 	const purchaseId = id;
 	if (!purchaseId) redirect("/admin/orders");
@@ -154,8 +176,8 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 			<Reveal>
 				<AdminEditorialHero
 					eyebrow="Pedido"
-					title={`Leitura operacional do pedido ${p.id}.`}
-					description="Resumo financeiro, itens, expedição e histórico auditável aparecem em blocos editoriais mais previsíveis para suporte e operação."
+					title={`Pedido ${p.id}`}
+					description="Revise pagamento, itens, expedição e histórico em uma leitura direta."
 				/>
 			</Reveal>
 			<Reveal delay={0.04}>
@@ -163,11 +185,11 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 					<AdminEditorialStat
 						label="Status"
 						value={<StatusBadge status={p.status} />}
-						helper="Estado atual reconhecido para pagamento."
+						helper="Situação atual do pagamento."
 					/>
 					<AdminEditorialStat
 						label="Total"
-						value={formatMoney(p.amountTotal || 0, p.currency)}
+						value={formatMoney(p.amountTotal || 0, p.currency, locale, fallbackCurrency)}
 						helper="Valor consolidado deste pedido."
 					/>
 					<AdminEditorialStat
@@ -178,7 +200,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 					<AdminEditorialStat
 						label="Expedição"
 						value={fulfillmentLabel}
-						helper="Etapa operacional atual de produção e envio."
+						helper="Etapa atual entre produção e envio."
 					/>
 				</div>
 			</Reveal>
@@ -189,7 +211,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							Resumo
 						</div>
 						<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
-							Leitura operacional do pedido
+							Resumo do pedido
 						</h2>
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -201,7 +223,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 						</div>
 						<div className="space-y-1">
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Cliente
+								E-mail do cliente
 							</div>
 							<div className="break-all text-sm text-[color:var(--editorial-ink)]">{doc.email}</div>
 						</div>
@@ -209,22 +231,24 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
 								Criado em
 							</div>
-							<div className="text-sm text-[color:var(--editorial-ink)]">{formatDateTime(p.createdAt)}</div>
-						</div>
-						<div className="space-y-1">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Payment Intent
-							</div>
-							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.paymentIntentId || "—"}
+							<div className="text-sm text-[color:var(--editorial-ink)]">
+								{formatDateTime(p.createdAt, locale)}
 							</div>
 						</div>
 						<div className="space-y-1">
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Sessão Checkout
+								ID do pagamento
 							</div>
 							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.sessionId || "—"}
+								{p.relatedIds?.paymentIntentId || "Não informado"}
+							</div>
+						</div>
+						<div className="space-y-1">
+							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								Sessão de checkout
+							</div>
+							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
+								{p.relatedIds?.sessionId || "Não informada"}
 							</div>
 						</div>
 					</div>
@@ -234,7 +258,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								Expedição
 							</div>
 							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-								Atualize status e rastreio sabendo que a tela registra a mudança no histórico logo abaixo.
+								Atualize status e rastreio. A mudança aparece no histórico logo abaixo.
 							</p>
 						</div>
 						<UpdateFulfillment
@@ -261,12 +285,14 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								<li key={idx} className="flex items-center justify-between gap-3 py-4">
 									<div className="min-w-0">
 										<div className="font-medium break-words text-[color:var(--editorial-ink)]">
-											{it.name || "—"}
+											{it.name || "Item sem nome informado"}
 										</div>
 										<div className="text-sm text-[color:var(--editorial-muted)]">Qtd.: {it.quantity}</div>
 									</div>
 									<div className="text-sm text-[color:var(--editorial-ink)]">
-										{typeof it.unitAmount === "number" ? formatMoney(it.unitAmount, p.currency) : "—"}
+										{typeof it.unitAmount === "number"
+											? formatMoney(it.unitAmount, p.currency, locale, fallbackCurrency)
+											: "Valor não informado"}
 									</div>
 								</li>
 							))}
@@ -286,14 +312,14 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								Histórico de edição
 							</h2>
 							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-								Toda atualização manual ou automática de status aparece aqui com autoria, origem e comparação.
+								Toda atualização manual ou automática de status aparece aqui com autoria e origem.
 							</p>
 						</div>
 						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
 							<div className="text-sm text-[color:var(--editorial-muted)]">
 								{auditCount === 0
-									? "Ainda não há eventos auditáveis registrados para este pedido."
-									: `${auditCount} ${auditCount === 1 ? "evento auditável" : "eventos auditáveis"} recentes.`}
+									? "Ainda não há registros neste pedido."
+									: `${auditCount} ${auditCount === 1 ? "registro recente" : "registros recentes"}.`}
 							</div>
 						</div>
 						<ul className="space-y-3">
@@ -308,22 +334,22 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 												<div className="font-medium text-[color:var(--editorial-ink)]">
 													{getAuditSummary(entry)}
 												</div>
-												<Badge variant="outline">{entry.actorRole}</Badge>
+												<Badge variant="outline">{getActorRoleLabel(entry.actorRole)}</Badge>
 											</div>
 											<div className="text-sm text-[color:var(--editorial-muted)]">
 												{entry.actorRole === "system"
-													? "Automação de webhook"
+													? "Automação de recebimento"
 													: entry.actorEmail || entry.actorId}
 											</div>
 											{entry.action === "order_payment_status_webhook_updated" ? (
 												<div className="text-xs text-[color:var(--editorial-muted)]">
 													{((entry.details ?? {}) as { webhookType?: string | null }).webhookType ||
-														"Webhook"}
+														"Evento recebido"}
 												</div>
 											) : null}
 										</div>
 										<div className="text-xs text-[color:var(--editorial-muted)]">
-											{formatDateTime(entry.createdAt)}
+											{formatDateTime(entry.createdAt, locale)}
 										</div>
 									</div>
 									<div className="mt-4 grid gap-3">

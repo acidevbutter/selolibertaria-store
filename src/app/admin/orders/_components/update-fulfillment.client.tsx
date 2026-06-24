@@ -38,15 +38,15 @@ export default function UpdateFulfillment({
 				}),
 			});
 			if (!res.ok) {
-				const text = await res.text();
-				throw new Error(text || "Failed");
+				const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+				throw new Error(payload?.error || "Não foi possível salvar a expedição.");
 			}
 			setOk(true);
 			startTransition(() => {
 				router.refresh();
 			});
 		} catch (e) {
-			const message = e instanceof Error ? e.message : "Failed";
+			const message = e instanceof Error ? e.message : "Não foi possível salvar a expedição.";
 			setError(message);
 		} finally {
 			setSaving(false);
@@ -61,7 +61,7 @@ export default function UpdateFulfillment({
 					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Status</label>
 					<Select value={status} onValueChange={(v) => setStatus(v as FulfillmentStatus)}>
 						<SelectTrigger className="w-full rounded-none border-[color:var(--editorial-border)] bg-white">
-							<SelectValue placeholder="Selecionar status" />
+							<SelectValue placeholder="Escolha o status" />
 						</SelectTrigger>
 						<SelectContent>
 							{statuses.map((s) => (
@@ -93,7 +93,7 @@ export default function UpdateFulfillment({
 				>
 					{saving ? "Salvando..." : "Salvar expedição"}
 				</Button>
-				{ok && <span className="text-xs text-emerald-700">Salvo</span>}
+				{ok && <span className="text-xs text-emerald-700">Expedição salva</span>}
 				{error && <span className="text-xs text-destructive">{error}</span>}
 			</div>
 		</div>

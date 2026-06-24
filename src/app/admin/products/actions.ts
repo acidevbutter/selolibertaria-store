@@ -48,7 +48,7 @@ const requireCatalogManagerSession = async () => {
 const getRequiredString = (formData: FormData, key: string) => {
 	const value = parseOptionalString(formData.get(key));
 	if (!value) {
-		throw new Error(`${key} is required.`);
+		throw new Error(`O campo ${key} é obrigatório.`);
 	}
 	return value;
 };
@@ -63,7 +63,7 @@ const resolveCategoryName = async (formData: FormData) => {
 	if (!selectedCategory) return "";
 	const category = await getSystemCategoryBySlugOrName(selectedCategory);
 	if (!category) {
-		throw new Error("Selected category does not exist in the system.");
+		throw new Error("A categoria selecionada não existe no sistema.");
 	}
 	return category.name;
 };
@@ -88,7 +88,7 @@ const resolveVariantAmount = ({
 
 	const inherited = basePrice || (typeof groupBasePrice === "number" ? String(groupBasePrice) : "");
 	if (!inherited) {
-		throw new Error("Group price is missing.");
+		throw new Error("O preço do livro não está disponível.");
 	}
 	return parsePriceAmount(inherited, currency);
 };
@@ -222,7 +222,7 @@ export async function updateStripeProductGroupAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Product group not found.");
+		throw new Error("Livro não encontrado no catálogo administrativo.");
 	}
 
 	const name = getRequiredString(formData, "name");
@@ -296,7 +296,7 @@ export async function createStripeVariantAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Product group not found.");
+		throw new Error("Livro não encontrado no catálogo administrativo.");
 	}
 
 	const slug = group.slug;
@@ -372,7 +372,7 @@ export async function updateStripeVariantAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Product group not found.");
+		throw new Error("Livro não encontrado no catálogo administrativo.");
 	}
 
 	const name = group.name;

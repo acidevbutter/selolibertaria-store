@@ -11,10 +11,17 @@ type RevenueSparklineProps = {
 	seriesCents: number[];
 	labels: string[]; // ISO date (YYYY-MM-DD)
 	currency: string;
+	locale: string;
 	height?: number;
 };
 
-export function RevenueSparkline({ seriesCents, labels, currency, height = 80 }: RevenueSparklineProps) {
+export function RevenueSparkline({
+	seriesCents,
+	labels,
+	currency,
+	locale,
+	height = 80,
+}: RevenueSparklineProps) {
 	const { theme } = useAdminTheme();
 	const options: ApexOptions = useMemo(
 		() => ({
@@ -28,7 +35,7 @@ export function RevenueSparkline({ seriesCents, labels, currency, height = 80 }:
 				y: {
 					formatter: (val: number) => {
 						try {
-							return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(val / 100);
+							return new Intl.NumberFormat(locale, { style: "currency", currency }).format(val / 100);
 						} catch {
 							return `${(val / 100).toFixed(2)} ${currency}`;
 						}
@@ -38,7 +45,7 @@ export function RevenueSparkline({ seriesCents, labels, currency, height = 80 }:
 			xaxis: { type: "category", categories: labels },
 			dataLabels: { enabled: false },
 		}),
-		[labels, currency, theme],
+		[labels, currency, locale, theme],
 	);
 
 	const series = useMemo(() => [{ name: "Revenue", data: seriesCents }], [seriesCents]);

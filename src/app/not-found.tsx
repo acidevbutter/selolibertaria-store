@@ -30,7 +30,7 @@ export default async function NotFound() {
 							<YnsLink href="/">{t("goBackLink")}</YnsLink>
 						</Button>
 						<Button asChild variant="outline">
-							<YnsLink href="/products">Browse products</YnsLink>
+							<YnsLink href="/products">{t("browseProductsLink")}</YnsLink>
 						</Button>
 					</div>
 				</CardContent>

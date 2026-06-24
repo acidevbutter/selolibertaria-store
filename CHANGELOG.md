@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- Biblioteca final de ativos editoriais em `public/images/selolibertaria/`, com mocks do livro `Virus do Beijo` e ilustrações convertidas de `temp_assets` para arquivos `png` com nomes estáveis.
 - Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.
 - Escolha de entrega no checkout, com opção de usar o endereço salvo, informar um novo endereço ou retirar na loja, além de recálculo server-side do frete antes do pagamento.
 - Sistema de cálculo de fretes por provedor com contrato interno único, fallback seguro e administração de prioridade, credenciais e serviços no painel de settings.
@@ -37,6 +38,7 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- Home, sobre, eventos, projetos, login e previews internos do Selo Libertária passaram a usar imagens editoriais reais derivadas de `temp_assets`, e o placeholder legado `yns-cover.jpg` foi removido do projeto.
 - O admin passou a seguir o estilo editorial do Figma nas superfícies-base: navegação com sidebar preta fixa, páginas com hero introdutório, cards retos em fundo papel e nova hierarquia visual em `orders`, `order details`, `products`, `editorial`, `promotions` e `settings`.
 - A home pública agora consome integralmente os blocos editoriais configurados no admin para `author` e `community`, e o destaque de programação passou a puxar título, resumo e imagem do conteúdo editorial ativo.
 - Redesign `Editorial V2` das superfícies prioritárias do Selo Libertária, preservando funcionalidade existente e migrando Home, catálogo, PDP, `sarau-safado`, navegação, footer e admin de produtos para um sistema visual mais editorial, responsivo e reutilizável.

@@ -1,8 +1,8 @@
 import { emailButtonHtml, emailShellHtml, escapeEmailHtml } from "./shell";
 
-type Props = { name?: string; resetUrl: string; supportEmail?: string };
+type Props = { name?: string; resetUrl: string; supportEmail?: string; baseUrl?: string };
 
-export function passwordResetEmailHtml({ name, resetUrl, supportEmail }: Props) {
+export function passwordResetEmailHtml({ name, resetUrl, supportEmail, baseUrl }: Props) {
 	const safeName = name ? ` ${escapeEmailHtml(name)}` : "";
 	const button = emailButtonHtml({ href: resetUrl, label: "Redefinir senha" });
 	const bodyHtml = `
@@ -23,6 +23,7 @@ export function passwordResetEmailHtml({ name, resetUrl, supportEmail }: Props) 
 		preheader: "Use este link seguro para redefinir sua senha do Selo Libertária.",
 		bodyHtml,
 		supportEmail,
+		baseUrl,
 		footerNote: "Se você não solicitou esta ação, nada muda até que este link seja realmente usado.",
 	});
 }

@@ -1,9 +1,12 @@
+import { env } from "@/env.mjs";
+import { resolveLocale } from "@/i18n/config";
+import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
-function formatDate(value?: string) {
+function formatDate(value: string | undefined, locale: string) {
 	if (!value) return "Ainda não registrado";
 	try {
-		return new Intl.DateTimeFormat("pt-BR", {
+		return new Intl.DateTimeFormat(locale, {
 			dateStyle: "medium",
 			timeStyle: "short",
 		}).format(new Date(value));
@@ -12,7 +15,7 @@ function formatDate(value?: string) {
 	}
 }
 
-export function EditorialMetaCard({
+export async function EditorialMetaCard({
 	published,
 	order,
 	updatedAt,
@@ -23,10 +26,12 @@ export function EditorialMetaCard({
 	updatedAt?: string;
 	updatedBy?: string | null;
 }) {
+	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Resumo operacional</CardTitle>
+				<CardTitle>Resumo</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4 text-sm">
 				<div className="rounded-lg border p-4">
@@ -39,8 +44,8 @@ export function EditorialMetaCard({
 				</div>
 				<div className="rounded-lg border p-4">
 					<p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Última atualização</p>
-					<p className="mt-2 font-medium">{formatDate(updatedAt)}</p>
-					<p className="mt-1 text-muted-foreground">{updatedBy || "Sistema"}</p>
+					<p className="mt-2 font-medium">{formatDate(updatedAt, locale)}</p>
+					<p className="mt-1 text-muted-foreground">{updatedBy || "Atualização automática"}</p>
 				</div>
 			</CardContent>
 		</Card>

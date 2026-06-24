@@ -36,7 +36,7 @@ export default async function AdminEditorialProjectDetailsPage({
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title={project.title}
-				description="Edite narrativa, período, local e publicação do projeto com o mesmo contexto operacional do restante do admin."
+				description="Edite narrativa, período, local e publicação do projeto."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -56,16 +56,20 @@ export default async function AdminEditorialProjectDetailsPage({
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Período" value={project.period || "—"} helper="Leitura curta de agenda." />
+				<AdminEditorialStat
+					label="Período"
+					value={project.period || "Não informado"}
+					helper="Resumo do calendário."
+				/>
 				<AdminEditorialStat
 					label="Local"
-					value={project.location || "—"}
+					value={project.location || "Não informado"}
 					helper="Contexto territorial do projeto."
 				/>
 				<AdminEditorialStat
 					label="Publicação"
 					value={project.published ? "Publicado" : "Rascunho"}
-					helper="Estado atual na área pública."
+					helper="Estado atual no site."
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

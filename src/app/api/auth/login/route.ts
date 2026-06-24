@@ -31,11 +31,17 @@ export async function POST(req: NextRequest) {
 			email: email.toLowerCase(),
 		});
 		if (!user || !user.passwordHash) {
-			return new Response(JSON.stringify({ error: "Credenciais inválidas" }), { status: 401 });
+			return new Response(
+				JSON.stringify({ error: "Credenciais inválidas", code: "LOGIN_INVALID_CREDENTIALS" }),
+				{ status: 401 },
+			);
 		}
 		if (isUserBlocked(user)) {
 			return new Response(
-				JSON.stringify({ error: "Esta conta foi bloqueada. Entre em contato com o suporte." }),
+				JSON.stringify({
+					error: "Esta conta foi bloqueada. Entre em contato com o suporte.",
+					code: "LOGIN_ACCOUNT_BLOCKED",
+				}),
 				{
 					status: 403,
 				},
@@ -43,7 +49,10 @@ export async function POST(req: NextRequest) {
 		}
 		const ok = await bcrypt.compare(password, user.passwordHash);
 		if (!ok) {
-			return new Response(JSON.stringify({ error: "Credenciais inválidas" }), { status: 401 });
+			return new Response(
+				JSON.stringify({ error: "Credenciais inválidas", code: "LOGIN_INVALID_CREDENTIALS" }),
+				{ status: 401 },
+			);
 		}
 		const role = normalizeUserRole(user.role);
 
@@ -62,9 +71,14 @@ export async function POST(req: NextRequest) {
 		);
 	} catch (err) {
 		if (err instanceof z.ZodError) {
-			return new Response(JSON.stringify({ error: err.flatten() }), { status: 400 });
+			return new Response(JSON.stringify({ error: err.flatten(), code: "LOGIN_INVALID_REQUEST" }), {
+				status: 400,
+			});
 		}
 		console.error("[POST /api/auth/login]", err);
-		return new Response(JSON.stringify({ error: "Erro ao entrar" }), { status: 500 });
+		return new Response(
+			JSON.stringify({ error: "Não foi possível concluir a entrada.", code: "LOGIN_FAILED" }),
+			{ status: 500 },
+		);
 	}
 }
