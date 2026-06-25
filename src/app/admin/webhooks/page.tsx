@@ -160,7 +160,9 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 										<TableCell>
 											<StatusBadge status={item.status || "unknown"} />
 										</TableCell>
-										<TableCell>{item.verified ? "Assinatura validada" : "Assinatura sem validação"}</TableCell>
+										<TableCell>
+											{item.verified ? "Assinatura validada" : "Assinatura sem validação"}
+										</TableCell>
 										<TableCell className="font-mono text-xs">{item.type || "-"}</TableCell>
 										<TableCell className="font-mono text-xs break-all">{item.eventId || "-"}</TableCell>
 										<TableCell className="max-w-[320px] text-xs text-destructive">
@@ -210,7 +212,8 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 									Ainda não há registros de recebimento neste filtro.
 								</p>
 								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Valide uma compra recente ou revise os pedidos para confirmar se os eventos estão chegando como esperado.
+									Valide uma compra recente ou revise os pedidos para confirmar se os eventos estão chegando
+									como esperado.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">

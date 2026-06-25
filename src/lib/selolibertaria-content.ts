@@ -13,10 +13,8 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Início", href: PUBLIC_NAVIGATION.home },
 	{ label: "Livros", href: PUBLIC_NAVIGATION.shop },
 	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
-	{ label: "Eventos", href: PUBLIC_NAVIGATION.events },
 	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
 	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },
 	{ label: "Contato", href: PUBLIC_NAVIGATION.contact },
@@ -139,9 +137,15 @@ export const seloHomeImmersiveGallery = {
 	eyebrow: "Atmosfera",
 	quote: "Ler também pode ser uma forma de acender presença.",
 	images: [
-		{ src: seloEditorialAssets.bookOpenSpread, alt: "Livro aberto do Selo Libertária com ilustração interna" },
+		{
+			src: seloEditorialAssets.bookOpenSpread,
+			alt: "Livro aberto do Selo Libertária com ilustração interna",
+		},
 		{ src: seloEditorialAssets.bookStackedMock, alt: "Mockup empilhado do livro Virus do Beijo" },
-		{ src: seloEditorialAssets.illustrationMermaid, alt: "Ilustração circular em preto e branco do universo do selo" },
+		{
+			src: seloEditorialAssets.illustrationMermaid,
+			alt: "Ilustração circular em preto e branco do universo do selo",
+		},
 	],
 };
 

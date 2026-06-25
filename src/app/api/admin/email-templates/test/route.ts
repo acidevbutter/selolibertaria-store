@@ -1,10 +1,10 @@
-import { requireCapability } from "@/lib/api-auth";
-import {
-	getEmailTemplatePreviewDefinition,
-	type EmailTemplatePreviewContext,
-} from "@/lib/admin-email-template-previews";
-import { sendEmail } from "@/lib/email";
 import { env } from "@/env.mjs";
+import {
+	type EmailTemplatePreviewContext,
+	getEmailTemplatePreviewDefinition,
+} from "@/lib/admin-email-template-previews";
+import { requireCapability } from "@/lib/api-auth";
+import { sendEmail } from "@/lib/email";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 
@@ -23,14 +23,20 @@ export async function POST(req: Request) {
 
 		if (!templateId) {
 			return new Response(
-				JSON.stringify({ error: "Escolha um modelo antes de enviar o teste.", code: "ADMIN_EMAIL_TEMPLATE_TEST_TEMPLATE_REQUIRED" }),
+				JSON.stringify({
+					error: "Escolha um modelo antes de enviar o teste.",
+					code: "ADMIN_EMAIL_TEMPLATE_TEST_TEMPLATE_REQUIRED",
+				}),
 				{ status: 400 },
 			);
 		}
 
 		if (!to || !isValidEmail(to)) {
 			return new Response(
-				JSON.stringify({ error: "Informe um e-mail válido para receber o teste.", code: "ADMIN_EMAIL_TEMPLATE_TEST_RECIPIENT_INVALID" }),
+				JSON.stringify({
+					error: "Informe um e-mail válido para receber o teste.",
+					code: "ADMIN_EMAIL_TEMPLATE_TEST_RECIPIENT_INVALID",
+				}),
 				{ status: 400 },
 			);
 		}
@@ -38,7 +44,10 @@ export async function POST(req: Request) {
 		const definition = getEmailTemplatePreviewDefinition(templateId);
 		if (!definition) {
 			return new Response(
-				JSON.stringify({ error: "Modelo de e-mail não encontrado.", code: "ADMIN_EMAIL_TEMPLATE_TEST_TEMPLATE_NOT_FOUND" }),
+				JSON.stringify({
+					error: "Modelo de e-mail não encontrado.",
+					code: "ADMIN_EMAIL_TEMPLATE_TEST_TEMPLATE_NOT_FOUND",
+				}),
 				{ status: 404 },
 			);
 		}
@@ -77,7 +86,10 @@ export async function POST(req: Request) {
 		return new Response(JSON.stringify({ ok: true, messageId: result.messageId ?? null }), { status: 200 });
 	} catch {
 		return new Response(
-			JSON.stringify({ error: "Não foi possível enviar o e-mail de teste agora.", code: "ADMIN_EMAIL_TEMPLATE_TEST_UNEXPECTED" }),
+			JSON.stringify({
+				error: "Não foi possível enviar o e-mail de teste agora.",
+				code: "ADMIN_EMAIL_TEMPLATE_TEST_UNEXPECTED",
+			}),
 			{ status: 500 },
 		);
 	}

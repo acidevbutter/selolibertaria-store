@@ -15,7 +15,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 	const session = auth.session;
 	const { id } = await params;
 	if (!id) {
-		return Response.json({ error: "Informe o ID do pedido.", code: "ADMIN_ORDER_FULFILLMENT_ID_REQUIRED" }, { status: 400 });
+		return Response.json(
+			{ error: "Informe o ID do pedido.", code: "ADMIN_ORDER_FULFILLMENT_ID_REQUIRED" },
+			{ status: 400 },
+		);
 	}
 
 	const body = (await req.json().catch(() => ({}))) as {
@@ -25,10 +28,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 	const nextStatus = body.status ?? undefined;
 	const trackingNumber = body.trackingNumber ?? undefined;
 	if (!nextStatus && trackingNumber === undefined) {
-		return Response.json({ error: "Nenhuma alteração foi informada.", code: "ADMIN_ORDER_FULFILLMENT_NO_CHANGES" }, { status: 400 });
+		return Response.json(
+			{ error: "Nenhuma alteração foi informada.", code: "ADMIN_ORDER_FULFILLMENT_NO_CHANGES" },
+			{ status: 400 },
+		);
 	}
 	if (nextStatus && !ORDER.includes(nextStatus)) {
-		return Response.json({ error: "Situação de expedição inválida.", code: "ADMIN_ORDER_FULFILLMENT_INVALID_STATUS" }, { status: 400 });
+		return Response.json(
+			{ error: "Situação de expedição inválida.", code: "ADMIN_ORDER_FULFILLMENT_INVALID_STATUS" },
+			{ status: 400 },
+		);
 	}
 
 	const db = await getDb();
@@ -60,10 +69,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 		  }
 		| undefined;
 	if (!found) {
-		return Response.json({ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" }, { status: 404 });
+		return Response.json(
+			{ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" },
+			{ status: 404 },
+		);
 	}
 	if (!matchesOrderIdentifier(found.purchases, id)) {
-		return Response.json({ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" }, { status: 404 });
+		return Response.json(
+			{ error: "Pedido não encontrado.", code: "ADMIN_ORDER_FULFILLMENT_NOT_FOUND" },
+			{ status: 404 },
+		);
 	}
 
 	const orderId = found.purchases.id;
@@ -75,7 +90,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 		const nextIdx = ORDER.indexOf(nextStatus);
 		if (nextIdx < currIdx) {
 			return Response.json(
-				{ error: "Não é possível voltar a expedição para uma etapa anterior.", code: "ADMIN_ORDER_FULFILLMENT_BACKWARD_TRANSITION" },
+				{
+					error: "Não é possível voltar a expedição para uma etapa anterior.",
+					code: "ADMIN_ORDER_FULFILLMENT_BACKWARD_TRANSITION",
+				},
 				{ status: 409 },
 			);
 		}

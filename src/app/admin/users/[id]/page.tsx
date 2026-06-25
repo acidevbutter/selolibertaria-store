@@ -100,11 +100,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 			</Reveal>
 			<Reveal delay={0.04}>
 				<div className="grid gap-5 lg:grid-cols-4">
-					<AdminEditorialStat
-						label="Papel"
-						value={roleLabel}
-						helper="Permissão atual desta conta."
-					/>
+					<AdminEditorialStat label="Papel" value={roleLabel} helper="Permissão atual desta conta." />
 					<AdminEditorialStat
 						label="Acesso"
 						value={blocked ? "Bloqueado" : "Ativo"}

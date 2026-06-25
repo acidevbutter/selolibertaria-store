@@ -31,7 +31,7 @@ export default async function AllProductsPage() {
 				cards={[
 					{
 						label: "Livros",
-						body: "Títulos, edições e formatos aparecem como entradas para o universo do selo.",
+						body: "Títulos, edições e formatos aparecem como portas de entrada para o universo do selo.",
 					},
 					{
 						label: "Curadoria",

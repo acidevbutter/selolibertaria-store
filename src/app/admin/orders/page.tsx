@@ -180,7 +180,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									Ainda não há pedidos neste recorte.
 								</p>
 								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Volte para a loja, confira se os livros estão visíveis e rode um fluxo de compra para validar a operação.
+									Volte para a loja, confira se os livros estão visíveis e rode um fluxo de compra para
+									validar a operação.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">

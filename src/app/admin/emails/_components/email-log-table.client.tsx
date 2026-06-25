@@ -165,7 +165,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 				<DialogContent className="h-[88vh] max-w-7xl overflow-hidden p-0">
 					{selected ? (
 						<div className="grid h-full grid-cols-1 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]">
-								<div className="border-b p-6 lg:border-b-0 lg:border-r">
+							<div className="border-b p-6 lg:border-b-0 lg:border-r">
 								<DialogHeader>
 									<DialogTitle>{selected.subject || "Assunto não informado"}</DialogTitle>
 									<DialogDescription>
@@ -179,7 +179,7 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 											<p className="mb-2 text-xs font-semibold uppercase tracking-wide text-destructive">
 												Falha de envio
 											</p>
-										<p className="break-words text-sm text-destructive">{selected.error}</p>
+											<p className="break-words text-sm text-destructive">{selected.error}</p>
 										</div>
 									) : null}
 									<div className="flex items-center gap-2">

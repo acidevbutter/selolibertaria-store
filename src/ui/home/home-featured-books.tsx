@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { getLocale } from "@/i18n/server";
 import type { Product } from "@/lib/commerce-types";
-import { formatMoney } from "@/lib/utils";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
+import { formatMoney } from "@/lib/utils";
 import {
 	EditorialEyebrow,
 	EditorialPanel,
@@ -28,7 +28,9 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 		? "Capas grandes, poucas escolhas por vez e leitura direta de prateleira. A vitrine deve parecer curada, não infinita."
 		: "Large covers, a few choices at a time, and shelf-like reading. The catalogue should feel curated instead of endless.";
 	const defaultCardSummary = isPortuguese ? "Lançamento do selo" : "Release from the selo";
-	const primaryCardSummary = isPortuguese ? "Leitura curta, noturna e urbana." : "A short nocturnal urban read.";
+	const primaryCardSummary = isPortuguese
+		? "Leitura curta, noturna e urbana."
+		: "A short nocturnal urban read.";
 	const viewBookLabel = isPortuguese ? "Ver livro" : "View book";
 	const launchAlertLabel = isPortuguese ? "Conhecer título" : "Discover title";
 
@@ -135,8 +137,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 											</div>
 											<h3 className="mt-6 text-2xl font-bold tracking-[-0.03em]">{product.name}</h3>
 											<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-												{product.summary ??
-													(index === 0 ? primaryCardSummary : defaultCardSummary)}
+												{product.summary ?? (index === 0 ? primaryCardSummary : defaultCardSummary)}
 											</p>
 											<YnsLink
 												href={`/product/${product.slug}`}

@@ -48,7 +48,11 @@ export default async function EmailTemplatesPage() {
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Modelos" value={templateCount} helper="Modelos ativos de e-mail para revisão." />
+				<AdminEditorialStat
+					label="Modelos"
+					value={templateCount}
+					helper="Modelos ativos de e-mail para revisão."
+				/>
 				<AdminEditorialStat label="Prévia" value="Isolada" helper="Sem disparar e-mails reais." />
 				<AdminEditorialStat
 					label="E-mail de suporte"

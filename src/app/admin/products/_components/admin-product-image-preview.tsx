@@ -83,7 +83,9 @@ export function AdminProductImagePreview({
 					))}
 				</div>
 				{images.length > 4 ? (
-					<p className="text-xs text-muted-foreground">Mostrando 4 de {images.length} imagens desta galeria.</p>
+					<p className="text-xs text-muted-foreground">
+						Mostrando 4 de {images.length} imagens desta galeria.
+					</p>
 				) : null}
 			</div>
 			<ImagePreviewDialog

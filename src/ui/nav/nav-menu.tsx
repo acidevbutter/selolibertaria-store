@@ -2,7 +2,6 @@ import { getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
 import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
-import { getStripeCategories } from "@/lib/stripe-categories";
 import { NavMobileMenu } from "@/ui/nav/nav-mobile-menu.client";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -12,7 +11,7 @@ type NavMenuProps = {
 };
 
 export const NavMenu = async ({
-	includeDynamicCategories = true,
+	includeDynamicCategories: _includeDynamicCategories = true,
 	includeSessionLink = true,
 }: NavMenuProps = {}) => {
 	const session = includeSessionLink ? await auth() : null;
@@ -21,7 +20,6 @@ export const NavMenu = async ({
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
 	const authLabel = !session ? globalT("signIn") : isAdminSession ? globalT("admin") : globalT("myAccount");
 	const t = await getTranslations("Selo");
-	const dynamicCategories = includeDynamicCategories ? await getStripeCategories() : [];
 	const desktopLinks = [
 		{ label: t("nav.shop"), href: PUBLIC_NAVIGATION.shop },
 		{ label: t("nav.projects"), href: PUBLIC_NAVIGATION.projects },
@@ -29,13 +27,7 @@ export const NavMenu = async ({
 		{ label: t("nav.about"), href: PUBLIC_NAVIGATION.about },
 		{ label: t("nav.contact"), href: PUBLIC_NAVIGATION.contact },
 	];
-	const mobileLinks = [
-		{ label: t("nav.home"), href: PUBLIC_NAVIGATION.home },
-		...desktopLinks.slice(0, 2),
-		{ label: t("nav.events"), href: PUBLIC_NAVIGATION.events },
-		...desktopLinks.slice(2),
-		...dynamicCategories.slice(0, 3).map(({ name, slug }) => ({ label: name, href: `/category/${slug}` })),
-	];
+	const mobileLinks = desktopLinks;
 	return (
 		<>
 			<div className="hidden lg:block">
@@ -73,11 +65,19 @@ export const NavMenu = async ({
 								</YnsLink>
 							</li>
 						))}
+						<li className="pt-3">
+							<YnsLink
+								href={PUBLIC_NAVIGATION.shop}
+								className="inline-flex h-12 w-full items-center justify-center bg-[color:var(--editorial-ink)] px-4 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+							>
+								Comprar
+							</YnsLink>
+						</li>
 						{includeSessionLink ? (
 							<li className="pt-3">
 								<YnsLink
 									href={authHref}
-									className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-2 w-10 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
+									className="inline-flex h-12 w-full items-center justify-center border border-[color:var(--editorial-border)] px-4 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)]"
 								>
 									{authLabel}
 								</YnsLink>

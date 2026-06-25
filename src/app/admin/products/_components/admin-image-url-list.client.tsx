@@ -382,8 +382,7 @@ export function AdminImageUrlList({
 					<DialogHeader>
 						<DialogTitle>Prévia da imagem</DialogTitle>
 						<DialogDescription>
-							Revise a imagem selecionada. Você também pode excluí-la do formulário e da biblioteca de
-							mídia.
+							Revise a imagem selecionada. Você também pode excluí-la do formulário e da biblioteca de mídia.
 						</DialogDescription>
 					</DialogHeader>
 					{selectedImage ? (
