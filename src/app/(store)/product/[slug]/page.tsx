@@ -117,7 +117,6 @@ export default async function SingleProductPage(props: {
 	const favoriteActive = session
 		? await isFavorite({ userId: session.user.id, productSlug: product.slug, variantId: selectedVariantId })
 		: false;
-	const isPortuguese = locale === "pt-BR";
 	const taxonomy = [
 		category ? deslugify(category) : null,
 		selectedVariant?.label ? deslugify(selectedVariant.label) : null,
@@ -130,35 +129,28 @@ export default async function SingleProductPage(props: {
 	const excerpt = buildEditorialExcerpt(synopsis);
 	const excerptHref = excerpt ? "#trecho" : "#sinopse";
 	const details = [
-		category ? { label: isPortuguese ? "Categoria" : "Category", value: deslugify(category) } : null,
+		category ? { label: "Categoria", value: deslugify(category) } : null,
 		selectedVariant?.label
 			? {
-					label: isPortuguese ? "Formato" : "Format",
+					label: "Formato",
 					value: deslugify(selectedVariant.label),
 				}
 			: null,
 		{
-			label: isPortuguese ? "Selo / editora" : "Imprint / publisher",
+			label: "Selo / editora",
 			value: "Selo Libertária",
 		},
 		typeof displayStock === "number"
 			? {
-					label: isPortuguese ? "Disponibilidade" : "Availability",
-					value:
-						displayStock > 0
-							? isPortuguese
-								? "Disponível"
-								: "Available"
-							: isPortuguese
-								? "Fora de estoque"
-								: "Out of stock",
+					label: "Disponibilidade",
+					value: displayStock > 0 ? "Disponível" : "Fora de estoque",
 				}
 			: null,
 	].filter(Boolean) as Array<{ label: string; value: string }>;
 	const continuityLinks = [
-		{ href: "/sarau-safado", label: isPortuguese ? "Ver Sarau Safado" : "View Sarau Safado" },
-		{ href: "/projects", label: isPortuguese ? "Ver projetos" : "View projects" },
-		{ href: "/products", label: isPortuguese ? "Ver catálogo" : "View catalogue" },
+		{ href: "/sarau-safado", label: "Ver Sarau Safado" },
+		{ href: "/projects", label: "Ver projetos" },
+		{ href: "/products", label: "Ver catálogo" },
 	];
 
 	return (
@@ -180,7 +172,7 @@ export default async function SingleProductPage(props: {
 								<div className="flex items-start justify-between gap-4">
 									<div className="space-y-5">
 										<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-											{category ? deslugify(category) : isPortuguese ? "Livro" : "Book"}
+											{category ? deslugify(category) : "Livro"}
 										</EditorialEyebrow>
 										<h1 className="display-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
 											{selectedVariant?.label
@@ -211,13 +203,13 @@ export default async function SingleProductPage(props: {
 												variantId={selectedVariantId}
 												className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-12 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]`}
 											>
-												{isOutOfStock ? t("outOfStock") : isPortuguese ? "Comprar" : "Buy"}
+												{isOutOfStock ? t("outOfStock") : "Comprar"}
 											</AddToCart>
 											<YnsLink
 												href={excerptHref}
 												className="inline-flex h-12 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 											>
-												{isPortuguese ? "Ler trecho" : "Read excerpt"}
+												Ler trecho
 											</YnsLink>
 										</div>
 										{variants.length > 1 ? (
@@ -247,11 +239,7 @@ export default async function SingleProductPage(props: {
 										) : null}
 										{typeof displayStock === "number" ? (
 											<p className="text-sm text-[color:var(--editorial-muted)]">
-												{displayStock > 0
-													? isPortuguese
-														? "Disponível para compra"
-														: "Available for purchase"
-													: t("outOfStock")}
+												{displayStock > 0 ? "Disponível para compra" : t("outOfStock")}
 											</p>
 										) : null}
 									</div>
@@ -264,7 +252,7 @@ export default async function SingleProductPage(props: {
 
 								<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
 									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-										{isPortuguese ? "Sinopse" : "Synopsis"}
+										Sinopse
 									</EditorialEyebrow>
 									<div className="mt-6 max-w-3xl text-xl leading-[1.55] text-[color:var(--editorial-muted)] sm:text-2xl">
 										<Markdown source={description} />
@@ -288,9 +276,8 @@ export default async function SingleProductPage(props: {
 									</h2>
 								</div>
 								<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
-									{isPortuguese
-										? "Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."
-										: "Excerpt taken from the existing synopsis to reinforce editorial reading without inventing persisted copy."}
+									Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto
+									persistido.
 								</p>
 							</EditorialShell>
 						</section>
@@ -301,7 +288,7 @@ export default async function SingleProductPage(props: {
 					<Reveal>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								{isPortuguese ? "Ficha técnica" : "Technical details"}
+								Ficha técnica
 							</EditorialEyebrow>
 							<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
 								{details.map((detail) => (
@@ -324,15 +311,11 @@ export default async function SingleProductPage(props: {
 					<Reveal delay={0.08}>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								{isPortuguese ? "Outros livros" : "Related books"}
+								Outros livros
 							</EditorialEyebrow>
 							<div className="mt-10 grid gap-8 sm:grid-cols-2">
 								{relatedProducts.map((related) => (
-									<RelatedBookCard
-										key={related.id}
-										product={related}
-										viewBookLabel={isPortuguese ? "Ver livro" : "View book"}
-									/>
+									<RelatedBookCard key={related.id} product={related} viewBookLabel="Ver livro" />
 								))}
 							</div>
 						</div>
@@ -344,16 +327,13 @@ export default async function SingleProductPage(props: {
 						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									{isPortuguese
-										? "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."
-										: "A book can lead to the Sarau, the projects, and back to the catalogue."}
+									Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo.
 								</h2>
 							</div>
 							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
 								<p>
-									{isPortuguese
-										? "A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."
-										: "The PDP remains purchase-oriented while gaining clear editorial exits for reading, context, and cultural continuity."}
+									A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura,
+									contexto e continuidade cultural.
 								</p>
 								<div className="flex flex-wrap gap-3">
 									{continuityLinks.map((link, index) => (

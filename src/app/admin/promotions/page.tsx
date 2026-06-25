@@ -7,7 +7,7 @@ import {
 } from "@/app/admin/promotions/actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import {
 	formatPromotionTargets,
 	listPromotionsForAdmin,
@@ -567,7 +567,7 @@ function PromotionForm(args: {
 }
 
 export default async function AdminPromotionsPage() {
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 	const promotions = await listPromotionsForAdmin();
 	const createDefaults = buildPromotionFormDefaults();
 	const activeCount = promotions.filter((promotion) => promotion.status === "active").length;

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IntlClientProvider } from "@/i18n/client";
-import enMessages from "../../messages/en-US.json";
+import ptBrMessages from "../../messages/pt-BR.json";
 import { PurchasesGrid } from "./purchases-grid.client";
 
 const { getPurchaseDetailsMock } = vi.hoisted(() => ({
@@ -38,7 +38,7 @@ describe("PurchasesGrid", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<PurchasesGrid
 					purchases={[
 						{
@@ -55,13 +55,13 @@ describe("PurchasesGrid", () => {
 			</IntlClientProvider>,
 		);
 
-		expect(screen.getByText("Disputed")).toBeTruthy();
+		expect(screen.getByText("Em disputa")).toBeTruthy();
 		expect(screen.queryByText("UNDER_REVIEW")).toBeNull();
 
 		fireEvent.click(screen.getByRole("button", { name: /ord_123/i }));
 
 		await waitFor(() => {
-			expect(screen.getByText("Status: Disputed")).toBeTruthy();
+			expect(screen.getByText("Status: Em disputa")).toBeTruthy();
 		});
 	});
 });

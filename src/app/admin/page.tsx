@@ -1,8 +1,7 @@
 import { AlertTriangle, ArrowRight, CreditCard, Package2, ShieldAlert, Wallet } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
@@ -252,7 +251,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "admin.access")) redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const sp = (await searchParams) || {};
 	const status = (asStr(sp?.status) ?? "all").toLowerCase();

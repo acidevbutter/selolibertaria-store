@@ -2,8 +2,7 @@ import { Activity } from "lucide-react";
 import type { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
@@ -64,7 +63,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const resolved = (await searchParams) || {};
 	const limit = Math.min(Math.max(Number(asString(resolved.limit) || "50"), 1), 200);

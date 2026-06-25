@@ -1,144 +1,59 @@
-export const LOCALE_COOKIE_NAME = "selolibertaria_locale";
+export const DEFAULT_LOCALE = "pt-BR" as const;
+
+export type AppLocale = typeof DEFAULT_LOCALE;
+
+export const APP_LOCALES = [DEFAULT_LOCALE] as const satisfies readonly [AppLocale];
 
 export const LOCALE_OPTIONS = [
 	{
-		code: "en-US",
-		label: "English (United States)",
-		baseLanguage: "en",
-		defaultCountry: "US",
-		stripeLocale: "en",
-	},
-	{
-		code: "pt-BR",
+		code: DEFAULT_LOCALE,
 		label: "Português (Brasil)",
 		baseLanguage: "pt",
 		defaultCountry: "BR",
 		stripeLocale: "pt-BR",
 	},
-	{
-		code: "es-ES",
-		label: "Español (España)",
-		baseLanguage: "es",
-		defaultCountry: "ES",
-		stripeLocale: "es",
-	},
-	{
-		code: "de-DE",
-		label: "Deutsch (Deutschland)",
-		baseLanguage: "de",
-		defaultCountry: "DE",
-		stripeLocale: "de",
-	},
-	{
-		code: "fr-CA",
-		label: "Français (Canada)",
-		baseLanguage: "fr",
-		defaultCountry: "CA",
-		stripeLocale: "fr",
-	},
-	{
-		code: "jp-JP",
-		label: "Japanese (Japan)",
-		baseLanguage: "ja",
-		defaultCountry: "JP",
-		stripeLocale: "ja",
-	},
-	{
-		code: "zh-CN",
-		label: "中文 (简体)",
-		baseLanguage: "zh",
-		defaultCountry: "CN",
-		stripeLocale: "zh",
-	},
-	{
-		code: "zh-TW",
-		label: "中文 (繁體)",
-		baseLanguage: "zh",
-		defaultCountry: "TW",
-		stripeLocale: "zh-TW",
-	},
 ] as const;
 
-export type AppLocale = (typeof LOCALE_OPTIONS)[number]["code"];
-
-export const APP_LOCALES = LOCALE_OPTIONS.map((option) => option.code) as [AppLocale, ...AppLocale[]];
-
-export const DEFAULT_LOCALE: AppLocale = "pt-BR";
-export const TEMP_FORCE_PT_BR = true;
-
-const localeByLowerCode = new Map(
-	LOCALE_OPTIONS.map((option) => [option.code.toLowerCase(), option] as const),
-);
-const localeByBaseLanguage = new Map(
-	LOCALE_OPTIONS.map((option) => [option.baseLanguage.toLowerCase(), option] as const),
-);
+const LEGACY_LOCALE_TOKENS = new Set([
+	"pt",
+	"pt-br",
+	"en",
+	"en-us",
+	"es",
+	"es-es",
+	"de",
+	"de-de",
+	"fr",
+	"fr-ca",
+	"ja",
+	"jp",
+	"jp-jp",
+	"zh",
+	"zh-cn",
+	"zh-tw",
+]);
 
 function normalizeLocaleValue(value: string) {
-	return value.trim().replace(/_/g, "-");
+	return value.trim().replace(/_/g, "-").toLowerCase();
 }
 
-export function resolveLocale(value: string | null | undefined): AppLocale {
-	if (!value) return DEFAULT_LOCALE;
-
-	const normalized = normalizeLocaleValue(value);
-	const lower = normalized.toLowerCase();
-	const exactMatch = localeByLowerCode.get(lower);
-	if (exactMatch) return exactMatch.code;
-
-	const baseLanguage = lower.split("-")[0] ?? lower;
-	const baseMatch = localeByBaseLanguage.get(baseLanguage);
-	if (baseMatch) return baseMatch.code;
-
+export function resolveLocale(_value: string | null | undefined): AppLocale {
 	return DEFAULT_LOCALE;
 }
 
 export function matchLocale(value: string | null | undefined): AppLocale | null {
 	if (!value) return null;
-
-	const normalized = normalizeLocaleValue(value);
-	const lower = normalized.toLowerCase();
-	const exactMatch = localeByLowerCode.get(lower);
-	if (exactMatch) return exactMatch.code;
-
-	const baseLanguage = lower.split("-")[0] ?? lower;
-	const baseMatch = localeByBaseLanguage.get(baseLanguage);
-	return baseMatch?.code ?? null;
+	return LEGACY_LOCALE_TOKENS.has(normalizeLocaleValue(value)) ? DEFAULT_LOCALE : null;
 }
 
-export function resolveLocaleFromAcceptLanguage(headerValue: string | null | undefined): AppLocale | null {
-	if (!headerValue) return null;
-
-	const weighted = headerValue
-		.split(",")
-		.map((entry) => {
-			const [rawLocale, ...params] = entry.trim().split(";");
-			const qualityParam = params.find((param) => param.trim().startsWith("q="));
-			const q = qualityParam ? Number(qualityParam.trim().slice(2)) : 1;
-			return {
-				locale: rawLocale?.trim() ?? "",
-				q: Number.isFinite(q) ? q : 0,
-			};
-		})
-		.filter((entry) => Boolean(entry.locale))
-		.sort((a, b) => b.q - a.q);
-
-	for (const entry of weighted) {
-		const match = matchLocale(entry.locale);
-		if (match) return match;
-	}
-
-	return null;
+export function getLocaleConfig(_locale: string | null | undefined) {
+	return LOCALE_OPTIONS[0];
 }
 
-export function getLocaleConfig(locale: string | null | undefined) {
-	const resolved = resolveLocale(locale);
-	return localeByLowerCode.get(resolved.toLowerCase())!;
+export function getDefaultCountryForLocale(_locale: string | null | undefined) {
+	return "BR";
 }
 
-export function getDefaultCountryForLocale(locale: string | null | undefined) {
-	return getLocaleConfig(locale).defaultCountry;
-}
-
-export function getStripeLocale(locale: string | null | undefined) {
-	return getLocaleConfig(locale).stripeLocale;
+export function getStripeLocale(_locale: string | null | undefined): "pt-BR" {
+	return "pt-BR";
 }

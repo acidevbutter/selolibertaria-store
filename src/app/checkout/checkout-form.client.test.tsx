@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CheckoutForm } from "@/app/checkout/checkout-form.client";
 import { IntlClientProvider } from "@/i18n/client";
-import enMessages from "../../../messages/en-US.json";
+import ptBrMessages from "../../../messages/pt-BR.json";
 
 const {
 	replaceMock,
@@ -96,9 +96,9 @@ describe("CheckoutForm", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<CheckoutForm
-					locale="en-US"
+					locale="pt-BR"
 					checkout={{
 						publishableKey: "pk_test_123",
 						clientSecret: "pi_123_secret_abc",
@@ -146,8 +146,8 @@ describe("CheckoutForm", () => {
 			</IntlClientProvider>,
 		);
 
-		fireEvent.click(screen.getByRole("radio", { name: /Visa ending in 4242/i }));
-		fireEvent.click(screen.getByRole("button", { name: /Pay with saved card/i }));
+		fireEvent.click(screen.getByRole("radio", { name: /Visa terminado em 4242/i }));
+		fireEvent.click(screen.getByRole("button", { name: /Pagar com cartão salvo/i }));
 
 		await waitFor(() => {
 			expect(updatePaymentMethodSavingPreferenceMock).toHaveBeenCalledWith({

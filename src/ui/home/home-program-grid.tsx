@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getLocale, getTranslations } from "@/i18n/server";
+import { getTranslations } from "@/i18n/server";
 import type { EditorialEvent, EditorialSarauPage } from "@/lib/editorial-content";
 import { EditorialEyebrow } from "@/ui/editorial/editorial-primitives";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
@@ -13,24 +13,14 @@ export async function HomeProgramGrid({
 	sarau?: EditorialSarauPage | null;
 }) {
 	const t = await getTranslations("Selo");
-	const locale = await getLocale();
-	const isPortuguese = locale === "pt-BR";
 	const featuredTitle = sarau?.hero?.title || event?.title || t("nav.sarau");
 	const featuredSummary =
 		sarau?.hero?.body ||
 		event?.summary ||
-		(isPortuguese
-			? "Leituras, aparições e encontros presenciais que fazem a literatura sair da página e virar corpo coletivo."
-			: "Readings, appearances, and live encounters that take literature off the page and into collective presence.");
+		"Leituras, aparições e encontros presenciais que fazem a literatura sair da página e virar corpo coletivo.";
 	const featuredImage = sarau?.hero?.image ?? event?.image ?? null;
 	const ctaHref = sarau ? "/sarau-safado" : "/events";
-	const ctaLabel = sarau
-		? isPortuguese
-			? "Conhecer o Sarau Safado"
-			: "Discover Sarau Safado"
-		: isPortuguese
-			? "Ver agenda"
-			: "View agenda";
+	const ctaLabel = sarau ? "Conhecer o Sarau Safado" : "Ver agenda";
 
 	return (
 		<section className="bg-[color:var(--editorial-paper)] py-12 sm:py-16">
@@ -81,9 +71,7 @@ export async function HomeProgramGrid({
 								) : (
 									<div className="flex min-h-[320px] items-center justify-center bg-[color:var(--editorial-ink)] p-8 text-[color:var(--editorial-paper)] lg:min-h-[360px]">
 										<p className="max-w-[320px] text-center text-3xl leading-[1.02] font-black uppercase tracking-[-0.04em]">
-											{isPortuguese
-												? "Leitura, corpo e presença ao vivo."
-												: "Reading, body, and live presence."}
+											Leitura, corpo e presença ao vivo.
 										</p>
 									</div>
 								)}

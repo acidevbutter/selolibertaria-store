@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ProcessingPage from "@/app/checkout/processing/page";
 import { IntlClientProvider } from "@/i18n/client";
-import enMessages from "../../../../messages/en-US.json";
+import ptBrMessages from "../../../../messages/pt-BR.json";
 
 const {
 	closeCartMock,
@@ -79,7 +79,7 @@ describe("Checkout processing page", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);
@@ -88,7 +88,7 @@ describe("Checkout processing page", () => {
 			await Promise.resolve();
 		});
 
-		expect(screen.getByText("Order received")).toBeTruthy();
+		expect(screen.getByText("Pedido recebido")).toBeTruthy();
 
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(15000);
@@ -102,7 +102,7 @@ describe("Checkout processing page", () => {
 		recordPaymentIntentCheckoutMock.mockImplementation(() => new Promise(() => {}));
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);
@@ -113,7 +113,7 @@ describe("Checkout processing page", () => {
 		});
 
 		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
-		expect(screen.getByText("Order received")).toBeTruthy();
+		expect(screen.getByText("Pedido recebido")).toBeTruthy();
 	});
 
 	it("interrompe o loading quando o status autoritativo já está em disputa", async () => {
@@ -124,7 +124,7 @@ describe("Checkout processing page", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);
@@ -133,8 +133,8 @@ describe("Checkout processing page", () => {
 			await Promise.resolve();
 		});
 
-		expect(screen.getByText("Payment under review")).toBeTruthy();
-		expect(screen.getByText(/no longer needs to keep this page loading/i)).toBeTruthy();
+		expect(screen.getByText("Pagamento em análise")).toBeTruthy();
+		expect(screen.getByText(/esta página não precisa mais continuar carregando/i)).toBeTruthy();
 		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
 	});
 
@@ -146,7 +146,7 @@ describe("Checkout processing page", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);
@@ -155,7 +155,7 @@ describe("Checkout processing page", () => {
 			await Promise.resolve();
 		});
 
-		expect(screen.getByText("Payment confirmed")).toBeTruthy();
+		expect(screen.getByText("Pagamento confirmado")).toBeTruthy();
 
 		await act(async () => {
 			await vi.runAllTimersAsync();
@@ -173,7 +173,7 @@ describe("Checkout processing page", () => {
 		});
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);
@@ -182,7 +182,7 @@ describe("Checkout processing page", () => {
 			await Promise.resolve();
 		});
 
-		expect(screen.getByText("Payment confirmed")).toBeTruthy();
+		expect(screen.getByText("Pagamento confirmado")).toBeTruthy();
 
 		await act(async () => {
 			await vi.runAllTimersAsync();
@@ -198,7 +198,7 @@ describe("Checkout processing page", () => {
 		searchParamsState.session_id = null;
 
 		render(
-			<IntlClientProvider locale="en-US" messages={enMessages}>
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
 				<ProcessingPage />
 			</IntlClientProvider>,
 		);

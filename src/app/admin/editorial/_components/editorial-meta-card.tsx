@@ -1,5 +1,4 @@
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
@@ -26,7 +25,7 @@ export async function EditorialMetaCard({
 	updatedAt?: string;
 	updatedBy?: string | null;
 }) {
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	return (
 		<Card>

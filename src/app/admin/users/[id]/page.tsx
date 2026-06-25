@@ -2,8 +2,7 @@ import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { setUserBlockedAction, updateUserRoleAction } from "@/app/admin/users/actions";
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability, isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
@@ -37,7 +36,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "customers.read")) redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const { id } = await params;
 	if (!isValidObjectId(id)) redirect("/admin/users");

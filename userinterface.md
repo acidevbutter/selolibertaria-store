@@ -178,3 +178,9 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - O CTA final do header público deve ser `Entrar` ou `Conta`/`Minha conta`; `Comprar` não deve aparecer no header.
 - Em fases de estabilização pública, o locale renderizado do storefront pode ser congelado em `pt-BR` sem desmontar a infraestrutura de i18n.
 - A página `/events` deve seguir a composição de agenda editorial: hero escuro com pôsteres empilhados, nota curatorial em duas colunas, linhas de agenda, arquivo/memória e CTA final única.
+
+## Atualização 2026-06-25
+
+- O produto agora assume `pt-BR` fixo como contrato visual e textual em todas as superfícies públicas e no shell do admin.
+- Não deve existir seletor visível de idioma no público, nem variação de labels por navegador, cookie ou prefixo legado.
+- Qualquer fallback visual ou textual novo precisa nascer em português do Brasil.

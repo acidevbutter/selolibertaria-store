@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### Added
+- Registro do contrato de idioma único `pt-BR` em `AGENTS.md`, `spec.md`, `userinterface.md` e `userexperience.md` para evitar retorno de multilíngue público.
 - Biblioteca final de ativos editoriais em `public/images/selolibertaria/`, com mocks do livro `Virus do Beijo` e ilustrações convertidas de `temp_assets` para arquivos `png` com nomes estáveis.
 - Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.
 - Escolha de entrega no checkout, com opção de usar o endereço salvo, informar um novo endereço ou retirar na loja, além de recálculo server-side do frete antes do pagamento.
@@ -38,6 +39,10 @@
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
 ### Changed
+- A infraestrutura de i18n foi colapsada para `pt-BR` fixo, removendo detecção por `Accept-Language`, persistência por cookie de locale, fallback público em inglês e mensagens multilíngues extras.
+- Prefixos legados `/en`, `/en-us`, `/es` e `/pt-br` agora redirecionam apenas para a rota canônica sem prefixo, sem trocar idioma do site.
+- Home, hero, catálogo em destaque, grade de programa e PDP deixaram de ter bifurcações de copy em inglês e passaram a assumir português do Brasil como fallback padrão.
+- O painel administrativo de padrões regionais agora comunica claramente que a loja funciona apenas em português do Brasil.
 - Home, sobre, eventos, projetos, login e previews internos do Selo Libertária passaram a usar imagens editoriais reais derivadas de `temp_assets`, e o placeholder legado `yns-cover.jpg` foi removido do projeto.
 - O admin passou a seguir o estilo editorial do Figma nas superfícies-base: navegação com sidebar preta fixa, páginas com hero introdutório, cards retos em fundo papel e nova hierarquia visual em `orders`, `order details`, `products`, `editorial`, `promotions` e `settings`.
 - A home pública agora consome integralmente os blocos editoriais configurados no admin para `author` e `community`, e o destaque de programação passou a puxar título, resumo e imagem do conteúdo editorial ativo.

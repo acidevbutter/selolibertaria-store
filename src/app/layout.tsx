@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/cart-context";
 import { env, publicUrl } from "@/env.mjs";
 import { IntlClientProvider } from "@/i18n/client";
-import { getLocale, getMessages } from "@/i18n/server";
+import { getMessages } from "@/i18n/server";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 
 const dccAsh = localFont({
@@ -46,12 +46,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-	const locale = await getLocale();
 	const messages = await getMessages();
 
 	return (
 		<html
-			lang={locale}
+			lang="pt-BR"
 			suppressHydrationWarning
 			className={`h-full antialiased ${dccAsh.variable} ${fertigoPro.variable}`}
 		>
@@ -93,7 +92,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
 				<SplashLoader />
 				<ThemeProviderWrapper>
-					<IntlClientProvider messages={messages} locale={locale}>
+					<IntlClientProvider messages={messages} locale="pt-BR">
 						<Suspense fallback={null}>
 							<CartProvider>
 								<Suspense fallback={null}>
