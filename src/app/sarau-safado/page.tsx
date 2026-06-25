@@ -53,7 +53,7 @@ export default async function SarauSafadoPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<EditorialShell className="flex flex-1 flex-col gap-10 py-10">
+			<div className="flex flex-1 flex-col">
 				<Reveal>
 					<section
 						className="relative overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
@@ -68,7 +68,7 @@ export default async function SarauSafadoPage() {
 								: undefined
 						}
 					>
-						<div className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
+						<EditorialShell className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
 							<div className="max-w-3xl space-y-4">
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
 									{sarau.hero?.eyebrow || t("nav.sarau")}
@@ -94,11 +94,11 @@ export default async function SarauSafadoPage() {
 									</YnsLink>
 								</div>
 							</div>
-						</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
 
-				<section className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
+				<EditorialShell className="grid gap-8 py-10 lg:grid-cols-[1fr_1fr] lg:items-start">
 					<Reveal>
 						<div className="space-y-4">
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Agenda</EditorialEyebrow>
@@ -127,77 +127,81 @@ export default async function SarauSafadoPage() {
 							))}
 						</div>
 					</Reveal>
-				</section>
+				</EditorialShell>
 
-				<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-					<Reveal>
-						<div className="space-y-4">
-							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)]">
-								Galeria / memória
-							</EditorialEyebrow>
-							<h2 className="max-w-2xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
-								Fotos grandes, vídeos, textos e registros.
-							</h2>
-							<p className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
-								{sarau.why?.body || t("sarau.whyBody")}
-							</p>
+				<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+					<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+						<Reveal>
+							<div className="space-y-4">
+								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)]">
+									Galeria / memória
+								</EditorialEyebrow>
+								<h2 className="max-w-2xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
+									Fotos grandes, vídeos, textos e registros.
+								</h2>
+								<p className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
+									{sarau.why?.body || t("sarau.whyBody")}
+								</p>
+							</div>
+						</Reveal>
+						<div className="grid gap-4 sm:grid-cols-3">
+							{notes.slice(1, 4).map((note, index) => (
+								<Reveal key={note.title} delay={0.08 * index}>
+									<LiftOnHover>
+										<div
+											className={
+												index === 1
+													? "flex min-h-[17rem] flex-col justify-end bg-[color:var(--editorial-beige)] p-5 text-[color:var(--editorial-ink)]"
+													: "flex min-h-[17rem] flex-col justify-end border border-white/30 bg-[color:rgba(247,244,239,0.08)] p-5"
+											}
+										>
+											<p
+												className={
+													index === 1
+														? "text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+														: "text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
+												}
+											>
+												{note.title}
+											</p>
+											<p
+												className={
+													index === 1
+														? "mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+														: "mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+												}
+											>
+												{note.body}
+											</p>
+										</div>
+									</LiftOnHover>
+								</Reveal>
+							))}
 						</div>
-					</Reveal>
-					<div className="grid gap-4 sm:grid-cols-3">
-						{notes.slice(1, 4).map((note, index) => (
-							<Reveal key={note.title} delay={0.08 * index}>
-								<LiftOnHover>
-									<div
-										className={
-											index === 1
-												? "flex min-h-[17rem] flex-col justify-end bg-[color:var(--editorial-beige)] p-5 text-[color:var(--editorial-ink)]"
-												: "flex min-h-[17rem] flex-col justify-end border border-white/30 bg-[color:rgba(247,244,239,0.08)] p-5"
-										}
-									>
-										<p
-											className={
-												index === 1
-													? "text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
-													: "text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
-											}
-										>
-											{note.title}
-										</p>
-										<p
-											className={
-												index === 1
-													? "mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
-													: "mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
-											}
-										>
-											{note.body}
-										</p>
-									</div>
-								</LiftOnHover>
-							</Reveal>
-						))}
-					</div>
+					</EditorialShell>
 				</section>
 
 				<Reveal>
-					<section className="bg-[color:rgba(216,208,196,0.55)] px-6 py-8 sm:px-8 sm:py-10">
-						<h2 className="max-w-4xl text-3xl leading-[1.05] font-black sm:text-4xl">
-							Eventos vivem aqui como agenda do Sarau, não como item principal do menu.
-						</h2>
-						<div className="mt-6 flex flex-wrap gap-3">
-							{continueLinks.map((link) => (
-								<YnsLink
-									key={link.href}
-									href={link.href}
-									className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
-								>
-									{link.label}
-								</YnsLink>
-							))}
-						</div>
+					<section className="bg-[color:rgba(216,208,196,0.55)]">
+						<EditorialShell className="px-6 py-8 sm:px-8 sm:py-10">
+							<h2 className="max-w-4xl text-3xl leading-[1.05] font-black sm:text-4xl">
+								Eventos vivem aqui como agenda do Sarau, não como item principal do menu.
+							</h2>
+							<div className="mt-6 flex flex-wrap gap-3">
+								{continueLinks.map((link) => (
+									<YnsLink
+										key={link.href}
+										href={link.href}
+										className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
+									>
+										{link.label}
+									</YnsLink>
+								))}
+							</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
-			</EditorialShell>
+			</div>
 			<Footer />
 		</div>
 	);

@@ -128,3 +128,5 @@ Confiança vem de:
 - A navegação mobile deve confirmar a mesma hierarquia do desktop para não criar dúvida sobre o que é seção principal e o que é conteúdo auxiliar.
 - Em busca e catálogo, a linguagem precisa soar editorial e específica; `livros` comunica melhor o domínio do que `produtos`.
 - Nas páginas editoriais públicas pós-home, a pessoa deve conseguir entender o assunto e agir em até três movimentos visuais: hero, bloco de contexto, saída clara para compra, agenda, contato ou Sarau.
+- Na PDP, a pessoa precisa reconhecer rapidamente que está vendo um livro, entender preço e disponibilidade sem esforço, e ainda receber contexto literário antes de descer para ficha técnica e relacionados.
+- O header não deve competir com a compra do livro; ele orienta sessão e navegação, enquanto a decisão de compra fica na própria PDP.

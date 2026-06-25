@@ -25,7 +25,7 @@ export default async function AllProductsPage() {
 	const featuredProduct = products.find((product) => product.images[0]) ?? products[0] ?? null;
 
 	return (
-		<main className="space-y-8 pb-12">
+		<main>
 			<CatalogIntro
 				eyebrow={seloT("catalogue.eyebrow")}
 				title={t("title")}
@@ -53,9 +53,11 @@ export default async function AllProductsPage() {
 				primaryCtaLabel="Comprar agora"
 				primaryCtaHref={featuredProduct ? `/product/${featuredProduct.slug}` : "/products"}
 			/>
-			<EditorialShell className="space-y-8">
+			<EditorialShell className="space-y-8 py-8">
 				<ProductList products={products} />
-				<section className="grid gap-5 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+			</EditorialShell>
+			<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+				<EditorialShell className="grid gap-5 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 					<h2 className="max-w-3xl text-3xl leading-[0.95] font-black sm:text-4xl">
 						Cada capa abre uma rota: compra, trecho e contexto editorial.
 					</h2>
@@ -70,8 +72,8 @@ export default async function AllProductsPage() {
 							Falar sobre livros
 						</YnsLink>
 					</div>
-				</section>
-			</EditorialShell>
+				</EditorialShell>
+			</section>
 		</main>
 	);
 }

@@ -24,10 +24,10 @@ export default async function AboutPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<EditorialShell className="flex flex-1 flex-col gap-8 py-8">
+			<div className="flex flex-1 flex-col">
 				<Reveal>
-					<section className="overflow-hidden border-b border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] px-6 py-10 sm:px-10 sm:py-14">
-						<div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+					<section className="overflow-hidden border-b border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]">
+						<EditorialShell className="grid gap-8 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
 							<div className="max-w-5xl space-y-5">
 								<EditorialEyebrow className="text-[color:var(--editorial-accent)] sm:text-sm">
 									{about.hero?.eyebrow || t("about.heroEyebrow")}
@@ -39,51 +39,53 @@ export default async function AboutPage() {
 							<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-ink)] sm:text-lg">
 								{about.hero?.body || t("about.heroBody")}
 							</p>
-						</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
 
 				<Reveal delay={0.05}>
-					<section className="grid gap-8 bg-[color:var(--editorial-ink)] px-6 py-10 text-[color:var(--editorial-paper)] sm:px-8 sm:py-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-						<div className="flex justify-center lg:justify-start">
-							{about.section?.image?.src ? (
-								<Image
-									src={about.section.image.src}
-									alt={about.section.image.alt || about.section?.title || t("about.sectionTitle")}
-									width={520}
-									height={520}
-									className="w-full max-w-[20rem] border border-white/25 object-cover sm:max-w-[22rem]"
-								/>
-							) : (
-								<div className="flex aspect-square w-full max-w-[20rem] items-center justify-center border border-white/20 px-6 text-center text-sm uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.72)]">
-									Foto / autoria
-								</div>
-							)}
-						</div>
-						<div className="max-w-3xl space-y-5">
-							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)]">
-								Autoria e curadoria
-							</EditorialEyebrow>
-							<h2 className="text-4xl leading-[0.95] font-black tracking-[-0.05em] sm:text-5xl">
-								{about.section?.title || t("about.sectionTitle")}
-							</h2>
-							<p className="text-base leading-8 text-[color:rgba(247,244,239,0.82)]">
-								{about.section?.body || t("about.sectionBody")}
-							</p>
-							<p className="text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
-								{about.section?.extended || t("about.sectionExtended")}
-							</p>
-							<YnsLink
-								href="/sarau-safado"
-								className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-							>
-								Conhecer Sarau Safado
-							</YnsLink>
-						</div>
+					<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+						<EditorialShell className="grid gap-8 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+							<div className="flex justify-center lg:justify-start">
+								{about.section?.image?.src ? (
+									<Image
+										src={about.section.image.src}
+										alt={about.section.image.alt || about.section?.title || t("about.sectionTitle")}
+										width={520}
+										height={520}
+										className="w-full max-w-[20rem] border border-white/25 object-cover sm:max-w-[22rem]"
+									/>
+								) : (
+									<div className="flex aspect-square w-full max-w-[20rem] items-center justify-center border border-white/20 px-6 text-center text-sm uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.72)]">
+										Foto / autoria
+									</div>
+								)}
+							</div>
+							<div className="max-w-3xl space-y-5">
+								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)]">
+									Autoria e curadoria
+								</EditorialEyebrow>
+								<h2 className="text-4xl leading-[0.95] font-black tracking-[-0.05em] sm:text-5xl">
+									{about.section?.title || t("about.sectionTitle")}
+								</h2>
+								<p className="text-base leading-8 text-[color:rgba(247,244,239,0.82)]">
+									{about.section?.body || t("about.sectionBody")}
+								</p>
+								<p className="text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
+									{about.section?.extended || t("about.sectionExtended")}
+								</p>
+								<YnsLink
+									href="/sarau-safado"
+									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+								>
+									Conhecer Sarau Safado
+								</YnsLink>
+							</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
 
-				<section className="grid gap-6 lg:grid-cols-3">
+				<EditorialShell className="grid gap-6 py-8 lg:grid-cols-3">
 					{cards.slice(0, 3).map((card, index) => {
 						const fallback = [
 							{
@@ -121,9 +123,9 @@ export default async function AboutPage() {
 							</Reveal>
 						);
 					})}
-				</section>
+				</EditorialShell>
 
-				<section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+				<EditorialShell className="grid gap-6 py-8 lg:grid-cols-[1.1fr_0.9fr]">
 					<Reveal>
 						<article className="border-l-[12px] border-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)] p-6">
 							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
@@ -149,8 +151,8 @@ export default async function AboutPage() {
 							</EditorialPanel>
 						</LiftOnHover>
 					</Reveal>
-				</section>
-			</EditorialShell>
+				</EditorialShell>
+			</div>
 			<Footer />
 		</div>
 	);

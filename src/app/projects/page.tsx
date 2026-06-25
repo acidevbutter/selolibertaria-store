@@ -26,40 +26,42 @@ export default async function ProjectsPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<EditorialShell className="flex flex-1 flex-col gap-10 py-10">
+			<div className="flex flex-1 flex-col">
 				<Reveal>
-					<header className="grid gap-6 bg-[color:var(--editorial-ink)] p-8 text-[color:var(--editorial-paper)] lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
-						<div className="space-y-4">
-							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
-								{t("projects.heroEyebrow")}
-							</EditorialEyebrow>
-							<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
-								{t("projects.heroTitle")}
-							</h1>
-							<p className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base">
-								{t("projects.heroBody")}
-							</p>
-						</div>
-						<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
-							{featuredProject?.image?.src ? (
-								<Image
-									src={featuredProject.image.src}
-									alt={featuredProject.image.alt || featuredProject.title}
-									width={1200}
-									height={900}
-									className="h-auto w-full object-cover"
-									sizes="(max-width: 1024px) 100vw, 460px"
-								/>
-							) : (
-								<div className="flex aspect-[1.05] items-center justify-center border border-white/20 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
-									Foto / performance / oficina
-								</div>
-							)}
-						</div>
+					<header className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+						<EditorialShell className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
+							<div className="space-y-4">
+								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
+									{t("projects.heroEyebrow")}
+								</EditorialEyebrow>
+								<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
+									{t("projects.heroTitle")}
+								</h1>
+								<p className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base">
+									{t("projects.heroBody")}
+								</p>
+							</div>
+							<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
+								{featuredProject?.image?.src ? (
+									<Image
+										src={featuredProject.image.src}
+										alt={featuredProject.image.alt || featuredProject.title}
+										width={1200}
+										height={900}
+										className="h-auto w-full object-cover"
+										sizes="(max-width: 1024px) 100vw, 460px"
+									/>
+								) : (
+									<div className="flex aspect-[1.05] items-center justify-center border border-white/20 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
+										Foto / performance / oficina
+									</div>
+								)}
+							</div>
+						</EditorialShell>
 					</header>
 				</Reveal>
 
-				<section className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_0.95fr] lg:items-start">
+				<EditorialShell className="grid gap-6 py-10 lg:grid-cols-[1fr_0.95fr] lg:items-start">
 					<Reveal>
 						<div className="space-y-5">
 							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
@@ -85,9 +87,9 @@ export default async function ProjectsPage() {
 							</ul>
 						</div>
 					</Reveal>
-				</section>
+				</EditorialShell>
 
-				<section className="grid gap-6 lg:grid-cols-3">
+				<EditorialShell className="grid gap-6 py-10 lg:grid-cols-3">
 					{projects.map((project, index) => (
 						<Reveal key={project.slug} delay={0.05 * index}>
 							<LiftOnHover>
@@ -154,35 +156,37 @@ export default async function ProjectsPage() {
 							</LiftOnHover>
 						</Reveal>
 					))}
-				</section>
+				</EditorialShell>
 
 				<Reveal>
-					<section className="grid gap-6 bg-[color:var(--editorial-beige)] p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-						<div className="max-w-3xl">
-							<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-								Projetos conectam programação, livro e comunidade.
-							</h2>
-						</div>
-						<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
-							<p>{t("projects.continuityBody")}</p>
-							<div className="flex flex-wrap gap-3">
-								<YnsLink
-									href="/contact"
-									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
-								>
-									Falar sobre projeto
-								</YnsLink>
-								<YnsLink
-									href="/sarau-safado"
-									className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.4)]"
-								>
-									Ver Sarau Safado
-								</YnsLink>
+					<section className="bg-[color:var(--editorial-beige)]">
+						<EditorialShell className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+							<div className="max-w-3xl">
+								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
+									Projetos conectam programação, livro e comunidade.
+								</h2>
 							</div>
-						</div>
+							<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
+								<p>{t("projects.continuityBody")}</p>
+								<div className="flex flex-wrap gap-3">
+									<YnsLink
+										href="/contact"
+										className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+									>
+										Falar sobre projeto
+									</YnsLink>
+									<YnsLink
+										href="/sarau-safado"
+										className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.4)]"
+									>
+										Ver Sarau Safado
+									</YnsLink>
+								</div>
+							</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
-			</EditorialShell>
+			</div>
 			<Footer />
 		</div>
 	);

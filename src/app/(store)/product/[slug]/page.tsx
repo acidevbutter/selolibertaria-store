@@ -117,6 +117,7 @@ export default async function SingleProductPage(props: {
 	const favoriteActive = session
 		? await isFavorite({ userId: session.user.id, productSlug: product.slug, variantId: selectedVariantId })
 		: false;
+	const isPortuguese = locale === "pt-BR";
 	const taxonomy = [
 		category ? deslugify(category) : null,
 		selectedVariant?.label ? deslugify(selectedVariant.label) : null,
@@ -125,138 +126,183 @@ export default async function SingleProductPage(props: {
 	]
 		.filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index)
 		.slice(0, 4);
+	const synopsis = description.trim();
+	const excerpt = buildEditorialExcerpt(synopsis);
+	const excerptHref = excerpt ? "#trecho" : "#sinopse";
 	const details = [
+		category ? { label: isPortuguese ? "Categoria" : "Category", value: deslugify(category) } : null,
+		selectedVariant?.label
+			? {
+					label: isPortuguese ? "Formato" : "Format",
+					value: deslugify(selectedVariant.label),
+				}
+			: null,
 		{
-			label: "Formato impresso",
-			value: selectedVariant?.label ? deslugify(selectedVariant.label) : "Edição impressa",
+			label: isPortuguese ? "Selo / editora" : "Imprint / publisher",
+			value: "Selo Libertária",
 		},
-		{ label: "ISBN", value: "Em atualização" },
-		{ label: "Ano de publicação", value: "Edição atual do selo" },
-		{ label: "Editora / selo", value: "Selo Libertária" },
-		{ label: "Envio para todo o Brasil", value: "Disponível" },
+		typeof displayStock === "number"
+			? {
+					label: isPortuguese ? "Disponibilidade" : "Availability",
+					value:
+						displayStock > 0
+							? isPortuguese
+								? "Disponível"
+								: "Available"
+							: isPortuguese
+								? "Fora de estoque"
+								: "Out of stock",
+				}
+			: null,
+	].filter(Boolean) as Array<{ label: string; value: string }>;
+	const continuityLinks = [
+		{ href: "/sarau-safado", label: isPortuguese ? "Ver Sarau Safado" : "View Sarau Safado" },
+		{ href: "/projects", label: isPortuguese ? "Ver projetos" : "View projects" },
+		{ href: "/products", label: isPortuguese ? "Ver catálogo" : "View catalogue" },
 	];
 
 	return (
-		<article className="pb-16">
-			<EditorialShell className="space-y-12 sm:space-y-16">
-				<section className="grid gap-10 lg:grid-cols-[420px_minmax(0,1fr)] lg:items-start">
-					<Reveal>
-						<div className="max-w-[420px]">
-							<h2 className="sr-only">{t("imagesTitle")}</h2>
-							<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
-								<ProductImageGallery images={images} alt={product.name} />
+		<article>
+			<div className="flex flex-col">
+				<section className="bg-[color:var(--editorial-paper)]">
+					<EditorialShell className="grid gap-10 py-12 lg:grid-cols-[430px_minmax(0,1fr)] lg:items-start lg:gap-20 lg:py-16">
+						<Reveal>
+							<div className="max-w-[430px]">
+								<h2 className="sr-only">{t("imagesTitle")}</h2>
+								<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
+									<ProductImageGallery images={images} alt={product.name} />
+								</div>
 							</div>
-						</div>
-					</Reveal>
+						</Reveal>
 
-					<Reveal delay={0.08}>
-						<div className="space-y-8 pt-2">
-							<div className="flex items-start justify-between gap-4">
-								<div className="space-y-5">
-									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-										{category ? deslugify(category) : "Livro"}
-									</EditorialEyebrow>
-									<h1 className="display-font text-[3.7rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
-										{selectedVariant?.label
-											? formatProductName(product.name, selectedVariant.label)
-											: product.name}
-									</h1>
-									<p className="text-lg text-[color:var(--editorial-muted)]">{taxonomy.join(" / ")}</p>
-									<p className="price-font text-4xl font-black text-[color:var(--editorial-ink)]">
-										{formatMoney({
-											amount: displayPrice,
-											currency: displayCurrency,
-											locale,
-										})}
-									</p>
-									{displayBasePrice > displayPrice ? (
-										<p className="text-base text-[color:var(--editorial-muted)] line-through">
+						<Reveal delay={0.08}>
+							<div className="space-y-8 pt-2">
+								<div className="flex items-start justify-between gap-4">
+									<div className="space-y-5">
+										<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
+											{category ? deslugify(category) : isPortuguese ? "Livro" : "Book"}
+										</EditorialEyebrow>
+										<h1 className="display-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
+											{selectedVariant?.label
+												? formatProductName(product.name, selectedVariant.label)
+												: product.name}
+										</h1>
+										{taxonomy.length > 0 ? (
+											<p className="text-lg text-[color:var(--editorial-muted)]">{taxonomy.join(" / ")}</p>
+										) : null}
+										<p className="price-font text-4xl font-black text-[color:var(--editorial-ink)]">
 											{formatMoney({
-												amount: displayBasePrice,
+												amount: displayPrice,
 												currency: displayCurrency,
 												locale,
 											})}
 										</p>
-									) : null}
-									<div className="flex flex-wrap gap-4">
-										<AddToCart
-											variantId={selectedVariantId}
-											className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-11 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]`}
-										>
-											{isOutOfStock ? t("outOfStock") : "Comprar"}
-										</AddToCart>
-										<YnsLink
-											href="#sinopse"
-											className="inline-flex h-11 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-										>
-											Ler trecho
-										</YnsLink>
-									</div>
-									{variants.length > 1 ? (
-										<div className="flex flex-wrap gap-2">
-											{variants.map((variant) => {
-												const currentSlug =
-													variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
-												const isActive = selectedVariant?.id === variant.id;
-												const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
-												const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
-												return (
-													<YnsLink key={variant.id} href={href} scroll={false}>
-														<Badge
-															className={
-																isActive
-																	? "rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]"
-																	: "rounded-none border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-muted)]"
-															}
-															variant={isActive ? "default" : "outline"}
-														>
-															{label}
-														</Badge>
-													</YnsLink>
-												);
-											})}
+										{displayBasePrice > displayPrice ? (
+											<p className="text-base text-[color:var(--editorial-muted)] line-through">
+												{formatMoney({
+													amount: displayBasePrice,
+													currency: displayCurrency,
+													locale,
+												})}
+											</p>
+										) : null}
+										<div className="flex flex-wrap gap-4">
+											<AddToCart
+												variantId={selectedVariantId}
+												className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-12 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]`}
+											>
+												{isOutOfStock ? t("outOfStock") : isPortuguese ? "Comprar" : "Buy"}
+											</AddToCart>
+											<YnsLink
+												href={excerptHref}
+												className="inline-flex h-12 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+											>
+												{isPortuguese ? "Ler trecho" : "Read excerpt"}
+											</YnsLink>
 										</div>
-									) : null}
-									{isOutOfStock ? (
-										<p className="text-sm text-[color:var(--editorial-muted)]">{t("outOfStock")}</p>
-									) : null}
+										{variants.length > 1 ? (
+											<div className="flex flex-wrap gap-2">
+												{variants.map((variant) => {
+													const currentSlug =
+														variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
+													const isActive = selectedVariant?.id === variant.id;
+													const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
+													const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
+													return (
+														<YnsLink key={variant.id} href={href} scroll={false}>
+															<Badge
+																className={
+																	isActive
+																		? "rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]"
+																		: "rounded-none border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-muted)]"
+																}
+																variant={isActive ? "default" : "outline"}
+															>
+																{label}
+															</Badge>
+														</YnsLink>
+													);
+												})}
+											</div>
+										) : null}
+										{typeof displayStock === "number" ? (
+											<p className="text-sm text-[color:var(--editorial-muted)]">
+												{displayStock > 0
+													? isPortuguese
+														? "Disponível para compra"
+														: "Available for purchase"
+													: t("outOfStock")}
+											</p>
+										) : null}
+									</div>
+									<FavoriteToggle
+										productSlug={product.slug}
+										variantId={selectedVariantId}
+										initialActive={favoriteActive}
+									/>
 								</div>
-								<FavoriteToggle
-									productSlug={product.slug}
-									variantId={selectedVariantId}
-									initialActive={favoriteActive}
-								/>
-							</div>
 
-							<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
-								<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Sinopse</EditorialEyebrow>
-								<div className="mt-6 max-w-3xl text-2xl leading-[1.45] text-[color:var(--editorial-muted)]">
-									<Markdown source={description} />
+								<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
+									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
+										{isPortuguese ? "Sinopse" : "Synopsis"}
+									</EditorialEyebrow>
+									<div className="mt-6 max-w-3xl text-xl leading-[1.55] text-[color:var(--editorial-muted)] sm:text-2xl">
+										<Markdown source={description} />
+									</div>
 								</div>
 							</div>
-						</div>
-					</Reveal>
+						</Reveal>
+					</EditorialShell>
 				</section>
 
-				<Reveal>
-					<section className="grid gap-6 border border-[color:rgba(247,244,239,0.12)] bg-[color:var(--editorial-ink)] px-8 py-12 text-[color:var(--editorial-paper)] lg:grid-cols-[1.4fr_0.6fr] lg:items-end">
-						<div className="border-l-[10px] border-[color:var(--editorial-accent)] pl-6">
-							<h2 className="display-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
-								“Se te começo,
-								<br />
-								logo me despeço.”
-							</h2>
-						</div>
-						<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
-							Trecho visual do livro para criar desejo de leitura.
-						</p>
-					</section>
-				</Reveal>
+				{excerpt ? (
+					<Reveal>
+						<section
+							className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
+							id="trecho"
+						>
+							<EditorialShell className="grid gap-6 px-8 py-12 lg:grid-cols-[1.4fr_0.6fr] lg:items-end lg:py-16">
+								<div className="border-l-[10px] border-[color:var(--editorial-accent)] pl-6">
+									<h2 className="display-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
+										{excerpt}
+									</h2>
+								</div>
+								<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
+									{isPortuguese
+										? "Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."
+										: "Excerpt taken from the existing synopsis to reinforce editorial reading without inventing persisted copy."}
+								</p>
+							</EditorialShell>
+						</section>
+					</Reveal>
+				) : null}
 
-				<section className="grid gap-10 lg:grid-cols-[1fr_0.95fr]">
+				<EditorialShell className="grid gap-10 py-12 lg:grid-cols-[1fr_0.95fr] lg:py-16">
 					<Reveal>
 						<div>
-							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Detalhes</EditorialEyebrow>
+							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
+								{isPortuguese ? "Ficha técnica" : "Technical details"}
+							</EditorialEyebrow>
 							<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
 								{details.map((detail) => (
 									<li
@@ -278,24 +324,64 @@ export default async function SingleProductPage(props: {
 					<Reveal delay={0.08}>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Outros livros
+								{isPortuguese ? "Outros livros" : "Related books"}
 							</EditorialEyebrow>
 							<div className="mt-10 grid gap-8 sm:grid-cols-2">
 								{relatedProducts.map((related) => (
-									<RelatedBookCard key={related.id} product={related} />
+									<RelatedBookCard
+										key={related.id}
+										product={related}
+										viewBookLabel={isPortuguese ? "Ver livro" : "View book"}
+									/>
 								))}
 							</div>
 						</div>
 					</Reveal>
-				</section>
+				</EditorialShell>
+
+				<Reveal>
+					<section className="bg-[color:var(--editorial-beige)]">
+						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+							<div className="max-w-3xl">
+								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
+									{isPortuguese
+										? "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."
+										: "A book can lead to the Sarau, the projects, and back to the catalogue."}
+								</h2>
+							</div>
+							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
+								<p>
+									{isPortuguese
+										? "A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."
+										: "The PDP remains purchase-oriented while gaining clear editorial exits for reading, context, and cultural continuity."}
+								</p>
+								<div className="flex flex-wrap gap-3">
+									{continuityLinks.map((link, index) => (
+										<YnsLink
+											key={link.href}
+											href={link.href}
+											className={
+												index === 0
+													? "inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+													: "inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
+											}
+										>
+											{link.label}
+										</YnsLink>
+									))}
+								</div>
+							</div>
+						</EditorialShell>
+					</section>
+				</Reveal>
 
 				<JsonLd jsonLd={mappedProductToJsonLd(product)} />
-			</EditorialShell>
+			</div>
 		</article>
 	);
 }
 
-function RelatedBookCard({ product }: { product: Product }) {
+function RelatedBookCard({ product, viewBookLabel }: { product: Product; viewBookLabel: string }) {
 	return (
 		<LiftOnHover>
 			<YnsLink href={`/product/${product.slug}`} className="group block h-full">
@@ -320,7 +406,29 @@ function RelatedBookCard({ product }: { product: Product }) {
 				<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
 					{product.summary ?? "Novo título em breve"}
 				</p>
+				<span className="mt-4 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:border-[color:var(--editorial-accent)] group-hover:bg-[color:rgba(216,208,196,0.24)]">
+					{viewBookLabel}
+				</span>
 			</YnsLink>
 		</LiftOnHover>
 	);
+}
+
+function buildEditorialExcerpt(source: string) {
+	const plain = source
+		.replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+		.replace(/\[[^\]]+\]\([^)]+\)/g, " ")
+		.replace(/[*_`>#-]/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+
+	if (!plain) return null;
+
+	const sentences = plain
+		.split(/(?<=[.!?])\s+/)
+		.map((sentence) => sentence.trim())
+		.filter(Boolean);
+	const excerpt = sentences.find((sentence) => sentence.length >= 48) ?? sentences[0] ?? null;
+	if (!excerpt) return null;
+	return `“${excerpt}”`;
 }

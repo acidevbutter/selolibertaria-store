@@ -42,14 +42,16 @@ export const NavMenu = async ({
 							</YnsLink>
 						</li>
 					))}
-					<li>
-						<YnsLink
-							href={PUBLIC_NAVIGATION.shop}
-							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
-						>
-							Comprar
-						</YnsLink>
-					</li>
+					{includeSessionLink ? (
+						<li>
+							<YnsLink
+								href={authHref}
+								className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+							>
+								{authLabel}
+							</YnsLink>
+						</li>
+					) : null}
 				</ul>
 			</div>
 			<div className="flex items-center lg:hidden">
@@ -65,14 +67,6 @@ export const NavMenu = async ({
 								</YnsLink>
 							</li>
 						))}
-						<li className="pt-3">
-							<YnsLink
-								href={PUBLIC_NAVIGATION.shop}
-								className="inline-flex h-12 w-full items-center justify-center bg-[color:var(--editorial-ink)] px-4 text-sm font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)]"
-							>
-								Comprar
-							</YnsLink>
-						</li>
 						{includeSessionLink ? (
 							<li className="pt-3">
 								<YnsLink
