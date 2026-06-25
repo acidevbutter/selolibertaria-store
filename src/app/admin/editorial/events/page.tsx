@@ -1,185 +1,167 @@
-import { ArrowDown, ArrowUp, CalendarRange, FolderKanban, ImagePlus, PenSquare, Plus } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { ArrowLeft, Plus } from "lucide-react";
 import {
-	listEditorialEventRecords,
-	moveEditorialEventAction,
-	toggleEditorialEventPublishedAction,
-} from "@/app/admin/editorial/actions";
-import { DEFAULT_LOCALE } from "@/i18n/config";
+	getEditorialEventsPageCopyRecord,
+	updateEditorialEventsPageCopyAction,
+} from "@/app/admin/editorial/page-content-actions";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getDefaultLocaleSetting } from "@/lib/settings-store";
+import { listEditorialRecordsForAdmin } from "@/lib/editorial-content-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Badge } from "@/ui/shadcn/badge";
-import { Button } from "@/ui/shadcn/button";
-import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
-
-export const dynamic = "force-dynamic";
 
 export default async function AdminEditorialEventsPage() {
 	const session = await auth();
-	if (!session) redirect("/login");
-	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
+	if (!session || !hasCapability(session.user.role, "editorial.write")) return null;
 
-	const events = await listEditorialEventRecords();
-	const publishedCount = events.filter((event) => event.published).length;
+	const [page, events] = await Promise.all([
+		getEditorialEventsPageCopyRecord(),
+		listEditorialRecordsForAdmin("event"),
+	]);
+	if (!page) return null;
 
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Eventos"
-				description="Gerencie agenda, publicação e ordem dos eventos do selo."
+				description="Edite a copy estrutural da rota pública de eventos e gerencie a agenda publicada."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<Button asChild className="rounded-none">
-							<Link href="/admin/editorial/events/new">
-								<Plus className="h-4 w-4" />
-								Novo evento
-							</Link>
-						</Button>
-						<Button asChild variant="outline" className="rounded-none">
-							<Link href="/admin/editorial">
-								<PenSquare className="h-4 w-4" />
-								Ver painel editorial
-							</Link>
-						</Button>
+						<Link
+							href="/admin/editorial"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para editorial
+						</Link>
+						<Link
+							href="/admin/editorial/events/new"
+							className="inline-flex items-center gap-2 bg-[color:var(--editorial-ink)] px-4 py-3 text-sm text-[color:var(--editorial-paper)]"
+						>
+							<Plus className="h-4 w-4" />
+							Novo evento
+						</Link>
 					</div>
 				}
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens neste recorte." />
-				<AdminEditorialStat label="Publicados" value={publishedCount} helper="Entradas visíveis no site." />
-				<AdminEditorialStat
-					label="Rascunhos"
-					value={events.length - publishedCount}
-					helper="Edições ainda em revisão."
-				/>
+				<AdminEditorialStat label="Status da página" value={page.published ? "Publicado" : "Rascunho"} helper="Rota: /events" />
+				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens cadastrados na agenda." />
+				<AdminEditorialStat label="Textos" value="5 blocos" helper="Hero, nota, agenda, arquivo e CTA final." />
 			</div>
 
-			<EditorialPanel className="space-y-6">
-				<CardHeader>
-					<CardTitle>Ações rápidas</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex flex-wrap gap-2">
-						<Button asChild variant="outline" size="sm" className="rounded-none">
-							<Link href="/admin/editorial/projects">
-								<FolderKanban className="h-4 w-4" />
-								Ver projetos
-							</Link>
-						</Button>
-						<Button asChild variant="outline" size="sm" className="rounded-none">
-							<Link href="/admin/editorial/sarau-safado">
-								<CalendarRange className="h-4 w-4" />
-								Ver Sarau Safado
-							</Link>
-						</Button>
-					</div>
-					<div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
-							<PenSquare className="h-3.5 w-3.5" />
-							Ordem e publicação aparecem no site
-						</span>
-						<span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">
-							<ImagePlus className="h-3.5 w-3.5" />
-							Imagens seguem a mesma revisão visual do catálogo
-						</span>
-					</div>
-				</CardContent>
-			</EditorialPanel>
+			<div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+				<EditorialPageCopyForm
+					action={updateEditorialEventsPageCopyAction}
+					submitLabel="Salvar textos de /events"
+					base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+					sections={[
+						{
+							title: "Hero",
+							description: "Faixa inicial da agenda pública.",
+							route: "/events",
+							fields: [
+								{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
+								{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
+								{ name: "heroBody", label: "Texto", type: "textarea", rows: 4, defaultValue: page.hero?.body },
+								{ name: "heroPrimaryCtaLabel", label: "Botão principal", defaultValue: page.hero?.primaryCtaLabel },
+								{ name: "heroPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.hero?.primaryCtaHref },
+								{ name: "heroSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.hero?.secondaryCtaLabel },
+								{ name: "heroSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.hero?.secondaryCtaHref },
+							],
+						},
+						{
+							title: "Nota curatorial",
+							description: "Explica por que a rota existe sem virar item principal do menu.",
+							route: "/events",
+							fields: [
+								{ name: "curatorialTitle", label: "Título", defaultValue: page.curatorialNote?.title },
+								{
+									name: "curatorialBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 4,
+									defaultValue: page.curatorialNote?.body,
+								},
+							],
+						},
+						{
+							title: "Agenda",
+							description: "Cabeçalho e fallback da lista de eventos.",
+							route: "/events",
+							fields: [
+								{ name: "agendaLabel", label: "Linha curta", defaultValue: page.agenda?.label },
+								{ name: "agendaTitle", label: "Título interno do bloco", defaultValue: page.agenda?.title },
+								{ name: "agendaBody", label: "Texto de apoio", type: "textarea", rows: 3, defaultValue: page.agenda?.body },
+								{
+									name: "agendaEmptyText",
+									label: "Texto quando não houver agenda",
+									type: "textarea",
+									rows: 4,
+									defaultValue: page.agenda?.emptyText,
+								},
+							],
+						},
+						{
+							title: "Arquivo e memória",
+							description: "Bloco escuro com registros e contexto.",
+							route: "/events",
+							fields: [
+								{ name: "archiveLabel", label: "Linha curta", defaultValue: page.archive?.label },
+								{ name: "archiveTitle", label: "Título", defaultValue: page.archive?.title },
+								{ name: "archiveBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.archive?.body },
+							],
+						},
+						{
+							title: "Faixa final",
+							description: "Continuidade para Sarau Safado e Projetos.",
+							route: "/events",
+							fields: [
+								{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
+								{ name: "finalBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.finalCta?.body },
+								{ name: "finalPrimaryCtaLabel", label: "Botão principal", defaultValue: page.finalCta?.primaryCtaLabel },
+								{ name: "finalPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.finalCta?.primaryCtaHref },
+								{ name: "finalSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.finalCta?.secondaryCtaLabel },
+								{ name: "finalSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.finalCta?.secondaryCtaHref },
+							],
+						},
+					]}
+				/>
 
-			<EditorialPanel className="overflow-hidden p-0">
-				<CardHeader>
-					<CardTitle>Eventos</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Ordem</TableHead>
-								<TableHead>Título</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Período</TableHead>
-								<TableHead>Local</TableHead>
-								<TableHead>Publicação</TableHead>
-								<TableHead>Atualizado</TableHead>
-								<TableHead></TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{events.map((event) => (
-								<TableRow key={`${event.type}-${event.slug}`}>
-									<TableCell>{event.order}</TableCell>
-									<TableCell>
-										<div className="space-y-1">
-											<p className="font-medium">{event.title}</p>
-											<p className="text-xs text-muted-foreground">{event.slug}</p>
-										</div>
-									</TableCell>
-									<TableCell>{event.status || "Não informado"}</TableCell>
-									<TableCell>{event.period || "Não informado"}</TableCell>
-									<TableCell>{event.location || "Não informado"}</TableCell>
-									<TableCell>
-										<div className="flex items-center gap-2">
-											<Badge variant={event.published ? "secondary" : "outline"}>
-												{event.published ? "Publicado" : "Rascunho"}
-											</Badge>
-										</div>
-									</TableCell>
-									<TableCell className="text-xs text-muted-foreground">
-										{event.updatedAt
-											? new Intl.DateTimeFormat(locale, {
-													dateStyle: "short",
-													timeStyle: "short",
-												}).format(new Date(event.updatedAt))
-											: "Não informado"}
-									</TableCell>
-									<TableCell className="text-right">
-										<div className="flex justify-end gap-2">
-											<form action={moveEditorialEventAction} className="flex gap-2">
-												<input type="hidden" name="slug" value={event.slug} />
-												<input type="hidden" name="direction" value="up" />
-												<Button type="submit" size="icon" variant="outline" aria-label="Mover para cima">
-													<ArrowUp className="h-4 w-4" />
-												</Button>
-											</form>
-											<form action={moveEditorialEventAction} className="flex gap-2">
-												<input type="hidden" name="slug" value={event.slug} />
-												<input type="hidden" name="direction" value="down" />
-												<Button type="submit" size="icon" variant="outline" aria-label="Mover para baixo">
-													<ArrowDown className="h-4 w-4" />
-												</Button>
-											</form>
-											<form action={toggleEditorialEventPublishedAction}>
-												<input type="hidden" name="slug" value={event.slug} />
-												<input type="hidden" name="published" value={event.published ? "false" : "true"} />
-												<Button type="submit" size="sm" variant="outline">
-													{event.published ? "Rascunho" : "Publicar"}
-												</Button>
-											</form>
-											<Button asChild size="sm" variant="outline">
-												<Link href={`/admin/editorial/events/${encodeURIComponent(event.slug)}`}>
-													Editar evento
-												</Link>
-											</Button>
-										</div>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</CardContent>
-			</EditorialPanel>
+				<EditorialPanel className="p-0">
+					<div className="border-b border-[color:var(--editorial-border)] p-6">
+						<h2 className="text-xl font-semibold text-[color:var(--editorial-ink)]">Agenda cadastrada</h2>
+						<p className="mt-2 text-sm leading-6 text-[color:var(--editorial-muted)]">
+							Clique em um item para editar data, local, status e imagem.
+						</p>
+					</div>
+					<div className="divide-y divide-[color:var(--editorial-border)]">
+						{events.map((event) => (
+							<Link
+								key={event.slug}
+								href={`/admin/editorial/events/${encodeURIComponent(event.slug)}`}
+								className="block p-6 transition-colors hover:bg-[#fbf7f1]"
+							>
+								<p className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									{event.published ? "Publicado" : "Rascunho"}
+								</p>
+								<h3 className="mt-2 text-lg font-semibold text-[color:var(--editorial-ink)]">{event.title}</h3>
+								<p className="mt-2 text-sm leading-6 text-[color:var(--editorial-muted)]">
+									{event.period || event.status || "Sem data definida"}
+									{event.location ? ` · ${event.location}` : ""}
+								</p>
+							</Link>
+						))}
+					</div>
+				</EditorialPanel>
+			</div>
 		</AdminEditorialPage>
 	);
 }

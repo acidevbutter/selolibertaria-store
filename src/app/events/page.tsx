@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
-import { listEditorialEvents, listEditorialProjects } from "@/lib/editorial-content-store";
+import {
+	getEditorialEventsPage,
+	listEditorialEvents,
+	listEditorialProjects,
+} from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
@@ -18,7 +22,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function EventsPage() {
 	const t = await getTranslations("Selo");
-	const [events, projects] = await Promise.all([listEditorialEvents(), listEditorialProjects()]);
+	const [events, projects, page] = await Promise.all([
+		listEditorialEvents(),
+		listEditorialProjects(),
+		getEditorialEventsPage(),
+	]);
 	const publishedEvents = events.filter((event) => event.published);
 	const publishedProjects = projects.filter((project) => project.published);
 	const featuredEvent = publishedEvents[0] ?? null;
@@ -79,26 +87,26 @@ export default async function EventsPage() {
 					<EditorialShell className="relative grid min-h-[620px] gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
 						<div className="max-w-3xl space-y-6">
 							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)] sm:text-sm">
-								{t("events.heroEyebrow")}
+								{page.hero?.eyebrow || t("events.heroEyebrow")}
 							</EditorialEyebrow>
 							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
-								{featuredEvent?.title ?? t("events.heroTitle")}
+								{page.hero?.title || featuredEvent?.title || t("events.heroTitle")}
 							</h1>
 							<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]">
-								{featuredEvent?.summary ?? t("events.heroBody")}
+								{page.hero?.body || featuredEvent?.summary || t("events.heroBody")}
 							</p>
 							<div className="flex flex-wrap gap-3 pt-2">
 								<YnsLink
-									href="/sarau-safado"
+									href={page.hero?.primaryCtaHref || "/sarau-safado"}
 									className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 								>
-									Ver próxima edição
+									{page.hero?.primaryCtaLabel || "Ver próxima edição"}
 								</YnsLink>
 								<YnsLink
-									href="/projects"
+									href={page.hero?.secondaryCtaHref || "/projects"}
 									className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 								>
-									Conhecer projetos
+									{page.hero?.secondaryCtaLabel || "Conhecer projetos"}
 								</YnsLink>
 							</div>
 						</div>
@@ -136,11 +144,11 @@ export default async function EventsPage() {
 					<section className="grid gap-10 border-t border-[color:var(--editorial-border)] pt-10 lg:grid-cols-[0.95fr_0.75fr] lg:gap-16">
 						<div>
 							<h2 className="display-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
-								A agenda pública aproxima livro, presença e continuidade curatorial.
+								{page.curatorialNote?.title || "A agenda pública aproxima livro, presença e continuidade curatorial."}
 							</h2>
 						</div>
 						<div className="space-y-5 text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
-							<p>{t("events.principleBody")}</p>
+							<p>{page.curatorialNote?.body || t("events.principleBody")}</p>
 							<p>
 								Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que a
 								programação não pareça um apêndice separado do catálogo.
@@ -151,7 +159,7 @@ export default async function EventsPage() {
 
 				<EditorialShell className="py-4">
 					<section className="space-y-6">
-						<EditorialEyebrow>Agenda</EditorialEyebrow>
+						<EditorialEyebrow>{page.agenda?.label || "Agenda"}</EditorialEyebrow>
 						<div className="border-t border-[color:var(--editorial-border)]">
 							{agendaEvents.length > 0 ? (
 								agendaEvents.map((event, index) => {
@@ -189,8 +197,8 @@ export default async function EventsPage() {
 								})
 							) : (
 								<div className="border-b border-[color:var(--editorial-border)] py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau
-									Safado, conhecer os projetos e falar com o selo.
+									{page.agenda?.emptyText ||
+										"A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau Safado, conhecer os projetos e falar com o selo."}
 								</div>
 							)}
 						</div>
@@ -200,13 +208,13 @@ export default async function EventsPage() {
 				<section className="bg-[color:rgba(216,208,196,0.42)]">
 					<EditorialShell className="grid gap-8 py-16 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
 						<div className="space-y-4">
-							<EditorialEyebrow>Arquivo e memória</EditorialEyebrow>
+							<EditorialEyebrow>{page.archive?.label || "Arquivo e memória"}</EditorialEyebrow>
 							<h2 className="display-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
-								A programação também deixa rastro, repertório e retorno aos livros.
+								{page.archive?.title || "A programação também deixa rastro, repertório e retorno aos livros."}
 							</h2>
 						</div>
-						<div className="grid gap-6 lg:grid-cols-2">
-							{archiveCards.map((card) => (
+							<div className="grid gap-6 lg:grid-cols-2">
+								{archiveCards.map((card) => (
 								<YnsLink
 									key={card.href}
 									href={card.href}
@@ -237,21 +245,21 @@ export default async function EventsPage() {
 					<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[1.1fr_auto] lg:items-center">
 						<div>
 							<h2 className="display-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
-								A agenda abre caminho para encontros, livros e projetos do selo.
+								{page.finalCta?.title || "A agenda abre caminho para encontros, livros e projetos do selo."}
 							</h2>
 						</div>
 						<div className="flex flex-wrap gap-3">
 							<YnsLink
-								href="/sarau-safado"
+								href={page.finalCta?.primaryCtaHref || "/sarau-safado"}
 								className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 							>
-								Ver Sarau Safado
+								{page.finalCta?.primaryCtaLabel || "Ver Sarau Safado"}
 							</YnsLink>
 							<YnsLink
-								href="/projects"
+								href={page.finalCta?.secondaryCtaHref || "/projects"}
 								className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 							>
-								Ver projetos
+								{page.finalCta?.secondaryCtaLabel || "Ver projetos"}
 							</YnsLink>
 						</div>
 					</section>

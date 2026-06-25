@@ -1,5 +1,7 @@
 import Image from "next/image";
+import { getLocale } from "@/i18n/server";
 import type { Product } from "@/lib/commerce-types";
+import type { EditorialHomePage } from "@/lib/editorial-content";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
 import { formatMoney } from "@/lib/utils";
 import {
@@ -11,22 +13,31 @@ import {
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
-export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
-	const locale = "pt-BR";
+export async function HomeFeaturedBooks({
+	products,
+	content,
+}: {
+	products: Product[];
+	content?: EditorialHomePage | null;
+}) {
+	const locale = await getLocale();
 	const featured = products[0] ?? null;
 	const catalog = products.slice(0, 3);
+	const tags = ["Erotismo", "Cidade", "Corpo"];
 	const fallbackSummary =
-		"Uma leitura de tom noturno e autoral, atravessada por desejo, cidade e memória, pensada como porta de entrada para o universo editorial do selo.";
-	const tags = ["Romance", "Erotismo", "São Paulo"];
-	const primaryCtaLabel = "Comprar agora";
-	const secondaryCtaLabel = "Ver livro";
-	const catalogTitle = "Catálogo";
+		content?.featuredBook?.body ?? "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.";
+	const primaryCtaLabel = content?.featuredBook?.primaryCtaLabel || "Comprar agora";
+	const secondaryCtaLabel = content?.featuredBook?.secondaryCtaLabel || "Ver livro";
+	const catalogTitle = content?.catalog?.title || "Catálogo";
 	const catalogDescription =
-		"Capas grandes, poucas escolhas por vez e leitura direta de prateleira. A vitrine deve parecer curada, não infinita.";
-	const defaultCardSummary = "Leitura editorial em preparação.";
-	const primaryCardSummary = "Leitura curta, noturna e urbana.";
-	const viewBookLabel = "Ver livro";
-	const launchAlertLabel = "Avise-me";
+		content?.catalog?.body || "Uma prateleira curta e curada para entrar no universo do selo pela leitura.";
+	const primaryCardSummary =
+		content?.catalog?.primaryCardFallback ||
+		"Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.";
+	const defaultCardSummary =
+		content?.catalog?.defaultCardFallback || "Livro em preparação dentro do mesmo universo literário do selo.";
+	const viewBookLabel = content?.catalog?.viewBookLabel || "Ver livro";
+	const launchAlertLabel = content?.catalog?.launchAlertLabel || "Avise-me";
 
 	return (
 		<EditorialSection className="space-y-[4.5rem]">
@@ -51,7 +62,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 						<div className="space-y-5">
 							<Reveal delay={0.04}>
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.58)]">
-									Livro em destaque
+									{content?.featuredBook?.eyebrow || "Livro em destaque"}
 								</EditorialEyebrow>
 							</Reveal>
 							<Reveal delay={0.08}>

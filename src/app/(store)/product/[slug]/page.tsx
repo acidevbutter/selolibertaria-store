@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Product, YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { getEditorialProductPage } from "@/lib/editorial-content-store";
 import { isFavorite } from "@/lib/favorites";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
@@ -80,6 +81,7 @@ export default async function SingleProductPage(props: {
 
 	const t = await getTranslations("/product.page");
 	const locale = await getLocale();
+	const pageContent = await getEditorialProductPage();
 
 	// Cast to YnsProduct to access YNS-specific fields
 	const ynsProduct = product as YnsProduct;
@@ -148,9 +150,13 @@ export default async function SingleProductPage(props: {
 			: null,
 	].filter(Boolean) as Array<{ label: string; value: string }>;
 	const continuityLinks = [
-		{ href: "/sarau-safado", label: "Ver Sarau Safado" },
-		{ href: "/projects", label: "Ver projetos" },
-		{ href: "/products", label: "Ver catálogo" },
+		...(pageContent.continuity?.links?.length
+			? pageContent.continuity.links
+			: [
+					{ href: "/sarau-safado", label: "Ver Sarau Safado" },
+					{ href: "/projects", label: "Ver projetos" },
+					{ href: "/products", label: "Ver catálogo" },
+				]),
 	];
 
 	return (
@@ -252,7 +258,7 @@ export default async function SingleProductPage(props: {
 
 								<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
 									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-										Sinopse
+										{pageContent.synopsis?.label || "Sinopse"}
 									</EditorialEyebrow>
 									<div className="mt-6 max-w-3xl text-xl leading-[1.55] text-[color:var(--editorial-muted)] sm:text-2xl">
 										<Markdown source={description} />
@@ -276,8 +282,8 @@ export default async function SingleProductPage(props: {
 									</h2>
 								</div>
 								<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
-									Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto
-									persistido.
+									{pageContent.excerpt?.bodyFallback ||
+										"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."}
 								</p>
 							</EditorialShell>
 						</section>
@@ -288,7 +294,7 @@ export default async function SingleProductPage(props: {
 					<Reveal>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Ficha técnica
+								{pageContent.details?.title || "Ficha técnica"}
 							</EditorialEyebrow>
 							<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
 								{details.map((detail) => (
@@ -311,11 +317,16 @@ export default async function SingleProductPage(props: {
 					<Reveal delay={0.08}>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Outros livros
+								{pageContent.related?.title || "Outros livros"}
 							</EditorialEyebrow>
 							<div className="mt-10 grid gap-8 sm:grid-cols-2">
 								{relatedProducts.map((related) => (
-									<RelatedBookCard key={related.id} product={related} viewBookLabel="Ver livro" />
+									<RelatedBookCard
+										key={related.id}
+										product={related}
+										viewBookLabel={pageContent.related?.viewBookLabel || "Ver livro"}
+										fallbackSummary={pageContent.related?.fallbackSummary || "Novo título em breve"}
+									/>
 								))}
 							</div>
 						</div>
@@ -327,13 +338,13 @@ export default async function SingleProductPage(props: {
 						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo.
+									{pageContent.continuity?.title || "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."}
 								</h2>
 							</div>
 							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
 								<p>
-									A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura,
-									contexto e continuidade cultural.
+									{pageContent.continuity?.body ||
+										"A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."}
 								</p>
 								<div className="flex flex-wrap gap-3">
 									{continuityLinks.map((link, index) => (
@@ -361,7 +372,15 @@ export default async function SingleProductPage(props: {
 	);
 }
 
-function RelatedBookCard({ product, viewBookLabel }: { product: Product; viewBookLabel: string }) {
+function RelatedBookCard({
+	product,
+	viewBookLabel,
+	fallbackSummary,
+}: {
+	product: Product;
+	viewBookLabel: string;
+	fallbackSummary: string;
+}) {
 	return (
 		<LiftOnHover>
 			<YnsLink href={`/product/${product.slug}`} className="group block h-full">
@@ -384,7 +403,7 @@ function RelatedBookCard({ product, viewBookLabel }: { product: Product; viewBoo
 					{product.name}
 				</h3>
 				<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
-					{product.summary ?? "Novo título em breve"}
+					{product.summary ?? fallbackSummary}
 				</p>
 				<span className="mt-4 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:border-[color:var(--editorial-accent)] group-hover:bg-[color:rgba(216,208,196,0.24)]">
 					{viewBookLabel}
