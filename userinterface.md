@@ -173,3 +173,4 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Header e menu mobile devem repetir exatamente os cinco itens oficiais, sem `Início`, sem `Eventos` e sem categorias dinâmicas no bloco principal.
 - CTA `Comprar` continua separada da navegação principal em desktop e mobile.
 - Busca, catálogo e estados vazios públicos devem preferir `livros` no lugar de `produtos` quando o contexto for storefront editorial.
+- Catálogo, Projetos, Sarau Safado, Sobre e Contato devem repetir a gramática visual do Figma Editorial V2: hero dominante, poucas seções, alternância entre papel e preto e fechamento único antes do footer.

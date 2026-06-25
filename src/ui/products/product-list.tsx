@@ -20,16 +20,18 @@ export const ProductList = async ({ products }: { products: Product[] }) => {
 				<Reveal>
 					<EditorialPanel className="grid gap-5 sm:grid-cols-3">
 						<div>
-							<EditorialEyebrow>Seleção</EditorialEyebrow>
+							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Catálogo</EditorialEyebrow>
 							<p className="editorial-serif mt-3 text-2xl font-semibold sm:text-3xl">
-								Capas, edições e presença autoral.
+								Poucos ruídos, capas em destaque e saída clara para compra.
 							</p>
 						</div>
 						<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-							A vitrine privilegia leitura rápida, capa em destaque e acesso direto à compra.
+							A vitrine privilegia leitura rápida, capa protagonista e passagem simples para a página do
+							livro.
 						</p>
 						<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-							Quando houver variantes, a escolha já acontece na grade para manter o fluxo leve.
+							Quando houver variantes, a escolha continua disponível na grade para manter o fluxo de compra
+							leve.
 						</p>
 					</EditorialPanel>
 				</Reveal>

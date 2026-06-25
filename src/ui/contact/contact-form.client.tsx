@@ -40,7 +40,14 @@ export function ContactForm({ className }: ContactFormProps) {
 					>
 						{t("fields.name")}
 					</label>
-					<Input id="name" name="name" required placeholder={t("placeholders.name")} autoComplete="name" />
+					<Input
+						id="name"
+						name="name"
+						required
+						placeholder={t("placeholders.name")}
+						autoComplete="name"
+						className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
+					/>
 				</div>
 				<div className="space-y-2">
 					<label
@@ -56,6 +63,7 @@ export function ContactForm({ className }: ContactFormProps) {
 						required
 						placeholder={t("placeholders.email")}
 						autoComplete="email"
+						className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
 					/>
 				</div>
 			</div>
@@ -66,7 +74,13 @@ export function ContactForm({ className }: ContactFormProps) {
 				>
 					{t("fields.subject")}
 				</label>
-				<Input id="subject" name="subject" required placeholder={t("placeholders.subject")} />
+				<Input
+					id="subject"
+					name="subject"
+					required
+					placeholder={t("placeholders.subject")}
+					className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
+				/>
 			</div>
 			<div className="space-y-2">
 				<label
@@ -80,7 +94,7 @@ export function ContactForm({ className }: ContactFormProps) {
 					name="message"
 					required
 					rows={6}
-					className="flex min-h-36 w-full resize-y border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					className="flex min-h-48 w-full resize-y border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					placeholder={t("placeholders.message")}
 				/>
 			</div>
@@ -88,7 +102,7 @@ export function ContactForm({ className }: ContactFormProps) {
 				<Button
 					type="submit"
 					disabled={status === "submitting"}
-					className="min-w-32 rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+					className="min-w-40 rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
 				>
 					{status === "submitting"
 						? t("actions.sending")

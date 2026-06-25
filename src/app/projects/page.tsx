@@ -20,6 +20,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 export default async function ProjectsPage() {
 	const t = await getTranslations("Selo");
 	const projects = (await listEditorialProjects()).filter((project) => project.published);
+	const featuredProject = projects[0] ?? null;
 	const axisKeys = ["projects.axes.1", "projects.axes.2", "projects.axes.3"] as const;
 
 	return (
@@ -27,154 +28,155 @@ export default async function ProjectsPage() {
 			<Nav />
 			<EditorialShell className="flex flex-1 flex-col gap-10 py-10">
 				<Reveal>
-					<header className="grid gap-6 border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] p-8 lg:grid-cols-[1.2fr_0.8fr]">
+					<header className="grid gap-6 bg-[color:var(--editorial-ink)] p-8 text-[color:var(--editorial-paper)] lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
 						<div className="space-y-4">
-							<EditorialEyebrow className="sm:text-sm">{t("projects.heroEyebrow")}</EditorialEyebrow>
-							<h1 className="display-font text-5xl font-black tracking-[-0.06em] uppercase sm:text-6xl">
+							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
+								{t("projects.heroEyebrow")}
+							</EditorialEyebrow>
+							<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
 								{t("projects.heroTitle")}
 							</h1>
-							<p className="max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
+							<p className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base">
 								{t("projects.heroBody")}
 							</p>
 						</div>
-						<div className="border-l-[10px] border-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)] p-6">
-							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
-								{t("projects.principleEyebrow")}
-							</p>
-							<p className="mt-3 text-2xl leading-tight font-black uppercase">
-								{t("projects.principleTitle")}
-							</p>
-							<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{t("projects.principleBody")}
-							</p>
+						<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
+							{featuredProject?.image?.src ? (
+								<Image
+									src={featuredProject.image.src}
+									alt={featuredProject.image.alt || featuredProject.title}
+									width={1200}
+									height={900}
+									className="h-auto w-full object-cover"
+									sizes="(max-width: 1024px) 100vw, 460px"
+								/>
+							) : (
+								<div className="flex aspect-[1.05] items-center justify-center border border-white/20 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
+									Foto / performance / oficina
+								</div>
+							)}
 						</div>
 					</header>
 				</Reveal>
 
-				<section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-					<aside className="flex flex-col gap-6">
-						<Reveal>
-							<LiftOnHover>
-								<EditorialPanel className="border-l-[12px] border-l-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)]">
-									<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
-										{t("projects.principleEyebrow")}
-									</p>
-									<p className="mt-4 text-3xl leading-tight font-black uppercase">
-										{t("projects.principleTitle")}
-									</p>
-									<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-										{t("projects.principleBody")}
-									</p>
-								</EditorialPanel>
-							</LiftOnHover>
-						</Reveal>
+				<section className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_0.95fr] lg:items-start">
+					<Reveal>
+						<div className="space-y-5">
+							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
+								Projetos como extensão viva do catálogo.
+							</h2>
+						</div>
+					</Reveal>
+					<Reveal delay={0.08}>
+						<div className="space-y-5 text-base leading-8 text-[color:var(--editorial-ink)]">
+							<p>
+								Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item
+								precisa ter imagem, status, contexto e saída clara.
+							</p>
+							<ul className="grid gap-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
+								{axisKeys.map((key) => (
+									<li
+										key={key}
+										className="border border-[color:var(--editorial-border)] bg-background/60 px-4 py-3"
+									>
+										{t(key)}
+									</li>
+								))}
+							</ul>
+						</div>
+					</Reveal>
+				</section>
 
-						<Reveal delay={0.08}>
+				<section className="grid gap-6 lg:grid-cols-3">
+					{projects.map((project, index) => (
+						<Reveal key={project.slug} delay={0.05 * index}>
 							<LiftOnHover>
-								<EditorialPanel className="p-6">
-									<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
-										{t("projects.axesEyebrow")}
-									</p>
-									<ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">
-										{axisKeys.map((key) => (
-											<li key={key} className="border border-border/50 bg-background/60 px-4 py-3">
-												{t(key)}
-											</li>
-										))}
-									</ul>
-								</EditorialPanel>
-							</LiftOnHover>
-						</Reveal>
-					</aside>
-
-					<div className="grid gap-6">
-						{projects.map((project, index) => (
-							<Reveal key={project.slug} delay={0.05 * index}>
-								<LiftOnHover>
-									<EditorialPanel className="group p-6">
-										{project.image?.src ? (
-											<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
-												<Image
-													src={project.image.src}
-													alt={project.image.alt || project.title}
-													width={1600}
-													height={900}
-													className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-													sizes="(max-width: 1024px) 100vw, 960px"
-												/>
-											</div>
-										) : null}
-										<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-											{project.eyebrow ? <span>{project.eyebrow}</span> : null}
-											{project.eyebrow ? (
-												<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-											) : null}
-											<span>{project.period}</span>
+								<EditorialPanel
+									className={
+										index % 3 === 2
+											? "group bg-[color:var(--editorial-ink)] p-5 text-[color:var(--editorial-paper)]"
+											: "group p-5"
+									}
+								>
+									{project.image?.src ? (
+										<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
+											<Image
+												src={project.image.src}
+												alt={project.image.alt || project.title}
+												width={1600}
+												height={900}
+												className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+												sizes="(max-width: 1024px) 100vw, 960px"
+											/>
+										</div>
+									) : null}
+									<div
+										className={
+											index % 3 === 2
+												? "flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
+												: "flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground"
+										}
+									>
+										{project.eyebrow ? <span>{project.eyebrow}</span> : null}
+										{project.eyebrow ? (
 											<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-											<span>{project.location}</span>
-										</div>
-										<div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-											<div>
-												<h2 className="editorial-serif text-3xl font-semibold sm:text-4xl">
-													{project.title}
-												</h2>
-												{project.summary ? (
-													<p className="mt-3 max-w-2xl text-base text-foreground/85">{project.summary}</p>
-												) : null}
-											</div>
-											{project.description ? (
-												<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
-													{project.description}
-												</p>
-											) : null}
-										</div>
-										{index === 0 ? (
-											<div className="mt-5 flex flex-wrap gap-3">
-												<YnsLink
-													href="/sarau-safado"
-													className="border border-[color:var(--editorial-ink)] px-4 py-2 text-sm font-medium transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-												>
-													{t("projects.ctaSarau")}
-												</YnsLink>
-												<YnsLink
-													href="/events"
-													className="border border-[color:var(--editorial-ink)] px-4 py-2 text-sm font-medium transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-												>
-													{t("projects.ctaRelatedEvents")}
-												</YnsLink>
-											</div>
 										) : null}
-									</EditorialPanel>
-								</LiftOnHover>
-							</Reveal>
-						))}
-					</div>
+										<span>{project.period}</span>
+										<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
+										<span>{project.location}</span>
+									</div>
+									<h2 className="mt-4 text-2xl leading-[0.98] font-black tracking-[-0.04em] sm:text-[2.15rem]">
+										{project.title}
+									</h2>
+									{project.summary ? (
+										<p
+											className={
+												index % 3 === 2
+													? "mt-3 text-base text-[color:rgba(247,244,239,0.82)]"
+													: "mt-3 text-base text-foreground/85"
+											}
+										>
+											{project.summary}
+										</p>
+									) : null}
+									{project.description ? (
+										<p
+											className={
+												index % 3 === 2
+													? "mt-4 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+													: "mt-4 text-sm leading-7 text-muted-foreground"
+											}
+										>
+											{project.description}
+										</p>
+									) : null}
+								</EditorialPanel>
+							</LiftOnHover>
+						</Reveal>
+					))}
 				</section>
 
 				<Reveal>
-					<section className="grid gap-6 border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] p-6 text-[color:var(--editorial-paper)] sm:p-8 lg:grid-cols-[1.15fr_0.85fr]">
-						<div>
-							<p className="text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.58)]">
-								{t("projects.continuityEyebrow")}
-							</p>
-							<h2 className="mt-4 text-3xl font-black uppercase sm:text-4xl">
-								{t("projects.continuityTitle")}
+					<section className="grid gap-6 bg-[color:var(--editorial-beige)] p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+						<div className="max-w-3xl">
+							<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
+								Projetos conectam programação, livro e comunidade.
 							</h2>
 						</div>
-						<div className="flex flex-col gap-4 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
+						<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
 							<p>{t("projects.continuityBody")}</p>
 							<div className="flex flex-wrap gap-3">
 								<YnsLink
-									href="/events"
-									className="border border-[color:rgba(247,244,239,0.22)] px-4 py-2 font-medium transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+									href="/contact"
+									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 								>
-									{t("projects.ctaEvents")}
+									Falar sobre projeto
 								</YnsLink>
 								<YnsLink
-									href="/products"
-									className="border border-[color:rgba(247,244,239,0.22)] px-4 py-2 font-medium transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+									href="/sarau-safado"
+									className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.4)]"
 								>
-									{t("projects.ctaCatalog")}
+									Ver Sarau Safado
 								</YnsLink>
 							</div>
 						</div>

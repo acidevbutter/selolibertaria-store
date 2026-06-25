@@ -127,3 +127,4 @@ Confiança vem de:
 
 - A navegação mobile deve confirmar a mesma hierarquia do desktop para não criar dúvida sobre o que é seção principal e o que é conteúdo auxiliar.
 - Em busca e catálogo, a linguagem precisa soar editorial e específica; `livros` comunica melhor o domínio do que `produtos`.
+- Nas páginas editoriais públicas pós-home, a pessoa deve conseguir entender o assunto e agir em até três movimentos visuais: hero, bloco de contexto, saída clara para compra, agenda, contato ou Sarau.

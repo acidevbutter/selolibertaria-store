@@ -232,3 +232,4 @@ Also validate:
 
 - 2026-06-24: public navigation must stay identical across desktop and mobile with only `Livros`, `Projetos`, `Sarau Safado`, `Sobre` and `Contato`; keep `Comprar` as a separate CTA and never leak `Eventos`, `Início` or dynamic categories into the primary public menu.
 - 2026-06-24: when polishing public storefront copy, prefer `livros` over generic `produtos` in search, catalogue and empty-state labels, and route fallback CTAs toward primary editorial surfaces such as `Projetos` instead of promoting `Eventos` in the main navigation path.
+- 2026-06-24: public editorial pages after Home should follow the Editorial V2 hierarchy of one dominant hero, one short explanatory band, a concise content block and a single strong closing CTA strip before the newsletter/footer; avoid stacking many generic panels.

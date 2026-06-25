@@ -233,6 +233,8 @@
 	"/product.page.variantTitle": "Variant",
 	"/product.page.outOfStock": "Out of stock",
 	"/product.page.addToCart": "Add to cart",
+	"/product.page.buyNow": "Buy now",
+	"/product.page.viewBook": "View book",
 	"/category.metadata.title": "{categoryName} Category · Selo Libertaria",
 	"/category.page.title": "Category",
 	"/cart.modal.title": "Shopping Cart",
