@@ -59,12 +59,6 @@ function readLinks(formData: FormData, prefix: string, count: number) {
 		.filter((item): item is { label: string; href: string } => Boolean(item.label && item.href));
 }
 
-function readStrings(formData: FormData, key: string, count: number) {
-	return Array.from({ length: count }, (_, index) => optionalString(formData.get(`${key}${index + 1}`))).filter(
-		(value): value is string => Boolean(value),
-	);
-}
-
 function refreshPaths(type: PageCopyType) {
 	revalidatePath("/");
 	revalidatePath("/products");
