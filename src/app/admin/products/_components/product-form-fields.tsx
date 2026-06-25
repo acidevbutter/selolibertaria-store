@@ -144,7 +144,10 @@ function applySlugBlurFormat(event: { currentTarget: HTMLInputElement }) {
 }
 
 function formatDecimalWhileTyping(value: string) {
-	const normalized = value.replace(/\s+/g, "").replace(/\./g, ",").replace(/[^0-9,]/g, "");
+	const normalized = value
+		.replace(/\s+/g, "")
+		.replace(/\./g, ",")
+		.replace(/[^0-9,]/g, "");
 	const [integerPart = "", ...decimalParts] = normalized.split(",");
 	const decimalPart = decimalParts.join("");
 	return decimalPart ? `${integerPart},${decimalPart}` : integerPart;

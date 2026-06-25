@@ -29,7 +29,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 
 	if (!normalizedImages.length) {
 		return (
-			<div className="flex aspect-square w-full items-center justify-center rounded-lg bg-neutral-100 text-sm text-muted-foreground">
+			<div className="flex aspect-square w-full items-center justify-center bg-neutral-100 text-sm text-muted-foreground">
 				{t("noImage")}
 			</div>
 		);
@@ -61,7 +61,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 	return (
 		<>
 			<div className="space-y-4">
-				<div className="relative overflow-hidden rounded-lg bg-neutral-100">
+				<div className="relative overflow-hidden bg-neutral-100">
 					<button
 						type="button"
 						className="block w-full cursor-zoom-in"
@@ -76,7 +76,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 							alt={alt}
 						/>
 					</button>
-					<div className="pointer-events-none absolute right-3 top-3 rounded-full bg-background/90 p-2 text-foreground shadow-sm">
+					<div className="pointer-events-none absolute right-3 top-3 bg-background/90 p-2 text-foreground shadow-sm">
 						<ZoomIn className="h-4 w-4" />
 					</div>
 					{hasMultipleImages ? (
@@ -85,7 +85,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 								type="button"
 								variant="secondary"
 								size="icon"
-								className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full"
+								className="absolute left-3 top-1/2 -translate-y-1/2 rounded-none"
 								onClick={goToPrevious}
 								aria-label={t("actions.previous")}
 							>
@@ -95,7 +95,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 								type="button"
 								variant="secondary"
 								size="icon"
-								className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full"
+								className="absolute right-3 top-1/2 -translate-y-1/2 rounded-none"
 								onClick={goToNext}
 								aria-label={t("actions.next")}
 							>
@@ -113,7 +113,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 								type="button"
 								onClick={() => setCurrentIndex(index)}
 								className={cn(
-									"shrink-0 overflow-hidden rounded-md border bg-neutral-100",
+									"shrink-0 overflow-hidden border bg-neutral-100",
 									currentIndex === index ? "border-foreground" : "border-transparent",
 								)}
 								aria-label={t("actions.viewImage", { index: index + 1 })}
@@ -139,7 +139,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 						<DialogTitle>{alt}</DialogTitle>
 						<DialogDescription>{t("zoomedDescription")}</DialogDescription>
 					</DialogHeader>
-					<div className="relative overflow-hidden rounded-lg bg-background">
+					<div className="relative overflow-hidden bg-background">
 						<div
 							ref={zoomSurfaceRef}
 							className="relative flex max-h-[88vh] min-h-[50vh] items-center justify-center overflow-hidden"
@@ -175,7 +175,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 									type="button"
 									variant="secondary"
 									size="icon"
-									className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full"
+									className="absolute left-4 top-1/2 -translate-y-1/2 rounded-none"
 									onClick={goToPrevious}
 									aria-label={t("actions.previous")}
 								>
@@ -185,7 +185,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 									type="button"
 									variant="secondary"
 									size="icon"
-									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full"
+									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-none"
 									onClick={goToNext}
 									aria-label={t("actions.next")}
 								>

@@ -13,10 +13,8 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Início", href: PUBLIC_NAVIGATION.home },
 	{ label: "Livros", href: PUBLIC_NAVIGATION.shop },
 	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
-	{ label: "Eventos", href: PUBLIC_NAVIGATION.events },
 	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
 	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },
 	{ label: "Contato", href: PUBLIC_NAVIGATION.contact },
@@ -87,12 +85,12 @@ export const seloHomeHero = {
 	description:
 		"O Selo Libertaria reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
 	primaryCta: {
-		label: "Ver livros",
+		label: "Comprar livro",
 		href: PUBLIC_NAVIGATION.shop,
 	},
 	secondaryCta: {
-		label: "Explorar a agenda",
-		href: "/events",
+		label: "Conhecer o Sarau Safado",
+		href: PUBLIC_NAVIGATION.sarau,
 	},
 	supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
 	featureEyebrow: "Site editorial",
@@ -114,8 +112,8 @@ export const seloHomeFeaturedBooksIntro = {
 };
 
 export const seloHomeManifesto = {
-	title: "Literatura para incendiar linguagem, cidade e imaginação.",
-	body: "Entre publicações, encontros e performance, o Selo Libertaria constrói um catálogo autoral para adultos onde o livro opera ao mesmo tempo como obra, gesto e presença cultural.",
+	title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
+	body: "Entre publicações, encontros e performance, o selo constrói uma leitura autoral em que livro, presença e imaginação cultural continuam a mesma conversa.",
 	linkLabel: "Conheça o selo",
 	linkHref: PUBLIC_NAVIGATION.about,
 };
@@ -139,9 +137,15 @@ export const seloHomeImmersiveGallery = {
 	eyebrow: "Atmosfera",
 	quote: "Ler também pode ser uma forma de acender presença.",
 	images: [
-		{ src: seloEditorialAssets.bookOpenSpread, alt: "Livro aberto do Selo Libertária com ilustração interna" },
+		{
+			src: seloEditorialAssets.bookOpenSpread,
+			alt: "Livro aberto do Selo Libertária com ilustração interna",
+		},
 		{ src: seloEditorialAssets.bookStackedMock, alt: "Mockup empilhado do livro Virus do Beijo" },
-		{ src: seloEditorialAssets.illustrationMermaid, alt: "Ilustração circular em preto e branco do universo do selo" },
+		{
+			src: seloEditorialAssets.illustrationMermaid,
+			alt: "Ilustração circular em preto e branco do universo do selo",
+		},
 	],
 };
 

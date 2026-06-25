@@ -46,8 +46,7 @@ export default async function Home() {
 			: homeContent;
 	const featuredProgramEvent =
 		shouldPreferTranslatedFallbacks && isMockContent(featuredEvent) ? null : featuredEvent;
-	const featuredSarauPage =
-		shouldPreferTranslatedFallbacks && isMockContent(sarauPage) ? null : sarauPage;
+	const featuredSarauPage = shouldPreferTranslatedFallbacks && isMockContent(sarauPage) ? null : sarauPage;
 	try {
 		const result = await commerce.product.browse({ first: 6, currency: await getRequestPreferredCurrency() });
 		const products = result.data || [];

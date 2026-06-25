@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
-import { getEditorialSarauPage } from "@/lib/editorial-content-store";
+import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
@@ -20,7 +20,8 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function SarauSafadoPage() {
 	const t = await getTranslations("Selo");
-	const sarau = await getEditorialSarauPage();
+	const [sarau, events] = await Promise.all([getEditorialSarauPage(), listEditorialEvents()]);
+	const agenda = events.filter((event) => event.published).slice(0, 3);
 	const notes = sarau.programNotes?.length
 		? sarau.programNotes
 		: [
@@ -52,14 +53,14 @@ export default async function SarauSafadoPage() {
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<EditorialShell className="flex flex-1 flex-col gap-10 py-10">
+			<div className="flex flex-1 flex-col">
 				<Reveal>
 					<section
-						className="relative overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
+						className="relative overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
 						style={
 							sarau.hero?.image?.src
 								? {
-										backgroundImage: `linear-gradient(120deg, rgba(247,244,239,0.62) 0%, rgba(247,244,239,0.2) 42%, rgba(11,11,11,0.58) 100%), url(${sarau.hero.image.src})`,
+										backgroundImage: `linear-gradient(120deg, rgba(11,11,11,0.9) 0%, rgba(11,11,11,0.82) 46%, rgba(11,11,11,0.72) 100%), url(${sarau.hero.image.src})`,
 										backgroundPosition: "center",
 										backgroundRepeat: "no-repeat",
 										backgroundSize: "cover",
@@ -67,117 +68,140 @@ export default async function SarauSafadoPage() {
 								: undefined
 						}
 					>
-						<div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(247,244,239,0.08),rgba(247,244,239,0.16))]" />
-						<div className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
-							<div className="max-w-3xl">
-								<EditorialEyebrow className="sm:text-sm">
+						<EditorialShell className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
+							<div className="max-w-3xl space-y-4">
+								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
 									{sarau.hero?.eyebrow || t("nav.sarau")}
 								</EditorialEyebrow>
-								<h1 className="display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] uppercase sm:text-6xl">
+								<h1 className="display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] text-[color:var(--editorial-paper)] sm:text-6xl">
 									{sarau.hero?.title || t("sarau.heroTitle")}
 								</h1>
-							</div>
-							<div className="ml-auto max-w-xl border-l-[10px] border-[color:var(--editorial-accent)] bg-[color:rgba(247,244,239,0.9)] p-5 text-left">
-								<p className="text-base leading-8 text-[color:var(--editorial-ink)] sm:text-lg">
+								<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg">
 									{sarau.hero?.body || t("sarau.heroBody")}
 								</p>
-								{sarau.hero?.image?.caption ? (
-									<p className="mt-4 text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]">
-										{sarau.hero.image.caption}
-									</p>
-								) : null}
+								<div className="flex flex-wrap gap-3 pt-2">
+									<YnsLink
+										href="/events"
+										className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+									>
+										Próxima edição
+									</YnsLink>
+									<YnsLink
+										href="/events"
+										className="inline-flex min-h-11 items-center justify-center border border-white/20 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-white/8"
+									>
+										Memória do Sarau
+									</YnsLink>
+								</div>
 							</div>
-						</div>
+						</EditorialShell>
 					</section>
 				</Reveal>
 
-				<section className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+				<EditorialShell className="grid gap-8 py-10 lg:grid-cols-[1fr_1fr] lg:items-start">
 					<Reveal>
-						<LiftOnHover>
-							<EditorialPanel>
-								<h2 className="editorial-serif text-3xl font-semibold">
-									{sarau.why?.title || t("sarau.whyTitle")}
-								</h2>
-								<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{sarau.why?.body || t("sarau.whyBody")}
-								</p>
-								{sarau.body ? (
-									<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">{sarau.body}</p>
-								) : null}
-							</EditorialPanel>
-						</LiftOnHover>
+						<div className="space-y-4">
+							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Agenda</EditorialEyebrow>
+							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
+								Próxima edição e encontros recentes.
+							</h2>
+						</div>
 					</Reveal>
 					<Reveal delay={0.08}>
-						<LiftOnHover>
-							<EditorialPanel>
-								<h2 className="editorial-serif text-3xl font-semibold">{t("sarau.signalsTitle")}</h2>
-								<ul className="mt-4 space-y-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{(sarau.signals ?? []).map((detail) => (
-										<li
-											key={detail}
-											className="border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)] px-4 py-3"
-										>
-											{detail}
-										</li>
-									))}
-								</ul>
-							</EditorialPanel>
-						</LiftOnHover>
-					</Reveal>
-				</section>
-
-				<section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-					<Reveal>
-						<EditorialPanel className="border-l-[12px] border-l-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)]">
-							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
-								Leitura do programa
-							</p>
-							<h2 className="mt-4 text-3xl leading-[0.95] font-black uppercase sm:text-4xl">
-								{notes[0]?.title ||
-									"O Sarau Safado existe como ritual recorrente de leitura, presença e escuta."}
-							</h2>
-							<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{notes[0]?.body ||
-									"Em vez de um evento avulso, ele sustenta continuidade: cria público, prolonga o catálogo e abre espaço para vozes convidadas dentro de uma linha curatorial nítida."}
-							</p>
-						</EditorialPanel>
-					</Reveal>
-					<div className="grid gap-4">
-						{notes.slice(1, 4).map((note, index) => (
-							<Reveal key={note.title} delay={0.08 * index}>
-								<LiftOnHover>
-									<EditorialPanel className="p-5">
-										<p className="text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]">
-											{note.title}
+						<div className="grid gap-8">
+							{agenda.map((event) => (
+								<div
+									key={event.slug}
+									className="grid gap-3 border-b border-[color:var(--editorial-border)] pb-6 sm:grid-cols-[5.5rem_1fr]"
+								>
+									<div className="text-3xl font-black text-[color:var(--editorial-accent)]">
+										{event.period?.slice(0, 6).toUpperCase() || "AGENDA"}
+									</div>
+									<div>
+										<h3 className="text-2xl font-semibold">{event.title}</h3>
+										<p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
+											{event.location} · {event.summary}
 										</p>
-										<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">{note.body}</p>
-									</EditorialPanel>
-								</LiftOnHover>
-							</Reveal>
-						))}
-					</div>
+									</div>
+								</div>
+							))}
+						</div>
+					</Reveal>
+				</EditorialShell>
+
+				<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+					<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+						<Reveal>
+							<div className="space-y-4">
+								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)]">
+									Galeria / memória
+								</EditorialEyebrow>
+								<h2 className="max-w-2xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
+									Fotos grandes, vídeos, textos e registros.
+								</h2>
+								<p className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
+									{sarau.why?.body || t("sarau.whyBody")}
+								</p>
+							</div>
+						</Reveal>
+						<div className="grid gap-4 sm:grid-cols-3">
+							{notes.slice(1, 4).map((note, index) => (
+								<Reveal key={note.title} delay={0.08 * index}>
+									<LiftOnHover>
+										<div
+											className={
+												index === 1
+													? "flex min-h-[17rem] flex-col justify-end bg-[color:var(--editorial-beige)] p-5 text-[color:var(--editorial-ink)]"
+													: "flex min-h-[17rem] flex-col justify-end border border-white/30 bg-[color:rgba(247,244,239,0.08)] p-5"
+											}
+										>
+											<p
+												className={
+													index === 1
+														? "text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
+														: "text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
+												}
+											>
+												{note.title}
+											</p>
+											<p
+												className={
+													index === 1
+														? "mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+														: "mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+												}
+											>
+												{note.body}
+											</p>
+										</div>
+									</LiftOnHover>
+								</Reveal>
+							))}
+						</div>
+					</EditorialShell>
 				</section>
 
 				<Reveal>
-					<EditorialPanel className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] sm:p-8">
-						<h2 className="text-3xl font-black uppercase">{t("sarau.continueTitle")}</h2>
-						<p className="mt-3 max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
-							{t("sarau.continueBody")}
-						</p>
-						<div className="mt-6 flex flex-wrap gap-3">
-							{continueLinks.map((link) => (
-								<YnsLink
-									key={link.href}
-									href={link.href}
-									className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium transition-colors duration-300 hover:bg-white/10"
-								>
-									{link.label}
-								</YnsLink>
-							))}
-						</div>
-					</EditorialPanel>
+					<section className="bg-[color:rgba(216,208,196,0.55)]">
+						<EditorialShell className="px-6 py-8 sm:px-8 sm:py-10">
+							<h2 className="max-w-4xl text-3xl leading-[1.05] font-black sm:text-4xl">
+								Eventos vivem aqui como agenda do Sarau, não como item principal do menu.
+							</h2>
+							<div className="mt-6 flex flex-wrap gap-3">
+								{continueLinks.map((link) => (
+									<YnsLink
+										key={link.href}
+										href={link.href}
+										className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
+									>
+										{link.label}
+									</YnsLink>
+								))}
+							</div>
+						</EditorialShell>
+					</section>
 				</Reveal>
-			</EditorialShell>
+			</div>
 			<Footer />
 		</div>
 	);

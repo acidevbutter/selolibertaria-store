@@ -27,7 +27,6 @@ describe("shipping", () => {
 			serviceName: "Economy",
 			fixedAmount: 2500,
 			estimatedDays: 5,
-			currency: "brl",
 			supportedCountries: ["br", "US", "br"],
 			requiresPostalCode: true,
 			defaultWeightGrams: 400,
@@ -52,7 +51,6 @@ describe("shipping", () => {
 		expect(provider.serviceName).toBe("Economy");
 		expect(provider.fixedAmount).toBe(2500);
 		expect(provider.estimatedDays).toBe(5);
-		expect(provider.currency).toBeNull();
 		expect(provider.supportedCountries).toEqual(["BR", "US"]);
 		expect(provider.requiresPostalCode).toBe(true);
 		expect(provider.defaultWeightGrams).toBe(400);

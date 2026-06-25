@@ -97,7 +97,7 @@ export function EmailTemplatesPreviewClient({
 					<label htmlFor="email-template-select" className="text-sm font-medium">
 						Modelo em revisão
 					</label>
-						<select
+					<select
 						id="email-template-select"
 						value={selectedValue}
 						onChange={(event) => setSelected(event.target.value)}
@@ -153,8 +153,8 @@ export function EmailTemplatesPreviewClient({
 							Nenhum modelo encontrado para essa busca.
 						</div>
 					) : null}
-					</div>
-				</section>
+				</div>
+			</section>
 
 			<section className="space-y-4 border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-5">
 				<div className="flex flex-col gap-4 border-b border-[color:var(--editorial-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
@@ -197,7 +197,10 @@ export function EmailTemplatesPreviewClient({
 							</div>
 							<div className="grid gap-2 sm:grid-cols-2">
 								{current.variables.map((variable) => (
-									<div key={`${current.id}:${variable.name}`} className="border border-[color:var(--editorial-border)] bg-white px-3 py-3">
+									<div
+										key={`${current.id}:${variable.name}`}
+										className="border border-[color:var(--editorial-border)] bg-white px-3 py-3"
+									>
 										<div className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
 											{variable.name}
 										</div>

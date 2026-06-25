@@ -322,7 +322,8 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 									Ainda não há envios neste recorte.
 								</p>
 								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Revise os modelos, confirme o e-mail de suporte e dispare um teste para verificar a trilha completa.
+									Revise os modelos, confirme o e-mail de suporte e dispare um teste para verificar a trilha
+									completa.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">

@@ -56,7 +56,7 @@ export default async function SearchPage(props: {
 					},
 					{
 						label: "Continuidade",
-						body: "Mesmo na busca, a pessoa sente que continua navegando o mesmo universo curado do selo.",
+						body: "Mesmo na busca, a pessoa continua navegando o mesmo universo curado do selo.",
 					},
 				]}
 			/>

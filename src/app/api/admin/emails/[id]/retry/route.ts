@@ -65,7 +65,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 		}
 		if (!doc.subject) {
 			return new Response(
-				JSON.stringify({ error: "Este registro de email não tem assunto.", code: "ADMIN_EMAIL_RETRY_SUBJECT_MISSING" }),
+				JSON.stringify({
+					error: "Este registro de email não tem assunto.",
+					code: "ADMIN_EMAIL_RETRY_SUBJECT_MISSING",
+				}),
 				{ status: 400 },
 			);
 		}

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { UserIcon } from "lucide-react";
+import Image from "next/image";
 import { CartIcon } from "@/components/cart-icon";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
