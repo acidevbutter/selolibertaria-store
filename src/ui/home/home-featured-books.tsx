@@ -22,27 +22,29 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 		: "A nocturnal author-led read shaped by desire, the city, and memory, conceived as an entry point into the selo's editorial universe.";
 	const tags = isPortuguese ? ["Romance", "Erotismo", "São Paulo"] : ["Novel", "Erotica", "Sao Paulo"];
 	const primaryCtaLabel = isPortuguese ? "Comprar agora" : "Buy now";
-	const secondaryCtaLabel = isPortuguese ? "Ver detalhes" : "View details";
+	const secondaryCtaLabel = isPortuguese ? "Ver livro" : "View book";
 	const catalogTitle = isPortuguese ? "Catálogo" : "Catalogue";
 	const catalogDescription = isPortuguese
 		? "Capas grandes, poucas escolhas por vez e leitura direta de prateleira. A vitrine deve parecer curada, não infinita."
 		: "Large covers, a few choices at a time, and shelf-like reading. The catalogue should feel curated instead of endless.";
-	const defaultCardSummary = isPortuguese ? "Lançamento do selo" : "Release from the selo";
+	const defaultCardSummary = isPortuguese
+		? "Leitura editorial em preparação."
+		: "Editorial release in progress.";
 	const primaryCardSummary = isPortuguese
 		? "Leitura curta, noturna e urbana."
 		: "A short nocturnal urban read.";
 	const viewBookLabel = isPortuguese ? "Ver livro" : "View book";
-	const launchAlertLabel = isPortuguese ? "Conhecer título" : "Discover title";
+	const launchAlertLabel = isPortuguese ? "Avise-me" : "Notify me";
 
 	return (
 		<EditorialSection className="space-y-[4.5rem]">
 			{featured ? (
-				<section className="bg-[color:var(--editorial-ink)] py-10 text-[color:var(--editorial-paper)] sm:py-14 lg:py-16">
-					<EditorialShell className="grid gap-10 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-center lg:gap-16">
+				<section className="bg-[color:var(--editorial-ink)] py-12 text-[color:var(--editorial-paper)] sm:py-16 lg:py-20">
+					<EditorialShell className="grid gap-10 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-center lg:gap-20">
 						<Reveal>
 							<LiftOnHover>
 								<div className="bg-[color:var(--editorial-paper)] p-4">
-									<div className="relative aspect-[0.72] overflow-hidden">
+									<div className="relative aspect-[0.667] overflow-hidden">
 										<Image
 											src={featured.images[0] ?? "/images/ninfas-example.png"}
 											alt={featured.name}
@@ -61,12 +63,12 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 								</EditorialEyebrow>
 							</Reveal>
 							<Reveal delay={0.08}>
-								<h2 className="display-font text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl lg:text-[4.9rem]">
+								<h2 className="display-font max-w-[10ch] text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl lg:text-[4.9rem]">
 									{featured.name}
 								</h2>
 							</Reveal>
 							<Reveal delay={0.12}>
-								<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
+								<p className="max-w-[36rem] text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
 									{featured.summary ?? fallbackSummary}
 								</p>
 							</Reveal>
@@ -91,13 +93,13 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 								<div className="flex flex-wrap gap-4">
 									<YnsLink
 										href={`/product/${featured.slug}`}
-										className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+										className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-6 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 									>
 										{primaryCtaLabel}
 									</YnsLink>
 									<YnsLink
 										href={`/product/${featured.slug}`}
-										className="inline-flex h-11 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.78)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+										className="inline-flex h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-6 text-[10px] font-black uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.78)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 									>
 										{secondaryCtaLabel}
 									</YnsLink>
@@ -110,7 +112,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 
 			<section className="bg-[color:var(--editorial-paper)] py-10 sm:py-12">
 				<EditorialShell className="space-y-8">
-					<div className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_320px] lg:items-start">
+					<div className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_380px] lg:items-start">
 						<Reveal>
 							<h2 className="display-font text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl">
 								{catalogTitle}
@@ -136,6 +138,9 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 												/>
 											</div>
 											<h3 className="mt-6 text-2xl font-bold tracking-[-0.03em]">{product.name}</h3>
+											<p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+												{formatMoney({ amount: product.price, currency: product.currency, locale })}
+											</p>
 											<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
 												{product.summary ?? (index === 0 ? primaryCardSummary : defaultCardSummary)}
 											</p>
@@ -143,7 +148,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 												href={`/product/${product.slug}`}
 												className="mt-6 inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 											>
-												{index === 0 ? viewBookLabel : launchAlertLabel}
+												{(product.stock ?? 1) > 0 ? viewBookLabel : launchAlertLabel}
 											</YnsLink>
 										</EditorialPanel>
 									</LiftOnHover>

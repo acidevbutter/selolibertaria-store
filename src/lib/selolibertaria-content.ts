@@ -85,12 +85,12 @@ export const seloHomeHero = {
 	description:
 		"O Selo Libertaria reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
 	primaryCta: {
-		label: "Ver livros",
+		label: "Comprar livro",
 		href: PUBLIC_NAVIGATION.shop,
 	},
 	secondaryCta: {
-		label: "Explorar a agenda",
-		href: "/events",
+		label: "Conhecer o Sarau Safado",
+		href: PUBLIC_NAVIGATION.sarau,
 	},
 	supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
 	featureEyebrow: "Site editorial",
@@ -112,8 +112,8 @@ export const seloHomeFeaturedBooksIntro = {
 };
 
 export const seloHomeManifesto = {
-	title: "Literatura para incendiar linguagem, cidade e imaginação.",
-	body: "Entre publicações, encontros e performance, o Selo Libertaria constrói um catálogo autoral para adultos onde o livro opera ao mesmo tempo como obra, gesto e presença cultural.",
+	title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
+	body: "Entre publicações, encontros e performance, o selo constrói uma leitura autoral em que livro, presença e imaginação cultural continuam a mesma conversa.",
 	linkLabel: "Conheça o selo",
 	linkHref: PUBLIC_NAVIGATION.about,
 };

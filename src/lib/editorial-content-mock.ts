@@ -215,9 +215,9 @@ const buildMockHomePage = (): EditorialHomePage => ({
 		title: "Uma livraria-editora para quem lê com o corpo inteiro.",
 		description:
 			"O Selo Libertária reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
-		primaryCtaLabel: "Ver livros",
+		primaryCtaLabel: "Comprar livro",
 		primaryCtaHref: seloHomeHero.primaryCta.href,
-		secondaryCtaLabel: "Explorar agenda",
+		secondaryCtaLabel: "Conhecer o Sarau Safado",
 		secondaryCtaHref: seloHomeHero.secondaryCta.href,
 		supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
 		featureEyebrow: "Site editorial",
@@ -232,8 +232,8 @@ const buildMockHomePage = (): EditorialHomePage => ({
 		},
 	},
 	manifesto: {
-		title: "Literatura para incendiar linguagem, cidade e imaginação.",
-		body: "Entre publicações, encontros e performance, o Selo Libertária constrói um catálogo autoral para adultos, em que o livro opera ao mesmo tempo como obra, gesto e presença cultural.",
+		title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
+		body: "Entre publicações, encontros e performance, o selo constrói uma leitura autoral em que livro, presença e imaginação cultural continuam a mesma conversa.",
 		linkLabel: "Conheça o selo",
 		linkHref: seloHomeManifesto.linkHref,
 	},
