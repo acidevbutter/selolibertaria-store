@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
-import { listEditorialEvents } from "@/lib/editorial-content-store";
+import { listEditorialEvents, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
-import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -19,172 +18,245 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function EventsPage() {
 	const t = await getTranslations("Selo");
-	const events = (await listEditorialEvents()).filter((event) => event.published);
+	const [events, projects] = await Promise.all([listEditorialEvents(), listEditorialProjects()]);
+	const publishedEvents = events.filter((event) => event.published);
+	const publishedProjects = projects.filter((project) => project.published);
+	const featuredEvent = publishedEvents[0] ?? null;
+	const posterEvents = publishedEvents.slice(0, 2);
+	const agendaEvents = publishedEvents.slice(0, 4);
+	const sarauEvent =
+		publishedEvents.find(
+			(event) => event.slug.includes("sarau") || event.title.toLowerCase().includes("sarau"),
+		) ?? null;
+	const leadingProject = publishedProjects[0] ?? null;
+	const archiveCards = [
+		{
+			title: sarauEvent?.title ?? "Sarau Safado",
+			meta: sarauEvent?.summary ?? "Agenda, memória e leitura ao vivo em torno das literaturas eróticas.",
+			href: "/sarau-safado",
+			image: sarauEvent?.image ?? featuredEvent?.image ?? null,
+		},
+		{
+			title: leadingProject?.title ?? "Projetos culturais",
+			meta: leadingProject?.summary ?? "Projetos, oficinas e programas que ampliam a vida do catálogo.",
+			href: "/projects",
+			image: leadingProject?.image ?? null,
+		},
+	] as const;
+
+	const getEventCta = (slug: string, index: number) => {
+		if (slug.includes("sarau")) {
+			return { href: "/sarau-safado", label: "Ver Sarau Safado" };
+		}
+
+		if (index === 1) {
+			return { href: "/projects", label: "Ver projetos" };
+		}
+
+		return { href: "/contact", label: "Falar com o selo" };
+	};
+
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
-			<EditorialShell className="flex flex-1 flex-col gap-10 py-10">
-				<Reveal>
-					<header className="grid gap-6 border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] p-8 lg:grid-cols-[1.2fr_0.8fr]">
-						<div className="space-y-4">
-							<EditorialEyebrow className="sm:text-sm">{t("events.heroEyebrow")}</EditorialEyebrow>
-							<h1 className="display-font text-5xl font-black tracking-[-0.06em] uppercase sm:text-6xl">
-								{t("events.heroTitle")}
+			<main className="flex flex-1 flex-col">
+				<section className="relative overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+					{featuredEvent?.image?.src ? (
+						<>
+							<Image
+								src={featuredEvent.image.src}
+								alt={featuredEvent.image.alt || featuredEvent.title}
+								fill
+								className="object-cover"
+								sizes="100vw"
+								priority
+							/>
+							<div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,11,11,0.92)_0%,rgba(11,11,11,0.86)_48%,rgba(11,11,11,0.72)_100%)]" />
+						</>
+					) : (
+						<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(122,30,34,0.42),transparent_44%),linear-gradient(135deg,#0b0b0b_0%,#171312_100%)]" />
+					)}
+					<EditorialShell className="relative grid min-h-[620px] gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
+						<div className="max-w-3xl space-y-6">
+							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)] sm:text-sm">
+								{t("events.heroEyebrow")}
+							</EditorialEyebrow>
+							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
+								{featuredEvent?.title ?? t("events.heroTitle")}
 							</h1>
-							<p className="max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
-								{t("events.heroBody")}
+							<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]">
+								{featuredEvent?.summary ?? t("events.heroBody")}
 							</p>
-						</div>
-						<div className="border-l-[10px] border-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)] p-6">
-							<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
-								{t("events.principleEyebrow")}
-							</p>
-							<p className="mt-3 text-2xl leading-tight font-black uppercase">{t("events.principleTitle")}</p>
-							<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{t("events.principleBody")}
-							</p>
-						</div>
-					</header>
-				</Reveal>
-
-				<section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-					<aside className="flex flex-col gap-6">
-						<Reveal>
-							<LiftOnHover>
-								<EditorialPanel className="border-l-[12px] border-l-[color:var(--editorial-accent)] bg-[color:var(--editorial-beige)]">
-									<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-muted)]">
-										{t("events.principleEyebrow")}
-									</p>
-									<p className="mt-4 text-3xl leading-tight font-black uppercase">
-										{t("events.principleTitle")}
-									</p>
-									<p className="mt-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
-										{t("events.principleBody")}
-									</p>
-								</EditorialPanel>
-							</LiftOnHover>
-						</Reveal>
-
-						<Reveal delay={0.08}>
-							<LiftOnHover>
-								<EditorialPanel className="p-6">
-									<p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">
-										Ritmo da programação
-									</p>
-									<ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">
-										<li className="border border-border/50 bg-background/60 px-4 py-3">
-											Lançamentos, leituras e encontros devem aparecer lado a lado, sem separar
-											artificialmente livro e presença pública.
-										</li>
-										<li className="border border-border/50 bg-background/60 px-4 py-3">
-											O arquivo precisa mostrar continuidade curatorial, não apenas registro disperso.
-										</li>
-										<li className="border border-border/50 bg-background/60 px-4 py-3">
-											Cada evento deve reforçar o catálogo como centro vivo do selo.
-										</li>
-									</ul>
-								</EditorialPanel>
-							</LiftOnHover>
-						</Reveal>
-					</aside>
-
-					<div className="grid gap-6">
-						{events.map((event, index) => (
-							<Reveal key={event.slug} delay={0.05 * index}>
-								<LiftOnHover>
-									<EditorialPanel className="group p-6">
-										{event.image?.src ? (
-											<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
-												<Image
-													src={event.image.src}
-													alt={event.image.alt || event.title}
-													width={1600}
-													height={900}
-													className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-													sizes="(max-width: 1024px) 100vw, 960px"
-												/>
-											</div>
-										) : null}
-										<div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-											{event.eyebrow ? <span>{event.eyebrow}</span> : null}
-											{event.eyebrow ? (
-												<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-											) : null}
-											<span>{event.status}</span>
-											<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-											<span>{event.period}</span>
-											<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-											<span>{event.location}</span>
-										</div>
-										<div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-											<div>
-												<h2 className="editorial-serif text-3xl font-semibold sm:text-4xl">{event.title}</h2>
-												{event.summary ? (
-													<p className="mt-3 max-w-2xl text-base text-foreground/85">{event.summary}</p>
-												) : null}
-											</div>
-											{event.description ? (
-												<p className="border-l border-border/60 pl-0 text-sm leading-7 text-muted-foreground lg:pl-5">
-													{event.description}
-												</p>
-											) : null}
-										</div>
-										{index === 0 ? (
-											<div className="mt-5 flex flex-wrap gap-3">
-												<YnsLink
-													href="/sarau-safado"
-													className="border border-[color:var(--editorial-ink)] px-4 py-2 text-sm font-medium transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-												>
-													Conhecer o Sarau Safado
-												</YnsLink>
-												<YnsLink
-													href="/projects"
-													className="border border-[color:var(--editorial-ink)] px-4 py-2 text-sm font-medium transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-												>
-													Ver projetos relacionados
-												</YnsLink>
-											</div>
-										) : null}
-									</EditorialPanel>
-								</LiftOnHover>
-							</Reveal>
-						))}
-					</div>
-				</section>
-
-				<Reveal>
-					<section className="grid gap-6 border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] p-6 text-[color:var(--editorial-paper)] sm:p-8 lg:grid-cols-[1.15fr_0.85fr]">
-						<div>
-							<p className="text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.58)]">
-								Continuidade
-							</p>
-							<h2 className="mt-4 text-3xl font-black uppercase sm:text-4xl">
-								A agenda não termina no evento: ela abre caminho para livros, oficinas e arquivo.
-							</h2>
-						</div>
-						<div className="flex flex-col gap-4 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
-							<p>
-								Quem chega pela programação precisa encontrar uma transição clara entre encontro público,
-								catálogo e contexto editorial.
-							</p>
-							<div className="flex flex-wrap gap-3">
+							<div className="flex flex-wrap gap-3 pt-2">
 								<YnsLink
-									href="/products"
-									className="border border-[color:rgba(247,244,239,0.22)] px-4 py-2 font-medium transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+									href="/sarau-safado"
+									className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 								>
-									Ver livros
+									Ver próxima edição
 								</YnsLink>
 								<YnsLink
-									href="/contact"
-									className="border border-[color:rgba(247,244,239,0.22)] px-4 py-2 font-medium transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+									href="/projects"
+									className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 								>
-									Convidar o selo
+									Conhecer projetos
 								</YnsLink>
 							</div>
 						</div>
+						<div className="grid justify-start gap-4 lg:justify-end">
+							{posterEvents.map((event, index) => (
+								<div
+									key={event.slug}
+									className="relative border border-white/18 bg-black/70 p-5 shadow-[0_0_0_1px_rgba(247,244,239,0.04)]"
+									style={{
+										transform: index === 0 ? "translateX(0px)" : "translateX(56px)",
+									}}
+								>
+									<div className="relative h-[280px] w-[220px] overflow-hidden bg-[color:rgba(247,244,239,0.08)]">
+										{event.image?.src ? (
+											<Image
+												src={event.image.src}
+												alt={event.image.alt || event.title}
+												fill
+												className="object-cover"
+												sizes="220px"
+											/>
+										) : null}
+									</div>
+									<h2 className="mt-4 max-w-[220px] text-2xl leading-[1.02] font-black">{event.title}</h2>
+									<p className="mt-3 max-w-[220px] text-xs leading-6 uppercase tracking-[0.2em] text-[color:rgba(247,244,239,0.62)]">
+										{[event.status, event.period, event.location].filter(Boolean).join(" · ")}
+									</p>
+								</div>
+							))}
+						</div>
+					</EditorialShell>
+				</section>
+
+				<EditorialShell className="py-16">
+					<section className="grid gap-10 border-t border-[color:var(--editorial-border)] pt-10 lg:grid-cols-[0.95fr_0.75fr] lg:gap-16">
+						<div>
+							<h2 className="display-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
+								A agenda pública aproxima livro, presença e continuidade curatorial.
+							</h2>
+						</div>
+						<div className="space-y-5 text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
+							<p>{t("events.principleBody")}</p>
+							<p>
+								Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que a
+								programação não pareça um apêndice separado do catálogo.
+							</p>
+						</div>
 					</section>
-				</Reveal>
-			</EditorialShell>
+				</EditorialShell>
+
+				<EditorialShell className="py-4">
+					<section className="space-y-6">
+						<EditorialEyebrow>Agenda</EditorialEyebrow>
+						<div className="border-t border-[color:var(--editorial-border)]">
+							{agendaEvents.length > 0 ? (
+								agendaEvents.map((event, index) => {
+									const cta = getEventCta(event.slug, index);
+									return (
+										<div
+											key={event.slug}
+											className="grid gap-5 border-b border-[color:var(--editorial-border)] py-7 lg:grid-cols-[160px_1fr_280px_180px] lg:items-center lg:gap-8"
+										>
+											<div className="text-2xl leading-none font-black tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+												{event.period || event.status || "Agenda"}
+											</div>
+											<div className="space-y-2">
+												<p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
+													{event.status || "Programação pública"}
+												</p>
+												<h3 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+													{event.title}
+												</h3>
+											</div>
+											<div className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+												<p>{event.location || "São Paulo"}</p>
+												<p>{event.summary || event.description || "Programação editorial em circulação."}</p>
+											</div>
+											<div className="flex lg:justify-end">
+												<YnsLink
+													href={cta.href}
+													className="inline-flex min-h-12 items-center justify-center border border-[color:var(--editorial-ink)] px-5 text-xs font-black uppercase tracking-[0.2em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+												>
+													{cta.label}
+												</YnsLink>
+											</div>
+										</div>
+									);
+								})
+							) : (
+								<div className="border-b border-[color:var(--editorial-border)] py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
+									A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau
+									Safado, conhecer os projetos e falar com o selo.
+								</div>
+							)}
+						</div>
+					</section>
+				</EditorialShell>
+
+				<section className="bg-[color:rgba(216,208,196,0.42)]">
+					<EditorialShell className="grid gap-8 py-16 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+						<div className="space-y-4">
+							<EditorialEyebrow>Arquivo e memória</EditorialEyebrow>
+							<h2 className="display-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
+								A programação também deixa rastro, repertório e retorno aos livros.
+							</h2>
+						</div>
+						<div className="grid gap-6 lg:grid-cols-2">
+							{archiveCards.map((card) => (
+								<YnsLink
+									key={card.href}
+									href={card.href}
+									className="group border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-6 transition-colors duration-300 hover:bg-white"
+								>
+									<div className="relative h-48 overflow-hidden bg-[color:var(--editorial-beige)]">
+										{card.image?.src ? (
+											<Image
+												src={card.image.src}
+												alt={card.image.alt || card.title}
+												fill
+												className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+												sizes="(max-width: 1024px) 100vw, 420px"
+											/>
+										) : null}
+									</div>
+									<h3 className="mt-5 editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+										{card.title}
+									</h3>
+									<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">{card.meta}</p>
+								</YnsLink>
+							))}
+						</div>
+					</EditorialShell>
+				</section>
+
+				<EditorialShell className="py-12">
+					<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[1.1fr_auto] lg:items-center">
+						<div>
+							<h2 className="display-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
+								A agenda abre caminho para encontros, livros e projetos do selo.
+							</h2>
+						</div>
+						<div className="flex flex-wrap gap-3">
+							<YnsLink
+								href="/sarau-safado"
+								className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+							>
+								Ver Sarau Safado
+							</YnsLink>
+							<YnsLink
+								href="/projects"
+								className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+							>
+								Ver projetos
+							</YnsLink>
+						</div>
+					</section>
+				</EditorialShell>
+			</main>
 			<Footer />
 		</div>
 	);

@@ -1,7 +1,7 @@
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { LOCALE_COOKIE_NAME, matchLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, matchLocale, TEMP_FORCE_PT_BR } from "@/i18n/config";
 import { isBackofficeRole } from "@/lib/authz";
 
 type ProxySessionPayload = {
@@ -83,7 +83,7 @@ function getLocaleRedirect(request: NextRequest) {
 	redirectUrl.pathname = pathname;
 
 	const response = NextResponse.redirect(redirectUrl, { status: 307 });
-	response.cookies.set(LOCALE_COOKIE_NAME, locale, {
+	response.cookies.set(LOCALE_COOKIE_NAME, TEMP_FORCE_PT_BR ? DEFAULT_LOCALE : locale, {
 		path: "/",
 		maxAge: 60 * 60 * 24 * 365,
 		sameSite: "lax",

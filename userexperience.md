@@ -130,3 +130,5 @@ Confiança vem de:
 - Nas páginas editoriais públicas pós-home, a pessoa deve conseguir entender o assunto e agir em até três movimentos visuais: hero, bloco de contexto, saída clara para compra, agenda, contato ou Sarau.
 - Na PDP, a pessoa precisa reconhecer rapidamente que está vendo um livro, entender preço e disponibilidade sem esforço, e ainda receber contexto literário antes de descer para ficha técnica e relacionados.
 - O header não deve competir com a compra do livro; ele orienta sessão e navegação, enquanto a decisão de compra fica na própria PDP.
+- Em uma rodada curta de estabilização pública, consistência de idioma pesa mais do que detecção automática; se necessário, o público deve ficar inteiro em `pt-BR` até a resolução contextual voltar a ser confiável.
+- Em `/events`, a pessoa deve sentir ritmo de agenda, não navegar por um mural genérico: primeiro impacto, depois contexto, depois lista de programação e, por fim, caminhos claros para Sarau Safado, projetos e contato.

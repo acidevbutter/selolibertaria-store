@@ -64,6 +64,7 @@ export type AppLocale = (typeof LOCALE_OPTIONS)[number]["code"];
 export const APP_LOCALES = LOCALE_OPTIONS.map((option) => option.code) as [AppLocale, ...AppLocale[]];
 
 export const DEFAULT_LOCALE: AppLocale = "pt-BR";
+export const TEMP_FORCE_PT_BR = true;
 
 const localeByLowerCode = new Map(
 	LOCALE_OPTIONS.map((option) => [option.code.toLowerCase(), option] as const),

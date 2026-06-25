@@ -185,6 +185,7 @@ For Sarau Safado hero image:
 ## Localization and currency
 
 - Public Selo Libertária copy defaults to `pt-BR`.
+- During public QA or temporary deploy stabilization, it is acceptable to force `pt-BR` at the locale resolver as long as the i18n architecture, message files and types remain intact.
 - Keep i18n architecture intact; do not hardcode locale where the app already resolves it.
 - Do not expose raw API errors to users if a local translated message/code exists.
 - Admin and storefront dates/currency should respect the resolved locale and environment currency.
@@ -235,3 +236,5 @@ Also validate:
 - 2026-06-24: public editorial pages after Home should follow the Editorial V2 hierarchy of one dominant hero, one short explanatory band, a concise content block and a single strong closing CTA strip before the newsletter/footer; avoid stacking many generic panels.
 - 2026-06-24: in the public header, the final CTA must be session-oriented (`Entrar`, `Conta` or `Minha conta`) and never `Comprar`; purchase language belongs to product and catalog surfaces, especially the PDP.
 - 2026-06-24: the PDP should read like a page of a book turned into commerce: cover-led hero, compact buy box, synopsis above the fold, dark excerpt band, factual technical details only, and related books with clear `Ver livro` continuity.
+- 2026-06-25: when the public deploy drifts into `en-US`, freeze locale resolution at the server boundary instead of deleting i18n; cookies, `Accept-Language` and old locale prefixes may keep existing redirects, but the rendered storefront should stay in `pt-BR`.
+- 2026-06-25: `/events` should behave like an editorial agenda page, not a grid of generic cards: full-width dark hero, curatorial note, horizontal agenda rows, archive/memory cards and one closing continuity strip before the footer.

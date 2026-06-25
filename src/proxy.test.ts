@@ -2,6 +2,7 @@
 
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
+import { DEFAULT_LOCALE, TEMP_FORCE_PT_BR } from "@/i18n/config";
 import { proxy } from "@/proxy";
 
 describe("proxy public auth paths", () => {
@@ -18,7 +19,9 @@ describe("proxy public auth paths", () => {
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/product/test-slug?ref=nav");
-		expect(res.headers.get("set-cookie")).toContain("selolibertaria_locale=es-ES");
+		expect(res.headers.get("set-cookie")).toContain(
+			`selolibertaria_locale=${TEMP_FORCE_PT_BR ? DEFAULT_LOCALE : "es-ES"}`,
+		);
 	});
 
 	it("allows oauth start without an authenticated session", async () => {
