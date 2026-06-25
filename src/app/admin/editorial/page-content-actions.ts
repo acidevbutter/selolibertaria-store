@@ -14,6 +14,7 @@ import type {
 } from "@/lib/editorial-content";
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
 import { getDb } from "@/lib/mongodb";
+import type { Filter } from "mongodb";
 
 const COLLECTION = "editorialContent";
 
@@ -82,7 +83,14 @@ function refreshPaths(type: PageCopyType) {
 
 async function upsertPageRecord<T extends EditorialDocument>(type: T["type"], doc: T) {
 	const db = await getDb();
-	await db.collection<T>(COLLECTION).updateOne({ type, slug: doc.slug } as Partial<T>, { $set: doc }, { upsert: true });
+
+	await db
+		.collection<T>(COLLECTION)
+		.updateOne(
+			{ type, slug: doc.slug } as unknown as Filter<T>,
+			{ $set: doc },
+			{ upsert: true },
+		);
 }
 
 function buildHomePageDoc(formData: FormData, actor: string, current: EditorialHomePage | null): EditorialHomePage {
