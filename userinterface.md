@@ -52,7 +52,7 @@ Elementos:
 
 - marca/wordmark à esquerda;
 - menu principal curto;
-- CTA `Comprar` separado quando necessário;
+- CTA final orientada à sessão: `Entrar`, `Conta` ou `Minha conta`;
 - ações de loja, se já existirem: busca, conta, favoritos, carrinho.
 
 ## Home
@@ -176,3 +176,5 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Catálogo, Projetos, Sarau Safado, Sobre e Contato devem repetir a gramática visual do Figma Editorial V2: hero dominante, poucas seções, alternância entre papel e preto e fechamento único antes do footer.
 - Na PDP, a capa deve liderar a primeira dobra, com bloco de compra enxuto à direita, botões retos de `Comprar` e `Ler trecho`, sinopse com leitura confortável e faixa preta para trecho/citação.
 - O CTA final do header público deve ser `Entrar` ou `Conta`/`Minha conta`; `Comprar` não deve aparecer no header.
+- Em fases de estabilização pública, o locale renderizado do storefront pode ser congelado em `pt-BR` sem desmontar a infraestrutura de i18n.
+- A página `/events` deve seguir a composição de agenda editorial: hero escuro com pôsteres empilhados, nota curatorial em duas colunas, linhas de agenda, arquivo/memória e CTA final única.

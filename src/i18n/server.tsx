@@ -7,6 +7,7 @@ import {
 	LOCALE_COOKIE_NAME,
 	resolveLocale,
 	resolveLocaleFromAcceptLanguage,
+	TEMP_FORCE_PT_BR,
 } from "./config";
 import { getMessagesInternal } from "./translate";
 import type { IntlNamespaceKeys } from "./types";
@@ -41,6 +42,10 @@ const getMessagesByLocale = cache(async (locale: AppLocale) => {
 });
 
 const getRequestLocale = cache(async (): Promise<AppLocale> => {
+	if (TEMP_FORCE_PT_BR) {
+		return DEFAULT_LOCALE;
+	}
+
 	const cookieStore = await cookies();
 	const cookieLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value?.trim();
 	if (cookieLocale) {
