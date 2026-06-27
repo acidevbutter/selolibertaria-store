@@ -3,7 +3,11 @@ import { publicUrl } from "@/env.mjs";
 import { getTranslations } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import { getEditorialHomePage, getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
+import {
+	getEditorialHomePage,
+	getEditorialSarauPage,
+	listEditorialEvents,
+} from "@/lib/editorial-content-store";
 import { HomeFeaturedBooks } from "@/ui/home/home-featured-books";
 import { HomeHero } from "@/ui/home/home-hero";
 import { HomeManifesto } from "@/ui/home/home-manifesto";

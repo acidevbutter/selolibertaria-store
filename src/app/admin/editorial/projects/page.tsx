@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
+import Link from "next/link";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import {
 	getEditorialProjectsPageCopyRecord,
 	updateEditorialProjectsPageCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
-import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listEditorialRecordsForAdmin } from "@/lib/editorial-content-store";
@@ -52,7 +52,11 @@ export default async function AdminEditorialProjectsPage() {
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Status da página" value={page.published ? "Publicado" : "Rascunho"} helper="Rota: /projects" />
+				<AdminEditorialStat
+					label="Status da página"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Rota: /projects"
+				/>
 				<AdminEditorialStat label="Projetos" value={projects.length} helper="Itens do portfólio." />
 				<AdminEditorialStat label="Textos" value="4 blocos" helper="Hero, nota, listagem e CTA final." />
 			</div>
@@ -70,7 +74,13 @@ export default async function AdminEditorialProjectsPage() {
 							fields: [
 								{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
 								{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
-								{ name: "heroBody", label: "Texto", type: "textarea", rows: 4, defaultValue: page.hero?.body },
+								{
+									name: "heroBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 4,
+									defaultValue: page.hero?.body,
+								},
 								{ name: "heroImageLabel", label: "Legenda da imagem", defaultValue: page.hero?.imageLabel },
 							],
 						},
@@ -96,7 +106,13 @@ export default async function AdminEditorialProjectsPage() {
 							fields: [
 								{ name: "listingLabel", label: "Linha curta", defaultValue: page.listing?.label },
 								{ name: "listingTitle", label: "Título interno do bloco", defaultValue: page.listing?.title },
-								{ name: "listingBody", label: "Texto de apoio", type: "textarea", rows: 3, defaultValue: page.listing?.body },
+								{
+									name: "listingBody",
+									label: "Texto de apoio",
+									type: "textarea",
+									rows: 3,
+									defaultValue: page.listing?.body,
+								},
 								{
 									name: "listingEmptyText",
 									label: "Texto quando não houver projetos",
@@ -112,11 +128,33 @@ export default async function AdminEditorialProjectsPage() {
 							route: "/projects",
 							fields: [
 								{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
-								{ name: "finalBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.finalCta?.body },
-								{ name: "finalPrimaryCtaLabel", label: "Botão principal", defaultValue: page.finalCta?.primaryCtaLabel },
-								{ name: "finalPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.finalCta?.primaryCtaHref },
-								{ name: "finalSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.finalCta?.secondaryCtaLabel },
-								{ name: "finalSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.finalCta?.secondaryCtaHref },
+								{
+									name: "finalBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 3,
+									defaultValue: page.finalCta?.body,
+								},
+								{
+									name: "finalPrimaryCtaLabel",
+									label: "Botão principal",
+									defaultValue: page.finalCta?.primaryCtaLabel,
+								},
+								{
+									name: "finalPrimaryCtaHref",
+									label: "Link do botão principal",
+									defaultValue: page.finalCta?.primaryCtaHref,
+								},
+								{
+									name: "finalSecondaryCtaLabel",
+									label: "Botão secundário",
+									defaultValue: page.finalCta?.secondaryCtaLabel,
+								},
+								{
+									name: "finalSecondaryCtaHref",
+									label: "Link do botão secundário",
+									defaultValue: page.finalCta?.secondaryCtaHref,
+								},
 							],
 						},
 					]}
@@ -139,7 +177,9 @@ export default async function AdminEditorialProjectsPage() {
 								<p className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 									{project.published ? "Publicado" : "Rascunho"}
 								</p>
-								<h3 className="mt-2 text-lg font-semibold text-[color:var(--editorial-ink)]">{project.title}</h3>
+								<h3 className="mt-2 text-lg font-semibold text-[color:var(--editorial-ink)]">
+									{project.title}
+								</h3>
 								<p className="mt-2 text-sm leading-6 text-[color:var(--editorial-muted)]">
 									{project.period || "Sem período"}
 									{project.location ? ` · ${project.location}` : ""}

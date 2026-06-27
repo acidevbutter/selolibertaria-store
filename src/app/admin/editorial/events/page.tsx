@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
+import Link from "next/link";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import {
 	getEditorialEventsPageCopyRecord,
 	updateEditorialEventsPageCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
-import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listEditorialRecordsForAdmin } from "@/lib/editorial-content-store";
@@ -52,9 +52,17 @@ export default async function AdminEditorialEventsPage() {
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Status da página" value={page.published ? "Publicado" : "Rascunho"} helper="Rota: /events" />
+				<AdminEditorialStat
+					label="Status da página"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Rota: /events"
+				/>
 				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens cadastrados na agenda." />
-				<AdminEditorialStat label="Textos" value="5 blocos" helper="Hero, nota, agenda, arquivo e CTA final." />
+				<AdminEditorialStat
+					label="Textos"
+					value="5 blocos"
+					helper="Hero, nota, agenda, arquivo e CTA final."
+				/>
 			</div>
 
 			<div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -70,11 +78,33 @@ export default async function AdminEditorialEventsPage() {
 							fields: [
 								{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
 								{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
-								{ name: "heroBody", label: "Texto", type: "textarea", rows: 4, defaultValue: page.hero?.body },
-								{ name: "heroPrimaryCtaLabel", label: "Botão principal", defaultValue: page.hero?.primaryCtaLabel },
-								{ name: "heroPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.hero?.primaryCtaHref },
-								{ name: "heroSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.hero?.secondaryCtaLabel },
-								{ name: "heroSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.hero?.secondaryCtaHref },
+								{
+									name: "heroBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 4,
+									defaultValue: page.hero?.body,
+								},
+								{
+									name: "heroPrimaryCtaLabel",
+									label: "Botão principal",
+									defaultValue: page.hero?.primaryCtaLabel,
+								},
+								{
+									name: "heroPrimaryCtaHref",
+									label: "Link do botão principal",
+									defaultValue: page.hero?.primaryCtaHref,
+								},
+								{
+									name: "heroSecondaryCtaLabel",
+									label: "Botão secundário",
+									defaultValue: page.hero?.secondaryCtaLabel,
+								},
+								{
+									name: "heroSecondaryCtaHref",
+									label: "Link do botão secundário",
+									defaultValue: page.hero?.secondaryCtaHref,
+								},
 							],
 						},
 						{
@@ -99,7 +129,13 @@ export default async function AdminEditorialEventsPage() {
 							fields: [
 								{ name: "agendaLabel", label: "Linha curta", defaultValue: page.agenda?.label },
 								{ name: "agendaTitle", label: "Título interno do bloco", defaultValue: page.agenda?.title },
-								{ name: "agendaBody", label: "Texto de apoio", type: "textarea", rows: 3, defaultValue: page.agenda?.body },
+								{
+									name: "agendaBody",
+									label: "Texto de apoio",
+									type: "textarea",
+									rows: 3,
+									defaultValue: page.agenda?.body,
+								},
 								{
 									name: "agendaEmptyText",
 									label: "Texto quando não houver agenda",
@@ -116,7 +152,13 @@ export default async function AdminEditorialEventsPage() {
 							fields: [
 								{ name: "archiveLabel", label: "Linha curta", defaultValue: page.archive?.label },
 								{ name: "archiveTitle", label: "Título", defaultValue: page.archive?.title },
-								{ name: "archiveBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.archive?.body },
+								{
+									name: "archiveBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 3,
+									defaultValue: page.archive?.body,
+								},
 							],
 						},
 						{
@@ -125,11 +167,33 @@ export default async function AdminEditorialEventsPage() {
 							route: "/events",
 							fields: [
 								{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
-								{ name: "finalBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.finalCta?.body },
-								{ name: "finalPrimaryCtaLabel", label: "Botão principal", defaultValue: page.finalCta?.primaryCtaLabel },
-								{ name: "finalPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.finalCta?.primaryCtaHref },
-								{ name: "finalSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.finalCta?.secondaryCtaLabel },
-								{ name: "finalSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.finalCta?.secondaryCtaHref },
+								{
+									name: "finalBody",
+									label: "Texto",
+									type: "textarea",
+									rows: 3,
+									defaultValue: page.finalCta?.body,
+								},
+								{
+									name: "finalPrimaryCtaLabel",
+									label: "Botão principal",
+									defaultValue: page.finalCta?.primaryCtaLabel,
+								},
+								{
+									name: "finalPrimaryCtaHref",
+									label: "Link do botão principal",
+									defaultValue: page.finalCta?.primaryCtaHref,
+								},
+								{
+									name: "finalSecondaryCtaLabel",
+									label: "Botão secundário",
+									defaultValue: page.finalCta?.secondaryCtaLabel,
+								},
+								{
+									name: "finalSecondaryCtaHref",
+									label: "Link do botão secundário",
+									defaultValue: page.finalCta?.secondaryCtaHref,
+								},
 							],
 						},
 					]}
@@ -152,7 +216,9 @@ export default async function AdminEditorialEventsPage() {
 								<p className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 									{event.published ? "Publicado" : "Rascunho"}
 								</p>
-								<h3 className="mt-2 text-lg font-semibold text-[color:var(--editorial-ink)]">{event.title}</h3>
+								<h3 className="mt-2 text-lg font-semibold text-[color:var(--editorial-ink)]">
+									{event.title}
+								</h3>
 								<p className="mt-2 text-sm leading-6 text-[color:var(--editorial-muted)]">
 									{event.period || event.status || "Sem data definida"}
 									{event.location ? ` · ${event.location}` : ""}

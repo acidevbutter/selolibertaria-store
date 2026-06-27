@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { getTranslations } from "@/i18n/server";
 import {
 	getEditorialEventsPage,
 	listEditorialEvents,
@@ -13,20 +12,33 @@ import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
 
 export const generateMetadata = async (): Promise<Metadata> => {
-	const t = await getTranslations("Selo");
+	const page = await getEditorialEventsPage();
+
 	return {
-		title: `${t("events.heroEyebrow")} · ${seloSiteMeta.name}`,
-		description: t("events.metadataDescription"),
+		title: `${page.hero?.eyebrow || "Eventos"} · ${seloSiteMeta.name}`,
+		description: page.hero?.body || "Agenda pública, arquivo e memória editorial do universo do selo.",
 	};
 };
 
+function getEventCta(slug: string, index: number) {
+	if (slug.includes("sarau")) {
+		return { href: "/sarau-safado", label: "Ver Sarau Safado" };
+	}
+
+	if (index === 1) {
+		return { href: "/projects", label: "Ver projetos" };
+	}
+
+	return { href: "/contact", label: "Falar com o selo" };
+}
+
 export default async function EventsPage() {
-	const t = await getTranslations("Selo");
 	const [events, projects, page] = await Promise.all([
 		listEditorialEvents(),
 		listEditorialProjects(),
 		getEditorialEventsPage(),
 	]);
+
 	const publishedEvents = events.filter((event) => event.published);
 	const publishedProjects = projects.filter((project) => project.published);
 	const featuredEvent = publishedEvents[0] ?? null;
@@ -37,32 +49,21 @@ export default async function EventsPage() {
 			(event) => event.slug.includes("sarau") || event.title.toLowerCase().includes("sarau"),
 		) ?? null;
 	const leadingProject = publishedProjects[0] ?? null;
+
 	const archiveCards = [
 		{
 			title: sarauEvent?.title ?? "Sarau Safado",
-			meta: sarauEvent?.summary ?? "Agenda, memória e leitura ao vivo em torno das literaturas eróticas.",
+			meta: sarauEvent?.summary || "Agenda, memória e leitura ao vivo em torno das literaturas eróticas.",
 			href: "/sarau-safado",
 			image: sarauEvent?.image ?? featuredEvent?.image ?? null,
 		},
 		{
 			title: leadingProject?.title ?? "Projetos culturais",
-			meta: leadingProject?.summary ?? "Projetos, oficinas e programas que ampliam a vida do catálogo.",
+			meta: leadingProject?.summary || "Projetos, oficinas e programas que ampliam a vida do catálogo.",
 			href: "/projects",
 			image: leadingProject?.image ?? null,
 		},
 	] as const;
-
-	const getEventCta = (slug: string, index: number) => {
-		if (slug.includes("sarau")) {
-			return { href: "/sarau-safado", label: "Ver Sarau Safado" };
-		}
-
-		if (index === 1) {
-			return { href: "/projects", label: "Ver projetos" };
-		}
-
-		return { href: "/contact", label: "Falar com o selo" };
-	};
 
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
@@ -84,16 +85,19 @@ export default async function EventsPage() {
 					) : (
 						<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(122,30,34,0.42),transparent_44%),linear-gradient(135deg,#0b0b0b_0%,#171312_100%)]" />
 					)}
+
 					<EditorialShell className="relative grid min-h-[620px] gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
 						<div className="max-w-3xl space-y-6">
 							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)] sm:text-sm">
-								{page.hero?.eyebrow || t("events.heroEyebrow")}
+								{page.hero?.eyebrow || "Eventos"}
 							</EditorialEyebrow>
 							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
-								{page.hero?.title || featuredEvent?.title || t("events.heroTitle")}
+								{page.hero?.title || featuredEvent?.title || "Agenda pública"}
 							</h1>
 							<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]">
-								{page.hero?.body || featuredEvent?.summary || t("events.heroBody")}
+								{page.hero?.body ||
+									featuredEvent?.summary ||
+									"Eventos, leituras e memória editorial em circulação pública."}
 							</p>
 							<div className="flex flex-wrap gap-3 pt-2">
 								<YnsLink
@@ -110,14 +114,13 @@ export default async function EventsPage() {
 								</YnsLink>
 							</div>
 						</div>
+
 						<div className="grid justify-start gap-4 lg:justify-end">
 							{posterEvents.map((event, index) => (
 								<div
 									key={event.slug}
 									className="relative border border-white/18 bg-black/70 p-5 shadow-[0_0_0_1px_rgba(247,244,239,0.04)]"
-									style={{
-										transform: index === 0 ? "translateX(0px)" : "translateX(56px)",
-									}}
+									style={{ transform: index === 0 ? "translateX(0px)" : "translateX(56px)" }}
 								>
 									<div className="relative h-[280px] w-[220px] overflow-hidden bg-[color:rgba(247,244,239,0.08)]">
 										{event.image?.src ? (
@@ -144,14 +147,18 @@ export default async function EventsPage() {
 					<section className="grid gap-10 border-t border-[color:var(--editorial-border)] pt-10 lg:grid-cols-[0.95fr_0.75fr] lg:gap-16">
 						<div>
 							<h2 className="display-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
-								{page.curatorialNote?.title || "A agenda pública aproxima livro, presença e continuidade curatorial."}
+								{page.curatorialNote?.title ||
+									"A agenda pública aproxima livro, presença e continuidade curatorial."}
 							</h2>
 						</div>
 						<div className="space-y-5 text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
-							<p>{page.curatorialNote?.body || t("events.principleBody")}</p>
 							<p>
-								Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que a
-								programação não pareça um apêndice separado do catálogo.
+								{page.curatorialNote?.body ||
+									"Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que programação não pareça um apêndice separado do catálogo."}
+							</p>
+							<p>
+								{page.agenda?.body ||
+									"A agenda mistura próxima edição, programação e memória sem perder clareza operacional."}
 							</p>
 						</div>
 					</section>
@@ -164,6 +171,7 @@ export default async function EventsPage() {
 							{agendaEvents.length > 0 ? (
 								agendaEvents.map((event, index) => {
 									const cta = getEventCta(event.slug, index);
+
 									return (
 										<div
 											key={event.slug}
@@ -212,9 +220,13 @@ export default async function EventsPage() {
 							<h2 className="display-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
 								{page.archive?.title || "A programação também deixa rastro, repertório e retorno aos livros."}
 							</h2>
+							<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+								{page.archive?.body ||
+									"A agenda não termina na data. Ela também organiza memória, fotos, textos e retornos para o catálogo."}
+							</p>
 						</div>
-							<div className="grid gap-6 lg:grid-cols-2">
-								{archiveCards.map((card) => (
+						<div className="grid gap-6 lg:grid-cols-2">
+							{archiveCards.map((card) => (
 								<YnsLink
 									key={card.href}
 									href={card.href}
@@ -247,6 +259,10 @@ export default async function EventsPage() {
 							<h2 className="display-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
 								{page.finalCta?.title || "A agenda abre caminho para encontros, livros e projetos do selo."}
 							</h2>
+							<p className="mt-3 max-w-3xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
+								{page.finalCta?.body ||
+									"O caminho público segue para o programa central do selo e para o portfólio cultural."}
+							</p>
 						</div>
 						<div className="flex flex-wrap gap-3">
 							<YnsLink

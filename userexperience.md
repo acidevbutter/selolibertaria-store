@@ -138,3 +138,8 @@ Confiança vem de:
 - A pessoa usuária não deve perceber qualquer oscilação de idioma entre páginas, reload, checkout, login ou links antigos com prefixo de locale.
 - Links legados com `/en`, `/en-us`, `/es` ou `/pt-br` devem apenas levar com segurança à rota canônica em `pt-BR`, sem criar uma experiência paralela.
 - A confiança do produto agora depende de um contrato simples: textos técnicos em português, conteúdo editorial vindo do admin quando editável e fallbacks sempre em português do Brasil.
+## Addendum — P3.75B
+
+- A dona do site deve conseguir alterar a narrativa pública principal sem deploy.
+- A experiência editorial pública depende do admin como fonte primária de copy.
+- A manutenção preserva labels técnicos estáveis em `pt-BR` para reduzir atrito operacional.

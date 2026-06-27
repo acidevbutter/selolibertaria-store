@@ -183,3 +183,10 @@ Não forçar mudança de rota sem tarefa específica. Ajustar labels e links de 
 5. Auditar campo a campo o hub editorial: tudo que salva precisa aparecer no site.
 6. Revisar PDP/livro sem quebrar Stripe/catalog/cart.
 7. QA mobile, acessibilidade, build e reload direto.
+## Addendum — P3.75B
+
+Conexões novas da camada editorial pública:
+- `/projects` usa `page_projects` para hero, nota curatorial, listagem e faixa final.
+- `/products` usa `page_products` para hero, nota curatorial, vazio editorial e faixa final.
+- `/product/[slug]` usa `page_product` nos blocos editoriais, preservando labels técnicos hardcoded.
+- Newsletter e footer usam `site_global`.

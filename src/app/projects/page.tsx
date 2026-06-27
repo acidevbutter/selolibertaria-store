@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { getTranslations } from "@/i18n/server";
-import { listEditorialProjects } from "@/lib/editorial-content-store";
+import { getEditorialProjectsPage, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Footer } from "@/ui/footer/footer";
@@ -10,18 +9,19 @@ import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
 
 export const generateMetadata = async (): Promise<Metadata> => {
-	const t = await getTranslations("Selo");
+	const page = await getEditorialProjectsPage();
+
 	return {
-		title: `${t("projects.heroEyebrow")} · ${seloSiteMeta.name}`,
-		description: t("projects.metadataDescription"),
+		title: `${page.hero?.eyebrow || "Projetos"} · ${seloSiteMeta.name}`,
+		description: page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita.",
 	};
 };
 
 export default async function ProjectsPage() {
-	const t = await getTranslations("Selo");
-	const projects = (await listEditorialProjects()).filter((project) => project.published);
-	const featuredProject = projects[0] ?? null;
-	const axisKeys = ["projects.axes.1", "projects.axes.2", "projects.axes.3"] as const;
+	const [page, projects] = await Promise.all([getEditorialProjectsPage(), listEditorialProjects()]);
+
+	const publishedProjects = projects.filter((project) => project.published);
+	const featuredProject = publishedProjects[0] ?? null;
 
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
@@ -32,13 +32,13 @@ export default async function ProjectsPage() {
 						<EditorialShell className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
 							<div className="space-y-4">
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
-									{t("projects.heroEyebrow")}
+									{page.hero?.eyebrow || "Projetos"}
 								</EditorialEyebrow>
 								<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
-									{t("projects.heroTitle")}
+									{page.hero?.title || "Uma atuação que atravessa livro, palco e formação."}
 								</h1>
 								<p className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base">
-									{t("projects.heroBody")}
+									{page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita."}
 								</p>
 							</div>
 							<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
@@ -52,8 +52,8 @@ export default async function ProjectsPage() {
 										sizes="(max-width: 1024px) 100vw, 460px"
 									/>
 								) : (
-									<div className="flex aspect-[1.05] items-center justify-center border border-white/20 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
-										Foto / performance / oficina
+									<div className="flex aspect-[1.05] items-center justify-center border border-white/20 px-6 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
+										{page.hero?.imageLabel || "Foto / performance / oficina"}
 									</div>
 								)}
 							</div>
@@ -64,98 +64,76 @@ export default async function ProjectsPage() {
 				<EditorialShell className="grid gap-6 py-10 lg:grid-cols-[1fr_0.95fr] lg:items-start">
 					<Reveal>
 						<div className="space-y-5">
+							<EditorialEyebrow>{page.listing?.label || "Portfólio cultural"}</EditorialEyebrow>
 							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
-								Projetos como extensão viva do catálogo.
+								{page.curatorialNote?.title || "Projetos como extensão viva do catálogo."}
 							</h2>
 						</div>
 					</Reveal>
 					<Reveal delay={0.08}>
 						<div className="space-y-5 text-base leading-8 text-[color:var(--editorial-ink)]">
 							<p>
-								Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item
-								precisa ter imagem, status, contexto e saída clara.
+								{page.curatorialNote?.body ||
+									"Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara."}
 							</p>
-							<ul className="grid gap-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{axisKeys.map((key) => (
-									<li
-										key={key}
-										className="border border-[color:var(--editorial-border)] bg-background/60 px-4 py-3"
-									>
-										{t(key)}
-									</li>
-								))}
-							</ul>
+							<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+								{page.listing?.body ||
+									"Os projetos seguem vindo dos registros publicados do acervo editorial do admin."}
+							</p>
 						</div>
 					</Reveal>
 				</EditorialShell>
 
-				<EditorialShell className="grid gap-6 py-10 lg:grid-cols-3">
-					{projects.map((project, index) => (
-						<Reveal key={project.slug} delay={0.05 * index}>
-							<LiftOnHover>
-								<EditorialPanel
-									className={
-										index % 3 === 2
-											? "group bg-[color:var(--editorial-ink)] p-5 text-[color:var(--editorial-paper)]"
-											: "group p-5"
-									}
-								>
-									{project.image?.src ? (
-										<div className="relative mb-5 overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-beige)]">
-											<Image
-												src={project.image.src}
-												alt={project.image.alt || project.title}
-												width={1600}
-												height={900}
-												className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-												sizes="(max-width: 1024px) 100vw, 960px"
-											/>
-										</div>
-									) : null}
-									<div
-										className={
-											index % 3 === 2
-												? "flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
-												: "flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-muted-foreground"
-										}
-									>
-										{project.eyebrow ? <span>{project.eyebrow}</span> : null}
-										{project.eyebrow ? (
-											<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-										) : null}
-										<span>{project.period}</span>
-										<span className="h-1 w-1 rounded-full bg-muted-foreground/60" aria-hidden="true" />
-										<span>{project.location}</span>
-									</div>
-									<h2 className="mt-4 text-2xl leading-[0.98] font-black tracking-[-0.04em] sm:text-[2.15rem]">
-										{project.title}
-									</h2>
-									{project.summary ? (
-										<p
-											className={
-												index % 3 === 2
-													? "mt-3 text-base text-[color:rgba(247,244,239,0.82)]"
-													: "mt-3 text-base text-foreground/85"
-											}
-										>
-											{project.summary}
-										</p>
-									) : null}
-									{project.description ? (
-										<p
-											className={
-												index % 3 === 2
-													? "mt-4 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
-													: "mt-4 text-sm leading-7 text-muted-foreground"
-											}
-										>
-											{project.description}
-										</p>
-									) : null}
-								</EditorialPanel>
-							</LiftOnHover>
-						</Reveal>
-					))}
+				<EditorialShell className="space-y-6 py-10">
+					<div className="border-t border-[color:var(--editorial-border)] pt-8">
+						<h2 className="text-3xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+							{page.listing?.title || "Projetos publicados"}
+						</h2>
+					</div>
+
+					{publishedProjects.length > 0 ? (
+						<div className="grid gap-6 lg:grid-cols-3">
+							{publishedProjects.map((project, index) => (
+								<Reveal key={project.slug} delay={0.06 * index}>
+									<LiftOnHover>
+										<EditorialPanel className="flex h-full flex-col p-5">
+											<div className="relative aspect-[1.05] overflow-hidden bg-[color:var(--editorial-beige)]">
+												{project.image?.src ? (
+													<Image
+														src={project.image.src}
+														alt={project.image.alt || project.title}
+														fill
+														className="object-cover transition-transform duration-700 hover:scale-[1.02]"
+														sizes="(max-width: 1024px) 100vw, 420px"
+													/>
+												) : null}
+											</div>
+											<p className="mt-5 text-[11px] uppercase tracking-[0.22em] text-[color:var(--editorial-accent)]">
+												{[project.period, project.location].filter(Boolean).join(" · ") || "Projeto cultural"}
+											</p>
+											<h3 className="mt-3 text-3xl leading-[0.98] font-black tracking-[-0.04em]">
+												{project.title}
+											</h3>
+											<p className="mt-4 flex-1 text-sm leading-7 text-[color:var(--editorial-muted)]">
+												{project.summary || project.description}
+											</p>
+											<YnsLink
+												href={`/projects#${project.slug}`}
+												className="mt-6 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(216,208,196,0.24)]"
+											>
+												Ver detalhes
+											</YnsLink>
+										</EditorialPanel>
+									</LiftOnHover>
+								</Reveal>
+							))}
+						</div>
+					) : (
+						<div className="border border-dashed border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.6)] px-6 py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
+							{page.listing?.emptyText ||
+								"Os projetos publicados aparecerão aqui assim que forem cadastrados no admin editorial."}
+						</div>
+					)}
 				</EditorialShell>
 
 				<Reveal>
@@ -163,23 +141,26 @@ export default async function ProjectsPage() {
 						<EditorialShell className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									Projetos conectam programação, livro e comunidade.
+									{page.finalCta?.title || "Projetos conectam programação, livro e comunidade."}
 								</h2>
 							</div>
 							<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
-								<p>{t("projects.continuityBody")}</p>
+								<p>
+									{page.finalCta?.body ||
+										"A página de projetos deve abrir saídas diretas para contato e Sarau Safado."}
+								</p>
 								<div className="flex flex-wrap gap-3">
 									<YnsLink
-										href="/contact"
+										href={page.finalCta?.primaryCtaHref || "/contact"}
 										className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 									>
-										Falar sobre projeto
+										{page.finalCta?.primaryCtaLabel || "Falar sobre projeto"}
 									</YnsLink>
 									<YnsLink
-										href="/sarau-safado"
+										href={page.finalCta?.secondaryCtaHref || "/sarau-safado"}
 										className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.4)]"
 									>
-										Ver Sarau Safado
+										{page.finalCta?.secondaryCtaLabel || "Ver Sarau Safado"}
 									</YnsLink>
 								</div>
 							</div>

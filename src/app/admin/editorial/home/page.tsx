@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import {
 	getEditorialHomeCopyRecord,
 	updateEditorialHomeCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
-import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import {
@@ -45,8 +45,16 @@ export default async function AdminEditorialHomePage() {
 			/>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Status" value={page.published ? "Publicado" : "Rascunho"} helper="Página inicial pública." />
-				<AdminEditorialStat label="Blocos" value="5" helper="Hero, manifesto, livro, catálogo e programação." />
+				<AdminEditorialStat
+					label="Status"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Página inicial pública."
+				/>
+				<AdminEditorialStat
+					label="Blocos"
+					value="5"
+					helper="Hero, manifesto, livro, catálogo e programação."
+				/>
 				<AdminEditorialStat label="Rota" value="/" helper="Onde esta copy aparece." />
 			</div>
 
@@ -69,13 +77,41 @@ export default async function AdminEditorialHomePage() {
 								rows: 4,
 								defaultValue: page.hero?.description,
 							},
-							{ name: "heroPrimaryCtaLabel", label: "Botão principal", defaultValue: page.hero?.primaryCtaLabel },
-							{ name: "heroPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.hero?.primaryCtaHref },
-							{ name: "heroSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.hero?.secondaryCtaLabel },
-							{ name: "heroSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.hero?.secondaryCtaHref },
-							{ name: "heroSupportingLine", label: "Linha de apoio", defaultValue: page.hero?.supportingLine },
-							{ name: "heroFeatureEyebrow", label: "Linha do destaque", defaultValue: page.hero?.featureEyebrow },
-							{ name: "heroFeatureTitle", label: "Título do destaque", defaultValue: page.hero?.featureTitle },
+							{
+								name: "heroPrimaryCtaLabel",
+								label: "Botão principal",
+								defaultValue: page.hero?.primaryCtaLabel,
+							},
+							{
+								name: "heroPrimaryCtaHref",
+								label: "Link do botão principal",
+								defaultValue: page.hero?.primaryCtaHref,
+							},
+							{
+								name: "heroSecondaryCtaLabel",
+								label: "Botão secundário",
+								defaultValue: page.hero?.secondaryCtaLabel,
+							},
+							{
+								name: "heroSecondaryCtaHref",
+								label: "Link do botão secundário",
+								defaultValue: page.hero?.secondaryCtaHref,
+							},
+							{
+								name: "heroSupportingLine",
+								label: "Linha de apoio",
+								defaultValue: page.hero?.supportingLine,
+							},
+							{
+								name: "heroFeatureEyebrow",
+								label: "Linha do destaque",
+								defaultValue: page.hero?.featureEyebrow,
+							},
+							{
+								name: "heroFeatureTitle",
+								label: "Título do destaque",
+								defaultValue: page.hero?.featureTitle,
+							},
 							{
 								name: "heroFeatureBody",
 								label: "Texto do destaque",
@@ -117,7 +153,11 @@ export default async function AdminEditorialHomePage() {
 								rows: 3,
 								defaultValue: page.featuredBook?.body,
 							},
-							{ name: "featuredPrimaryCtaLabel", label: "Botão principal", defaultValue: page.featuredBook?.primaryCtaLabel },
+							{
+								name: "featuredPrimaryCtaLabel",
+								label: "Botão principal",
+								defaultValue: page.featuredBook?.primaryCtaLabel,
+							},
 							{
 								name: "featuredSecondaryCtaLabel",
 								label: "Botão secundário",
@@ -152,8 +192,16 @@ export default async function AdminEditorialHomePage() {
 								rows: 3,
 								defaultValue: page.catalog?.defaultCardFallback,
 							},
-							{ name: "catalogViewBookLabel", label: "Botão para livro disponível", defaultValue: page.catalog?.viewBookLabel },
-							{ name: "catalogLaunchAlertLabel", label: "Botão para livro futuro", defaultValue: page.catalog?.launchAlertLabel },
+							{
+								name: "catalogViewBookLabel",
+								label: "Botão para livro disponível",
+								defaultValue: page.catalog?.viewBookLabel,
+							},
+							{
+								name: "catalogLaunchAlertLabel",
+								label: "Botão para livro futuro",
+								defaultValue: page.catalog?.launchAlertLabel,
+							},
 						],
 					},
 					{

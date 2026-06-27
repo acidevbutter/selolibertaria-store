@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import {
 	getEditorialProductsPageCopyRecord,
 	updateEditorialProductsPageCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
-import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import {
@@ -36,9 +36,17 @@ export default async function AdminEditorialProductsPage() {
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Status" value={page.published ? "Publicado" : "Rascunho"} helper="Rota: /products" />
+				<AdminEditorialStat
+					label="Status"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Rota: /products"
+				/>
 				<AdminEditorialStat label="Blocos" value="4" helper="Hero, nota, catálogo e continuidade." />
-				<AdminEditorialStat label="Fonte" value="Admin editorial" helper="Copy pública editável sem deploy." />
+				<AdminEditorialStat
+					label="Fonte"
+					value="Admin editorial"
+					helper="Copy pública editável sem deploy."
+				/>
 			</div>
 			<EditorialPageCopyForm
 				action={updateEditorialProductsPageCopyAction}
@@ -53,10 +61,26 @@ export default async function AdminEditorialProductsPage() {
 							{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
 							{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
 							{ name: "heroBody", label: "Texto", type: "textarea", rows: 4, defaultValue: page.hero?.body },
-							{ name: "heroPrimaryCtaLabel", label: "Botão principal", defaultValue: page.hero?.primaryCtaLabel },
-							{ name: "heroPrimaryCtaHref", label: "Link do botão principal", defaultValue: page.hero?.primaryCtaHref },
-							{ name: "heroSecondaryCtaLabel", label: "Botão secundário", defaultValue: page.hero?.secondaryCtaLabel },
-							{ name: "heroSecondaryCtaHref", label: "Link do botão secundário", defaultValue: page.hero?.secondaryCtaHref },
+							{
+								name: "heroPrimaryCtaLabel",
+								label: "Botão principal",
+								defaultValue: page.hero?.primaryCtaLabel,
+							},
+							{
+								name: "heroPrimaryCtaHref",
+								label: "Link do botão principal",
+								defaultValue: page.hero?.primaryCtaHref,
+							},
+							{
+								name: "heroSecondaryCtaLabel",
+								label: "Botão secundário",
+								defaultValue: page.hero?.secondaryCtaLabel,
+							},
+							{
+								name: "heroSecondaryCtaHref",
+								label: "Link do botão secundário",
+								defaultValue: page.hero?.secondaryCtaHref,
+							},
 							{ name: "heroQuote", label: "Frase de apoio", defaultValue: page.hero?.quote },
 						],
 					},
@@ -66,7 +90,13 @@ export default async function AdminEditorialProductsPage() {
 						route: "/products",
 						fields: [
 							{ name: "curatorialTitle", label: "Título", defaultValue: page.curatorialNote?.title },
-							{ name: "curatorialBody", label: "Texto", type: "textarea", rows: 4, defaultValue: page.curatorialNote?.body },
+							{
+								name: "curatorialBody",
+								label: "Texto",
+								type: "textarea",
+								rows: 4,
+								defaultValue: page.curatorialNote?.body,
+							},
 						],
 					},
 					{
@@ -76,8 +106,20 @@ export default async function AdminEditorialProductsPage() {
 						fields: [
 							{ name: "listingLabel", label: "Linha curta", defaultValue: page.listing?.label },
 							{ name: "listingTitle", label: "Título interno do bloco", defaultValue: page.listing?.title },
-							{ name: "listingBody", label: "Texto de apoio", type: "textarea", rows: 3, defaultValue: page.listing?.body },
-							{ name: "listingEmptyText", label: "Texto quando não houver livros", type: "textarea", rows: 4, defaultValue: page.listing?.emptyText },
+							{
+								name: "listingBody",
+								label: "Texto de apoio",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.listing?.body,
+							},
+							{
+								name: "listingEmptyText",
+								label: "Texto quando não houver livros",
+								type: "textarea",
+								rows: 4,
+								defaultValue: page.listing?.emptyText,
+							},
 							{
 								name: "listingCardPrimaryFallback",
 								label: "Texto padrão do primeiro card",
@@ -92,8 +134,16 @@ export default async function AdminEditorialProductsPage() {
 								rows: 3,
 								defaultValue: page.listing?.cardSecondaryFallback,
 							},
-							{ name: "listingViewBookLabel", label: "Botão para livro disponível", defaultValue: page.listing?.viewBookLabel },
-							{ name: "listingLaunchAlertLabel", label: "Botão para livro futuro", defaultValue: page.listing?.launchAlertLabel },
+							{
+								name: "listingViewBookLabel",
+								label: "Botão para livro disponível",
+								defaultValue: page.listing?.viewBookLabel,
+							},
+							{
+								name: "listingLaunchAlertLabel",
+								label: "Botão para livro futuro",
+								defaultValue: page.listing?.launchAlertLabel,
+							},
 						],
 					},
 					{
@@ -102,9 +152,19 @@ export default async function AdminEditorialProductsPage() {
 						route: "/products",
 						fields: [
 							{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
-							{ name: "finalBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.finalCta?.body },
+							{
+								name: "finalBody",
+								label: "Texto",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.finalCta?.body,
+							},
 							{ name: "finalPrimaryCtaLabel", label: "Botão", defaultValue: page.finalCta?.primaryCtaLabel },
-							{ name: "finalPrimaryCtaHref", label: "Link do botão", defaultValue: page.finalCta?.primaryCtaHref },
+							{
+								name: "finalPrimaryCtaHref",
+								label: "Link do botão",
+								defaultValue: page.finalCta?.primaryCtaHref,
+							},
 						],
 					},
 				]}

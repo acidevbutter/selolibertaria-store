@@ -1,4 +1,4 @@
-import { getTranslations } from "@/i18n/server";
+import { getEditorialSiteGlobal } from "@/lib/editorial-content-store";
 import { seloSiteMeta, seloSocialLinks } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 import { getStripeCategories } from "@/lib/stripe-categories";
@@ -6,10 +6,8 @@ import FooterClient from "@/ui/footer/footer.client";
 
 export async function Footer() {
 	const year = new Date().getFullYear();
-	const t = await getTranslations("Selo");
-	const globalT = await getTranslations("Global.footer.links");
-
-	const [dynamicCategories, supportEmail] = await Promise.all([
+	const [globalContent, dynamicCategories, supportEmail] = await Promise.all([
+		getEditorialSiteGlobal(),
 		getStripeCategories(),
 		getSupportEmailSetting(),
 	]);
@@ -24,46 +22,65 @@ export async function Footer() {
 		{ label: "Amazon Pay", src: "/images/icons/amazon-pay.svg" },
 	];
 
+	const footer = globalContent.footer ?? null;
+	const newsletter = globalContent.newsletter ?? null;
+
 	return (
 		<FooterClient
-			newsletterTitle={t("footer.newsletterTitle")}
 			paymentIcons={paymentIcons}
 			year={year}
 			socialLinks={seloSocialLinks}
 			brandName={seloSiteMeta.name}
 			brandEmail={supportEmail || seloSiteMeta.email}
-			brandEyebrow={t("footer.eyebrow")}
-			brandDescription={t("footer.description")}
+			brandEyebrow={footer?.brandEyebrow || "Selo Libertária"}
+			brandDescription={
+				footer?.brandDescription ||
+				"Livros, performances, oficinas e programação cultural reunidos em um mesmo site editorial."
+			}
+			newsletterTitle={newsletter?.title || "Receba lançamentos, saraus e textos do selo."}
+			newsletterDescription={
+				newsletter?.description ||
+				"Atualizações de livros, agenda e circulação editorial em um único campo público editável."
+			}
+			newsletterPlaceholder={newsletter?.placeholder || "seu@email.com"}
+			newsletterButtonLabel={newsletter?.buttonLabel || "Assinar"}
 			sections={[
 				{
-					header: t("footer.catalogue"),
+					header: footer?.catalogueTitle || "Livros",
 					links: [
-						{ label: t("footer.shop"), href: "/products" },
-						...dynamicCategories.map(({ name, slug }) => ({ label: name, href: `/category/${slug}` })),
+						{ label: "Catálogo", href: "/products" },
+						...dynamicCategories.map(({ name, slug }) => ({
+							label: name,
+							href: `/category/${slug}`,
+						})),
 					],
 				},
 				{
-					header: t("footer.editorial"),
+					header: footer?.editorialTitle || "Editorial",
 					links: [
-						{ label: t("footer.projects"), href: "/projects" },
-						{ label: t("footer.events"), href: "/events" },
-						{ label: t("nav.sarau"), href: "/sarau-safado" },
+						{ label: "Projetos", href: "/projects" },
+						{ label: "Sarau Safado", href: "/sarau-safado" },
+						{ label: "Sobre", href: "/about" },
+						{ label: "Contato", href: "/contact" },
 					],
 				},
 				{
-					header: t("footer.support"),
-					links: [
-						{ label: t("footer.about"), href: "/about" },
-						{ label: t("footer.contact"), href: "/contact" },
-						{ label: t("footer.faq"), href: "/faq" },
-						{ label: globalT("terms"), href: "/terms" },
-						{ label: globalT("privacy"), href: "/privacy" },
+					header: footer?.supportTitle || "Suporte",
+					links: footer?.auxiliaryLinks
+						?.filter((link) => link.label && link.href)
+						.map((link) => ({
+							label: link.label as string,
+							href: link.href as string,
+						})) || [
+						{ label: "FAQ", href: "/faq" },
+						{ label: "Termos", href: "/terms" },
+						{ label: "Privacidade", href: "/privacy" },
 					],
 				},
 			]}
-			copyrightLabel={t("footer.allRightsReserved")}
-			developedByLabel={t("footer.developedBy")}
-			paymentMethodsLabel={t("footer.acceptedPayments")}
+			copyrightText={footer?.copyrightText || "Selo Libertária."}
+			developedByLabel="Desenvolvido por"
+			paymentMethodsLabel="Métodos de pagamento aceitos"
 		/>
 	);
 }

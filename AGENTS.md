@@ -241,3 +241,8 @@ Also validate:
 - 2026-06-25: the locale contract is now `pt-BR` only across storefront and admin shell; ignore `Accept-Language`, ignore locale cookies, collapse legacy `/en`, `/en-us`, `/es` and `/pt-br` prefixes into canonical routes, and never reintroduce public English fallback copy.
 
 @RTK.md
+## Addendum — P3.75B
+
+- copy pública editorial e comercial deve sair de documentos editoriais dedicados no Mongo/admin; não recolocar esses textos em `messages/pt-BR.json`.
+- labels técnicos repetidos da vitrine e da PDP permanecem hardcoded em pt-BR mesmo quando a página recebe blocos editoriais do admin.
+- migrations editoriais em produção devem apenas criar documentos novos e preencher paths ausentes; `--force` fica manual e nunca como comportamento padrão.

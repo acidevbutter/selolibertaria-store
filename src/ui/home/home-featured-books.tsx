@@ -25,7 +25,8 @@ export async function HomeFeaturedBooks({
 	const catalog = products.slice(0, 3);
 	const tags = ["Erotismo", "Cidade", "Corpo"];
 	const fallbackSummary =
-		content?.featuredBook?.body ?? "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.";
+		content?.featuredBook?.body ??
+		"Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.";
 	const primaryCtaLabel = content?.featuredBook?.primaryCtaLabel || "Comprar agora";
 	const secondaryCtaLabel = content?.featuredBook?.secondaryCtaLabel || "Ver livro";
 	const catalogTitle = content?.catalog?.title || "Catálogo";
@@ -35,7 +36,8 @@ export async function HomeFeaturedBooks({
 		content?.catalog?.primaryCardFallback ||
 		"Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.";
 	const defaultCardSummary =
-		content?.catalog?.defaultCardFallback || "Livro em preparação dentro do mesmo universo literário do selo.";
+		content?.catalog?.defaultCardFallback ||
+		"Livro em preparação dentro do mesmo universo literário do selo.";
 	const viewBookLabel = content?.catalog?.viewBookLabel || "Ver livro";
 	const launchAlertLabel = content?.catalog?.launchAlertLabel || "Avise-me";
 
