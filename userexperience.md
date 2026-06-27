@@ -132,3 +132,9 @@ Confiança vem de:
 - O header não deve competir com a compra do livro; ele orienta sessão e navegação, enquanto a decisão de compra fica na própria PDP.
 - Em uma rodada curta de estabilização pública, consistência de idioma pesa mais do que detecção automática; se necessário, o público deve ficar inteiro em `pt-BR` até a resolução contextual voltar a ser confiável.
 - Em `/events`, a pessoa deve sentir ritmo de agenda, não navegar por um mural genérico: primeiro impacto, depois contexto, depois lista de programação e, por fim, caminhos claros para Sarau Safado, projetos e contato.
+
+## Atualização 2026-06-25
+
+- A pessoa usuária não deve perceber qualquer oscilação de idioma entre páginas, reload, checkout, login ou links antigos com prefixo de locale.
+- Links legados com `/en`, `/en-us`, `/es` ou `/pt-br` devem apenas levar com segurança à rota canônica em `pt-BR`, sem criar uma experiência paralela.
+- A confiança do produto agora depende de um contrato simples: textos técnicos em português, conteúdo editorial vindo do admin quando editável e fallbacks sempre em português do Brasil.

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
@@ -32,7 +32,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const db = await getDb();
 	const sp = (await searchParams) || {};

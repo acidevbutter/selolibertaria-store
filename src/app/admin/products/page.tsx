@@ -2,8 +2,7 @@ import { PackagePlus, Tags } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
@@ -35,7 +34,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 
 	const sp = (await searchParams) || {};
 	const query = asString(sp.q).toLowerCase();
-	const displayLocale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const displayLocale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 	let groups: Awaited<ReturnType<typeof listAdminStripeProductGroups>> = [];
 	let error: string | null = null;
 

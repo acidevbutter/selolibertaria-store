@@ -1,35 +1,22 @@
 import Image from "next/image";
-import { getLocale } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeHero({ content }: { content?: EditorialHomePage["hero"] | null }) {
-	const locale = await getLocale();
-	const isPortuguese = locale === "pt-BR";
 	const hero = content ?? null;
-	const eyebrow = hero?.eyebrow || (isPortuguese ? "Lançamento" : "Featured release");
+	const eyebrow = hero?.eyebrow || "Lançamento";
 	const title = hero?.title || "Ninfas do Tiete";
 	const description =
 		hero?.description ||
-		(isPortuguese
-			? "Um romance breve, noturno e urbano em que desejo, cidade e memória atravessam a leitura como presença."
-			: "A brief nocturnal urban novel where desire, the city, and memory move through reading as presence.");
-	const primaryCtaLabel = hero?.primaryCtaLabel || (isPortuguese ? "Comprar livro" : "Buy the book");
-	const secondaryCtaLabel =
-		hero?.secondaryCtaLabel || (isPortuguese ? "Conhecer o Sarau Safado" : "Discover Sarau Safado");
+		"Um romance breve, noturno e urbano em que desejo, cidade e memória atravessam a leitura como presença.";
+	const primaryCtaLabel = hero?.primaryCtaLabel || "Comprar livro";
+	const secondaryCtaLabel = hero?.secondaryCtaLabel || "Conhecer o Sarau Safado";
 	const supportingLine =
-		hero?.supportingLine ||
-		(isPortuguese
-			? "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais."
-			: "Printed books, sonic editions, live gatherings, and cultural projects.");
-	const quoteEyebrow = hero?.featureEyebrow || (isPortuguese ? "Trecho" : "Reading note");
-	const quote =
-		hero?.featureQuote ||
-		(isPortuguese
-			? "Ler também pode ser uma forma de acender presença."
-			: "Reading can also be a way of igniting presence.");
+		hero?.supportingLine || "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.";
+	const quoteEyebrow = hero?.featureEyebrow || "Trecho";
+	const quote = hero?.featureQuote || "Ler também pode ser uma forma de acender presença.";
 	const featureImage = hero?.featureImage?.src || "/images/ninfas-example.png";
 	const featureImageAlt = hero?.featureImage?.alt || title;
 

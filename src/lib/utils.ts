@@ -50,7 +50,7 @@ type CardinalWords = Partial<Record<Intl.LDMLPluralRule, string>> & {
 	other: string;
 };
 export const pluralize = (count: number, words: CardinalWords) => {
-	const cardinalRules = new Intl.PluralRules("en-US");
+	const cardinalRules = new Intl.PluralRules("pt-BR");
 	const rule = cardinalRules.select(count);
 	return words[rule] ?? words.other;
 };
@@ -177,7 +177,7 @@ export const getDecimalFromStripeAmount = ({ amount: minor, currency }: Money) =
 	return Number.parseFloat((minor / multiplier).toFixed(decimals));
 };
 
-export const formatMoney = ({ amount: minor, currency, locale = "en-US" }: Money & { locale?: string }) => {
+export const formatMoney = ({ amount: minor, currency, locale = "pt-BR" }: Money & { locale?: string }) => {
 	const amount = getDecimalFromStripeAmount({ amount: minor, currency });
 	return new Intl.NumberFormat(locale, {
 		style: "currency",

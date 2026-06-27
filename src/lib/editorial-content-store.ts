@@ -7,9 +7,14 @@ import {
 	getMockEditorialContactPage,
 	getMockEditorialDocuments,
 	getMockEditorialEvents,
+	getMockEditorialEventsPage,
 	getMockEditorialHomePage,
+	getMockEditorialProductPage,
+	getMockEditorialProductsPage,
 	getMockEditorialProjects,
+	getMockEditorialProjectsPage,
 	getMockEditorialSarauPage,
+	getMockEditorialSiteGlobal,
 } from "@/lib/editorial-content-mock";
 import { getDb } from "@/lib/mongodb";
 
@@ -35,6 +40,18 @@ function getFallbackDocument<T extends EditorialDocument["type"]>(type: T) {
 	return getMockEditorialDocuments().find(
 		(item): item is Extract<EditorialDocument, { type: T }> => item.type === type,
 	);
+}
+
+async function getSingleEditorialPage<T extends EditorialDocument["type"]>(
+	type: T,
+	fallback: () => Extract<EditorialDocument, { type: T }>,
+) {
+	try {
+		const items = await listEditorialFromDb(type);
+		const item = selectFirstPublished(items);
+		if (item) return item;
+	} catch {}
+	return fallback();
 }
 
 export async function listEditorialEvents() {
@@ -72,39 +89,39 @@ export async function getEditorialProjectRecordBySlug(slug: string) {
 }
 
 export async function getEditorialSarauPage() {
-	try {
-		const items = await listEditorialFromDb("page_sarau");
-		const item = selectFirstPublished(items);
-		if (item) return item;
-	} catch {}
-	return getMockEditorialSarauPage();
+	return await getSingleEditorialPage("page_sarau", getMockEditorialSarauPage);
 }
 
 export async function getEditorialAboutPage() {
-	try {
-		const items = await listEditorialFromDb("page_about");
-		const item = selectFirstPublished(items);
-		if (item) return item;
-	} catch {}
-	return getMockEditorialAboutPage();
+	return await getSingleEditorialPage("page_about", getMockEditorialAboutPage);
 }
 
 export async function getEditorialContactPage() {
-	try {
-		const items = await listEditorialFromDb("page_contact");
-		const item = selectFirstPublished(items);
-		if (item) return item;
-	} catch {}
-	return getMockEditorialContactPage();
+	return await getSingleEditorialPage("page_contact", getMockEditorialContactPage);
 }
 
 export async function getEditorialHomePage() {
-	try {
-		const items = await listEditorialFromDb("page_home");
-		const item = selectFirstPublished(items);
-		if (item) return item;
-	} catch {}
-	return getMockEditorialHomePage();
+	return await getSingleEditorialPage("page_home", getMockEditorialHomePage);
+}
+
+export async function getEditorialEventsPage() {
+	return await getSingleEditorialPage("page_events", getMockEditorialEventsPage);
+}
+
+export async function getEditorialProjectsPage() {
+	return await getSingleEditorialPage("page_projects", getMockEditorialProjectsPage);
+}
+
+export async function getEditorialProductsPage() {
+	return await getSingleEditorialPage("page_products", getMockEditorialProductsPage);
+}
+
+export async function getEditorialProductPage() {
+	return await getSingleEditorialPage("page_product", getMockEditorialProductPage);
+}
+
+export async function getEditorialSiteGlobal() {
+	return await getSingleEditorialPage("site_global", getMockEditorialSiteGlobal);
 }
 
 export async function listEditorialRecordsForAdmin<T extends EditorialDocument["type"]>(type: T) {

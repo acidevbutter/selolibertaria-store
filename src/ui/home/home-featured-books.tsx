@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getLocale } from "@/i18n/server";
 import type { Product } from "@/lib/commerce-types";
+import type { EditorialHomePage } from "@/lib/editorial-content";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
 import { formatMoney } from "@/lib/utils";
 import {
@@ -12,29 +13,31 @@ import {
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
-export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
+export async function HomeFeaturedBooks({
+	products,
+	content,
+}: {
+	products: Product[];
+	content?: EditorialHomePage | null;
+}) {
 	const locale = await getLocale();
-	const isPortuguese = locale === "pt-BR";
 	const featured = products[0] ?? null;
 	const catalog = products.slice(0, 3);
-	const fallbackSummary = isPortuguese
-		? "Uma leitura de tom noturno e autoral, atravessada por desejo, cidade e memória, pensada como porta de entrada para o universo editorial do selo."
-		: "A nocturnal author-led read shaped by desire, the city, and memory, conceived as an entry point into the selo's editorial universe.";
-	const tags = isPortuguese ? ["Romance", "Erotismo", "São Paulo"] : ["Novel", "Erotica", "Sao Paulo"];
-	const primaryCtaLabel = isPortuguese ? "Comprar agora" : "Buy now";
-	const secondaryCtaLabel = isPortuguese ? "Ver livro" : "View book";
-	const catalogTitle = isPortuguese ? "Catálogo" : "Catalogue";
-	const catalogDescription = isPortuguese
-		? "Capas grandes, poucas escolhas por vez e leitura direta de prateleira. A vitrine deve parecer curada, não infinita."
-		: "Large covers, a few choices at a time, and shelf-like reading. The catalogue should feel curated instead of endless.";
-	const defaultCardSummary = isPortuguese
-		? "Leitura editorial em preparação."
-		: "Editorial release in progress.";
-	const primaryCardSummary = isPortuguese
-		? "Leitura curta, noturna e urbana."
-		: "A short nocturnal urban read.";
-	const viewBookLabel = isPortuguese ? "Ver livro" : "View book";
-	const launchAlertLabel = isPortuguese ? "Avise-me" : "Notify me";
+	const tags = ["Erotismo", "Cidade", "Corpo"];
+	const fallbackSummary =
+		content?.featuredBook?.body ?? "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.";
+	const primaryCtaLabel = content?.featuredBook?.primaryCtaLabel || "Comprar agora";
+	const secondaryCtaLabel = content?.featuredBook?.secondaryCtaLabel || "Ver livro";
+	const catalogTitle = content?.catalog?.title || "Catálogo";
+	const catalogDescription =
+		content?.catalog?.body || "Uma prateleira curta e curada para entrar no universo do selo pela leitura.";
+	const primaryCardSummary =
+		content?.catalog?.primaryCardFallback ||
+		"Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.";
+	const defaultCardSummary =
+		content?.catalog?.defaultCardFallback || "Livro em preparação dentro do mesmo universo literário do selo.";
+	const viewBookLabel = content?.catalog?.viewBookLabel || "Ver livro";
+	const launchAlertLabel = content?.catalog?.launchAlertLabel || "Avise-me";
 
 	return (
 		<EditorialSection className="space-y-[4.5rem]">
@@ -59,7 +62,7 @@ export async function HomeFeaturedBooks({ products }: { products: Product[] }) {
 						<div className="space-y-5">
 							<Reveal delay={0.04}>
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.58)]">
-									{isPortuguese ? "Livro em destaque" : "Featured book"}
+									{content?.featuredBook?.eyebrow || "Livro em destaque"}
 								</EditorialEyebrow>
 							</Reveal>
 							<Reveal delay={0.08}>

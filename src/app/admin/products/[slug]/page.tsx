@@ -15,7 +15,7 @@ import {
 	updateStripeVariantAction,
 } from "@/app/admin/products/actions";
 import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { getAdminStripeProductGroup, listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
@@ -77,7 +77,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	]);
 	if (!group) redirect("/admin/products");
 	const history = await listProductAuditEntries(group.slug, 15);
-	const displayLocale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const displayLocale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 	const adminCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();

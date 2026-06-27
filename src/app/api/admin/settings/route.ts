@@ -1,7 +1,7 @@
 import type { UpdateFilter } from "mongodb";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { APP_LOCALES } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { requireAdmin } from "@/lib/api-auth";
 import { COUNTRY_CODES } from "@/lib/location/countries";
 import { getDb } from "@/lib/mongodb";
@@ -71,7 +71,7 @@ const settingsPatchSchema = z.object({
 	theme: z.enum(["light", "dark"]).optional(),
 	supportEmail: z.string().email().nullable().optional(),
 	defaultCountry: z.enum(COUNTRY_CODES as [string, ...string[]]).optional(),
-	defaultLocale: z.enum(APP_LOCALES).optional(),
+	defaultLocale: z.literal(DEFAULT_LOCALE).optional(),
 	oauthProviders: oauthProvidersPatchSchema.optional(),
 	shippingEnabled: z.boolean().optional(),
 	shippingProviders: shippingProvidersPatchSchema.optional(),

@@ -2,26 +2,21 @@
 
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_LOCALE, TEMP_FORCE_PT_BR } from "@/i18n/config";
 import { proxy } from "@/proxy";
 
 describe("proxy public auth paths", () => {
-	it("stores the locale cookie and redirects locale-prefixed selolibertaria routes", async () => {
+	it("redireciona prefixos legados de locale para a rota canônica", async () => {
 		const res = await proxy(new NextRequest("http://localhost/pt-br"));
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/");
-		expect(res.headers.get("set-cookie")).toContain("selolibertaria_locale=pt-BR");
 	});
 
-	it("stores the locale cookie and preserves the remaining pathname", async () => {
+	it("preserva o restante do caminho ao remover prefixos legados", async () => {
 		const res = await proxy(new NextRequest("http://localhost/es/product/test-slug?ref=nav"));
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost/product/test-slug?ref=nav");
-		expect(res.headers.get("set-cookie")).toContain(
-			`selolibertaria_locale=${TEMP_FORCE_PT_BR ? DEFAULT_LOCALE : "es-ES"}`,
-		);
 	});
 
 	it("allows oauth start without an authenticated session", async () => {

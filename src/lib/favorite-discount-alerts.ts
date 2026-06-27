@@ -12,7 +12,7 @@ import { getPromotionById, isPromotionActive } from "@/lib/promotions";
 
 function formatCurrency(amount: number, currency: string) {
 	try {
-		return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount / 100);
+		return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(amount / 100);
 	} catch {
 		return `${currency} ${(amount / 100).toFixed(2)}`;
 	}
@@ -159,14 +159,14 @@ export async function dispatchPendingFavoriteDiscountNotifications(limit = 25) {
 			productUrl: notification.productUrl,
 			basePrice: formatCurrency(notification.basePrice, notification.currency || "BRL"),
 			effectivePrice: formatCurrency(notification.effectivePrice, notification.currency || "BRL"),
-			promotionLabel: "Discount active",
+			promotionLabel: "Desconto ativo",
 		});
 
 		const result = await sendEmail({
 			to: user.email,
-			subject: `${notification.productName} is now on sale`,
+			subject: `${notification.productName} está com desconto`,
 			html,
-			text: `${notification.productName} is now on sale. View it now: ${notification.productUrl}`,
+			text: `${notification.productName} está com desconto. Veja agora: ${notification.productUrl}`,
 			log: {
 				kind: "marketing",
 				source: "promotion_notifications",

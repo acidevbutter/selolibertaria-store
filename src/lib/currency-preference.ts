@@ -1,14 +1,8 @@
 import "server-only";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { cache } from "react";
-import { env } from "@/env.mjs";
-import {
-	LOCALE_COOKIE_NAME,
-	matchLocale,
-	resolveLocale,
-	resolveLocaleFromAcceptLanguage,
-} from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
@@ -44,15 +38,8 @@ export const getRequestPreferredCurrency = cache(async (): Promise<SupportedCurr
 	const cookieCurrency = resolveSupportedCurrency(cookieStore.get(CURRENCY_COOKIE_NAME)?.value);
 	if (cookieCurrency) return cookieCurrency;
 
-	const cookieLocale = matchLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
-	if (cookieLocale) return getDefaultCurrencyForLocale(cookieLocale);
-
-	const headerStore = await headers();
-	const headerLocale = resolveLocaleFromAcceptLanguage(headerStore.get("accept-language"));
-	if (headerLocale) return getDefaultCurrencyForLocale(headerLocale);
-
 	const adminLocale = await getDefaultLocaleSetting();
 	if (adminLocale) return getDefaultCurrencyForLocale(adminLocale);
 
-	return getDefaultCurrencyForLocale(resolveLocale(env.NEXT_PUBLIC_LANGUAGE));
+	return getDefaultCurrencyForLocale(DEFAULT_LOCALE);
 });

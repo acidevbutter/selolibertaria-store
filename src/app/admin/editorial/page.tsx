@@ -1,161 +1,89 @@
-import { BookOpen, CalendarRange, FolderKanban, House, Info, Mail } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { BookOpen, CalendarDays, Globe2, House, Info, Mail, NotebookText } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { listEditorialRecordsForAdmin } from "@/lib/editorial-content-store";
+import {
+	getEditorialEventsPageCopyRecord,
+	getEditorialHomeCopyRecord,
+	getEditorialProductPageCopyRecord,
+	getEditorialProductsPageCopyRecord,
+	getEditorialProjectsPageCopyRecord,
+	getEditorialSiteGlobalCopyRecord,
+} from "@/app/admin/editorial/page-content-actions";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/shadcn/card";
-import {
-	getEditorialAboutRecord,
-	getEditorialContactRecord,
-	getEditorialHomeRecord,
-	getEditorialSarauRecord,
-	listEditorialEventRecords,
-	listEditorialProjectRecords,
-} from "./actions";
 
-export const dynamic = "force-dynamic";
+const sections = [
+	{ title: "Página inicial", href: "/admin/editorial/home", description: "Hero, manifesto, livro, catálogo e programação.", icon: House },
+	{ title: "Eventos", href: "/admin/editorial/events", description: "Textos da rota /events e agenda publicada.", icon: CalendarDays },
+	{ title: "Projetos", href: "/admin/editorial/projects", description: "Textos da rota /projects e portfólio cultural.", icon: NotebookText },
+	{ title: "Livros", href: "/admin/editorial/products", description: "Hero, nota curatorial e continuidade da vitrine.", icon: BookOpen },
+	{ title: "Página do livro", href: "/admin/editorial/pagina-do-livro", description: "Textos estruturais globais da PDP.", icon: Info },
+	{ title: "Newsletter e rodapé", href: "/admin/editorial/global", description: "Conteúdo global público editável.", icon: Globe2 },
+	{ title: "Sobre", href: "/admin/editorial/about", description: "Manifesto, autoria e pilares editoriais.", icon: Info },
+	{ title: "Contato", href: "/admin/editorial/contact", description: "Hero, formulário, canais e caminhos comuns.", icon: Mail },
+	{ title: "Sarau Safado", href: "/admin/editorial/sarau-safado", description: "Agenda, memória e continuidade do programa.", icon: CalendarDays },
+];
 
-function formatCollectionSummary(count: number, singular: string, plural: string) {
-	return `${count} ${count === 1 ? singular : plural}`;
-}
-
-function formatPublishedSummary(count: number) {
-	return `${count} ${count === 1 ? "publicado" : "publicados"}`;
-}
-
-export default async function AdminEditorialOverviewPage() {
+export default async function AdminEditorialIndexPage() {
 	const session = await auth();
-	if (!session) redirect("/login");
-	if (!hasCapability(session.user.role, "editorial.write")) redirect("/forbidden");
+	if (!session || !hasCapability(session.user.role, "editorial.write")) return null;
 
-	const [events, projects, sarau, about, contact, home] = await Promise.all([
-		listEditorialEventRecords(),
-		listEditorialProjectRecords(),
-		getEditorialSarauRecord(),
-		getEditorialAboutRecord(),
-		getEditorialContactRecord(),
-		getEditorialHomeRecord(),
+	const [events, projects, home, eventsPage, projectsPage, productsPage, productPage, globalPage] = await Promise.all([
+		listEditorialRecordsForAdmin("event"),
+		listEditorialRecordsForAdmin("project"),
+		getEditorialHomeCopyRecord(),
+		getEditorialEventsPageCopyRecord(),
+		getEditorialProjectsPageCopyRecord(),
+		getEditorialProductsPageCopyRecord(),
+		getEditorialProductPageCopyRecord(),
+		getEditorialSiteGlobalCopyRecord(),
 	]);
 
-	const sections = [
-		{
-			title: "Eventos",
-			description: "Agenda, encontros, oficinas e ativações do selo.",
-			countLabel: formatCollectionSummary(events.length, "evento", "eventos"),
-			statusLabel: formatPublishedSummary(events.filter((item) => item.published).length),
-			href: "/admin/editorial/events",
-			actionLabel: "Gerenciar eventos",
-			icon: CalendarRange,
-		},
-		{
-			title: "Projetos",
-			description: "Programas culturais, festivais, laboratórios e ações recorrentes.",
-			countLabel: formatCollectionSummary(projects.length, "projeto", "projetos"),
-			statusLabel: formatPublishedSummary(projects.filter((item) => item.published).length),
-			href: "/admin/editorial/projects",
-			actionLabel: "Gerenciar projetos",
-			icon: FolderKanban,
-		},
-		{
-			title: "Sarau Safado",
-			description: "Programa principal do selo e sua página institucional.",
-			countLabel: "Página institucional",
-			statusLabel: sarau?.published ? "Publicado" : "Rascunho",
-			href: "/admin/editorial/sarau-safado",
-			actionLabel: "Editar página do Sarau Safado",
-			icon: BookOpen,
-		},
-		{
-			title: "Sobre",
-			description: "Narrativa institucional e posicionamento editorial do selo.",
-			countLabel: "Página institucional",
-			statusLabel: about?.published ? "Publicado" : "Rascunho",
-			href: "/admin/editorial/about",
-			actionLabel: "Editar página sobre",
-			icon: Info,
-		},
-		{
-			title: "Contato",
-			description: "Hero, canais diretos e caminhos públicos da página de contato.",
-			countLabel: "Página institucional",
-			statusLabel: contact?.published ? "Publicado" : "Rascunho",
-			href: "/admin/editorial/contact",
-			actionLabel: "Editar página de contato",
-			icon: Mail,
-		},
-		{
-			title: "Página inicial",
-			description: "Hero, manifesto, autora e CTA final da página inicial.",
-			countLabel: "Blocos institucionais",
-			statusLabel: home?.published ? "Publicado" : "Rascunho",
-			href: "/admin/editorial/home",
-			actionLabel: "Editar página inicial",
-			icon: House,
-		},
-	];
-
-	const publishedCount = sections.filter((section) => /Publicado/.test(section.statusLabel)).length;
+	const publishedStaticPages = [
+		home,
+		eventsPage,
+		projectsPage,
+		productsPage,
+		productPage,
+		globalPage,
+	].filter((item) => item?.published).length;
 
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
-				title="Painel editorial"
-				description="Gerencie páginas, agenda e conteúdo institucional."
+				title="Centro editorial público"
+				description="O admin editorial passa a ser a fonte principal da copy pública em pt-BR."
 			/>
+
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat
-					label="Superfícies"
-					value={sections.length}
-					helper="Página inicial, páginas institucionais e coleções editoriais."
-				/>
-				<AdminEditorialStat label="Publicadas" value={publishedCount} helper="Entradas visíveis no site." />
-				<AdminEditorialStat
-					label="Coleções dinâmicas"
-					value={events.length + projects.length}
-					helper="Itens distribuídos entre eventos e projetos."
-				/>
+				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens da agenda pública." />
+				<AdminEditorialStat label="Projetos" value={projects.length} helper="Itens do portfólio cultural." />
+				<AdminEditorialStat label="Páginas editáveis" value={publishedStaticPages} helper="Páginas públicas estruturais publicadas." />
 			</div>
+
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-				{sections.map((section) => {
-					const Icon = section.icon;
-					return (
-						<EditorialPanel key={section.href} className="flex h-full flex-col p-0">
-							<Card className="flex h-full flex-col border-none bg-transparent shadow-none">
-								<CardHeader className="space-y-3">
-									<div className="inline-flex h-10 w-10 items-center justify-center border border-[color:var(--editorial-border)] bg-[#fbf7f1]">
-										<Icon className="h-5 w-5" />
-									</div>
-									<div className="space-y-1">
-										<CardTitle className="editorial-serif text-2xl font-semibold">{section.title}</CardTitle>
-										<CardDescription className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-											{section.description}
-										</CardDescription>
-									</div>
-								</CardHeader>
-								<CardContent className="mt-auto space-y-4">
-									<div className="space-y-1 text-sm text-[color:var(--editorial-muted)]">
-										<p>{section.countLabel}</p>
-										<p>{section.statusLabel}</p>
-									</div>
-									<Button
-										asChild
-										className="w-full rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-									>
-										<Link href={section.href}>{section.actionLabel}</Link>
-									</Button>
-								</CardContent>
-							</Card>
-						</EditorialPanel>
-					);
-				})}
+				{sections.map(({ icon: Icon, ...section }) => (
+					<EditorialPanel key={section.href} className="flex h-full flex-col p-6">
+						<div className="inline-flex h-10 w-10 items-center justify-center border border-[color:var(--editorial-border)] bg-[#fbf7f1]">
+							<Icon className="h-5 w-5" />
+						</div>
+						<h2 className="mt-4 text-xl font-semibold text-[color:var(--editorial-ink)]">{section.title}</h2>
+						<p className="mt-2 text-sm leading-6 text-[color:var(--editorial-muted)]">{section.description}</p>
+						<Link
+							href={section.href}
+							className="mt-6 inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)]"
+						>
+							Abrir
+						</Link>
+					</EditorialPanel>
+				))}
 			</div>
 		</AdminEditorialPage>
 	);

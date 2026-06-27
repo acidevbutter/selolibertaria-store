@@ -27,6 +27,18 @@ Sobre essa base, aplicar:
 - eventos, projetos e Sarau Safado como camada viva;
 - identidade Editorial V2.
 
+## Idioma do produto
+
+O Selo Libertária opera somente em `pt-BR` neste momento.
+
+Regras:
+
+- o storefront público deve renderizar sempre em português do Brasil;
+- o admin deve manter labels operacionais em português do Brasil;
+- conteúdo editorial editável deve vir do admin/Mongo quando a superfície já estiver conectada;
+- `Accept-Language`, cookie de locale e prefixos de locale não devem definir idioma público;
+- prefixos legados de locale devem apenas redirecionar para a rota canônica sem prefixo.
+
 ## Visão de produto
 
 O site funciona em dois modos complementares:

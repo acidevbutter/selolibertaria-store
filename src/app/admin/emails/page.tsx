@@ -3,8 +3,7 @@ import type { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmailLogTable } from "@/app/admin/emails/_components/email-log-table.client";
-import { env } from "@/env.mjs";
-import { resolveLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
@@ -164,7 +163,7 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? resolveLocale(env.NEXT_PUBLIC_LANGUAGE);
+	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const resolved = (await searchParams) || {};
 	const status = (asString(resolved.status) || "all").toLowerCase();
