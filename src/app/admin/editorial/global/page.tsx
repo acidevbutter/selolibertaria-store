@@ -16,6 +16,7 @@ import {
 export default async function AdminEditorialGlobalPage() {
 	const session = await auth();
 	if (!session || !hasCapability(session.user.role, "editorial.write")) return null;
+
 	const page = await getEditorialSiteGlobalCopyRecord();
 	if (!page) return null;
 
@@ -35,6 +36,7 @@ export default async function AdminEditorialGlobalPage() {
 					</Link>
 				}
 			/>
+
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat
 					label="Status"
@@ -44,45 +46,59 @@ export default async function AdminEditorialGlobalPage() {
 				<AdminEditorialStat label="Escopo" value="Global" helper="Aparece em todas as páginas públicas." />
 				<AdminEditorialStat label="Blocos" value="2" helper="Newsletter e rodapé." />
 			</div>
+
 			<EditorialPageCopyForm
 				action={updateEditorialSiteGlobalCopyAction}
 				submitLabel="Salvar conteúdo global público"
-				base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+				base={{
+					title: page.title,
+					summary: page.summary,
+					order: page.order,
+					published: page.published,
+				}}
 				sections={[
 					{
 						title: "Newsletter",
 						description: "Chamada curta acima do campo de email.",
-						route: "todas as páginas públicas",
+						route: "todas páginas públicas",
 						fields: [
-							{ name: "newsletterTitle", label: "Título", defaultValue: page.newsletter?.title },
+							{
+								name: "newsletterTitle",
+								label: "Título da newsletter",
+								defaultValue: page.newsletter?.title,
+							},
 							{
 								name: "newsletterDescription",
-								label: "Texto",
+								label: "Texto da newsletter",
 								type: "textarea",
 								rows: 3,
 								defaultValue: page.newsletter?.description,
 							},
 							{
 								name: "newsletterPlaceholder",
-								label: "Placeholder do campo",
+								label: "Placeholder do campo de email",
 								defaultValue: page.newsletter?.placeholder,
 							},
-							{ name: "newsletterButtonLabel", label: "Botão", defaultValue: page.newsletter?.buttonLabel },
+							{
+								name: "newsletterButtonLabel",
+								label: "Rótulo do CTA da newsletter",
+								defaultValue: page.newsletter?.buttonLabel,
+							},
 						],
 					},
 					{
 						title: "Rodapé",
 						description: "Texto institucional e links auxiliares.",
-						route: "todas as páginas públicas",
+						route: "todas páginas públicas",
 						fields: [
 							{
 								name: "footerBrandEyebrow",
-								label: "Linha curta da marca",
+								label: "Linha curta da marca no rodapé",
 								defaultValue: page.footer?.brandEyebrow,
 							},
 							{
 								name: "footerBrandDescription",
-								label: "Descrição da marca",
+								label: "Descrição institucional da marca",
 								type: "textarea",
 								rows: 3,
 								defaultValue: page.footer?.brandDescription,
@@ -104,48 +120,47 @@ export default async function AdminEditorialGlobalPage() {
 							},
 							{
 								name: "footerAuxLink1Label",
-								label: "Link 1",
+								label: "Rótulo do link auxiliar 1",
 								defaultValue: page.footer?.auxiliaryLinks?.[0]?.label,
 							},
 							{
 								name: "footerAuxLink1Href",
-								label: "Destino do link 1",
+								label: "Link do item auxiliar 1",
 								defaultValue: page.footer?.auxiliaryLinks?.[0]?.href,
+								help: "Prefira rotas internas curtas, como /contact, /terms ou /privacy.",
 							},
 							{
 								name: "footerAuxLink2Label",
-								label: "Link 2",
+								label: "Rótulo do link auxiliar 2",
 								defaultValue: page.footer?.auxiliaryLinks?.[1]?.label,
 							},
 							{
 								name: "footerAuxLink2Href",
-								label: "Destino do link 2",
+								label: "Link do item auxiliar 2",
 								defaultValue: page.footer?.auxiliaryLinks?.[1]?.href,
+								help: "Prefira rotas internas curtas e estáveis no rodapé público.",
 							},
 							{
 								name: "footerAuxLink3Label",
-								label: "Link 3",
+								label: "Rótulo do link auxiliar 3",
 								defaultValue: page.footer?.auxiliaryLinks?.[2]?.label,
 							},
 							{
 								name: "footerAuxLink3Href",
-								label: "Destino do link 3",
+								label: "Link do item auxiliar 3",
 								defaultValue: page.footer?.auxiliaryLinks?.[2]?.href,
+								help: "Use o destino exato que deve abrir ao clicar neste item do rodapé.",
 							},
 							{
 								name: "footerAuxLink4Label",
-								label: "Link 4",
+								label: "Rótulo do link auxiliar 4",
 								defaultValue: page.footer?.auxiliaryLinks?.[3]?.label,
 							},
 							{
 								name: "footerAuxLink4Href",
-								label: "Destino do link 4",
+								label: "Link do item auxiliar 4",
 								defaultValue: page.footer?.auxiliaryLinks?.[3]?.href,
-							},
-							{
-								name: "footerCopyrightText",
-								label: "Texto de copyright",
-								defaultValue: page.footer?.copyrightText,
+								help: "Prefira rotas internas do site para manter a navegação consistente.",
 							},
 						],
 					},

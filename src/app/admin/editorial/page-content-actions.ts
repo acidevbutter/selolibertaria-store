@@ -26,6 +26,12 @@ type PageCopyType =
 	| "page_product"
 	| "site_global";
 
+export type PageCopyActionState = {
+	status: "idle" | "success";
+	message: string | null;
+	savedAt: string | null;
+};
+
 type PageCopyRecordMap = {
 	page_home: EditorialHomePage;
 	page_events: EditorialEventsPage;
@@ -411,37 +417,43 @@ async function savePageCopy<T extends PageCopyType>(
 	type: T,
 	buildDoc: (formData: FormData, actor: string, current: PageCopyRecordMap[T] | null) => PageCopyRecordMap[T],
 	formData: FormData,
-) {
+): Promise<PageCopyActionState> {
 	const session = await requireEditorialManager();
 	const actor = session.email || session.sub;
 	const current = (await getEditorialRecordForAdmin(type)) as PageCopyRecordMap[T] | null;
 	const doc = buildDoc(formData, actor, current);
 	await upsertPageRecord(type, doc);
 	revalidateEditorialPaths();
+
+	return {
+		status: "success",
+		message: "Alterações salvas no admin editorial.",
+		savedAt: new Date().toISOString(),
+	};
 }
 
-export async function updateEditorialHomeCopyAction(formData: FormData) {
-	await savePageCopy("page_home", buildHomePageDoc, formData);
+export async function updateEditorialHomeCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("page_home", buildHomePageDoc, formData);
 }
 
-export async function updateEditorialEventsPageCopyAction(formData: FormData) {
-	await savePageCopy("page_events", buildEventsPageDoc, formData);
+export async function updateEditorialEventsPageCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("page_events", buildEventsPageDoc, formData);
 }
 
-export async function updateEditorialProjectsPageCopyAction(formData: FormData) {
-	await savePageCopy("page_projects", buildProjectsPageDoc, formData);
+export async function updateEditorialProjectsPageCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("page_projects", buildProjectsPageDoc, formData);
 }
 
-export async function updateEditorialProductsPageCopyAction(formData: FormData) {
-	await savePageCopy("page_products", buildProductsPageDoc, formData);
+export async function updateEditorialProductsPageCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("page_products", buildProductsPageDoc, formData);
 }
 
-export async function updateEditorialProductPageCopyAction(formData: FormData) {
-	await savePageCopy("page_product", buildProductPageDoc, formData);
+export async function updateEditorialProductPageCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("page_product", buildProductPageDoc, formData);
 }
 
-export async function updateEditorialSiteGlobalCopyAction(formData: FormData) {
-	await savePageCopy("site_global", buildSiteGlobalDoc, formData);
+export async function updateEditorialSiteGlobalCopyAction(_state: PageCopyActionState, formData: FormData) {
+	return savePageCopy("site_global", buildSiteGlobalDoc, formData);
 }
 
 export async function getEditorialHomeCopyRecord() {

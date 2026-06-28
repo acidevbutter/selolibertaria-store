@@ -23,6 +23,7 @@ export default async function AdminEditorialEventsPage() {
 		getEditorialEventsPageCopyRecord(),
 		listEditorialRecordsForAdmin("event"),
 	]);
+
 	if (!page) return null;
 
 	return (
@@ -53,57 +54,66 @@ export default async function AdminEditorialEventsPage() {
 
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat
-					label="Status da página"
+					label="Status"
 					value={page.published ? "Publicado" : "Rascunho"}
 					helper="Rota: /events"
 				/>
-				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens cadastrados na agenda." />
+				<AdminEditorialStat label="Itens" value={events.length} helper="Eventos cadastrados na agenda." />
 				<AdminEditorialStat
-					label="Textos"
-					value="5 blocos"
-					helper="Hero, nota, agenda, arquivo e CTA final."
+					label="Fonte"
+					value="Admin editorial"
+					helper="Copy pública editável sem deploy."
 				/>
 			</div>
 
-			<div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+			<div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.95fr)]">
 				<EditorialPageCopyForm
 					action={updateEditorialEventsPageCopyAction}
 					submitLabel="Salvar textos de /events"
-					base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+					base={{
+						title: page.title,
+						summary: page.summary,
+						order: page.order,
+						published: page.published,
+					}}
 					sections={[
 						{
 							title: "Hero",
 							description: "Faixa inicial da agenda pública.",
 							route: "/events",
 							fields: [
-								{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
-								{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
+								{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
+								{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },
 								{
 									name: "heroBody",
-									label: "Texto",
+									label: "Texto do hero",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.hero?.body,
 								},
 								{
 									name: "heroPrimaryCtaLabel",
-									label: "Botão principal",
+									label: "Rótulo do CTA principal do hero",
 									defaultValue: page.hero?.primaryCtaLabel,
+									help: "Use um texto curto para a principal saída da agenda.",
 								},
 								{
 									name: "heroPrimaryCtaHref",
-									label: "Link do botão principal",
+									label: "Link do CTA principal do hero",
 									defaultValue: page.hero?.primaryCtaHref,
+									help: "Prefira rotas internas, como /sarau-safado ou /contact.",
 								},
 								{
 									name: "heroSecondaryCtaLabel",
-									label: "Botão secundário",
+									label: "Rótulo do CTA secundário do hero",
 									defaultValue: page.hero?.secondaryCtaLabel,
+									help: "Use um texto de apoio para a segunda saída editorial.",
 								},
 								{
 									name: "heroSecondaryCtaHref",
-									label: "Link do botão secundário",
+									label: "Link do CTA secundário do hero",
 									defaultValue: page.hero?.secondaryCtaHref,
+									help: "Prefira uma rota interna estável do site.",
 								},
 							],
 						},
@@ -112,10 +122,14 @@ export default async function AdminEditorialEventsPage() {
 							description: "Explica por que a rota existe sem virar item principal do menu.",
 							route: "/events",
 							fields: [
-								{ name: "curatorialTitle", label: "Título", defaultValue: page.curatorialNote?.title },
+								{
+									name: "curatorialTitle",
+									label: "Título da nota curatorial",
+									defaultValue: page.curatorialNote?.title,
+								},
 								{
 									name: "curatorialBody",
-									label: "Texto",
+									label: "Texto da nota curatorial",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.curatorialNote?.body,
@@ -127,18 +141,22 @@ export default async function AdminEditorialEventsPage() {
 							description: "Cabeçalho e fallback da lista de eventos.",
 							route: "/events",
 							fields: [
-								{ name: "agendaLabel", label: "Linha curta", defaultValue: page.agenda?.label },
-								{ name: "agendaTitle", label: "Título interno do bloco", defaultValue: page.agenda?.title },
+								{ name: "agendaLabel", label: "Linha curta da agenda", defaultValue: page.agenda?.label },
+								{
+									name: "agendaTitle",
+									label: "Título da seção de agenda",
+									defaultValue: page.agenda?.title,
+								},
 								{
 									name: "agendaBody",
-									label: "Texto de apoio",
+									label: "Texto de apoio da agenda",
 									type: "textarea",
 									rows: 3,
 									defaultValue: page.agenda?.body,
 								},
 								{
 									name: "agendaEmptyText",
-									label: "Texto quando não houver agenda",
+									label: "Texto de fallback sem agenda",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.agenda?.emptyText,
@@ -150,11 +168,15 @@ export default async function AdminEditorialEventsPage() {
 							description: "Bloco escuro com registros e contexto.",
 							route: "/events",
 							fields: [
-								{ name: "archiveLabel", label: "Linha curta", defaultValue: page.archive?.label },
-								{ name: "archiveTitle", label: "Título", defaultValue: page.archive?.title },
+								{ name: "archiveLabel", label: "Linha curta do arquivo", defaultValue: page.archive?.label },
+								{
+									name: "archiveTitle",
+									label: "Título do arquivo e memória",
+									defaultValue: page.archive?.title,
+								},
 								{
 									name: "archiveBody",
-									label: "Texto",
+									label: "Texto do arquivo e memória",
 									type: "textarea",
 									rows: 3,
 									defaultValue: page.archive?.body,
@@ -166,33 +188,37 @@ export default async function AdminEditorialEventsPage() {
 							description: "Continuidade para Sarau Safado e Projetos.",
 							route: "/events",
 							fields: [
-								{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
+								{ name: "finalTitle", label: "Título da faixa final", defaultValue: page.finalCta?.title },
 								{
 									name: "finalBody",
-									label: "Texto",
+									label: "Texto da faixa final",
 									type: "textarea",
 									rows: 3,
 									defaultValue: page.finalCta?.body,
 								},
 								{
 									name: "finalPrimaryCtaLabel",
-									label: "Botão principal",
+									label: "Rótulo do CTA principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaLabel,
+									help: "Use um texto curto para a principal saída desta seção.",
 								},
 								{
 									name: "finalPrimaryCtaHref",
-									label: "Link do botão principal",
+									label: "Link do CTA principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaHref,
+									help: "Prefira rotas internas, como /sarau-safado ou /projects.",
 								},
 								{
 									name: "finalSecondaryCtaLabel",
-									label: "Botão secundário",
+									label: "Rótulo do CTA secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaLabel,
+									help: "Use um CTA complementar para a segunda continuidade editorial.",
 								},
 								{
 									name: "finalSecondaryCtaHref",
-									label: "Link do botão secundário",
+									label: "Link do CTA secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaHref,
+									help: "Prefira uma rota interna estável do site.",
 								},
 							],
 						},

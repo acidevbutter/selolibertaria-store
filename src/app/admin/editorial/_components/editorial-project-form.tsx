@@ -56,11 +56,22 @@ function Textarea({
 	);
 }
 
-function Field({ label, name, children }: { label: string; name: string; children: React.ReactNode }) {
+function Field({
+	label,
+	name,
+	children,
+	hint,
+}: {
+	label: string;
+	name: string;
+	children: React.ReactNode;
+	hint?: string;
+}) {
 	return (
 		<div className="space-y-2">
 			<Label htmlFor={name}>{label}</Label>
 			{children}
+			{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 		</div>
 	);
 }
@@ -83,10 +94,14 @@ export function EditorialProjectForm({
 				<form action={action} className="space-y-6">
 					{project ? <input type="hidden" name="currentSlug" value={project.slug} /> : null}
 					<section className="grid gap-4 rounded-lg border p-5 md:grid-cols-2">
-						<Field label="Título" name="title">
+						<Field label="Título do projeto" name="title">
 							<Input id="title" name="title" defaultValue={project?.title ?? ""} required />
 						</Field>
-						<Field label="Slug" name="slug">
+						<Field
+							label="Slug do projeto"
+							name="slug"
+							hint="Use uma versão curta da URL. Se vazio, será gerado a partir do título."
+						>
 							<Input
 								id="slug"
 								name="slug"
@@ -98,13 +113,21 @@ export function EditorialProjectForm({
 								spellCheck={false}
 							/>
 						</Field>
-						<Field label="Período" name="period">
+						<Field label="Período exibido" name="period" hint="Exemplo: 2024-2026 ou Junho de 2026.">
 							<Input id="period" name="period" defaultValue={project?.period ?? ""} />
 						</Field>
-						<Field label="Local" name="location">
+						<Field
+							label="Local exibido"
+							name="location"
+							hint="Informe cidade, espaço ou recorte geográfico do projeto."
+						>
 							<Input id="location" name="location" defaultValue={project?.location ?? ""} />
 						</Field>
-						<Field label="Ordem" name="order">
+						<Field
+							label="Ordem de exibição"
+							name="order"
+							hint="Números menores aparecem primeiro na listagem pública."
+						>
 							<Input
 								id="order"
 								name="order"
@@ -115,12 +138,12 @@ export function EditorialProjectForm({
 							/>
 						</Field>
 						<div className="md:col-span-2">
-							<Field label="Resumo" name="summary">
+							<Field label="Resumo curto do projeto" name="summary">
 								<Textarea name="summary" defaultValue={project?.summary} rows={3} />
 							</Field>
 						</div>
 						<div className="md:col-span-2">
-							<Field label="Descrição" name="description">
+							<Field label="Descrição completa do projeto" name="description">
 								<Textarea name="description" defaultValue={project?.description} rows={5} />
 							</Field>
 						</div>
@@ -137,10 +160,18 @@ export function EditorialProjectForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Alt da imagem" name="imageAlt">
+							<Field
+								label="Texto alternativo da imagem"
+								name="imageAlt"
+								hint="Descreva a imagem para leitura assistiva e contexto editorial."
+							>
 								<Input id="imageAlt" name="imageAlt" defaultValue={project?.image?.alt ?? ""} />
 							</Field>
-							<Field label="Legenda da imagem" name="imageCaption">
+							<Field
+								label="Legenda da imagem"
+								name="imageCaption"
+								hint="Use uma frase curta para contextualizar a imagem do projeto."
+							>
 								<Input id="imageCaption" name="imageCaption" defaultValue={project?.image?.caption ?? ""} />
 							</Field>
 						</div>
