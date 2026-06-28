@@ -61,6 +61,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Sinopse e trecho",
 						description: "Rótulos fixos da leitura principal.",
 						route: "/product/[slug]",
+						defaultOpen: true,
 						fields: [
 							{ name: "synopsisLabel", label: "Rótulo da sinopse", defaultValue: page.synopsis?.label },
 							{ name: "excerptTitle", label: "Título do trecho", defaultValue: page.excerpt?.title },

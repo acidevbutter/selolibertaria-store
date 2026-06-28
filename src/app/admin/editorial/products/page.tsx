@@ -57,6 +57,7 @@ export default async function AdminEditorialProductsPage() {
 						title: "Hero",
 						description: "Abertura principal da página de livros.",
 						route: "/products",
+						defaultOpen: true,
 						fields: [
 							{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
 							{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },

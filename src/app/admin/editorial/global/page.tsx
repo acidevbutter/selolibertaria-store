@@ -61,6 +61,7 @@ export default async function AdminEditorialGlobalPage() {
 						title: "Newsletter",
 						description: "Chamada curta acima do campo de email.",
 						route: "todas páginas públicas",
+						defaultOpen: true,
 						fields: [
 							{
 								name: "newsletterTitle",

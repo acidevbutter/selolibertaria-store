@@ -85,6 +85,7 @@ export default async function AdminEditorialProjectsPage() {
 							title: "Hero",
 							description: "Introdução principal da página de projetos.",
 							route: "/projects",
+							defaultOpen: true,
 							fields: [
 								{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
 								{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },

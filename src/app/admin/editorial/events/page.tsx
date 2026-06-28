@@ -81,6 +81,7 @@ export default async function AdminEditorialEventsPage() {
 							title: "Hero",
 							description: "Faixa inicial da agenda pública.",
 							route: "/events",
+							defaultOpen: true,
 							fields: [
 								{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
 								{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },
