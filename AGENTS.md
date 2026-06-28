@@ -241,6 +241,7 @@ Also validate:
 - 2026-06-25: the locale contract is now `pt-BR` only across storefront and admin shell; ignore `Accept-Language`, ignore locale cookies, collapse legacy `/en`, `/en-us`, `/es` and `/pt-br` prefixes into canonical routes, and never reintroduce public English fallback copy.
 - 2026-06-28: nos formulários do admin editorial, prefira labels contextuais por seção e helpers curtos para campos ambíguos como CTA, slug, ordem e mídia; após salvar copy estrutural, mantenha um feedback persistente de sucesso visível no próprio formulário.
 - 2026-06-28: nas telas de copy do admin editorial, use seções recolhíveis com a primeira seção principal aberta por padrão e blocos secundários recolhidos por padrão para reduzir formulários longos sem alterar save, validação ou nomes de campo.
+- 2026-06-28: no fechamento de pedidos, preserve no registro final o snapshot de entrega escolhido no checkout com `deliveryMethod`, endereço essencial e cotação mínima de frete; no admin, a leitura desse bloco deve ser opcional para manter compatibilidade com pedidos legados.
 
 @RTK.md
 ## Addendum — P3.75B

@@ -74,6 +74,7 @@ export interface CheckoutSnapshot {
 		fixed_amount: { amount: number };
 		currency?: string;
 		estimated_days?: number | null;
+		quotedAt?: string | null;
 	} | null;
 	shippingError?: string | null;
 }

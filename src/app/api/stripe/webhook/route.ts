@@ -5,6 +5,11 @@ import { getDb } from "@/lib/mongodb";
 import { notifyOrderStatusChange } from "@/lib/notify-order-status";
 import { recordOrderAuditEntry } from "@/lib/order-audit";
 import { ensureOrderReceivedEmail } from "@/lib/order-received";
+import {
+	buildPersistedOrderShippingSnapshot,
+	type PersistedOrderDeliveryAddress,
+	type PersistedOrderShippingRate,
+} from "@/lib/order-shipping-snapshot";
 import { shouldNotifyCustomerOrderStatusChange } from "@/lib/order-status-notification";
 import { isOrderReceivedEligibleStatus } from "@/lib/payment-status";
 import { recordPromotionRedemption } from "@/lib/promotions";
@@ -265,10 +270,13 @@ export async function POST(req: NextRequest) {
 				fixed_amount: { amount: number };
 				currency?: string;
 				estimated_days?: number | null;
+				quotedAt?: string | null;
 			} | null;
 			couponCode?: string | null;
 			couponPromotionId?: string | null;
 			couponCodeId?: string | null;
+			deliveryMethod?: "saved-address" | "new-address" | "pickup";
+			deliveryAddress?: PersistedOrderDeliveryAddress | null;
 			items?: Array<{
 				name: string;
 				quantity: number;
@@ -299,11 +307,15 @@ export async function POST(req: NextRequest) {
 					fixed_amount: { amount: number };
 					currency?: string;
 					estimated_days?: number | null;
+					quotedAt?: string | null;
 				} | null;
 				couponCode?: string | null;
 				couponPromotionId?: string | null;
 				couponCodeId?: string | null;
 			};
+			deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
+			deliveryAddress?: PersistedOrderDeliveryAddress | null;
+			shippingRate?: PersistedOrderShippingRate | null;
 			kind: string; // e.g. checkout.session | payment_intent | subscription
 			events?: UserPurchaseEventDoc[];
 			relatedIds?: {
@@ -419,6 +431,11 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
+		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
+			deliveryMethod: paymentIntentDraft?.deliveryMethod ?? null,
+			deliveryAddress: paymentIntentDraft?.deliveryAddress ?? null,
+			shippingRate: paymentIntentDraft?.shippingRate ?? null,
+		});
 		const userWithPurchases = await usersCol.findOne({ _id: userObjectId }, { projection: { purchases: 1 } });
 		const existingPurchase = userWithPurchases?.purchases?.find((purchase) =>
 			matchesStripeWebhookPurchase(purchase, rootId),
@@ -448,6 +465,7 @@ export async function POST(req: NextRequest) {
 							couponCodeId: paymentIntentDraft.couponCodeId ?? null,
 						}
 					: undefined,
+				...shippingSnapshot,
 				kind,
 				events: [eventDoc],
 				relatedIds: buildRelatedIds(related),
@@ -491,6 +509,10 @@ export async function POST(req: NextRequest) {
 						couponPromotionId: paymentIntentDraft.couponPromotionId ?? null,
 						couponCodeId: paymentIntentDraft.couponCodeId ?? null,
 					};
+					existingPurchaseUpdate.$set["purchases.$.deliveryMethod"] = shippingSnapshot.deliveryMethod ?? null;
+					existingPurchaseUpdate.$set["purchases.$.deliveryAddress"] =
+						shippingSnapshot.deliveryAddress ?? null;
+					existingPurchaseUpdate.$set["purchases.$.shippingRate"] = shippingSnapshot.shippingRate ?? null;
 				}
 
 				const relatedArrayAddToSet: Record<string, unknown> = {};

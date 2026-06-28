@@ -6,12 +6,16 @@ import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { clearCartId, getCartId } from "@/lib/cart-cookies";
-import type { CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
+import type { CheckoutSnapshot, CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
 import { commerce } from "@/lib/commerce-stripe";
 import type { UserCart } from "@/lib/mongodb";
 import { getDb } from "@/lib/mongodb";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
 import { ensureOrderReceivedEmail } from "@/lib/order-received";
+import {
+	buildPersistedOrderShippingSnapshot,
+	type PersistedOrderDeliveryAddress,
+} from "@/lib/order-shipping-snapshot";
 import { getClientVisiblePaymentIntentStatus } from "@/lib/payment-intent-status";
 import {
 	isFinalizedPaymentStatus,
@@ -93,7 +97,20 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 				unitAmount: li.price?.unit_amount ?? null,
 			};
 		});
+		const db = await getDb();
 		const userObjectId = new ObjectId(userId);
+		const paymentIntentId =
+			typeof session.payment_intent === "string"
+				? session.payment_intent
+				: (session.payment_intent?.id ?? null);
+		const draft = paymentIntentId?.startsWith("pi_")
+			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId })
+			: null;
+		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
+			deliveryMethod: draft?.deliveryMethod ?? null,
+			deliveryAddress: draft?.deliveryAddress ?? null,
+			shippingRate: draft?.shippingRate ?? null,
+		});
 		const purchase = {
 			id: session.id,
 			createdAt: new Date(),
@@ -102,9 +119,9 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 			currency: (session.currency || env.STRIPE_CURRENCY || "USD").toUpperCase(),
 			items,
 			invoiceId: (session.invoice as string) || null,
-			paymentIntentId: (session.payment_intent as string) || null,
+			paymentIntentId,
+			...shippingSnapshot,
 		};
-		const db = await getDb();
 		const usersCol = db.collection("users");
 		const userDoc = await usersCol.findOne<{ cart?: UserCart }>(
 			{ _id: userObjectId },
@@ -152,6 +169,9 @@ interface OrderDraftDoc {
 	couponPromotionId?: string | null;
 	couponCodeId?: string | null;
 	items?: CheckoutSnapshotItem[];
+	deliveryMethod?: "saved-address" | "new-address" | "pickup";
+	deliveryAddress?: PersistedOrderDeliveryAddress | null;
+	shippingRate?: CheckoutSnapshot["shippingRate"] | null;
 }
 
 interface BrowserSyncPurchaseDoc {
@@ -268,6 +288,11 @@ export async function recordPaymentIntentCheckout(input: {
 			paymentIntentId: paymentIntent.id,
 			...(chargeId ? { chargeIds: [chargeId] } : {}),
 		};
+		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
+			deliveryMethod: draft?.deliveryMethod ?? null,
+			deliveryAddress: draft?.deliveryAddress ?? null,
+			shippingRate: draft?.shippingRate ?? null,
+		});
 
 		const updateExisting = await userUpdateCol.updateOne(
 			{
@@ -288,10 +313,15 @@ export async function recordPaymentIntentCheckout(input: {
 									subtotal: draft.subtotal,
 									discountTotal: draft.discountTotal,
 									finalSubtotal: draft.amountTotal,
+									shippingTotal: draft.shippingRate?.fixed_amount.amount ?? 0,
+									shippingRate: draft.shippingRate ?? null,
 									couponCode: draft.couponCode ?? null,
 									couponPromotionId: draft.couponPromotionId ?? null,
 									couponCodeId: draft.couponCodeId ?? null,
 								},
+								"purchases.$.deliveryMethod": shippingSnapshot.deliveryMethod ?? null,
+								"purchases.$.deliveryAddress": shippingSnapshot.deliveryAddress ?? null,
+								"purchases.$.shippingRate": shippingSnapshot.shippingRate ?? null,
 							}
 						: {}),
 					"purchases.$.relatedIds": relatedIds,
@@ -327,10 +357,13 @@ export async function recordPaymentIntentCheckout(input: {
 											subtotal: draft.subtotal,
 											discountTotal: draft.discountTotal,
 											finalSubtotal: draft.amountTotal,
+											shippingTotal: draft.shippingRate?.fixed_amount.amount ?? 0,
+											shippingRate: draft.shippingRate ?? null,
 											couponCode: draft.couponCode ?? null,
 											couponPromotionId: draft.couponPromotionId ?? null,
 											couponCodeId: draft.couponCodeId ?? null,
 										},
+										...shippingSnapshot,
 									}
 								: {}),
 							relatedIds,

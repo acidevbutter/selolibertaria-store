@@ -411,7 +411,13 @@ export async function updateCheckoutDeliverySelection(input: {
 		deliveryMethod: input.deliveryMethod,
 	});
 	const shippingRate = toShippingRate(shippingResolution.selected);
-	const shippingAmount = shippingRate?.fixed_amount.amount ?? 0;
+	const quotedShippingRate = shippingRate
+		? {
+				...shippingRate,
+				quotedAt: new Date().toISOString(),
+			}
+		: null;
+	const shippingAmount = quotedShippingRate?.fixed_amount.amount ?? 0;
 	const nextAmountTotal = baseTotal + shippingAmount;
 	const shippingError = shippingResolution.error ?? null;
 
@@ -426,10 +432,10 @@ export async function updateCheckoutDeliverySelection(input: {
 						deliveryPostalCode: selectedAddress.postalCode ?? "",
 					}
 				: {}),
-			...(shippingRate
+			...(quotedShippingRate
 				? {
-						shippingProviderCode: shippingRate.providerCode,
-						shippingServiceCode: shippingRate.serviceCode,
+						shippingProviderCode: quotedShippingRate.providerCode,
+						shippingServiceCode: quotedShippingRate.serviceCode,
 					}
 				: {}),
 		},
@@ -441,7 +447,7 @@ export async function updateCheckoutDeliverySelection(input: {
 			$set: {
 				deliveryMethod: input.deliveryMethod,
 				deliveryAddress: selectedAddress,
-				shippingRate,
+				shippingRate: quotedShippingRate,
 				shippingError,
 				amountTotal: nextAmountTotal,
 				updatedAt: new Date(),
@@ -455,7 +461,7 @@ export async function updateCheckoutDeliverySelection(input: {
 		paymentIntentId: input.paymentIntentId,
 		deliveryMethod: input.deliveryMethod,
 		deliveryAddress: selectedAddress,
-		shippingRate,
+		shippingRate: quotedShippingRate,
 		shippingError,
 		subtotal: draft.subtotal ?? baseTotal,
 		discountTotal: draft.discountTotal ?? 0,
