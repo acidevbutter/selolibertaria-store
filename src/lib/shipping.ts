@@ -17,6 +17,7 @@ import {
 	selectBestShippingQuote,
 	toShippingRate,
 } from "@/lib/shipping-core";
+import { fetchMelhorEnvioQuotes } from "@/lib/shipping-melhor-envio";
 
 const REQUEST_TIMEOUT_MS = 8_000;
 
@@ -179,6 +180,31 @@ function buildPackageSummary(provider: ShippingProviderSettings, items: QuoteIte
 		widthCm: Math.max(1, provider.defaultWidthCm ?? 20),
 		heightCm: Math.max(1, provider.defaultHeightCm ?? 10),
 	};
+}
+
+function isMelhorEnvioProvider(provider: ShippingProviderSettings) {
+	const kind = String(provider.kind ?? "").toLowerCase();
+	const baseUrl = String(provider.baseUrl ?? "").toLowerCase();
+	const endpointUrl = String(provider.endpointUrl ?? "").toLowerCase();
+	const quoteEndpoint = String(provider.endpoints?.quote ?? "").toLowerCase();
+
+	return (
+		kind === "melhorenvio" ||
+		baseUrl.includes("melhorenvio.com.br") ||
+		endpointUrl.includes("me/shipment/calculate") ||
+		quoteEndpoint.includes("me/shipment/calculate")
+	);
+}
+
+function buildMelhorEnvioUserAgent(credentials: Record<string, string>, provider: ShippingProviderSettings) {
+	const explicitUserAgent = credentials.userAgent?.trim();
+	if (explicitUserAgent) return explicitUserAgent;
+
+	const technicalEmail = credentials.technicalEmail?.trim() || credentials.contactEmail?.trim();
+	const applicationName = credentials.applicationName?.trim() || provider.label.trim();
+	if (technicalEmail) return `${applicationName} (${technicalEmail})`;
+
+	return "";
 }
 
 async function fetchJson(input: string, init: RequestInit) {
@@ -502,6 +528,34 @@ async function buildHttpQuotes(
 	}
 	if (provider.requiresPostalCode && !normalizePostalCode(destination.postalCode)) return [];
 
+	if (isMelhorEnvioProvider(provider)) {
+		const credentials = decryptProviderCredentials(provider);
+		const originPostalCode = normalizePostalCode(credentials.originPostalCode ?? credentials.fromPostalCode);
+		const destinationPostalCode = normalizePostalCode(destination.postalCode);
+		const destinationCountry = normalizeCountryCode(destination.country);
+		const accessToken = credentials.apiKey ?? credentials.accessToken ?? credentials.token ?? "";
+		const userAgent = buildMelhorEnvioUserAgent(credentials, provider);
+		if (!originPostalCode || !destinationPostalCode) return [];
+		if (destinationCountry && destinationCountry !== "BR") {
+			throw new Error("O adapter do Melhor Envio aceita apenas envios no Brasil.");
+		}
+
+		const packageSummary = buildPackageSummary(provider, items);
+		return await fetchMelhorEnvioQuotes({
+			providerCode: provider.code,
+			providerLabel: provider.label,
+			originPostalCode,
+			destinationPostalCode,
+			package: packageSummary,
+			declaredValueCents: subtotal,
+			accessToken,
+			userAgent,
+			baseUrl: provider.baseUrl ?? null,
+			environment: provider.environment ?? "production",
+			currency,
+		});
+	}
+
 	switch (provider.kind) {
 		case "correios":
 			return await buildCorreiosQuotes(provider, destination, currency, items);
@@ -565,10 +619,16 @@ export async function resolveShippingQuotesForDestination(args: {
 	const orderedProviders = [...providers]
 		.filter((provider) => provider.enabled !== false)
 		.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0) || a.label.localeCompare(b.label));
+	let lastProviderError: string | null = null;
 
 	for (const provider of orderedProviders) {
 		if (provider.mode === "http") {
-			const quotes = await buildHttpQuotes(provider, destination, args.currency, args.subtotal, args.items);
+			let quotes: ShippingQuote[] = [];
+			try {
+				quotes = await buildHttpQuotes(provider, destination, args.currency, args.subtotal, args.items);
+			} catch (error) {
+				lastProviderError = error instanceof Error ? error.message : "Nao foi possivel cotar o frete.";
+			}
 			if (quotes.length > 0) {
 				return {
 					quotes,
@@ -593,7 +653,7 @@ export async function resolveShippingQuotesForDestination(args: {
 		quotes: [],
 		selected: null,
 		provider: null,
-		error: "No shipping quote is available for the current destination.",
+		error: lastProviderError ?? "No shipping quote is available for the current destination.",
 	};
 }
 

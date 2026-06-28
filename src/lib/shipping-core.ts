@@ -31,6 +31,7 @@ export interface ShippingQuote {
 	amount: number;
 	currency: string;
 	estimatedDays: number | null;
+	quotedAt?: string | null;
 	method: ShippingProviderMode;
 }
 
@@ -42,6 +43,7 @@ export interface ShippingRate {
 	fixed_amount: { amount: number };
 	currency?: string;
 	estimated_days?: number | null;
+	quotedAt?: string | null;
 }
 
 export interface ShippingQuoteResolution {
@@ -231,6 +233,7 @@ export function toShippingRate(quote: ShippingQuote | null): ShippingRate | null
 		fixed_amount: { amount: quote.amount },
 		currency: quote.currency,
 		estimated_days: quote.estimatedDays,
+		quotedAt: quote.quotedAt ?? null,
 	};
 }
 

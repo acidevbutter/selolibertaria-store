@@ -242,6 +242,7 @@ Also validate:
 - 2026-06-28: nos formulários do admin editorial, prefira labels contextuais por seção e helpers curtos para campos ambíguos como CTA, slug, ordem e mídia; após salvar copy estrutural, mantenha um feedback persistente de sucesso visível no próprio formulário.
 - 2026-06-28: nas telas de copy do admin editorial, use seções recolhíveis com a primeira seção principal aberta por padrão e blocos secundários recolhidos por padrão para reduzir formulários longos sem alterar save, validação ou nomes de campo.
 - 2026-06-28: no fechamento de pedidos, preserve no registro final o snapshot de entrega escolhido no checkout com `deliveryMethod`, endereço essencial e cotação mínima de frete; no admin, a leitura desse bloco deve ser opcional para manter compatibilidade com pedidos legados.
+- 2026-06-28: adapters novos de frete devem entrar só no servidor, reaproveitando o contrato existente de `ShippingQuote` e `ShippingRate`, sem expor credenciais no cliente, sem alterar checkout/admin UI e com falha segura em mensagem normalizada quando a transportadora externa nao responder.
 
 @RTK.md
 ## Addendum — P3.75B
