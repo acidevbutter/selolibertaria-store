@@ -1,4 +1,8 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode, useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import type { PageCopyActionState } from "@/app/admin/editorial/page-content-actions";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -20,6 +24,7 @@ type SectionConfig = {
 	description?: string;
 	route: string;
 	fields: FieldConfig[];
+	defaultOpen?: boolean;
 };
 
 type PublishedState = {
@@ -28,6 +33,25 @@ type PublishedState = {
 	title: string;
 	summary?: string | null;
 };
+
+const INITIAL_STATE: PageCopyActionState = {
+	status: "idle",
+	message: null,
+	savedAt: null,
+};
+
+function formatSavedAt(savedAt: string | null) {
+	if (!savedAt) return null;
+
+	const date = new Date(savedAt);
+	if (Number.isNaN(date.getTime())) return null;
+
+	return new Intl.DateTimeFormat("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+		timeZone: "America/Sao_Paulo",
+	}).format(date);
+}
 
 function Textarea({
 	name,
@@ -69,69 +93,73 @@ function Field({ field }: { field: FieldConfig }) {
 	);
 }
 
+function SaveButton({ children }: { children: ReactNode }) {
+	const { pending } = useFormStatus();
+
+	return (
+		<Button type="submit" disabled={pending}>
+			{pending ? "Salvando..." : children}
+		</Button>
+	);
+}
+
 export function EditorialPageCopyForm({
 	action,
 	submitLabel,
 	base,
 	sections,
-	children,
 }: {
-	action: (formData: FormData) => Promise<void>;
+	action: (state: PageCopyActionState, formData: FormData) => Promise<PageCopyActionState>;
 	submitLabel: string;
 	base: PublishedState;
 	sections: SectionConfig[];
-	children?: ReactNode;
 }) {
+	const [state, formAction] = useActionState(action, INITIAL_STATE);
+	const savedAtLabel = formatSavedAt(state.savedAt);
+
 	return (
-		<Card className="rounded-none border-[color:var(--editorial-border)]">
-			<CardHeader>
-				<CardTitle>{submitLabel}</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<form action={action} className="space-y-6">
-					<section className="grid gap-4 rounded-none border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 md:grid-cols-2">
-						<label className="grid gap-2 md:col-span-2">
-							<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Título interno</span>
-							<Input name="title" defaultValue={base.title} required />
-						</label>
-						<label className="grid gap-2">
-							<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Resumo interno</span>
-							<Textarea name="summary" defaultValue={base.summary ?? ""} rows={3} />
-						</label>
-						<label className="grid gap-2">
-							<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Ordem</span>
-							<Input name="order" type="number" min="1" step="1" defaultValue={String(base.order)} />
-						</label>
-					</section>
+		<form action={formAction} className="space-y-6">
+			<Card className="rounded-none border-[color:var(--editorial-border)]">
+				<CardHeader>
+					<CardTitle className="text-xl text-[color:var(--editorial-ink)]">Configuração base</CardTitle>
+				</CardHeader>
+				<CardContent className="grid gap-4 md:grid-cols-2">
+					<label className="grid gap-2">
+						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+							Título interno do documento
+						</span>
+						<Input name="title" defaultValue={base.title} />
+						<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+							Nome de referência usado no admin para identificar esta página editorial.
+						</span>
+					</label>
 
-					{sections.map((section) => (
-						<section
-							key={section.title}
-							className="space-y-4 rounded-none border border-[color:var(--editorial-border)] p-5"
-						>
-							<div className="space-y-1">
-								<h2 className="text-lg font-semibold text-[color:var(--editorial-ink)]">{section.title}</h2>
-								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Aparece em: {section.route}
-									{section.description ? ` · ${section.description}` : ""}
-								</p>
-							</div>
-							<div className="grid gap-4 md:grid-cols-2">
-								{section.fields.map((field) => (
-									<div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : undefined}>
-										<Field field={{ ...field, route: field.route ?? section.route }} />
-									</div>
-								))}
-							</div>
-						</section>
-					))}
+					<label className="grid gap-2">
+						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+							Ordem de exibição do documento
+						</span>
+						<Input name="order" type="number" min={1} defaultValue={String(base.order)} />
+						<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+							Use números inteiros para manter a ordem editorial entre documentos.
+						</span>
+					</label>
 
-					{children}
+					<label className="grid gap-2 md:col-span-2">
+						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+							Resumo interno do documento
+						</span>
+						<Textarea name="summary" defaultValue={base.summary ?? ""} rows={3} />
+						<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+							Observação curta para orientar quem edita esta rota no admin.
+						</span>
+					</label>
 
-					<section className="rounded-none border border-[color:var(--editorial-border)] p-5">
-						<div className="space-y-3">
-							<p className="text-sm font-medium text-[color:var(--editorial-ink)]">Estado da publicação</p>
-							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] px-3 py-3 text-sm">
+					<div className="md:col-span-2">
+						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+							Status de publicação
+						</span>
+						<div className="mt-3 grid gap-3 md:grid-cols-2">
+							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
 								<input
 									type="radio"
 									name="published"
@@ -139,9 +167,14 @@ export function EditorialPageCopyForm({
 									defaultChecked={base.published}
 									className="mt-0.5"
 								/>
-								<span>Publicado</span>
+								<span className="space-y-1">
+									<span className="block font-medium text-[color:var(--editorial-ink)]">Publicado</span>
+									<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
+										Usa esta copy na rota pública assim que a página for revalidada.
+									</span>
+								</span>
 							</label>
-							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] px-3 py-3 text-sm">
+							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
 								<input
 									type="radio"
 									name="published"
@@ -149,16 +182,62 @@ export function EditorialPageCopyForm({
 									defaultChecked={!base.published}
 									className="mt-0.5"
 								/>
-								<span>Rascunho</span>
+								<span className="space-y-1">
+									<span className="block font-medium text-[color:var(--editorial-ink)]">Rascunho</span>
+									<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
+										Mantém o conteúdo salvo no admin sem publicar esta versão na vitrine.
+									</span>
+								</span>
 							</label>
 						</div>
-					</section>
+					</div>
+				</CardContent>
+			</Card>
 
-					<Button type="submit" className="rounded-none">
-						{submitLabel}
-					</Button>
-				</form>
-			</CardContent>
-		</Card>
+			{sections.map((section) => (
+				<Card key={section.title} className="rounded-none border-[color:var(--editorial-border)] p-0">
+					<details open={section.defaultOpen ?? false} className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5">
+							<div className="space-y-2">
+								<CardTitle className="text-xl text-[color:var(--editorial-ink)]">{section.title}</CardTitle>
+								{section.description ? (
+									<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+										{section.description}
+									</p>
+								) : null}
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Expandir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Recolher
+							</span>
+						</summary>
+						<CardContent className="grid gap-4 border-t border-[color:var(--editorial-border)] px-6 py-6 md:grid-cols-2">
+							{section.fields.map((field) => (
+								<div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : undefined}>
+									<Field field={{ ...field, route: field.route ?? section.route }} />
+								</div>
+							))}
+						</CardContent>
+					</details>
+				</Card>
+			))}
+
+			<div className="space-y-4">
+				{state.status === "success" && state.message ? (
+					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-ink)]">
+						<p className="font-medium">{state.message}</p>
+						{savedAtLabel ? (
+							<p className="mt-1 text-xs leading-5 text-[color:var(--editorial-muted)]">
+								Último salvamento: {savedAtLabel}.
+							</p>
+						) : null}
+					</div>
+				) : null}
+
+				<SaveButton>{submitLabel}</SaveButton>
+			</div>
+		</form>
 	);
 }

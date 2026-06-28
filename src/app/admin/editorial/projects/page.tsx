@@ -23,6 +23,7 @@ export default async function AdminEditorialProjectsPage() {
 		getEditorialProjectsPageCopyRecord(),
 		listEditorialRecordsForAdmin("project"),
 	]);
+
 	if (!page) return null;
 
 	return (
@@ -53,35 +54,53 @@ export default async function AdminEditorialProjectsPage() {
 
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat
-					label="Status da página"
+					label="Status"
 					value={page.published ? "Publicado" : "Rascunho"}
 					helper="Rota: /projects"
 				/>
-				<AdminEditorialStat label="Projetos" value={projects.length} helper="Itens do portfólio." />
-				<AdminEditorialStat label="Textos" value="4 blocos" helper="Hero, nota, listagem e CTA final." />
+				<AdminEditorialStat
+					label="Itens"
+					value={projects.length}
+					helper="Projetos cadastrados no portfólio."
+				/>
+				<AdminEditorialStat
+					label="Fonte"
+					value="Admin editorial"
+					helper="Copy pública editável sem deploy."
+				/>
 			</div>
 
-			<div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+			<div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.95fr)]">
 				<EditorialPageCopyForm
 					action={updateEditorialProjectsPageCopyAction}
 					submitLabel="Salvar textos de /projects"
-					base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+					base={{
+						title: page.title,
+						summary: page.summary,
+						order: page.order,
+						published: page.published,
+					}}
 					sections={[
 						{
 							title: "Hero",
 							description: "Introdução principal da página de projetos.",
 							route: "/projects",
+							defaultOpen: true,
 							fields: [
-								{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
-								{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
+								{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
+								{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },
 								{
 									name: "heroBody",
-									label: "Texto",
+									label: "Texto do hero",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.hero?.body,
 								},
-								{ name: "heroImageLabel", label: "Legenda da imagem", defaultValue: page.hero?.imageLabel },
+								{
+									name: "heroImageLabel",
+									label: "Legenda da imagem do hero",
+									defaultValue: page.hero?.imageLabel,
+								},
 							],
 						},
 						{
@@ -89,10 +108,14 @@ export default async function AdminEditorialProjectsPage() {
 							description: "Explica o papel dos projetos no ecossistema do selo.",
 							route: "/projects",
 							fields: [
-								{ name: "curatorialTitle", label: "Título", defaultValue: page.curatorialNote?.title },
+								{
+									name: "curatorialTitle",
+									label: "Título da nota curatorial",
+									defaultValue: page.curatorialNote?.title,
+								},
 								{
 									name: "curatorialBody",
-									label: "Texto",
+									label: "Texto da nota curatorial",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.curatorialNote?.body,
@@ -104,11 +127,15 @@ export default async function AdminEditorialProjectsPage() {
 							description: "Copy estrutural acima dos cards e fallback da página.",
 							route: "/projects",
 							fields: [
-								{ name: "listingLabel", label: "Linha curta", defaultValue: page.listing?.label },
-								{ name: "listingTitle", label: "Título interno do bloco", defaultValue: page.listing?.title },
+								{ name: "listingLabel", label: "Linha curta da listagem", defaultValue: page.listing?.label },
+								{
+									name: "listingTitle",
+									label: "Título da seção de listagem",
+									defaultValue: page.listing?.title,
+								},
 								{
 									name: "listingBody",
-									label: "Texto de apoio",
+									label: "Texto de apoio da listagem",
 									type: "textarea",
 									rows: 3,
 									defaultValue: page.listing?.body,
@@ -127,33 +154,37 @@ export default async function AdminEditorialProjectsPage() {
 							description: "Continuidade para contato e Sarau Safado.",
 							route: "/projects",
 							fields: [
-								{ name: "finalTitle", label: "Título", defaultValue: page.finalCta?.title },
+								{ name: "finalTitle", label: "Título da faixa final", defaultValue: page.finalCta?.title },
 								{
 									name: "finalBody",
-									label: "Texto",
+									label: "Texto da faixa final",
 									type: "textarea",
 									rows: 3,
 									defaultValue: page.finalCta?.body,
 								},
 								{
 									name: "finalPrimaryCtaLabel",
-									label: "Botão principal",
+									label: "Rótulo do CTA principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaLabel,
+									help: "Use um texto curto para a saída principal desta seção.",
 								},
 								{
 									name: "finalPrimaryCtaHref",
-									label: "Link do botão principal",
+									label: "Link do CTA principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaHref,
+									help: "Prefira rotas internas, como /contact ou /sarau-safado.",
 								},
 								{
 									name: "finalSecondaryCtaLabel",
-									label: "Botão secundário",
+									label: "Rótulo do CTA secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaLabel,
+									help: "Use um CTA complementar para a segunda saída editorial.",
 								},
 								{
 									name: "finalSecondaryCtaHref",
-									label: "Link do botão secundário",
+									label: "Link do CTA secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaHref,
+									help: "Prefira rotas internas estáveis do site.",
 								},
 							],
 						},

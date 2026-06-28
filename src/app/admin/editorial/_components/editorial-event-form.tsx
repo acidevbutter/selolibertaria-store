@@ -63,10 +63,14 @@ export function EditorialEventForm({
 						description="Defina título, status, ordem e resumo do evento."
 					>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Título" name="title">
+							<Field label="Título do evento" name="title">
 								<Input id="title" name="title" defaultValue={event?.title ?? ""} required />
 							</Field>
-							<Field label="Slug" name="slug" hint="Se vazio, será gerado a partir do título.">
+							<Field
+								label="Slug do evento"
+								name="slug"
+								hint="Use uma versão curta da URL. Se vazio, será gerado a partir do título."
+							>
 								<Input
 									id="slug"
 									name="slug"
@@ -78,10 +82,18 @@ export function EditorialEventForm({
 									spellCheck={false}
 								/>
 							</Field>
-							<Field label="Status" name="status">
+							<Field
+								label="Status editorial"
+								name="status"
+								hint="Exemplo: Em curso, Confirmado ou Edição passada."
+							>
 								<Input id="status" name="status" defaultValue={event?.status ?? ""} placeholder="em curso" />
 							</Field>
-							<Field label="Ordem" name="order">
+							<Field
+								label="Ordem de exibição"
+								name="order"
+								hint="Números menores aparecem primeiro na agenda editorial."
+							>
 								<Input
 									id="order"
 									name="order"
@@ -91,19 +103,27 @@ export function EditorialEventForm({
 									defaultValue={String(event?.order ?? 1)}
 								/>
 							</Field>
-							<Field label="Período" name="period">
+							<Field
+								label="Período exibido"
+								name="period"
+								hint="Exemplo: 12 de julho de 2026 ou Julho de 2026."
+							>
 								<Input id="period" name="period" defaultValue={event?.period ?? ""} />
 							</Field>
-							<Field label="Local" name="location">
+							<Field
+								label="Local exibido"
+								name="location"
+								hint="Informe cidade, espaço ou contexto curto do evento."
+							>
 								<Input id="location" name="location" defaultValue={event?.location ?? ""} />
 							</Field>
 							<div className="md:col-span-2">
-								<Field label="Resumo" name="summary">
+								<Field label="Resumo curto do evento" name="summary">
 									<Textarea name="summary" defaultValue={event?.summary} rows={3} />
 								</Field>
 							</div>
 							<div className="md:col-span-2">
-								<Field label="Descrição" name="description">
+								<Field label="Descrição completa do evento" name="description">
 									<Textarea name="description" defaultValue={event?.description} rows={5} />
 								</Field>
 							</div>
@@ -119,10 +139,18 @@ export function EditorialEventForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Alt da imagem" name="imageAlt">
+							<Field
+								label="Texto alternativo da imagem"
+								name="imageAlt"
+								hint="Descreva a imagem para leitura assistiva e contexto editorial."
+							>
 								<Input id="imageAlt" name="imageAlt" defaultValue={event?.image?.alt ?? ""} />
 							</Field>
-							<Field label="Legenda da imagem" name="imageCaption">
+							<Field
+								label="Legenda da imagem"
+								name="imageCaption"
+								hint="Use uma frase curta para contextualizar a foto no admin e no site."
+							>
 								<Input id="imageCaption" name="imageCaption" defaultValue={event?.image?.caption ?? ""} />
 							</Field>
 						</div>
@@ -167,7 +195,7 @@ export function EditorialEventForm({
 					</FormSection>
 
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
-						A prévia da imagem fica no formulário e o envio definitivo acontece ao salvar esta página.
+						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
 					<SubmitButton>{submitLabel}</SubmitButton>
 				</form>
