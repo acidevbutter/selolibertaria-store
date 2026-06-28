@@ -195,7 +195,7 @@ export function EditorialEventForm({
 					</FormSection>
 
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
-						A prévia da imagem fica no formulário e o envio definitivo acontece ao salvar esta página.
+						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
 					<SubmitButton>{submitLabel}</SubmitButton>
 				</form>

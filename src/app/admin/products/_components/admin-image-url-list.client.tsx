@@ -253,9 +253,9 @@ export function AdminImageUrlList({
 						{pendingFiles.map((file) => file.name).join(", ")}
 					</p>
 					{uploadMode === "on-submit" ? (
-						<p className="text-xs font-medium text-foreground">
-							Prévia confirmada. A imagem será enviada ao salvar a página.
-						</p>
+						<div className="inline-flex items-center rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">
+							Arquivo pendente de envio até salvar.
+						</div>
 					) : null}
 				</div>
 			) : null}
@@ -343,7 +343,7 @@ export function AdminImageUrlList({
 								<p>{pendingFiles.length} arquivos serão processados neste envio.</p>
 							) : null}
 							{uploadMode === "on-submit" ? (
-								<p>Ao confirmar, a imagem fica pendente e só será enviada ao salvar o formulário.</p>
+								<p>A imagem será enviada somente ao salvar o formulário.</p>
 							) : null}
 						</div>
 						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -356,13 +356,13 @@ export function AdminImageUrlList({
 								}}
 								disabled={isUploading}
 							>
-								Descartar
+								Descartar prévia
 							</Button>
 							<Button type="button" onClick={() => void confirmPendingSelection()} disabled={isUploading}>
 								{isUploading
 									? "Enviando..."
 									: uploadMode === "on-submit"
-										? "Manter seleção"
+										? "Confirmar prévia"
 										: "Salvar e enviar"}
 							</Button>
 						</div>

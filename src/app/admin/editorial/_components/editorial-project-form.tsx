@@ -176,6 +176,9 @@ export function EditorialProjectForm({
 							</Field>
 						</div>
 					</section>
+					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
+						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
+					</div>
 					<section className="rounded-lg border p-5">
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
