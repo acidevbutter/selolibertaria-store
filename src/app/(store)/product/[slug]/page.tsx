@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { ProductImageGallery } from "@/app/(store)/product/[slug]/product-image-gallery.client";
 import { AddToCart } from "@/components/add-to-cart";
@@ -26,43 +25,32 @@ export const generateMetadata = async (props: {
 	searchParams: Promise<{ variant?: string }>;
 }): Promise<Metadata> => {
 	const params = await props.params;
-	const searchParams = await props.searchParams;
+	const pageContent = await getEditorialProductPage();
 	const product = await commerce.product.get({
 		slug: params.slug,
 		currency: await getRequestPreferredCurrency(),
 	});
 
 	if (!product) {
-		return notFound();
+		return {
+			title: `${pageContent.notFound?.title || "Livro não encontrado"} · ${publicUrl
+				.replace(/^https?:\/\//, "")
+				.replace(/\/$/, "")}`,
+			description:
+				pageContent.notFound?.body ||
+				"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo.",
+		};
 	}
 
-	const t = await getTranslations("/product.metadata");
-	const ynsProduct = product as YnsProduct;
-	const variants = ynsProduct.variants ?? [];
-	const variantParam = searchParams.variant?.toLowerCase();
-	const selectedVariant =
-		variants.find((variant) => {
-			if (!variantParam) return false;
-			const identifiers = [variant.slug, variant.id, variant.label]
-				.filter((value): value is string => Boolean(value))
-				.map((value) => value.toLowerCase());
-			if (variant.label) identifiers.push(slugify(variant.label).toLowerCase());
-			return identifiers.includes(variantParam);
-		}) ?? variants[0];
-
-	const productName = formatProductName(product.name, selectedVariant?.label ?? undefined);
-	const description = selectedVariant?.description ?? product.summary ?? undefined;
-	const canonical = new URL(`${publicUrl}/product/${params.slug}`);
-	const variantSlug = selectedVariant?.slug;
-	if (variantSlug) {
-		canonical.searchParams.set("variant", variantSlug);
-	}
+	const productName = product.name;
+	const description = product.summary ?? "Livro do catálogo do Selo Libertária.";
+	const canonical = `${publicUrl}/product/${product.slug}`;
 
 	return {
-		title: t("title", { productName }),
+		title: `${productName} · Selo Libertária`,
 		description,
 		alternates: { canonical },
-	} satisfies Metadata;
+	};
 };
 
 export default async function SingleProductPage(props: {
@@ -71,29 +59,66 @@ export default async function SingleProductPage(props: {
 }) {
 	const params = await props.params;
 	const searchParams = await props.searchParams;
-	const product = await commerce.product.get({
-		slug: params.slug,
-		currency: await getRequestPreferredCurrency(),
-	});
+	const [product, t, locale, pageContent] = await Promise.all([
+		commerce.product.get({
+			slug: params.slug,
+			currency: await getRequestPreferredCurrency(),
+		}),
+		getTranslations("/product.page"),
+		getLocale(),
+		getEditorialProductPage(),
+	]);
+
 	if (!product) {
-		return notFound();
+		return (
+			<article className="bg-[color:var(--editorial-paper)]">
+				<EditorialShell className="grid min-h-[60vh] gap-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+					<div className="space-y-5">
+						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Catálogo</EditorialEyebrow>
+						<h1 className="display-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
+							{pageContent.notFound?.title || "Livro não encontrado"}
+						</h1>
+						<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)]">
+							{pageContent.notFound?.body ||
+								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."}
+						</p>
+					</div>
+					<div className="flex flex-wrap gap-3 lg:justify-end">
+						<YnsLink
+							href={pageContent.notFound?.primaryCtaHref || "/products"}
+							className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+						>
+							{pageContent.notFound?.primaryCtaLabel || "Ver catálogo"}
+						</YnsLink>
+						<YnsLink
+							href="/contact"
+							className="inline-flex min-h-12 items-center justify-center border border-[color:var(--editorial-border)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+						>
+							Falar com o selo
+						</YnsLink>
+					</div>
+				</EditorialShell>
+			</article>
+		);
 	}
 
-	const t = await getTranslations("/product.page");
-	const locale = await getLocale();
-	const pageContent = await getEditorialProductPage();
-
-	// Cast to YnsProduct to access YNS-specific fields
 	const ynsProduct = product as YnsProduct;
 	const variants = ynsProduct.variants ?? [];
 	const variantParam = searchParams.variant?.toLowerCase();
 	const selectedVariant =
 		variants.find((variant) => {
-			if (!variantParam) return false;
+			if (!variantParam) {
+				return false;
+			}
+
 			const identifiers = [variant.slug, variant.id, variant.label]
 				.filter((value): value is string => Boolean(value))
 				.map((value) => value.toLowerCase());
-			if (variant.label) identifiers.push(slugify(variant.label).toLowerCase());
+
+			if (variant.label) {
+				identifiers.push(slugify(variant.label).toLowerCase());
+			}
+
 			return identifiers.includes(variantParam);
 		}) ?? variants[0];
 
@@ -104,9 +129,11 @@ export default async function SingleProductPage(props: {
 	const displayPrice = selectedVariant?.price ?? product.price;
 	const displayBasePrice = selectedVariant?.pricing?.basePrice ?? displayPrice;
 	const displayCurrency = selectedVariant?.currency ?? product.currency;
-	const displayStock = typeof selectedVariant?.stock === "number" ? selectedVariant?.stock : product.stock;
+	const displayStock = typeof selectedVariant?.stock === "number" ? selectedVariant.stock : product.stock;
 	const isOutOfStock = displayStock === 0;
-	const selectedVariantId = selectedVariant?.id ?? ynsProduct.variants[0]?.id ?? product.id;
+	const selectedVariantId = selectedVariant?.id ?? ynsProduct.variants?.[0]?.id ?? product.id;
+	const excerpt = buildEditorialExcerpt(description);
+	const excerptHref = excerpt ? "#trecho" : "#sinopse";
 	const relatedProducts = (
 		await commerce.product.browse({
 			first: 3,
@@ -115,21 +142,23 @@ export default async function SingleProductPage(props: {
 	).data
 		.filter((candidate) => candidate.slug !== product.slug)
 		.slice(0, 2);
+
 	const session = await auth();
 	const favoriteActive = session
-		? await isFavorite({ userId: session.user.id, productSlug: product.slug, variantId: selectedVariantId })
+		? await isFavorite({
+				userId: session.user.id,
+				productSlug: product.slug,
+				variantId: selectedVariantId,
+			})
 		: false;
+
 	const taxonomy = [
 		category ? deslugify(category) : null,
 		selectedVariant?.label ? deslugify(selectedVariant.label) : null,
 		"Poesia",
 		"Corpo",
-	]
-		.filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index)
-		.slice(0, 4);
-	const synopsis = description.trim();
-	const excerpt = buildEditorialExcerpt(synopsis);
-	const excerptHref = excerpt ? "#trecho" : "#sinopse";
+	].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
+
 	const details = [
 		category ? { label: "Categoria", value: deslugify(category) } : null,
 		selectedVariant?.label
@@ -149,15 +178,14 @@ export default async function SingleProductPage(props: {
 				}
 			: null,
 	].filter(Boolean) as Array<{ label: string; value: string }>;
-	const continuityLinks = [
-		...(pageContent.continuity?.links?.length
-			? pageContent.continuity.links
-			: [
-					{ href: "/sarau-safado", label: "Ver Sarau Safado" },
-					{ href: "/projects", label: "Ver projetos" },
-					{ href: "/products", label: "Ver catálogo" },
-				]),
-	];
+
+	const continuityLinks = pageContent.continuity?.links?.length
+		? pageContent.continuity.links
+		: [
+				{ href: "/sarau-safado", label: "Ver Sarau Safado" },
+				{ href: "/projects", label: "Ver projetos" },
+				{ href: "/products", label: "Ver catálogo" },
+			];
 
 	return (
 		<article>
@@ -218,6 +246,7 @@ export default async function SingleProductPage(props: {
 												Ler trecho
 											</YnsLink>
 										</div>
+
 										{variants.length > 1 ? (
 											<div className="flex flex-wrap gap-2">
 												{variants.map((variant) => {
@@ -226,6 +255,7 @@ export default async function SingleProductPage(props: {
 													const isActive = selectedVariant?.id === variant.id;
 													const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
 													const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
+
 													return (
 														<YnsLink key={variant.id} href={href} scroll={false}>
 															<Badge
@@ -243,12 +273,14 @@ export default async function SingleProductPage(props: {
 												})}
 											</div>
 										) : null}
+
 										{typeof displayStock === "number" ? (
 											<p className="text-sm text-[color:var(--editorial-muted)]">
 												{displayStock > 0 ? "Disponível para compra" : t("outOfStock")}
 											</p>
 										) : null}
 									</div>
+
 									<FavoriteToggle
 										productSlug={product.slug}
 										variantId={selectedVariantId}
@@ -258,7 +290,7 @@ export default async function SingleProductPage(props: {
 
 								<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
 									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-										{pageContent.synopsis?.label || "Sinopse"}
+										Sinopse
 									</EditorialEyebrow>
 									<div className="mt-6 max-w-3xl text-xl leading-[1.55] text-[color:var(--editorial-muted)] sm:text-2xl">
 										<Markdown source={description} />
@@ -277,7 +309,10 @@ export default async function SingleProductPage(props: {
 						>
 							<EditorialShell className="grid gap-6 px-8 py-12 lg:grid-cols-[1.4fr_0.6fr] lg:items-end lg:py-16">
 								<div className="border-l-[10px] border-[color:var(--editorial-accent)] pl-6">
-									<h2 className="display-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
+									<EditorialEyebrow className="text-[color:rgba(247,244,239,0.62)]">
+										{pageContent.excerpt?.title || "Trecho"}
+									</EditorialEyebrow>
+									<h2 className="mt-4 display-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
 										{excerpt}
 									</h2>
 								</div>
@@ -294,7 +329,7 @@ export default async function SingleProductPage(props: {
 					<Reveal>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								{pageContent.details?.title || "Ficha técnica"}
+								Ficha técnica
 							</EditorialEyebrow>
 							<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
 								{details.map((detail) => (
@@ -317,14 +352,18 @@ export default async function SingleProductPage(props: {
 					<Reveal delay={0.08}>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								{pageContent.related?.title || "Outros livros"}
+								Outros livros
 							</EditorialEyebrow>
+							{pageContent.related?.body ? (
+								<p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--editorial-muted)]">
+									{pageContent.related.body}
+								</p>
+							) : null}
 							<div className="mt-10 grid gap-8 sm:grid-cols-2">
 								{relatedProducts.map((related) => (
 									<RelatedBookCard
 										key={related.id}
 										product={related}
-										viewBookLabel={pageContent.related?.viewBookLabel || "Ver livro"}
 										fallbackSummary={pageContent.related?.fallbackSummary || "Novo título em breve"}
 									/>
 								))}
@@ -338,7 +377,8 @@ export default async function SingleProductPage(props: {
 						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									{pageContent.continuity?.title || "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."}
+									{pageContent.continuity?.title ||
+										"Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."}
 								</h2>
 							</div>
 							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
@@ -372,15 +412,7 @@ export default async function SingleProductPage(props: {
 	);
 }
 
-function RelatedBookCard({
-	product,
-	viewBookLabel,
-	fallbackSummary,
-}: {
-	product: Product;
-	viewBookLabel: string;
-	fallbackSummary: string;
-}) {
+function RelatedBookCard({ product, fallbackSummary }: { product: Product; fallbackSummary: string }) {
 	return (
 		<LiftOnHover>
 			<YnsLink href={`/product/${product.slug}`} className="group block h-full">
@@ -406,7 +438,7 @@ function RelatedBookCard({
 					{product.summary ?? fallbackSummary}
 				</p>
 				<span className="mt-4 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:border-[color:var(--editorial-accent)] group-hover:bg-[color:rgba(216,208,196,0.24)]">
-					{viewBookLabel}
+					Ver livro
 				</span>
 			</YnsLink>
 		</LiftOnHover>
@@ -417,17 +449,14 @@ function buildEditorialExcerpt(source: string) {
 	const plain = source
 		.replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
 		.replace(/\[[^\]]+\]\([^)]+\)/g, " ")
-		.replace(/[*_`>#-]/g, " ")
+		.replace(/[#>*_`~-]/g, " ")
 		.replace(/\s+/g, " ")
 		.trim();
 
-	if (!plain) return null;
+	if (!plain) {
+		return "";
+	}
 
-	const sentences = plain
-		.split(/(?<=[.!?])\s+/)
-		.map((sentence) => sentence.trim())
-		.filter(Boolean);
-	const excerpt = sentences.find((sentence) => sentence.length >= 48) ?? sentences[0] ?? null;
-	if (!excerpt) return null;
-	return `“${excerpt}”`;
+	const excerpt = plain.slice(0, 240).trim();
+	return excerpt.length < plain.length ? `${excerpt}…` : excerpt;
 }

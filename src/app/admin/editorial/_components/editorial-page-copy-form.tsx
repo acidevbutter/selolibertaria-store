@@ -62,7 +62,9 @@ function Field({ field }: { field: FieldConfig }) {
 			) : (
 				<Input name={field.name} defaultValue={field.defaultValue ?? ""} />
 			)}
-			{field.help ? <span className="text-xs leading-5 text-[color:var(--editorial-muted)]">{field.help}</span> : null}
+			{field.help ? (
+				<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">{field.help}</span>
+			) : null}
 		</label>
 	);
 }
@@ -130,7 +132,13 @@ export function EditorialPageCopyForm({
 						<div className="space-y-3">
 							<p className="text-sm font-medium text-[color:var(--editorial-ink)]">Estado da publicação</p>
 							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] px-3 py-3 text-sm">
-								<input type="radio" name="published" value="true" defaultChecked={base.published} className="mt-0.5" />
+								<input
+									type="radio"
+									name="published"
+									value="true"
+									defaultChecked={base.published}
+									className="mt-0.5"
+								/>
 								<span>Publicado</span>
 							</label>
 							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] px-3 py-3 text-sm">

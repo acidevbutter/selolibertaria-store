@@ -78,3 +78,11 @@ Preservar:
 - [ ] Verificar contraste, headings, alt text, focus e labels.
 - [ ] Rodar `yarn lint`, `yarn test`, `yarn build` e `tsgo` quando disponíveis.
 - [ ] Reportar qualquer falha ou comando indisponível.
+- ## P3.75B — Fechado em 2026-06-27
+- [x] `/projects` ligado a `page_projects`.
+- [x] `/products` ligado a `page_products`.
+- [x] Blocos editoriais de `/product/[slug]` ligados a `page_product`.
+- [x] `/about`, `/contact`, newsletter e footer ligados ao editorial/admin.
+- [x] `site_global` adotado para newsletter e rodapé públicos.
+- [x] Migration editorial segura por campos ausentes.
+- [x] Build preparado para migration opcional com `RUN_EDITORIAL_MIGRATIONS=true`.

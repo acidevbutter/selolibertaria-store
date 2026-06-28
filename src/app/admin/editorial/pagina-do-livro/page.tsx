@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import {
 	getEditorialProductPageCopyRecord,
 	updateEditorialProductPageCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
-import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import {
@@ -36,9 +36,21 @@ export default async function AdminEditorialProductPage() {
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Status" value={page.published ? "Publicado" : "Rascunho"} helper="Rota: /product/[slug]" />
-				<AdminEditorialStat label="Blocos" value="5" helper="Sinopse, trecho, ficha, relacionados e continuidade." />
-				<AdminEditorialStat label="Escopo" value="Estrutural" helper="Os dados do livro continuam vindo do catálogo." />
+				<AdminEditorialStat
+					label="Status"
+					value={page.published ? "Publicado" : "Rascunho"}
+					helper="Rota: /product/[slug]"
+				/>
+				<AdminEditorialStat
+					label="Blocos"
+					value="5"
+					helper="Sinopse, trecho, ficha, relacionados e continuidade."
+				/>
+				<AdminEditorialStat
+					label="Escopo"
+					value="Estrutural"
+					helper="Os dados do livro continuam vindo do catálogo."
+				/>
 			</div>
 			<EditorialPageCopyForm
 				action={updateEditorialProductPageCopyAction}
@@ -52,7 +64,13 @@ export default async function AdminEditorialProductPage() {
 						fields: [
 							{ name: "synopsisLabel", label: "Rótulo da sinopse", defaultValue: page.synopsis?.label },
 							{ name: "excerptTitle", label: "Título do trecho", defaultValue: page.excerpt?.title },
-							{ name: "excerptBodyFallback", label: "Texto de apoio do trecho", type: "textarea", rows: 3, defaultValue: page.excerpt?.bodyFallback },
+							{
+								name: "excerptBodyFallback",
+								label: "Texto de apoio do trecho",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.excerpt?.bodyFallback,
+							},
 						],
 					},
 					{
@@ -67,9 +85,19 @@ export default async function AdminEditorialProductPage() {
 						route: "/product/[slug]",
 						fields: [
 							{ name: "relatedTitle", label: "Título", defaultValue: page.related?.title },
-							{ name: "relatedBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.related?.body },
+							{
+								name: "relatedBody",
+								label: "Texto",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.related?.body,
+							},
 							{ name: "relatedViewBookLabel", label: "Botão", defaultValue: page.related?.viewBookLabel },
-							{ name: "relatedFallbackSummary", label: "Texto padrão sem resumo", defaultValue: page.related?.fallbackSummary },
+							{
+								name: "relatedFallbackSummary",
+								label: "Texto padrão sem resumo",
+								defaultValue: page.related?.fallbackSummary,
+							},
 						],
 					},
 					{
@@ -78,13 +106,43 @@ export default async function AdminEditorialProductPage() {
 						route: "/product/[slug]",
 						fields: [
 							{ name: "continuityTitle", label: "Título", defaultValue: page.continuity?.title },
-							{ name: "continuityBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.continuity?.body },
-							{ name: "continuityLink1Label", label: "Botão 1", defaultValue: page.continuity?.links?.[0]?.label },
-							{ name: "continuityLink1Href", label: "Link do botão 1", defaultValue: page.continuity?.links?.[0]?.href },
-							{ name: "continuityLink2Label", label: "Botão 2", defaultValue: page.continuity?.links?.[1]?.label },
-							{ name: "continuityLink2Href", label: "Link do botão 2", defaultValue: page.continuity?.links?.[1]?.href },
-							{ name: "continuityLink3Label", label: "Botão 3", defaultValue: page.continuity?.links?.[2]?.label },
-							{ name: "continuityLink3Href", label: "Link do botão 3", defaultValue: page.continuity?.links?.[2]?.href },
+							{
+								name: "continuityBody",
+								label: "Texto",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.continuity?.body,
+							},
+							{
+								name: "continuityLink1Label",
+								label: "Botão 1",
+								defaultValue: page.continuity?.links?.[0]?.label,
+							},
+							{
+								name: "continuityLink1Href",
+								label: "Link do botão 1",
+								defaultValue: page.continuity?.links?.[0]?.href,
+							},
+							{
+								name: "continuityLink2Label",
+								label: "Botão 2",
+								defaultValue: page.continuity?.links?.[1]?.label,
+							},
+							{
+								name: "continuityLink2Href",
+								label: "Link do botão 2",
+								defaultValue: page.continuity?.links?.[1]?.href,
+							},
+							{
+								name: "continuityLink3Label",
+								label: "Botão 3",
+								defaultValue: page.continuity?.links?.[2]?.label,
+							},
+							{
+								name: "continuityLink3Href",
+								label: "Link do botão 3",
+								defaultValue: page.continuity?.links?.[2]?.href,
+							},
 						],
 					},
 					{
@@ -93,9 +151,23 @@ export default async function AdminEditorialProductPage() {
 						route: "/product/[slug]",
 						fields: [
 							{ name: "notFoundTitle", label: "Título", defaultValue: page.notFound?.title },
-							{ name: "notFoundBody", label: "Texto", type: "textarea", rows: 3, defaultValue: page.notFound?.body },
-							{ name: "notFoundPrimaryCtaLabel", label: "Botão", defaultValue: page.notFound?.primaryCtaLabel },
-							{ name: "notFoundPrimaryCtaHref", label: "Link do botão", defaultValue: page.notFound?.primaryCtaHref },
+							{
+								name: "notFoundBody",
+								label: "Texto",
+								type: "textarea",
+								rows: 3,
+								defaultValue: page.notFound?.body,
+							},
+							{
+								name: "notFoundPrimaryCtaLabel",
+								label: "Botão",
+								defaultValue: page.notFound?.primaryCtaLabel,
+							},
+							{
+								name: "notFoundPrimaryCtaHref",
+								label: "Link do botão",
+								defaultValue: page.notFound?.primaryCtaHref,
+							},
 						],
 					},
 				]}

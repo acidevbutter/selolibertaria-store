@@ -184,3 +184,7 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - O produto agora assume `pt-BR` fixo como contrato visual e textual em todas as superfícies públicas e no shell do admin.
 - Não deve existir seletor visível de idioma no público, nem variação de labels por navegador, cookie ou prefixo legado.
 - Qualquer fallback visual ou textual novo precisa nascer em português do Brasil.
+## Addendum — Copy administrável
+
+- Home, Eventos, Projetos, Livros, Página do livro, Sobre, Contato, newsletter e footer agora seguem a fonte editorial do admin quando aplicável.
+- Labels técnicos recorrentes permanecem fixos para não transformar a interface em um formulário de configuração excessivo.

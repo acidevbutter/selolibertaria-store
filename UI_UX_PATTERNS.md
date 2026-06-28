@@ -216,3 +216,8 @@ Checklist mínimo:
 - Hover lift leve.
 - Respeitar `prefers-reduced-motion`.
 - Não transformar storefront/admin em interface nervosa.
+## Addendum — Copy pública
+
+- Títulos curatoriais, manifestos, hero copy, vazios editoriais e faixas finais devem ser administráveis.
+- Botões e labels técnicos recorrentes podem continuar fixos em `pt-BR`.
+- Newsletter e rodapé institucional devem sair de `site_global`.

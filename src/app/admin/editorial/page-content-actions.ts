@@ -1,5 +1,6 @@
 "use server";
 
+import type { Filter } from "mongodb";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireCapability } from "@/lib/api-auth";
@@ -14,7 +15,6 @@ import type {
 } from "@/lib/editorial-content";
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
 import { getDb } from "@/lib/mongodb";
-import type { Filter } from "mongodb";
 
 const COLLECTION = "editorialContent";
 
@@ -26,29 +26,52 @@ type PageCopyType =
 	| "page_product"
 	| "site_global";
 
+type PageCopyRecordMap = {
+	page_home: EditorialHomePage;
+	page_events: EditorialEventsPage;
+	page_projects: EditorialProjectsPage;
+	page_products: EditorialProductsPage;
+	page_product: EditorialProductPage;
+	site_global: EditorialSiteGlobal;
+};
+
 async function requireEditorialManager() {
 	const auth = await requireCapability("editorial.write");
+
 	if ("error" in auth) {
-		if (auth.error?.status === 401) redirect("/login");
+		if (auth.error?.status === 401) {
+			redirect("/login");
+		}
+
 		redirect("/forbidden");
 	}
+
 	return auth.session;
 }
 
 function optionalString(value: FormDataEntryValue | null) {
-	if (typeof value !== "string") return null;
+	if (typeof value !== "string") {
+		return null;
+	}
+
 	const trimmed = value.trim();
 	return trimmed ? trimmed : null;
 }
 
 function parseOrder(value: FormDataEntryValue | null, fallback = 1) {
-	if (typeof value !== "string") return fallback;
+	if (typeof value !== "string") {
+		return fallback;
+	}
+
 	const parsed = Number.parseInt(value, 10);
 	return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function parseBoolean(value: FormDataEntryValue | null, defaultValue = false) {
-	if (typeof value !== "string") return defaultValue;
+	if (typeof value !== "string") {
+		return defaultValue;
+	}
+
 	return value === "true" || value === "on" || value === "1";
 }
 
@@ -56,29 +79,7 @@ function readLinks(formData: FormData, prefix: string, count: number) {
 	return Array.from({ length: count }, (_, index) => ({
 		label: optionalString(formData.get(`${prefix}${index + 1}Label`)),
 		href: optionalString(formData.get(`${prefix}${index + 1}Href`)),
-	}))
-		.filter((item): item is { label: string; href: string } => Boolean(item.label && item.href));
-}
-
-function refreshPaths(type: PageCopyType) {
-	revalidatePath("/");
-	revalidatePath("/products");
-	revalidatePath("/events");
-	revalidatePath("/projects");
-	revalidatePath("/sarau-safado");
-	revalidatePath("/about");
-	revalidatePath("/contact");
-	revalidatePath("/faq");
-	revalidatePath("/terms");
-	revalidatePath("/privacy");
-	revalidatePath("/admin/editorial");
-	revalidatePath("/admin/editorial/home");
-	revalidatePath("/admin/editorial/events");
-	revalidatePath("/admin/editorial/projects");
-	revalidatePath("/admin/editorial/products");
-	revalidatePath("/admin/editorial/pagina-do-livro");
-	revalidatePath("/admin/editorial/global");
-	if (type === "page_product") revalidatePath("/product/[slug]", "page");
+	})).filter((link): link is { label: string; href: string } => Boolean(link.label && link.href));
 }
 
 async function upsertPageRecord<T extends EditorialDocument>(type: T["type"], doc: T) {
@@ -86,20 +87,42 @@ async function upsertPageRecord<T extends EditorialDocument>(type: T["type"], do
 
 	await db
 		.collection<T>(COLLECTION)
-		.updateOne(
-			{ type, slug: doc.slug } as unknown as Filter<T>,
-			{ $set: doc },
-			{ upsert: true },
-		);
+		.updateOne({ type, slug: doc.slug } as Filter<T>, { $set: doc }, { upsert: true });
 }
 
-function buildHomePageDoc(formData: FormData, actor: string, current: EditorialHomePage | null): EditorialHomePage {
+function revalidateEditorialPaths() {
+	for (const path of [
+		"/",
+		"/products",
+		"/product/[slug]",
+		"/events",
+		"/projects",
+		"/about",
+		"/contact",
+		"/admin/editorial",
+		"/admin/editorial/home",
+		"/admin/editorial/events",
+		"/admin/editorial/projects",
+		"/admin/editorial/products",
+		"/admin/editorial/pagina-do-livro",
+		"/admin/editorial/global",
+	]) {
+		revalidatePath(path, path.includes("[slug]") ? "page" : undefined);
+	}
+}
+
+function buildHomePageDoc(
+	formData: FormData,
+	actor: string,
+	current: EditorialHomePage | null,
+): EditorialHomePage {
 	const now = new Date().toISOString();
+
 	return {
 		type: "page_home",
 		slug: "home",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Página inicial",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		hero: {
@@ -144,8 +167,6 @@ function buildHomePageDoc(formData: FormData, actor: string, current: EditorialH
 			ctaLabel: optionalString(formData.get("programCtaLabel")),
 			ctaHref: optionalString(formData.get("programCtaHref")),
 		},
-		author: current?.author ?? null,
-		community: current?.community ?? null,
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
 		updatedAt: now,
@@ -159,11 +180,12 @@ function buildEventsPageDoc(
 	current: EditorialEventsPage | null,
 ): EditorialEventsPage {
 	const now = new Date().toISOString();
+
 	return {
 		type: "page_events",
 		slug: "events",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Página de eventos",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		hero: {
@@ -211,11 +233,12 @@ function buildProjectsPageDoc(
 	current: EditorialProjectsPage | null,
 ): EditorialProjectsPage {
 	const now = new Date().toISOString();
+
 	return {
 		type: "page_projects",
 		slug: "projects",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Página de projetos",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		hero: {
@@ -255,11 +278,12 @@ function buildProductsPageDoc(
 	current: EditorialProductsPage | null,
 ): EditorialProductsPage {
 	const now = new Date().toISOString();
+
 	return {
 		type: "page_products",
 		slug: "products",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Página de livros",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		hero: {
@@ -305,11 +329,12 @@ function buildProductPageDoc(
 	current: EditorialProductPage | null,
 ): EditorialProductPage {
 	const now = new Date().toISOString();
+
 	return {
 		type: "page_product",
 		slug: "product",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Página do livro",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		synopsis: {
@@ -352,11 +377,12 @@ function buildSiteGlobalDoc(
 	current: EditorialSiteGlobal | null,
 ): EditorialSiteGlobal {
 	const now = new Date().toISOString();
+
 	return {
 		type: "site_global",
 		slug: "public-global",
 		title: optionalString(formData.get("title")) ?? current?.title ?? "Conteúdo global público",
-		summary: optionalString(formData.get("summary")),
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		newsletter: {
@@ -381,52 +407,41 @@ function buildSiteGlobalDoc(
 	};
 }
 
-export async function updateEditorialHomeCopyAction(formData: FormData) {
+async function savePageCopy<T extends PageCopyType>(
+	type: T,
+	buildDoc: (formData: FormData, actor: string, current: PageCopyRecordMap[T] | null) => PageCopyRecordMap[T],
+	formData: FormData,
+) {
 	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("page_home")) as EditorialHomePage | null;
-	const doc = buildHomePageDoc(formData, String(session.sub), current);
-	await upsertPageRecord("page_home", doc);
-	refreshPaths("page_home");
+	const actor = session.email || session.sub;
+	const current = (await getEditorialRecordForAdmin(type)) as PageCopyRecordMap[T] | null;
+	const doc = buildDoc(formData, actor, current);
+	await upsertPageRecord(type, doc);
+	revalidateEditorialPaths();
+}
+
+export async function updateEditorialHomeCopyAction(formData: FormData) {
+	await savePageCopy("page_home", buildHomePageDoc, formData);
 }
 
 export async function updateEditorialEventsPageCopyAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("page_events")) as EditorialEventsPage | null;
-	const doc = buildEventsPageDoc(formData, String(session.sub), current);
-	await upsertPageRecord("page_events", doc);
-	refreshPaths("page_events");
+	await savePageCopy("page_events", buildEventsPageDoc, formData);
 }
 
 export async function updateEditorialProjectsPageCopyAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("page_projects")) as EditorialProjectsPage | null;
-	const doc = buildProjectsPageDoc(formData, String(session.sub), current);
-	await upsertPageRecord("page_projects", doc);
-	refreshPaths("page_projects");
+	await savePageCopy("page_projects", buildProjectsPageDoc, formData);
 }
 
 export async function updateEditorialProductsPageCopyAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("page_products")) as EditorialProductsPage | null;
-	const doc = buildProductsPageDoc(formData, String(session.sub), current);
-	await upsertPageRecord("page_products", doc);
-	refreshPaths("page_products");
+	await savePageCopy("page_products", buildProductsPageDoc, formData);
 }
 
 export async function updateEditorialProductPageCopyAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("page_product")) as EditorialProductPage | null;
-	const doc = buildProductPageDoc(formData, String(session.sub), current);
-	await upsertPageRecord("page_product", doc);
-	refreshPaths("page_product");
+	await savePageCopy("page_product", buildProductPageDoc, formData);
 }
 
 export async function updateEditorialSiteGlobalCopyAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const current = (await getEditorialRecordForAdmin("site_global")) as EditorialSiteGlobal | null;
-	const doc = buildSiteGlobalDoc(formData, String(session.sub), current);
-	await upsertPageRecord("site_global", doc);
-	refreshPaths("site_global");
+	await savePageCopy("site_global", buildSiteGlobalDoc, formData);
 }
 
 export async function getEditorialHomeCopyRecord() {

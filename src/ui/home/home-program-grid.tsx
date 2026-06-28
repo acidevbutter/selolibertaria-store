@@ -64,7 +64,9 @@ export async function HomeProgramGrid({
 							<p className="text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.62)]">
 								{event?.period || event?.status || "Agenda"}
 							</p>
-							<h3 className="mt-3 text-3xl font-black tracking-[-0.04em]">{event?.title || "Próxima edição"}</h3>
+							<h3 className="mt-3 text-3xl font-black tracking-[-0.04em]">
+								{event?.title || "Próxima edição"}
+							</h3>
 							<p className="mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.74)]">
 								{event?.location || "São Paulo · local a confirmar"}
 							</p>

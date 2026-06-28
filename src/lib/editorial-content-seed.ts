@@ -167,7 +167,8 @@ export function buildSeedEventsPage(): EditorialEventsPage {
 			label: "Próximos eventos",
 			title: "Agenda pública",
 			body: "A agenda mistura próxima edição, programação e memória sem perder clareza operacional.",
-			emptyText: "A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau Safado, conhecer os projetos e falar com o selo.",
+			emptyText:
+				"A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau Safado, conhecer os projetos e falar com o selo.",
 		},
 		archive: {
 			label: "Arquivo / memória",
@@ -206,7 +207,8 @@ export function buildSeedProjectsPage(): EditorialProjectsPage {
 			label: "Portfólio cultural",
 			title: "Projetos",
 			body: "Cada projeto amplia a leitura, a programação e a circulação do selo fora da prateleira.",
-			emptyText: "Os projetos culturais serão publicados em breve. Enquanto isso, acompanhe o Sarau Safado e fale com o selo.",
+			emptyText:
+				"Os projetos culturais serão publicados em breve. Enquanto isso, acompanhe o Sarau Safado e fale com o selo.",
 		},
 		finalCta: {
 			title: "Projetos conectam programação, livro e comunidade.",
@@ -244,7 +246,8 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 			label: "Catálogo",
 			title: "Catálogo",
 			body: "Cada capa abre uma rota: compra, trecho e contexto editorial.",
-			emptyText: "O catálogo ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros.",
+			emptyText:
+				"O catálogo ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros.",
 			cardPrimaryFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
 			cardSecondaryFallback: "Livro em preparação dentro do mesmo universo literário do selo.",
 			viewBookLabel: "Ver livro",
@@ -271,7 +274,8 @@ export function buildSeedProductPage(): EditorialProductPage {
 		},
 		excerpt: {
 			title: "Trecho",
-			bodyFallback: "Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido.",
+			bodyFallback:
+				"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido.",
 		},
 		details: {
 			title: "Ficha técnica",
@@ -305,7 +309,8 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 		type: "page_sarau",
 		slug: "sarau-safado",
 		title: "Sarau Safado",
-		summary: "Encontro para pessoas que escrevem, pesquisam, leem e são apaixonadas por literaturas eróticas.",
+		summary:
+			"Encontro para pessoas que escrevem, pesquisam, leem e são apaixonadas por literaturas eróticas.",
 		body: "Programa recorrente de leitura, presença e escuta que prolonga a vida editorial do selo.",
 		...baseMeta,
 		hero: {
@@ -363,7 +368,8 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 		type: "page_about",
 		slug: "about",
 		title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-		summary: "Editora e produtora cultural dedicada à literatura erótica, performance, encontros e projetos autorais.",
+		summary:
+			"Editora e produtora cultural dedicada à literatura erótica, performance, encontros e projetos autorais.",
 		...baseMeta,
 		hero: {
 			eyebrow: "Sobre o selo",
@@ -400,7 +406,8 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 			title: "O catálogo, a programação e a autoria se reforçam mutuamente.",
 			body: "Ler um livro, descobrir uma programação, entrar num arquivo e voltar ao catálogo. A experiência deve parecer um único ecossistema, não páginas paralelas.",
 			coreEyebrow: "Princípio central",
-			coreTitle: "Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia.",
+			coreTitle:
+				"Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia.",
 		},
 	};
 }
@@ -410,7 +417,8 @@ export function buildSeedContactPage(): EditorialContactPage {
 		type: "page_contact",
 		slug: "contact",
 		title: "Convites, parcerias, imprensa, livros e Sarau Safado.",
-		summary: "Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação.",
+		summary:
+			"Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação.",
 		...baseMeta,
 		hero: {
 			eyebrow: "Contato",
@@ -428,7 +436,11 @@ export function buildSeedContactPage(): EditorialContactPage {
 			title: "Canais diretos",
 			description: "Fale com o selo pelos principais pontos de contato editoriais e sociais.",
 			links: [
-				{ label: "Email", href: "mailto:contato@selolibertaria.com.br", text: "contato@selolibertaria.com.br" },
+				{
+					label: "Email",
+					href: "mailto:contato@selolibertaria.com.br",
+					text: "contato@selolibertaria.com.br",
+				},
 				{ label: "Instagram", href: seloSiteMeta.instagram, text: "@selolibertaria" },
 				{ label: "YouTube", href: seloSiteMeta.youtube, text: "Selo Libertária" },
 			],
@@ -464,13 +476,15 @@ export function buildSeedSiteGlobal(): EditorialSiteGlobal {
 		...baseMeta,
 		newsletter: {
 			title: "Receba lançamentos, saraus e textos do selo.",
-			description: "Atualizações de livros, agenda e circulação editorial em um único campo público editável.",
+			description:
+				"Atualizações de livros, agenda e circulação editorial em um único campo público editável.",
 			placeholder: "seu@email.com",
 			buttonLabel: "Assinar",
 		},
 		footer: {
 			brandEyebrow: "Selo Libertária",
-			brandDescription: "Livros, performances, oficinas e programação cultural reunidos em um mesmo site editorial.",
+			brandDescription:
+				"Livros, performances, oficinas e programação cultural reunidos em um mesmo site editorial.",
 			catalogueTitle: "Livros",
 			editorialTitle: "Editorial",
 			supportTitle: "Suporte",

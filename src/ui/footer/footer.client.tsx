@@ -10,21 +10,7 @@ type PaymentIcon = { label: string; src: string };
 type SocialLink = { label: string; href: string; icon: string | null };
 type FooterSection = { header: string; links: { label: string; href: string }[] };
 
-export const FooterClient = ({
-	newsletterTitle,
-	paymentIcons,
-	year,
-	socialLinks,
-	brandName,
-	brandEmail,
-	brandEyebrow,
-	brandDescription,
-	sections,
-	copyrightLabel,
-	developedByLabel,
-	paymentMethodsLabel,
-}: {
-	newsletterTitle: string;
+type FooterClientProps = {
 	paymentIcons: PaymentIcon[];
 	year: number;
 	socialLinks: SocialLink[];
@@ -32,24 +18,48 @@ export const FooterClient = ({
 	brandEmail: string;
 	brandEyebrow: string;
 	brandDescription: string;
+	newsletterTitle: string;
+	newsletterDescription: string;
+	newsletterPlaceholder: string;
+	newsletterButtonLabel: string;
 	sections: FooterSection[];
-	copyrightLabel: string;
+	copyrightText: string;
 	developedByLabel: string;
 	paymentMethodsLabel: string;
-}) => {
+};
+
+export default function FooterClient({
+	paymentIcons,
+	year,
+	socialLinks,
+	brandName,
+	brandEmail,
+	brandEyebrow,
+	brandDescription,
+	newsletterTitle,
+	newsletterDescription,
+	newsletterPlaceholder,
+	newsletterButtonLabel,
+	sections,
+	copyrightText,
+	developedByLabel,
+	paymentMethodsLabel,
+}: FooterClientProps) {
 	const { theme, systemTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
 
-	useEffect(() => setMounted(true), []);
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	const isDark = mounted ? (theme === "system" ? systemTheme === "dark" : theme === "dark") : false;
 
 	const iconVariant = (src: string) => {
-		if (!isDark) return src;
-		if (!src.endsWith(".svg")) return src;
-		if (src.endsWith("-white.svg")) return src;
-		const parts = src.split(".svg");
-		return `${parts[0]}-white.svg`;
+		if (!isDark || !src.endsWith(".svg") || src.endsWith("-white.svg")) {
+			return src;
+		}
+
+		return src.replace(/\.svg$/, "-white.svg");
 	};
 
 	return (
@@ -66,6 +76,7 @@ export const FooterClient = ({
 							</YnsLink>
 						</p>
 					</div>
+
 					<div className="flex flex-wrap items-center gap-3">
 						{socialLinks.map((link) => (
 							<YnsLink
@@ -89,9 +100,11 @@ export const FooterClient = ({
 							</YnsLink>
 						))}
 					</div>
-					<div className="flex w-full max-w-sm flex-col gap-2">
+
+					<div id="newsletter" className="flex w-full max-w-sm flex-col gap-2">
 						<h3 className="font-semibold text-primary-foreground">{newsletterTitle}</h3>
-						<Newsletter />
+						<p className="text-sm leading-relaxed text-primary-foreground/68">{newsletterDescription}</p>
+						<Newsletter placeholder={newsletterPlaceholder} buttonLabel={newsletterButtonLabel} />
 					</div>
 				</div>
 
@@ -122,7 +135,7 @@ export const FooterClient = ({
 				<div className="order-1 w-full text-center md:w-auto md:text-left">
 					<p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 md:justify-start">
 						<span>
-							Copyright © {year} {brandName}. {copyrightLabel}
+							Copyright © {year} {brandName}. {copyrightText}
 						</span>
 						<span className="hidden md:inline" aria-hidden="true">
 							|
@@ -172,6 +185,4 @@ export const FooterClient = ({
 			</div>
 		</footer>
 	);
-};
-
-export default FooterClient;
+}

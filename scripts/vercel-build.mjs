@@ -1,15 +1,15 @@
 import { spawnSync } from "node:child_process";
-import process from "node:process";
 
-function runCommand(command, args, { continueOnError = false } = {}) {
+function runCommand(command, args, options = {}) {
+	const { continueOnError = false } = options;
 	const result = spawnSync(command, args, {
 		stdio: "inherit",
-		shell: false,
 		env: process.env,
 	});
 
 	if (typeof result.status === "number" && result.status !== 0) {
 		if (continueOnError) {
+			console.error(`[build] command failed: ${command} ${args.join(" ")}`);
 			return false;
 		}
 
@@ -29,15 +29,17 @@ function runCommand(command, args, { continueOnError = false } = {}) {
 	return true;
 }
 
-const shouldRunAdminSeed = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
-const shouldRunImageMigration =
-	process.env.VERCEL === "1" &&
-	process.env.VERCEL_ENV === "production" &&
-	process.env.RUN_PRODUCT_IMAGE_MIGRATION === "true";
+const isVercelProduction = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
+const shouldRunAdminSeed = isVercelProduction;
+const shouldRunEditorialMigrations = isVercelProduction && process.env.RUN_EDITORIAL_MIGRATIONS === "true";
+const shouldRunImageMigration = isVercelProduction && process.env.RUN_PRODUCT_IMAGE_MIGRATION === "true";
 
 if (shouldRunAdminSeed) {
 	console.log("[build] admin seed: running");
-	const seeded = runCommand("node", ["scripts/seed-admin.mjs"], { continueOnError: true });
+	const seeded = runCommand("node", ["scripts/seed-admin.mjs"], {
+		continueOnError: true,
+	});
+
 	if (!seeded) {
 		console.log("[build] admin seed: failed, continuing build");
 	}
@@ -45,11 +47,25 @@ if (shouldRunAdminSeed) {
 	console.log("[build] admin seed: skipped");
 }
 
+if (shouldRunEditorialMigrations) {
+	console.log("[build] editorial migrations: running");
+	const migrated = runCommand("tsx", ["scripts/migrate-selo-editorial-content.ts"], {
+		continueOnError: true,
+	});
+
+	if (!migrated) {
+		console.log("[build] editorial migrations: failed, continuing build");
+	}
+} else {
+	console.log("[build] editorial migrations: skipped");
+}
+
 if (shouldRunImageMigration) {
 	console.log("[build] product image migration: running");
 	const migrated = runCommand("node", ["scripts/migrate-stripe-product-images-to-cloudinary.mjs"], {
 		continueOnError: true,
 	});
+
 	if (!migrated) {
 		console.log("[build] product image migration: failed, continuing build");
 	}

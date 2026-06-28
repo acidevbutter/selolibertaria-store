@@ -216,3 +216,11 @@ Mitigação:
 5. O conteúdo editorial e a compra convivem sem parecer duas experiências coladas.
 6. Admin e público permanecem conectados.
 7. Build/lint/test são executados ou reportados com falha explícita.
+## Addendum — P3.75B
+
+- O site público continua somente em `pt-BR`.
+- Copy editorial/comercial pública deve vir do admin editorial sempre que razoável.
+- Labels técnicos recorrentes continuam hardcoded em `pt-BR`.
+- `site_global` concentra newsletter e rodapé públicos.
+- `page_projects`, `page_products` e `page_product` sustentam a copy estrutural dessas rotas.
+- A migration editorial padrão é idempotente e não sobrescreve edições reais; ela só cria documentos ausentes e preenche campos ausentes.
