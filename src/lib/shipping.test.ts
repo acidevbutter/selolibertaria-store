@@ -59,6 +59,32 @@ describe("shipping", () => {
 		expect(provider.defaultHeightCm).toBe(8);
 	});
 
+	it("provides Melhor Envio admin defaults for quote-only configuration", () => {
+		const provider = normalizeShippingProviderInput({
+			code: "melhorenvio",
+			label: "Melhor Envio",
+			kind: "melhorenvio",
+			credentials: {
+				accessToken: "token-123",
+				originPostalCode: "01000-000",
+			},
+		});
+
+		expect(provider.code).toBe("melhorenvio");
+		expect(provider.kind).toBe("melhorenvio");
+		expect(provider.mode).toBe("http");
+		expect(provider.authType).toBe("bearer");
+		expect(provider.baseUrl).toBe("https://www.melhorenvio.com.br/api/v2");
+		expect(provider.environment).toBe("sandbox");
+		expect(provider.endpoints?.quote).toBe("/me/shipment/calculate");
+		expect(provider.supportedCountries).toEqual(["BR"]);
+		expect(provider.requiresPostalCode).toBe(true);
+		expect(provider.credentialsMasked).toEqual({
+			accessToken: "configured",
+			originPostalCode: "configured",
+		});
+	});
+
 	it("chooses the best quote by amount and then by delivery time", () => {
 		const selected = selectBestShippingQuote([
 			{

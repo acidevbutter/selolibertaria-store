@@ -21,7 +21,7 @@ export type OAuthProviderSettings = {
 export type OAuthProvidersSettings = Partial<Record<OAuthProviderId, OAuthProviderSettings>>;
 
 export type ShippingProviderMode = "flat" | "http";
-export type ShippingProviderKind = "custom" | "correios" | "jadlog" | "easypost";
+export type ShippingProviderKind = "custom" | "correios" | "jadlog" | "easypost" | "melhorenvio";
 export type ShippingProviderAuthType = "none" | "bearer" | "basic" | "query" | "custom";
 export type ShippingProviderEnvironment = "sandbox" | "production";
 export type ShippingProviderEndpoints = {

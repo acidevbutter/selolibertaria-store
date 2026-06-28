@@ -37,7 +37,7 @@ const shippingProviderInputSchema = z.object({
 	enabled: z.boolean().optional(),
 	priority: z.union([z.number(), z.string()]).optional(),
 	mode: z.enum(["flat", "http"]).optional(),
-	kind: z.enum(["custom", "correios", "jadlog", "easypost"]).optional(),
+	kind: z.enum(["custom", "correios", "jadlog", "easypost", "melhorenvio"]).optional(),
 	authType: z.enum(["none", "bearer", "basic", "query", "custom"]).optional(),
 	baseUrl: z.string().optional(),
 	environment: z.enum(["sandbox", "production"]).optional(),

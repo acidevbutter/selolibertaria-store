@@ -171,8 +171,13 @@ export function normalizeShippingProviderInput(
 						? Number(value.estimatedDays)
 						: null
 					: null,
-		supportedCountries: normalizeSupportedCountries(value.supportedCountries),
-		requiresPostalCode: value.requiresPostalCode === true,
+		supportedCountries: normalizeSupportedCountries(
+			value.supportedCountries ?? preset.defaultSupportedCountries,
+		),
+		requiresPostalCode:
+			value.requiresPostalCode !== undefined
+				? value.requiresPostalCode === true
+				: preset.defaultRequiresPostalCode,
 		defaultWeightGrams:
 			typeof value.defaultWeightGrams === "number"
 				? value.defaultWeightGrams

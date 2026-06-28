@@ -68,7 +68,7 @@ type SettingsPayload = {
 function buildProviderFromPreset(kind: ShippingProviderKind, index = 0): ShippingProviderState {
 	const preset = getShippingProviderPreset(kind);
 	return {
-		code: `${kind}-${index + 1}`,
+		code: kind === "melhorenvio" ? "melhorenvio" : `${kind}-${index + 1}`,
 		label: preset.label,
 		enabled: false,
 		priority: index,
@@ -329,6 +329,16 @@ export default function AdminShippingProviders() {
 					? {
 							...provider,
 							kind,
+							code:
+								provider.code === `${provider.kind}-${index + 1}` ||
+								provider.code === "melhorenvio" ||
+								!provider.code.trim()
+									? next.code
+									: provider.code,
+							label:
+								provider.label === getShippingProviderPreset(provider.kind).label || !provider.label.trim()
+									? next.label
+									: provider.label,
 							mode: kind === "custom" ? provider.mode : "http",
 							authType: next.authType,
 							baseUrl: next.baseUrl,
