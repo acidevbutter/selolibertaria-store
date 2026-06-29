@@ -207,7 +207,7 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 		credentialFields: [
 			{
 				key: "accessToken",
-				label: "Access token",
+				label: "Token de acesso",
 				placeholder: "token-do-melhor-envio",
 				secret: true,
 				required: true,

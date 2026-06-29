@@ -1,6 +1,7 @@
 "server-only";
 
 import { ObjectId } from "mongodb";
+import { env } from "@/env.mjs";
 import { getDb } from "@/lib/mongodb";
 import { decryptStoredSecret } from "@/lib/oauth/secrets";
 import type { ShippingProviderSettings, ShippingProvidersSettings } from "@/lib/settings";
@@ -28,6 +29,17 @@ type RuntimePackageSummary = {
 	widthCm: number;
 	heightCm: number;
 };
+
+function parseEnvBoolean(value?: string | null) {
+	const normalized = value?.trim().toLowerCase() ?? "";
+	if (!normalized) return false;
+	return ["1", "true", "yes", "on"].includes(normalized);
+}
+
+function parseEnvNumber(value: string | undefined, fallback: number) {
+	const numeric = Number(value);
+	return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
+}
 
 function normalizeCountryCode(value?: string | null) {
 	const normalized = value?.trim().toUpperCase() ?? "";
@@ -57,6 +69,16 @@ function maskPlainSecret(value: string) {
 
 function decryptProviderCredentials(provider: ShippingProviderSettings) {
 	const next: Record<string, string> = {};
+	if (isMelhorEnvioProvider(provider) && parseEnvBoolean(env.MELHOR_ENVIO_ENABLED)) {
+		if (env.MELHOR_ENVIO_ACCESS_TOKEN?.trim()) next.accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN.trim();
+		if (env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE?.trim()) {
+			next.originPostalCode = env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE.trim();
+		}
+		if (env.MELHOR_ENVIO_USER_AGENT?.trim()) next.userAgent = env.MELHOR_ENVIO_USER_AGENT.trim();
+		if (env.MELHOR_ENVIO_CONTACT_EMAIL?.trim()) {
+			next.contactEmail = env.MELHOR_ENVIO_CONTACT_EMAIL.trim();
+		}
+	}
 	if (provider.credentialsEncrypted) {
 		const decrypted = decryptStoredSecret(provider.credentialsEncrypted);
 		if (decrypted) {
@@ -193,6 +215,72 @@ function isMelhorEnvioProvider(provider: ShippingProviderSettings) {
 		baseUrl.includes("melhorenvio.com.br") ||
 		endpointUrl.includes("me/shipment/calculate") ||
 		quoteEndpoint.includes("me/shipment/calculate")
+	);
+}
+
+function shouldPreferMelhorEnvio(destination: ShippingDestination, providers: ShippingProviderSettings[]) {
+	const destinationCountry = normalizeCountryCode(destination.country);
+	const destinationPostalCode = normalizePostalCode(destination.postalCode);
+
+	return (
+		destinationCountry === "BR" &&
+		Boolean(destinationPostalCode) &&
+		providers.some((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider))
+	);
+}
+
+function buildEnvMelhorEnvioProvider(): ShippingProviderSettings | null {
+	if (!parseEnvBoolean(env.MELHOR_ENVIO_ENABLED)) return null;
+
+	const accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN?.trim() ?? "";
+	const originPostalCode = env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE?.trim() ?? "";
+	if (!accessToken || !originPostalCode) return null;
+
+	const credentials: Record<string, string> = {
+		accessToken,
+		originPostalCode,
+	};
+
+	if (env.MELHOR_ENVIO_USER_AGENT?.trim()) {
+		credentials.userAgent = env.MELHOR_ENVIO_USER_AGENT.trim();
+	}
+
+	if (env.MELHOR_ENVIO_CONTACT_EMAIL?.trim()) {
+		credentials.contactEmail = env.MELHOR_ENVIO_CONTACT_EMAIL.trim();
+	}
+
+	return normalizeShippingProviderInput(
+		{
+			code: "melhorenvio",
+			label: "Melhor Envio",
+			enabled: true,
+			priority: 0,
+			mode: "http",
+			kind: "melhorenvio",
+			authType: "bearer",
+			baseUrl: env.MELHOR_ENVIO_BASE_URL?.trim() || "https://www.melhorenvio.com.br/api/v2",
+			environment: env.MELHOR_ENVIO_ENVIRONMENT === "production" ? "production" : "sandbox",
+			endpoints: {
+				quote: "/me/shipment/calculate",
+				shipment: null,
+				tracking: null,
+				token: null,
+			},
+			supportedCountries: ["BR"],
+			requiresPostalCode: true,
+			defaultWeightGrams: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_WEIGHT_GRAMS, 300),
+			defaultLengthCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_LENGTH_CM, 20),
+			defaultWidthCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_WIDTH_CM, 20),
+			defaultHeightCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_HEIGHT_CM, 10),
+			credentialsMasked: {
+				accessToken: maskPlainSecret(accessToken),
+				originPostalCode: maskPlainSecret(originPostalCode),
+				...(credentials.contactEmail ? { contactEmail: maskPlainSecret(credentials.contactEmail) } : {}),
+				...(credentials.userAgent ? { userAgent: maskPlainSecret(credentials.userAgent) } : {}),
+			},
+			credentialsEncrypted: null,
+		},
+		0,
 	);
 }
 
@@ -600,9 +688,6 @@ export async function resolveShippingQuotesForDestination(args: {
 			error: null,
 		};
 	}
-	const providers = (settings?.current?.shippingProviders ?? []).map((provider, index) =>
-		normalizeShippingProviderRuntime(provider, index),
-	);
 	if (args.deliveryMethod === "pickup") {
 		const quote = buildPickupQuote(args.currency);
 		return {
@@ -611,6 +696,11 @@ export async function resolveShippingQuotesForDestination(args: {
 			provider: null,
 		};
 	}
+	const envMelhorEnvioProvider = buildEnvMelhorEnvioProvider();
+	const legacyProviders = (settings?.current?.shippingProviders ?? []).map((provider, index) =>
+		normalizeShippingProviderRuntime(provider, index),
+	);
+	const providers = envMelhorEnvioProvider ? [envMelhorEnvioProvider] : legacyProviders;
 	if (!providers.length) {
 		return { quotes: [], selected: null, provider: null, error: "Nenhum provedor de frete foi configurado." };
 	}
@@ -619,9 +709,12 @@ export async function resolveShippingQuotesForDestination(args: {
 	const orderedProviders = [...providers]
 		.filter((provider) => provider.enabled !== false)
 		.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0) || a.label.localeCompare(b.label));
+	const preferredProviders = shouldPreferMelhorEnvio(destination, orderedProviders)
+		? orderedProviders.filter((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider))
+		: orderedProviders;
 	let lastProviderError: string | null = null;
 
-	for (const provider of orderedProviders) {
+	for (const provider of preferredProviders) {
 		if (provider.mode === "http") {
 			let quotes: ShippingQuote[] = [];
 			try {

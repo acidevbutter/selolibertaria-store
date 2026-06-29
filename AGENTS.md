@@ -244,6 +244,10 @@ Also validate:
 - 2026-06-28: no fechamento de pedidos, preserve no registro final o snapshot de entrega escolhido no checkout com `deliveryMethod`, endereço essencial e cotação mínima de frete; no admin, a leitura desse bloco deve ser opcional para manter compatibilidade com pedidos legados.
 - 2026-06-28: adapters novos de frete devem entrar só no servidor, reaproveitando o contrato existente de `ShippingQuote` e `ShippingRate`, sem expor credenciais no cliente, sem alterar checkout/admin UI e com falha segura em mensagem normalizada quando a transportadora externa nao responder.
 - 2026-06-28: ao adicionar um novo provedor de frete no admin, preserve o padrão atual de presets e segredo criptografado em `credentialsEncrypted`; para Melhor Envio, trate a configuração como cotação-only, com token manual e sem refresh automático antes da PR 3B.
+- 2026-06-28: no admin de configurações do Selo Libertária, exponha apenas o preset configurável de frete do Melhor Envio; presets legados podem aparecer só para remoção e nunca devem ser recriados automaticamente após exclusão.
+- 2026-06-28: quando o frete do Selo Libertária depender só do Melhor Envio, mantenha a configuração técnica exclusivamente em variáveis de ambiente e deixe no admin apenas um toggle operacional de ativar ou pausar a cotação.
+- 2026-06-28: no checkout com CEP brasileiro, se houver Melhor Envio habilitado, prefira a cotação dele no servidor e escolha internamente apenas o menor serviço válido, mantendo `pickup` intacto e reutilizando o fluxo atual de erro quando a cotação falhar.
+- 2026-06-29: ao documentar o Melhor Envio em arquivos de ambiente, liste somente as chaves já suportadas pelo runtime em `src/env.mjs`, incluindo ativação, ambiente, base URL, token, CEP de origem, defaults físicos, `USER_AGENT` e `CONTACT_EMAIL`.
 
 @RTK.md
 ## Addendum — P3.75B
