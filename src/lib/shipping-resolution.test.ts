@@ -10,17 +10,7 @@ const {
 	fetchMelhorEnvioQuotesMock,
 } = vi.hoisted(() => ({
 	envMock: {
-		MELHOR_ENVIO_ENABLED: "true",
-		MELHOR_ENVIO_ENVIRONMENT: "sandbox",
-		MELHOR_ENVIO_BASE_URL: "https://www.melhorenvio.com.br/api/v2",
 		MELHOR_ENVIO_ACCESS_TOKEN: "env-token",
-		MELHOR_ENVIO_ORIGIN_POSTAL_CODE: "01310-100",
-		MELHOR_ENVIO_DEFAULT_WEIGHT_GRAMS: "300",
-		MELHOR_ENVIO_DEFAULT_LENGTH_CM: "20",
-		MELHOR_ENVIO_DEFAULT_WIDTH_CM: "20",
-		MELHOR_ENVIO_DEFAULT_HEIGHT_CM: "10",
-		MELHOR_ENVIO_USER_AGENT: "Selo Libertaria (tech@selolibertaria.com)",
-		MELHOR_ENVIO_CONTACT_EMAIL: "tech@selolibertaria.com",
 	},
 	getSettingsDocMock: vi.fn(),
 	getDefaultCountrySettingMock: vi.fn(),
@@ -47,68 +37,75 @@ vi.mock("@/lib/shipping-melhor-envio", () => ({
 
 import { resolveShippingQuotesForDestination } from "@/lib/shipping";
 
-const flatProvider = {
-	code: "frete-fixo",
-	label: "Frete fixo",
-	enabled: true,
-	priority: 0,
-	mode: "flat" as const,
-	kind: "custom" as const,
-	fixedAmount: 2500,
-	serviceCode: "FIXO",
-	serviceName: "Frete fixo",
-	supportedCountries: ["US"],
+const melhorEnvioSettings = {
+	environment: "sandbox" as const,
+	baseUrl: "https://sandbox.melhorenvio.com.br/api/v2",
+	originPostalCode: "01310-100",
+	defaultWeightGrams: 300,
+	defaultLengthCm: 20,
+	defaultWidthCm: 15,
+	defaultHeightCm: 10,
+	userAgent: "Selo Libertária (tech@selolibertaria.com)",
+	contactEmail: "tech@selolibertaria.com",
+	supportedCountry: "BR" as const,
 	requiresPostalCode: true,
 };
 
 const legacyMelhorEnvioProvider = {
-	code: "correios",
-	label: "Correios",
+	code: "melhorenvio",
+	label: "Melhor Envio",
 	enabled: true,
-	priority: 20,
+	priority: 0,
 	mode: "http" as const,
-	kind: "correios" as const,
+	kind: "melhorenvio" as const,
 	authType: "bearer" as const,
-	baseUrl: "https://api.correios.com.br",
+	baseUrl: "https://www.melhorenvio.com.br/api/v2",
+	environment: "production" as const,
 	endpoints: {
-		quote: "/preco/v1/nacional",
-		shipment: "",
-		tracking: "",
-		token: "",
+		quote: "/me/shipment/calculate",
+		shipment: null,
+		tracking: null,
+		token: null,
 	},
-	serviceCode: "03220",
-	serviceName: "SEDEX",
+	supportedCountries: ["BR"],
+	requiresPostalCode: true,
+	defaultWeightGrams: 400,
+	defaultLengthCm: 25,
+	defaultWidthCm: 18,
+	defaultHeightCm: 12,
+	credentialsEncrypted: "legacy-melhor-envio",
 };
 
-describe("resolveShippingQuotesForDestination", () => {
+describe("shipping resolution", () => {
 	beforeEach(() => {
-		getSettingsDocMock.mockReset();
+		envMock.MELHOR_ENVIO_ACCESS_TOKEN = "env-token";
 		getDefaultCountrySettingMock.mockReset();
+		getSettingsDocMock.mockReset();
 		decryptStoredSecretMock.mockReset();
 		fetchMelhorEnvioQuotesMock.mockReset();
 
-		envMock.MELHOR_ENVIO_ENABLED = "true";
-		envMock.MELHOR_ENVIO_ENVIRONMENT = "sandbox";
-		envMock.MELHOR_ENVIO_BASE_URL = "https://www.melhorenvio.com.br/api/v2";
-		envMock.MELHOR_ENVIO_ACCESS_TOKEN = "env-token";
-		envMock.MELHOR_ENVIO_ORIGIN_POSTAL_CODE = "01310-100";
-		envMock.MELHOR_ENVIO_DEFAULT_WEIGHT_GRAMS = "300";
-		envMock.MELHOR_ENVIO_DEFAULT_LENGTH_CM = "20";
-		envMock.MELHOR_ENVIO_DEFAULT_WIDTH_CM = "20";
-		envMock.MELHOR_ENVIO_DEFAULT_HEIGHT_CM = "10";
-		envMock.MELHOR_ENVIO_USER_AGENT = "Selo Libertaria (tech@selolibertaria.com)";
-		envMock.MELHOR_ENVIO_CONTACT_EMAIL = "tech@selolibertaria.com";
-
 		getDefaultCountrySettingMock.mockResolvedValue("BR");
+		decryptStoredSecretMock.mockImplementation((value: string | null | undefined) => {
+			if (value === "legacy-melhor-envio") {
+				return JSON.stringify({
+					originPostalCode: "22220-000",
+					userAgent: "Legacy App (legacy@selolibertaria.com)",
+					contactEmail: "legacy@selolibertaria.com",
+				});
+			}
+
+			return null;
+		});
 		getSettingsDocMock.mockResolvedValue({
 			current: {
 				shippingEnabled: true,
-				shippingProviders: [flatProvider, legacyMelhorEnvioProvider],
+				shippingMelhorEnvio: melhorEnvioSettings,
+				shippingProviders: [legacyMelhorEnvioProvider],
 			},
 		});
 	});
 
-	it("uses Melhor Envio from env for BR delivery addresses", async () => {
+	it("builds Melhor Envio from admin settings and env token", async () => {
 		fetchMelhorEnvioQuotesMock.mockResolvedValue([
 			{
 				providerCode: "melhorenvio",
@@ -118,7 +115,7 @@ describe("resolveShippingQuotesForDestination", () => {
 				amount: 1890,
 				currency: "BRL",
 				estimatedDays: 2,
-				quotedAt: "2026-06-28T18:00:00.000Z",
+				quotedAt: "2026-06-29T18:00:00.000Z",
 				method: "http",
 			},
 			{
@@ -129,7 +126,7 @@ describe("resolveShippingQuotesForDestination", () => {
 				amount: 1290,
 				currency: "BRL",
 				estimatedDays: 5,
-				quotedAt: "2026-06-28T18:00:00.000Z",
+				quotedAt: "2026-06-29T18:00:00.000Z",
 				method: "http",
 			},
 		]);
@@ -147,20 +144,23 @@ describe("resolveShippingQuotesForDestination", () => {
 			expect.objectContaining({
 				originPostalCode: "01310-100",
 				accessToken: "env-token",
+				baseUrl: "https://sandbox.melhorenvio.com.br/api/v2",
+				environment: "sandbox",
+				userAgent: "Selo Libertária (tech@selolibertaria.com)",
 			}),
 		);
 		expect(result.provider?.code).toBe("melhorenvio");
-		expect(result.provider?.label).toBe("Melhor Envio");
 		expect(result.selected?.serviceCode).toBe("1");
 		expect(result.selected?.amount).toBe(1290);
 		expect(result.error ?? null).toBeNull();
 	});
 
-	it("returns no shipping quote when admin toggle is off", async () => {
+	it("returns no shipping quote when the admin toggle is off", async () => {
 		getSettingsDocMock.mockResolvedValue({
 			current: {
 				shippingEnabled: false,
-				shippingProviders: [flatProvider],
+				shippingMelhorEnvio: melhorEnvioSettings,
+				shippingProviders: [legacyMelhorEnvioProvider],
 			},
 		});
 
@@ -179,7 +179,14 @@ describe("resolveShippingQuotesForDestination", () => {
 		expect(result.error).toBeNull();
 	});
 
-	it("keeps pickup working even with env-based Melhor Envio", async () => {
+	it("keeps pickup working even when shipping is disabled", async () => {
+		getSettingsDocMock.mockResolvedValue({
+			current: {
+				shippingEnabled: false,
+				shippingMelhorEnvio: melhorEnvioSettings,
+			},
+		});
+
 		const result = await resolveShippingQuotesForDestination({
 			destination: null,
 			subtotal: 4990,
@@ -190,22 +197,71 @@ describe("resolveShippingQuotesForDestination", () => {
 
 		expect(fetchMelhorEnvioQuotesMock).not.toHaveBeenCalled();
 		expect(result.selected?.providerCode).toBe("pickup");
+		expect(result.selected?.amount).toBe(0);
 	});
 
-	it("falls back to legacy providers only when env Melhor Envio is disabled", async () => {
-		envMock.MELHOR_ENVIO_ENABLED = "false";
+	it("falls back to legacy Melhor Envio fields when the admin config is absent", async () => {
+		getSettingsDocMock.mockResolvedValue({
+			current: {
+				shippingEnabled: true,
+				shippingProviders: [legacyMelhorEnvioProvider],
+			},
+		});
+		fetchMelhorEnvioQuotesMock.mockResolvedValue([
+			{
+				providerCode: "melhorenvio",
+				providerLabel: "Melhor Envio",
+				serviceCode: "1",
+				serviceName: "PAC",
+				amount: 1590,
+				currency: "BRL",
+				estimatedDays: 4,
+				quotedAt: "2026-06-29T18:00:00.000Z",
+				method: "http",
+			},
+		]);
 
 		const result = await resolveShippingQuotesForDestination({
-			destination: { country: "US", postalCode: "10001" },
+			destination: { country: "BR", postalCode: "20040-020" },
 			subtotal: 4990,
-			currency: "USD",
+			currency: "BRL",
 			items: [{ productId: "prod_1", variantId: "var_1", quantity: 1, price: 4990 }],
 			deliveryMethod: "saved-address",
 		});
 
-		expect(fetchMelhorEnvioQuotesMock).not.toHaveBeenCalled();
-		expect(result.provider?.code).toBe("frete-fixo");
-		expect(result.selected?.providerCode).toBe("frete-fixo");
-		expect(result.selected?.amount).toBe(2500);
+		expect(fetchMelhorEnvioQuotesMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				originPostalCode: "22220-000",
+				baseUrl: "https://www.melhorenvio.com.br/api/v2",
+				environment: "production",
+				userAgent: "Legacy App (legacy@selolibertaria.com)",
+				accessToken: "env-token",
+			}),
+		);
+		expect(result.provider?.code).toBe("melhorenvio");
+		expect(result.selected?.amount).toBe(1590);
+	});
+
+	it("returns the existing shipping error flow when the env token is missing", async () => {
+		envMock.MELHOR_ENVIO_ACCESS_TOKEN = "";
+		fetchMelhorEnvioQuotesMock.mockRejectedValue(new Error("O token do Melhor Envio nao foi configurado."));
+
+		const result = await resolveShippingQuotesForDestination({
+			destination: { country: "BR", postalCode: "20040-020" },
+			subtotal: 4990,
+			currency: "BRL",
+			items: [{ productId: "prod_1", variantId: "var_1", quantity: 1, price: 4990 }],
+			deliveryMethod: "saved-address",
+		});
+
+		expect(fetchMelhorEnvioQuotesMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				accessToken: "",
+				originPostalCode: "01310-100",
+			}),
+		);
+		expect(result.quotes).toEqual([]);
+		expect(result.selected).toBeNull();
+		expect(result.error).toBe("O token do Melhor Envio nao foi configurado.");
 	});
 });

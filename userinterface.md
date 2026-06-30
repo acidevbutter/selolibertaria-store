@@ -188,3 +188,8 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 - Home, Eventos, Projetos, Livros, Página do livro, Sobre, Contato, newsletter e footer agora seguem a fonte editorial do admin quando aplicável.
 - Labels técnicos recorrentes permanecem fixos para não transformar a interface em um formulário de configuração excessivo.
+
+## Atualização 2026-06-29
+
+- Em `/admin/settings`, o bloco de frete deve mostrar um único painel fixo do Melhor Envio, sem lista genérica de provedores, sem CTA de adicionar provedor e sem presets visíveis de Correios, Jadlog, EasyPost ou HTTP customizado.
+- Nesse painel, o token permanece fora da interface; a UI expõe apenas toggle operacional, ambiente, URL base, CEP de origem, medidas padrão, `User-Agent`, e-mail técnico e campos fixos de `BR` e `Exige CEP`.

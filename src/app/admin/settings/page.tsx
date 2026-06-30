@@ -168,7 +168,8 @@ export default async function AdminSettingsPage() {
 									Cálculo de frete
 								</div>
 								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Ative ou pause a cotação de frete sem expor a configuração técnica do Melhor Envio no admin.
+									Ative a cotação e ajuste apenas os parâmetros operacionais do Melhor Envio, mantendo o token
+									técnico fora do admin.
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">

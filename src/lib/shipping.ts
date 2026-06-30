@@ -4,7 +4,11 @@ import { ObjectId } from "mongodb";
 import { env } from "@/env.mjs";
 import { getDb } from "@/lib/mongodb";
 import { decryptStoredSecret } from "@/lib/oauth/secrets";
-import type { ShippingProviderSettings, ShippingProvidersSettings } from "@/lib/settings";
+import type {
+	MelhorEnvioSettings,
+	ShippingProviderSettings,
+	ShippingProvidersSettings,
+} from "@/lib/settings";
 import { getDefaultCountrySetting, getSettingsDoc } from "@/lib/settings-store";
 import {
 	type CheckoutAddress,
@@ -30,16 +34,9 @@ type RuntimePackageSummary = {
 	heightCm: number;
 };
 
-function parseEnvBoolean(value?: string | null) {
-	const normalized = value?.trim().toLowerCase() ?? "";
-	if (!normalized) return false;
-	return ["1", "true", "yes", "on"].includes(normalized);
-}
-
-function parseEnvNumber(value: string | undefined, fallback: number) {
-	const numeric = Number(value);
-	return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
-}
+type RuntimeShippingProviderSettings = ShippingProviderSettings & {
+	runtimeCredentials?: Record<string, string>;
+};
 
 function normalizeCountryCode(value?: string | null) {
 	const normalized = value?.trim().toUpperCase() ?? "";
@@ -49,6 +46,16 @@ function normalizeCountryCode(value?: string | null) {
 function normalizePostalCode(value?: string | null) {
 	const trimmed = value?.trim() ?? "";
 	return trimmed ? trimmed : null;
+}
+
+function normalizeRuntimeText(value?: string | null) {
+	const trimmed = value?.trim() ?? "";
+	return trimmed ? trimmed : null;
+}
+
+function normalizeRuntimeNumber(value: number | string | null | undefined, fallback: number) {
+	const numeric = Number(value);
+	return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
 }
 
 function buildAbsoluteUrl(baseUrl?: string | null, path?: string | null) {
@@ -69,15 +76,14 @@ function maskPlainSecret(value: string) {
 
 function decryptProviderCredentials(provider: ShippingProviderSettings) {
 	const next: Record<string, string> = {};
-	if (isMelhorEnvioProvider(provider) && parseEnvBoolean(env.MELHOR_ENVIO_ENABLED)) {
-		if (env.MELHOR_ENVIO_ACCESS_TOKEN?.trim()) next.accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN.trim();
-		if (env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE?.trim()) {
-			next.originPostalCode = env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE.trim();
+	const runtimeCredentials = (provider as RuntimeShippingProviderSettings).runtimeCredentials;
+	if (runtimeCredentials) {
+		for (const [key, rawValue] of Object.entries(runtimeCredentials)) {
+			if (rawValue.trim()) next[key] = rawValue.trim();
 		}
-		if (env.MELHOR_ENVIO_USER_AGENT?.trim()) next.userAgent = env.MELHOR_ENVIO_USER_AGENT.trim();
-		if (env.MELHOR_ENVIO_CONTACT_EMAIL?.trim()) {
-			next.contactEmail = env.MELHOR_ENVIO_CONTACT_EMAIL.trim();
-		}
+	}
+	if (isMelhorEnvioProvider(provider) && env.MELHOR_ENVIO_ACCESS_TOKEN?.trim()) {
+		next.accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN.trim();
 	}
 	if (provider.credentialsEncrypted) {
 		const decrypted = decryptStoredSecret(provider.credentialsEncrypted);
@@ -229,59 +235,116 @@ function shouldPreferMelhorEnvio(destination: ShippingDestination, providers: Sh
 	);
 }
 
-function buildEnvMelhorEnvioProvider(): ShippingProviderSettings | null {
-	if (!parseEnvBoolean(env.MELHOR_ENVIO_ENABLED)) return null;
+function findLegacyMelhorEnvioProvider(
+	providers: ShippingProviderSettings[],
+): ShippingProviderSettings | null {
+	return providers.find((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider)) ?? null;
+}
 
+function buildFixedMelhorEnvioProvider(args: {
+	config?: MelhorEnvioSettings | null;
+	legacyProvider?: ShippingProviderSettings | null;
+}): ShippingProviderSettings {
+	const legacyProvider = args.legacyProvider ?? null;
+	const legacyCredentials = legacyProvider ? decryptProviderCredentials(legacyProvider) : {};
+	const config = args.config ?? null;
 	const accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN?.trim() ?? "";
-	const originPostalCode = env.MELHOR_ENVIO_ORIGIN_POSTAL_CODE?.trim() ?? "";
-	if (!accessToken || !originPostalCode) return null;
+	const originPostalCode =
+		normalizeRuntimeText(config?.originPostalCode) ??
+		normalizeRuntimeText(legacyCredentials.originPostalCode ?? legacyCredentials.fromPostalCode);
+	const userAgent =
+		normalizeRuntimeText(config?.userAgent) ??
+		normalizeRuntimeText(legacyCredentials.userAgent ?? legacyCredentials.applicationName);
+	const contactEmail =
+		normalizeRuntimeText(config?.contactEmail) ??
+		normalizeRuntimeText(legacyCredentials.contactEmail ?? legacyCredentials.technicalEmail);
 
-	const credentials: Record<string, string> = {
-		accessToken,
-		originPostalCode,
+	const runtimeCredentials = {
+		...(accessToken ? { accessToken } : {}),
+		...(originPostalCode ? { originPostalCode } : {}),
+		...(userAgent ? { userAgent } : {}),
+		...(contactEmail ? { contactEmail } : {}),
 	};
 
-	if (env.MELHOR_ENVIO_USER_AGENT?.trim()) {
-		credentials.userAgent = env.MELHOR_ENVIO_USER_AGENT.trim();
-	}
-
-	if (env.MELHOR_ENVIO_CONTACT_EMAIL?.trim()) {
-		credentials.contactEmail = env.MELHOR_ENVIO_CONTACT_EMAIL.trim();
-	}
-
-	return normalizeShippingProviderInput(
-		{
-			code: "melhorenvio",
-			label: "Melhor Envio",
-			enabled: true,
-			priority: 0,
-			mode: "http",
-			kind: "melhorenvio",
-			authType: "bearer",
-			baseUrl: env.MELHOR_ENVIO_BASE_URL?.trim() || "https://www.melhorenvio.com.br/api/v2",
-			environment: env.MELHOR_ENVIO_ENVIRONMENT === "production" ? "production" : "sandbox",
-			endpoints: {
-				quote: "/me/shipment/calculate",
-				shipment: null,
-				tracking: null,
-				token: null,
+	const provider: RuntimeShippingProviderSettings = {
+		...normalizeShippingProviderInput(
+			{
+				code: "melhorenvio",
+				label: "Melhor Envio",
+				enabled: true,
+				priority: 0,
+				mode: "http",
+				kind: "melhorenvio",
+				authType: "bearer",
+				baseUrl:
+					normalizeRuntimeText(config?.baseUrl) ??
+					normalizeRuntimeText(legacyProvider?.baseUrl) ??
+					"https://www.melhorenvio.com.br/api/v2",
+				environment: config?.environment ?? legacyProvider?.environment ?? "sandbox",
+				endpoints: {
+					quote: "/me/shipment/calculate",
+					shipment: null,
+					tracking: null,
+					token: null,
+				},
+				supportedCountries: ["BR"],
+				requiresPostalCode: true,
+				defaultWeightGrams: normalizeRuntimeNumber(
+					config?.defaultWeightGrams ?? legacyProvider?.defaultWeightGrams,
+					300,
+				),
+				defaultLengthCm: normalizeRuntimeNumber(
+					config?.defaultLengthCm ?? legacyProvider?.defaultLengthCm,
+					20,
+				),
+				defaultWidthCm: normalizeRuntimeNumber(
+					config?.defaultWidthCm ?? legacyProvider?.defaultWidthCm,
+					20,
+				),
+				defaultHeightCm: normalizeRuntimeNumber(
+					config?.defaultHeightCm ?? legacyProvider?.defaultHeightCm,
+					10,
+				),
+				credentials: runtimeCredentials,
 			},
-			supportedCountries: ["BR"],
-			requiresPostalCode: true,
-			defaultWeightGrams: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_WEIGHT_GRAMS, 300),
-			defaultLengthCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_LENGTH_CM, 20),
-			defaultWidthCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_WIDTH_CM, 20),
-			defaultHeightCm: parseEnvNumber(env.MELHOR_ENVIO_DEFAULT_HEIGHT_CM, 10),
-			credentialsMasked: {
-				accessToken: maskPlainSecret(accessToken),
-				originPostalCode: maskPlainSecret(originPostalCode),
-				...(credentials.contactEmail ? { contactEmail: maskPlainSecret(credentials.contactEmail) } : {}),
-				...(credentials.userAgent ? { userAgent: maskPlainSecret(credentials.userAgent) } : {}),
-			},
-			credentialsEncrypted: null,
-		},
-		0,
+			0,
+		),
+		runtimeCredentials,
+	};
+
+	return provider;
+}
+
+export function serializeMelhorEnvioSettingsForAdmin(
+	value: MelhorEnvioSettings | null | undefined,
+	legacyProviders?: ShippingProvidersSettings,
+): MelhorEnvioSettings {
+	const legacyProvider = findLegacyMelhorEnvioProvider(
+		(legacyProviders ?? []).map((provider, index) => normalizeShippingProviderRuntime(provider, index)),
 	);
+	const legacyCredentials = legacyProvider ? decryptProviderCredentials(legacyProvider) : {};
+
+	return {
+		environment: value?.environment ?? legacyProvider?.environment ?? "sandbox",
+		baseUrl: value?.baseUrl ?? legacyProvider?.baseUrl ?? null,
+		originPostalCode:
+			value?.originPostalCode ??
+			normalizeRuntimeText(legacyCredentials.originPostalCode ?? legacyCredentials.fromPostalCode),
+		defaultWeightGrams: value?.defaultWeightGrams ?? legacyProvider?.defaultWeightGrams ?? 300,
+		defaultLengthCm: value?.defaultLengthCm ?? legacyProvider?.defaultLengthCm ?? 20,
+		defaultWidthCm: value?.defaultWidthCm ?? legacyProvider?.defaultWidthCm ?? 20,
+		defaultHeightCm: value?.defaultHeightCm ?? legacyProvider?.defaultHeightCm ?? 10,
+		userAgent:
+			value?.userAgent ??
+			normalizeRuntimeText(legacyCredentials.userAgent ?? legacyCredentials.applicationName),
+		contactEmail:
+			value?.contactEmail ??
+			normalizeRuntimeText(legacyCredentials.contactEmail ?? legacyCredentials.technicalEmail),
+		supportedCountry: "BR",
+		requiresPostalCode: true,
+		lastUpdatedAt: value?.lastUpdatedAt ?? null,
+		lastUpdatedBy: value?.lastUpdatedBy ?? null,
+	};
 }
 
 function buildMelhorEnvioUserAgent(credentials: Record<string, string>, provider: ShippingProviderSettings) {
@@ -680,14 +743,6 @@ export async function resolveShippingQuotesForDestination(args: {
 	deliveryMethod: CheckoutDeliveryMethod;
 }): Promise<ShippingQuoteResolution & { provider: ShippingProviderSettings | null }> {
 	const settings = await getSettingsDoc();
-	if (settings?.current?.shippingEnabled === false) {
-		return {
-			quotes: [],
-			selected: null,
-			provider: null,
-			error: null,
-		};
-	}
 	if (args.deliveryMethod === "pickup") {
 		const quote = buildPickupQuote(args.currency);
 		return {
@@ -696,11 +751,24 @@ export async function resolveShippingQuotesForDestination(args: {
 			provider: null,
 		};
 	}
-	const envMelhorEnvioProvider = buildEnvMelhorEnvioProvider();
+	if (settings?.current?.shippingEnabled === false) {
+		return {
+			quotes: [],
+			selected: null,
+			provider: null,
+			error: null,
+		};
+	}
 	const legacyProviders = (settings?.current?.shippingProviders ?? []).map((provider, index) =>
 		normalizeShippingProviderRuntime(provider, index),
 	);
-	const providers = envMelhorEnvioProvider ? [envMelhorEnvioProvider] : legacyProviders;
+	const legacyMelhorEnvioProvider = findLegacyMelhorEnvioProvider(legacyProviders);
+	const providers = [
+		buildFixedMelhorEnvioProvider({
+			config: settings?.current?.shippingMelhorEnvio ?? null,
+			legacyProvider: legacyMelhorEnvioProvider,
+		}),
+	];
 	if (!providers.length) {
 		return { quotes: [], selected: null, provider: null, error: "Nenhum provedor de frete foi configurado." };
 	}

@@ -63,6 +63,22 @@ export type ShippingProviderSettings = {
 
 export type ShippingProvidersSettings = ShippingProviderSettings[];
 
+export type MelhorEnvioSettings = {
+	environment?: ShippingProviderEnvironment | null;
+	baseUrl?: string | null;
+	originPostalCode?: string | null;
+	defaultWeightGrams?: number | null;
+	defaultLengthCm?: number | null;
+	defaultWidthCm?: number | null;
+	defaultHeightCm?: number | null;
+	userAgent?: string | null;
+	contactEmail?: string | null;
+	supportedCountry?: "BR" | null;
+	requiresPostalCode?: boolean;
+	lastUpdatedAt?: string | null;
+	lastUpdatedBy?: string | null;
+};
+
 export type SettingsCurrent = {
 	theme?: "light" | "dark";
 	supportEmail?: string | null;
@@ -70,6 +86,7 @@ export type SettingsCurrent = {
 	defaultLocale?: AppLocale | null;
 	oauthProviders?: OAuthProvidersSettings;
 	shippingEnabled?: boolean;
+	shippingMelhorEnvio?: MelhorEnvioSettings | null;
 	shippingProviders?: ShippingProvidersSettings;
 };
 

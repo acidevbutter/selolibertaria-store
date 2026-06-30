@@ -143,3 +143,8 @@ Confiança vem de:
 - A dona do site deve conseguir alterar a narrativa pública principal sem deploy.
 - A experiência editorial pública depende do admin como fonte primária de copy.
 - A manutenção preserva labels técnicos estáveis em `pt-BR` para reduzir atrito operacional.
+
+## Atualização 2026-06-29
+
+- Na tela `/admin/settings`, a pessoa operadora não deve tomar decisões sobre provedores de frete; ela só ativa ou pausa a cotação e ajusta parâmetros operacionais do Melhor Envio em um bloco único e claro.
+- Credenciais ficam fora do admin para reduzir risco operacional; a interface deve deixar explícito que o token permanece no ambiente do servidor e nunca é salvo no Mongo.

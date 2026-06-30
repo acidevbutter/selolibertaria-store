@@ -247,7 +247,8 @@ Also validate:
 - 2026-06-28: no admin de configurações do Selo Libertária, exponha apenas o preset configurável de frete do Melhor Envio; presets legados podem aparecer só para remoção e nunca devem ser recriados automaticamente após exclusão.
 - 2026-06-28: quando o frete do Selo Libertária depender só do Melhor Envio, mantenha a configuração técnica exclusivamente em variáveis de ambiente e deixe no admin apenas um toggle operacional de ativar ou pausar a cotação.
 - 2026-06-28: no checkout com CEP brasileiro, se houver Melhor Envio habilitado, prefira a cotação dele no servidor e escolha internamente apenas o menor serviço válido, mantendo `pickup` intacto e reutilizando o fluxo atual de erro quando a cotação falhar.
-- 2026-06-29: ao documentar o Melhor Envio em arquivos de ambiente, liste somente as chaves já suportadas pelo runtime em `src/env.mjs`, incluindo ativação, ambiente, base URL, token, CEP de origem, defaults físicos, `USER_AGENT` e `CONTACT_EMAIL`.
+- 2026-06-29: ao documentar o Melhor Envio em arquivos de ambiente do Selo Libertária, mantenha apenas segredos em `env`, com `MELHOR_ENVIO_ACCESS_TOKEN` como chave ativa atual e opções operacionais fora do `.env.example`.
+- 2026-06-29: no Selo admin, o frete deve aparecer como um único bloco fixo do Melhor Envio: segredo/token apenas em `env`, opções operacionais em `current.shippingMelhorEnvio`, `shippingEnabled` separado e `shippingProviders` preservado só como legado invisível para fallback.
 
 @RTK.md
 ## Addendum — P3.75B

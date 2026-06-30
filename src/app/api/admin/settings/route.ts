@@ -8,6 +8,7 @@ import { getDb } from "@/lib/mongodb";
 import { OAUTH_PROVIDER_IDS } from "@/lib/oauth/catalog";
 import { encryptStoredSecret, maskStoredSecret } from "@/lib/oauth/secrets";
 import type {
+	MelhorEnvioSettings,
 	OAuthProvidersSettings,
 	SettingsDoc,
 	SettingsHistoryEntry,
@@ -67,6 +68,20 @@ const shippingProviderInputSchema = z.object({
 
 const shippingProvidersPatchSchema = z.array(shippingProviderInputSchema).optional();
 
+const melhorEnvioPatchSchema = z
+	.object({
+		environment: z.enum(["sandbox", "production"]).optional(),
+		baseUrl: z.string().optional(),
+		originPostalCode: z.string().optional(),
+		defaultWeightGrams: z.union([z.number(), z.string()]).optional(),
+		defaultLengthCm: z.union([z.number(), z.string()]).optional(),
+		defaultWidthCm: z.union([z.number(), z.string()]).optional(),
+		defaultHeightCm: z.union([z.number(), z.string()]).optional(),
+		userAgent: z.string().optional(),
+		contactEmail: z.string().optional(),
+	})
+	.optional();
+
 const settingsPatchSchema = z.object({
 	theme: z.enum(["light", "dark"]).optional(),
 	supportEmail: z.string().email().nullable().optional(),
@@ -74,6 +89,7 @@ const settingsPatchSchema = z.object({
 	defaultLocale: z.literal(DEFAULT_LOCALE).optional(),
 	oauthProviders: oauthProvidersPatchSchema.optional(),
 	shippingEnabled: z.boolean().optional(),
+	shippingMelhorEnvio: melhorEnvioPatchSchema,
 	shippingProviders: shippingProvidersPatchSchema.optional(),
 });
 
@@ -92,6 +108,12 @@ function sanitizeCredentialRecord(record?: Record<string, string> | undefined) {
 		.map(([key, value]) => [key, value.trim()] as const)
 		.filter(([, value]) => value.length > 0);
 	return entries.length > 0 ? Object.fromEntries(entries) : null;
+}
+
+function normalizeOptionalText(value: string | undefined) {
+	if (value === undefined) return undefined;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function GET() {
@@ -120,6 +142,7 @@ export async function PATCH(req: Request) {
 	const userId = session!.sub as string;
 	const currentOauthProviders: OAuthProvidersSettings = existing?.current?.oauthProviders ?? {};
 	const nextOauthProviders: OAuthProvidersSettings = { ...currentOauthProviders };
+	const currentShippingMelhorEnvio: MelhorEnvioSettings = existing?.current?.shippingMelhorEnvio ?? {};
 	const currentShippingProviders: ShippingProvidersSettings = existing?.current?.shippingProviders ?? [];
 	const nextShippingProviders: ShippingProvidersSettings = [...currentShippingProviders];
 
@@ -248,6 +271,49 @@ export async function PATCH(req: Request) {
 		nextShippingProviders.length = body.shippingProviders.length;
 	}
 
+	const nextShippingMelhorEnvio: MelhorEnvioSettings | undefined = body.shippingMelhorEnvio
+		? {
+				environment:
+					body.shippingMelhorEnvio.environment ?? currentShippingMelhorEnvio.environment ?? "sandbox",
+				baseUrl:
+					normalizeOptionalText(body.shippingMelhorEnvio.baseUrl) ??
+					currentShippingMelhorEnvio.baseUrl ??
+					null,
+				originPostalCode:
+					normalizeOptionalText(body.shippingMelhorEnvio.originPostalCode) ??
+					currentShippingMelhorEnvio.originPostalCode ??
+					null,
+				defaultWeightGrams: normalizeNumericInput(
+					body.shippingMelhorEnvio.defaultWeightGrams,
+					currentShippingMelhorEnvio.defaultWeightGrams ?? 300,
+				),
+				defaultLengthCm: normalizeNumericInput(
+					body.shippingMelhorEnvio.defaultLengthCm,
+					currentShippingMelhorEnvio.defaultLengthCm ?? 20,
+				),
+				defaultWidthCm: normalizeNumericInput(
+					body.shippingMelhorEnvio.defaultWidthCm,
+					currentShippingMelhorEnvio.defaultWidthCm ?? 20,
+				),
+				defaultHeightCm: normalizeNumericInput(
+					body.shippingMelhorEnvio.defaultHeightCm,
+					currentShippingMelhorEnvio.defaultHeightCm ?? 10,
+				),
+				userAgent:
+					normalizeOptionalText(body.shippingMelhorEnvio.userAgent) ??
+					currentShippingMelhorEnvio.userAgent ??
+					null,
+				contactEmail:
+					normalizeOptionalText(body.shippingMelhorEnvio.contactEmail) ??
+					currentShippingMelhorEnvio.contactEmail ??
+					null,
+				supportedCountry: "BR",
+				requiresPostalCode: true,
+				lastUpdatedAt: now,
+				lastUpdatedBy: userId,
+			}
+		: undefined;
+
 	const currentPatch: SettingsDoc["current"] = {
 		...(body.theme !== undefined ? { theme: body.theme } : {}),
 		...(body.supportEmail !== undefined ? { supportEmail: body.supportEmail } : {}),
@@ -255,6 +321,7 @@ export async function PATCH(req: Request) {
 		...(body.defaultLocale !== undefined ? { defaultLocale: body.defaultLocale } : {}),
 		...(body.oauthProviders ? { oauthProviders: nextOauthProviders } : {}),
 		...(body.shippingEnabled !== undefined ? { shippingEnabled: body.shippingEnabled } : {}),
+		...(nextShippingMelhorEnvio ? { shippingMelhorEnvio: nextShippingMelhorEnvio } : {}),
 		...(body.shippingProviders ? { shippingProviders: nextShippingProviders } : {}),
 	};
 
