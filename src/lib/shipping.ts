@@ -297,10 +297,7 @@ function buildFixedMelhorEnvioProvider(args: {
 					config?.defaultLengthCm ?? legacyProvider?.defaultLengthCm,
 					20,
 				),
-				defaultWidthCm: normalizeRuntimeNumber(
-					config?.defaultWidthCm ?? legacyProvider?.defaultWidthCm,
-					20,
-				),
+				defaultWidthCm: normalizeRuntimeNumber(config?.defaultWidthCm ?? legacyProvider?.defaultWidthCm, 20),
 				defaultHeightCm: normalizeRuntimeNumber(
 					config?.defaultHeightCm ?? legacyProvider?.defaultHeightCm,
 					10,
