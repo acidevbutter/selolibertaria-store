@@ -256,3 +256,8 @@ Also validate:
 - copy pública editorial e comercial deve sair de documentos editoriais dedicados no Mongo/admin; não recolocar esses textos em `messages/pt-BR.json`.
 - labels técnicos repetidos da vitrine e da PDP permanecem hardcoded em pt-BR mesmo quando a página recebe blocos editoriais do admin.
 - migrations editoriais em produção devem apenas criar documentos novos e preencher paths ausentes; `--force` fica manual e nunca como comportamento padrão.
+
+## AI patterns addendum — 2026-06-30
+
+- no storefront do Selo Libertária, o carrinho deve ficar sempre acessível como ícone compacto no header público e, no mobile, pode ganhar um atalho flutuante apenas quando já houver itens no carrinho; `Carrinho` e `Comprar` nunca entram no menu principal.
+- nos cards de catálogo público, mantenha `Adicionar ao carrinho` como ação de permanência na página com atualização de badge e reserve `Comprar` para fluxo de compra imediata com redirecionamento ao checkout; se a seleção segura de variante não existir, prefira levar à PDP em vez de adicionar cegamente.

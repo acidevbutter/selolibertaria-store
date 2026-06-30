@@ -53,7 +53,7 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 						</div>
 						{hideAuthCta || isAdminSession ? null : (
 							<div className="hidden lg:flex lg:items-center">
-								<CartIcon showLabel />
+								<CartIcon />
 							</div>
 						)}
 						{hideAuthCta ? null : (

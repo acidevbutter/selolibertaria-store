@@ -148,3 +148,9 @@ Confiança vem de:
 
 - Na tela `/admin/settings`, a pessoa operadora não deve tomar decisões sobre provedores de frete; ela só ativa ou pausa a cotação e ajusta parâmetros operacionais do Melhor Envio em um bloco único e claro.
 - Credenciais ficam fora do admin para reduzir risco operacional; a interface deve deixar explícito que o token permanece no ambiente do servidor e nunca é salvo no Mongo.
+
+## Atualização 2026-06-30
+
+- `Adicionar ao carrinho` no catálogo deve manter a pessoa na página e sinalizar continuidade pelo badge do carrinho.
+- `Comprar` na grade deve funcionar como atalho de compra imediata para o checkout quando a variante já estiver segura.
+- Mesmo discreto, o carrinho precisa permanecer encontrável durante toda a navegação pública; no mobile, um atalho flutuante só deve aparecer depois da primeira adição ao carrinho.

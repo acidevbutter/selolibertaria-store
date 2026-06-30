@@ -193,3 +193,9 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 - Em `/admin/settings`, o bloco de frete deve mostrar um único painel fixo do Melhor Envio, sem lista genérica de provedores, sem CTA de adicionar provedor e sem presets visíveis de Correios, Jadlog, EasyPost ou HTTP customizado.
 - Nesse painel, o token permanece fora da interface; a UI expõe apenas toggle operacional, ambiente, URL base, CEP de origem, medidas padrão, `User-Agent`, e-mail técnico e campos fixos de `BR` e `Exige CEP`.
+
+## Atualização 2026-06-30
+
+- No header público, o carrinho deve aparecer como ícone compacto, sem rótulo textual visível no desktop.
+- No mobile, o carrinho do header pode coexistir com um atalho flutuante editorial e mínimo quando já houver itens no carrinho.
+- Na grade de livros, a combinação visual preferida para compra rápida é `Adicionar ao carrinho` como ação secundária e `Comprar` como CTA principal.

@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 import { CartMergeOnAuth } from "@/components/cart-merge-on-auth.client";
+import { MobileFloatingCart } from "@/components/mobile-floating-cart";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/ui/footer/footer";
 import { accountToWebsiteJsonLd, JsonLd } from "@/ui/json-ld";
@@ -20,6 +21,7 @@ export default async function StoreLayout({
 			<NavScroll />
 			<TooltipProvider>
 				<main className="flex w-full flex-1 flex-col">{children}</main>
+				<MobileFloatingCart />
 				<Footer />
 			</TooltipProvider>
 			<JsonLd
