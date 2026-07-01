@@ -253,12 +253,13 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 						<Input
 							id="checkout-full-name"
 							value={buyer.fullName}
-							onChange={(event) =>
-								setBuyer((current) => ({
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
 									...current,
-									fullName: event.currentTarget.value,
-								}))
-							}
+									fullName: value,
+								}));
+							}}
 							required
 						/>
 					</div>
@@ -270,12 +271,13 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							id="checkout-email"
 							type="email"
 							value={buyer.email}
-							onChange={(event) =>
-								setBuyer((current) => ({
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
 									...current,
-									email: event.currentTarget.value,
-								}))
-							}
+									email: value,
+								}));
+							}}
 							required
 						/>
 					</div>
@@ -286,12 +288,13 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 						<Input
 							id="checkout-cpf"
 							value={buyer.cpf}
-							onChange={(event) =>
-								setBuyer((current) => ({
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
 									...current,
-									cpf: event.currentTarget.value,
-								}))
-							}
+									cpf: value,
+								}));
+							}}
 							required
 						/>
 					</div>
@@ -303,12 +306,13 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							id="checkout-phone"
 							type="tel"
 							value={buyer.phone}
-							onChange={(event) =>
-								setBuyer((current) => ({
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
 									...current,
-									phone: event.currentTarget.value,
-								}))
-							}
+									phone: value,
+								}));
+							}}
 							required
 						/>
 					</div>
