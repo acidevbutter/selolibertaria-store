@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { toShippingRate } from "@/lib/shipping-core";
+import { selectBestShippingQuote, toShippingRate } from "@/lib/shipping-core";
 import {
 	buildMelhorEnvioQuoteRequest,
 	fetchMelhorEnvioQuotes,
@@ -35,6 +35,7 @@ describe("shipping-melhor-envio", () => {
 			environment: "sandbox",
 			quotedAt,
 		});
+
 		const headers = new Headers(request.init.headers);
 		const body = JSON.parse(String(request.init.body)) as {
 			from: { postal_code: string };
@@ -67,7 +68,7 @@ describe("shipping-melhor-envio", () => {
 		});
 	});
 
-	it("normalizes Melhor Envio services into the shipping quote contract and preserves quotedAt", () => {
+	it("normalizes Melhor Envio services, preserving custom price and custom delivery time", () => {
 		const quotes = normalizeMelhorEnvioQuoteResponse({
 			payload: {
 				deliveryDetails: [
@@ -79,9 +80,11 @@ describe("shipping-melhor-envio", () => {
 					{
 						id: 2,
 						name: "SEDEX",
+						price: "19.99",
 						custom_price: "18.08",
-						currency: "R$",
+						delivery_time: 5,
 						custom_delivery_time: 2,
+						currency: "R$",
 						company: {
 							id: 1,
 							name: "Correios",
@@ -108,7 +111,92 @@ describe("shipping-melhor-envio", () => {
 		expect(toShippingRate(quotes[0])?.quotedAt).toBe("2026-06-28T12:30:00.000Z");
 	});
 
-	it("fails safely with a normalized timeout error", async () => {
+	it("accepts Registro Modico and Impresso-style services with unknown codes as valid quotes", () => {
+		const quotes = normalizeMelhorEnvioQuoteResponse({
+			payload: {
+				deliveryDetails: [
+					{
+						code: "correios-reg-mod",
+						name: "Registro Módico",
+						custom_price: "7.90",
+						custom_delivery_time: "8",
+						company: { name: "Correios" },
+					},
+					{
+						service_code: "impresso-normal-xpto",
+						service_description: "Impresso Normal",
+						price: "9.50",
+						delivery_time: 6,
+						company: { name: "Correios" },
+					},
+				],
+			},
+			providerCode: "melhor-envio",
+			providerLabel: "Melhor Envio",
+			quotedAt: "2026-07-01T10:00:00.000Z",
+		});
+
+		expect(quotes).toEqual([
+			expect.objectContaining({
+				providerCode: "melhor-envio",
+				providerLabel: "Correios",
+				serviceCode: "correios-reg-mod",
+				serviceName: "Registro Módico",
+				amount: 790,
+				estimatedDays: 8,
+			}),
+			expect.objectContaining({
+				providerCode: "melhor-envio",
+				providerLabel: "Correios",
+				serviceCode: "impresso-normal-xpto",
+				serviceName: "Impresso Normal",
+				amount: 950,
+				estimatedDays: 6,
+			}),
+		]);
+	});
+
+	it("selects Registro Modico automatically when it is the cheapest valid quote", () => {
+		const quotes = normalizeMelhorEnvioQuoteResponse({
+			payload: {
+				services: [
+					{
+						id: 11,
+						name: "SEDEX",
+						price: "22.50",
+						delivery_time: 2,
+					},
+					{
+						id: 77,
+						name: "Registro Modico",
+						custom_price: "6.40",
+						custom_delivery_time: 9,
+					},
+					{
+						id: 99,
+						name: "Impresso Normal",
+						price: "8.10",
+						delivery_time: 7,
+					},
+				],
+			},
+			providerCode: "melhor-envio",
+			providerLabel: "Melhor Envio",
+			quotedAt: "2026-07-01T10:30:00.000Z",
+		});
+
+		const selected = selectBestShippingQuote(quotes);
+
+		expect(selected).toMatchObject({
+			serviceCode: "77",
+			serviceName: "Registro Modico",
+			amount: 640,
+			estimatedDays: 9,
+		});
+		expect(toShippingRate(selected)?.serviceName).toBe("Registro Modico");
+	});
+
+	it("fails safely with the normalized timeout error", async () => {
 		const abortError = new Error("aborted");
 		abortError.name = "AbortError";
 		vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(abortError);

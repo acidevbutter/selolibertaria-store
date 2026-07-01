@@ -54,10 +54,11 @@ function normalizeBaseUrl(baseUrl?: string | null, environment?: ShippingProvide
 	const trimmed = baseUrl?.trim();
 	if (trimmed) {
 		if (/\/api\/v\d+\/?$/i.test(trimmed)) return trimmed.replace(/\/+$/, "");
-		return `${trimmed.replace(/\/+$/, "")}/api/v2`;
+		if (/melhorenvio\.com\.br/i.test(trimmed)) return `${trimmed.replace(/\/+$/, "")}/api/v2`;
+		return trimmed.replace(/\/+$/, "");
 	}
 
-	return environment === "sandbox" ? MELHOR_ENVIO_SANDBOX_BASE_URL : MELHOR_ENVIO_PRODUCTION_BASE_URL;
+	return environment === "production" ? MELHOR_ENVIO_PRODUCTION_BASE_URL : MELHOR_ENVIO_SANDBOX_BASE_URL;
 }
 
 function normalizeCurrency(value?: string | null) {
@@ -66,26 +67,40 @@ function normalizeCurrency(value?: string | null) {
 	return normalized;
 }
 
-function toCents(value: unknown) {
-	if (typeof value === "number" && Number.isFinite(value)) return Math.round(value * 100);
-	if (typeof value !== "string") return null;
+function toCents(value: unknown): number | null {
+	if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+		return Math.round(value * 100);
+	}
 
-	const normalized = value
-		.replace(/\s+/g, "")
-		.replace("R$", "")
-		.replace(/\.(?=\d{3}(?:\D|$))/g, "")
-		.replace(",", ".");
-	const parsed = Number.parseFloat(normalized);
-	return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;
+	if (typeof value === "string" && value.trim()) {
+		const normalized = value
+			.replace(/[^\d,.-]+/g, "")
+			.replace(/\.(?=\d{3}(?:\D|$))/g, "")
+			.replace(",", ".");
+		const parsed = Number.parseFloat(normalized);
+		return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) : null;
+	}
+
+	return null;
 }
 
-function toDays(value: unknown) {
-	if (typeof value === "number" && Number.isFinite(value)) return value;
+function toDays(value: unknown): number | null {
+	if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+		return Math.round(value);
+	}
+
 	if (typeof value === "string" && value.trim()) {
 		const parsed = Number.parseInt(value, 10);
 		return Number.isFinite(parsed) ? parsed : null;
 	}
+
 	return null;
+}
+
+function toTrimmedText(value: unknown) {
+	if (typeof value !== "string") return null;
+	const trimmed = value.trim();
+	return trimmed ? trimmed : null;
 }
 
 function extractQuotedServices(payload: unknown) {
@@ -129,6 +144,31 @@ function normalizeErrorMessage(payload: unknown, status?: number) {
 	}
 
 	return "Nao foi possivel obter cotacao no Melhor Envio.";
+}
+
+function extractServiceCode(record: Record<string, unknown>) {
+	const candidates = [record.id, record.service, record.service_code, record.code, record.name];
+
+	for (const candidate of candidates) {
+		if (typeof candidate === "number" || typeof candidate === "string") {
+			const normalized = String(candidate).trim();
+			if (normalized) return normalized;
+		}
+	}
+
+	return null;
+}
+
+function extractServiceName(record: Record<string, unknown>) {
+	return (
+		toTrimmedText(record.name) ??
+		toTrimmedText(record.service) ??
+		toTrimmedText(record.service_name) ??
+		toTrimmedText(record.service_description) ??
+		toTrimmedText(record.description) ??
+		toTrimmedText(record.label) ??
+		null
+	);
 }
 
 export function buildMelhorEnvioQuoteRequest(input: MelhorEnvioQuoteAdapterInput) {
@@ -202,18 +242,8 @@ export function normalizeMelhorEnvioQuoteResponse(args: {
 			toCents(record.total);
 		if (amount === null) return accumulator;
 
-		const serviceId =
-			typeof record.id === "number" || typeof record.id === "string"
-				? String(record.id)
-				: typeof record.service === "string"
-					? record.service
-					: null;
-		const serviceName =
-			typeof record.name === "string"
-				? record.name.trim()
-				: typeof record.service === "string"
-					? record.service.trim()
-					: null;
+		const serviceId = extractServiceCode(record);
+		const serviceName = extractServiceName(record);
 		if (!serviceId || !serviceName) return accumulator;
 
 		const company =
@@ -244,7 +274,6 @@ export function normalizeMelhorEnvioQuoteResponse(args: {
 	}, []);
 
 	if (quotes.length > 0) return quotes;
-
 	throw new MelhorEnvioQuoteAdapterError(normalizeErrorMessage(args.payload));
 }
 
@@ -256,8 +285,10 @@ export async function fetchMelhorEnvioQuotes(input: MelhorEnvioQuoteAdapterInput
 	try {
 		const response = await fetch(request.url, {
 			...request.init,
+			cache: "no-store",
 			signal: controller.signal,
 		});
+
 		const text = await response.text();
 		const payload = text ? (JSON.parse(text) as unknown) : null;
 
