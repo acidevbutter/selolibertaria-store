@@ -209,3 +209,5 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Nessas superfícies `BR-only`, o país não deve aparecer como campo desabilitado; a UI deve remover esse campo e manter só a mensagem curta sobre atendimento exclusivo no Brasil.
 - Em `/admin/settings`, o bloco fixo do Melhor Envio deve mostrar somente status seguro da conexão, helper de transição para OAuth e CTA `Conectar Melhor Envio` desabilitada como `Em breve`, sem exibir segredo técnico.
 - No formulário público de checkout, `CPF` e `Telefone` devem usar máscara progressiva enquanto a pessoa digita; erros de buyer ficam curtos, abaixo do campo correspondente e sem transformar o bloco `Dados para sua compra` em uma parede de alertas.
+- Em `/products`, a primeira seção de `Livros` deve abrir em fundo preto editorial, com capa deslocada à direita, citação em papel sobreposta e CTA `Ver catálogo` apontando para a grade publicada da própria página.
+- Na grade pública de livros, mesmo com um único título, cada card deve manter largura editorial controlada, proporção estável de capa e CTAs visíveis, sem alongamento horizontal nem grandes vazios laterais.

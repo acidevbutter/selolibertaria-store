@@ -22,19 +22,21 @@ export const generateMetadata = async (): Promise<Metadata> => {
 };
 
 export default async function AllProductsPage() {
+	const preferredCurrency = await getRequestPreferredCurrency();
 	const [page, result] = await Promise.all([
 		getEditorialProductsPage(),
 		commerce.product.browse({
 			first: 100,
-			currency: await getRequestPreferredCurrency(),
+			currency: preferredCurrency,
 		}),
 	]);
 
 	const products = result.data;
 	const featuredProduct = products.find((product) => product.images[0]) ?? products[0] ?? null;
+	const featuredHref = featuredProduct ? `/product/${featuredProduct.slug}` : "/products#catalogo-publicado";
 
 	return (
-		<main>
+		<main className="bg-[color:var(--editorial-paper)]">
 			<CatalogIntro
 				eyebrow={page.hero?.eyebrow || "Livros"}
 				title={page.hero?.title || "Livros para entrar no universo do selo pela leitura."}
@@ -42,7 +44,9 @@ export default async function AllProductsPage() {
 					page.hero?.body ||
 					"Catálogo autoral de literatura erótica, urbana e dissidente, com capas, trechos e caminhos de compra preservados."
 				}
-				highlight={page.hero?.quote || "Uma prateleira curta, quente e curada."}
+				highlight={
+					page.curatorialNote?.title || "Catálogo como mesa de curadoria, não como vitrine genérica."
+				}
 				cards={[
 					{
 						label: page.listing?.label || "Catálogo",
@@ -50,7 +54,9 @@ export default async function AllProductsPage() {
 					},
 					{
 						label: "Curadoria",
-						body: page.curatorialNote?.title || "Catálogo como mesa de curadoria, não como vitrine genérica.",
+						body:
+							page.curatorialNote?.body ||
+							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial.",
 					},
 					{
 						label: "Continuidade",
@@ -61,24 +67,26 @@ export default async function AllProductsPage() {
 					src: featuredProduct?.images[0] ?? seloEditorialAssets.bookStandingMock,
 					alt: featuredProduct?.name ?? "Livro em destaque do catálogo do Selo Libertária",
 				}}
-				featureQuote={page.hero?.quote || "O livro como objeto, presença e faísca."}
+				featureQuote={page.hero?.quote || "Uma prateleira curta, quente e curada."}
 				primaryCtaLabel={page.hero?.primaryCtaLabel || "Ver catálogo"}
-				primaryCtaHref={page.hero?.primaryCtaHref || "/products"}
+				primaryCtaHref="#catalogo-publicado"
+				secondaryCtaLabel={page.hero?.secondaryCtaLabel || "Comprar destaque"}
+				secondaryCtaHref={page.hero?.secondaryCtaHref || featuredHref}
+				tone="dark"
 			/>
 
-			<EditorialShell className="space-y-8 py-8">
-				<div className="max-w-3xl space-y-4">
-					<h2 className="text-3xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)]">
-						{page.curatorialNote?.title || "Catálogo publicado"}
-					</h2>
-					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-						{page.curatorialNote?.body ||
-							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial."}
-					</p>
-				</div>
-
+			<EditorialShell className="space-y-8 py-10 sm:py-14">
 				{products.length > 0 ? (
-					<ProductList products={products} />
+					<ProductList
+						products={products}
+						anchorId="catalogo-publicado"
+						eyebrow={page.listing?.label || "Catálogo"}
+						title={page.curatorialNote?.title || "Catálogo publicado"}
+						description={
+							page.curatorialNote?.body ||
+							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial."
+						}
+					/>
 				) : (
 					<div className="border border-dashed border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.6)] px-6 py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
 						{page.listing?.emptyText ||
@@ -87,27 +95,27 @@ export default async function AllProductsPage() {
 				)}
 			</EditorialShell>
 
-			<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
-				<EditorialShell className="grid gap-5 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+			<section className="bg-[color:var(--editorial-beige)] text-[color:var(--editorial-ink)]">
+				<EditorialShell className="grid gap-5 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-8">
 					<div>
 						<h2 className="max-w-3xl text-3xl leading-[0.95] font-black sm:text-4xl">
 							{page.finalCta?.title || "Depois do livro, continue pelo Sarau Safado e pelos projetos."}
 						</h2>
-						<p className="mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.76)]">
+						<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
 							{page.finalCta?.body ||
 								"A página de livros continua orientada à compra, mas abre caminhos editoriais claros para outros contextos do selo."}
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
 						<YnsLink
-							href={page.hero?.secondaryCtaHref || "/products"}
-							className="inline-flex min-h-11 items-center justify-center border border-white/20 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-white/8"
+							href={page.hero?.secondaryCtaHref || featuredHref}
+							className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 						>
 							{page.hero?.secondaryCtaLabel || "Comprar destaque"}
 						</YnsLink>
 						<YnsLink
 							href={page.finalCta?.primaryCtaHref || "/contact"}
-							className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+							className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.18)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.42)]"
 						>
 							{page.finalCta?.primaryCtaLabel || "Falar sobre livros"}
 						</YnsLink>
