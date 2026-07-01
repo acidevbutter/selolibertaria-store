@@ -97,7 +97,7 @@ const baseCheckout = {
 	buyer: {
 		fullName: "Pessoa Leitora",
 		email: "leitora@selo.com",
-		cpf: "12345678901",
+		cpf: "12345678909",
 		phone: "11999999999",
 	},
 	subtotal: 5000,
@@ -112,10 +112,18 @@ const baseCheckout = {
 	savedPaymentMethods: [
 		{
 			id: "pm_saved",
-			brand: "visa",
-			last4: "4242",
-			expMonth: 12,
-			expYear: 2030,
+			type: "card",
+			billingDetails: {
+				name: "Pessoa Leitora",
+				email: "leitora@selo.com",
+			},
+			card: {
+				brand: "visa",
+				last4: "4242",
+				expMonth: 12,
+				expYear: 2030,
+			},
+			created: 1710000000,
 		},
 	],
 };
@@ -141,7 +149,7 @@ describe("CheckoutForm", () => {
 			buyer: {
 				fullName: "Pessoa Leitora",
 				email: "leitora@selo.com",
-				cpf: "12345678901",
+				cpf: "12345678909",
 				phone: "11999999999",
 			},
 		});
@@ -181,6 +189,39 @@ describe("CheckoutForm", () => {
 			expect(replaceMock).toHaveBeenCalledWith(
 				"/checkout/processing?order=ord_123&payment_intent=pi_123&guest=0",
 			);
+		});
+	});
+
+	it("formata CPF e telefone no checkout", () => {
+		renderCheckout();
+
+		const cpfInput = screen.getByLabelText("CPF");
+		const phoneInput = screen.getByLabelText("Telefone");
+
+		fireEvent.change(cpfInput, { target: { value: "12345678909" } });
+		fireEvent.change(phoneInput, { target: { value: "11987654321" } });
+
+		expect(cpfInput).toHaveValue("123.456.789-09");
+		expect(phoneInput).toHaveValue("(11) 98765-4321");
+	});
+
+	it("bloqueia submit quando CPF ou telefone sao invalidos", async () => {
+		renderCheckout();
+
+		fireEvent.change(screen.getByLabelText("CPF"), {
+			target: { value: "11111111111" },
+		});
+		fireEvent.change(screen.getByLabelText("Telefone"), {
+			target: { value: "12345" },
+		});
+
+		fireEvent.click(screen.getByRole("button", { name: "Finalizar compra" }));
+
+		await waitFor(() => {
+			expect(screen.getAllByText("Informe um CPF válido.").length).toBeGreaterThan(0);
+			expect(screen.getByText("Informe um telefone válido.")).toBeTruthy();
+			expect(updateCheckoutBuyerDataMock).not.toHaveBeenCalled();
+			expect(confirmPaymentMock).not.toHaveBeenCalled();
 		});
 	});
 

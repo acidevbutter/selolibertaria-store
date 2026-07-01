@@ -208,3 +208,4 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Enquanto a operação comercial for apenas nacional, cadastro, conta e checkout devem fixar o país em `Brasil/BR`, sem seletor de outros destinos nas superfícies tocadas.
 - Nessas superfícies `BR-only`, o país não deve aparecer como campo desabilitado; a UI deve remover esse campo e manter só a mensagem curta sobre atendimento exclusivo no Brasil.
 - Em `/admin/settings`, o bloco fixo do Melhor Envio deve mostrar somente status seguro da conexão, helper de transição para OAuth e CTA `Conectar Melhor Envio` desabilitada como `Em breve`, sem exibir segredo técnico.
+- No formulário público de checkout, `CPF` e `Telefone` devem usar máscara progressiva enquanto a pessoa digita; erros de buyer ficam curtos, abaixo do campo correspondente e sem transformar o bloco `Dados para sua compra` em uma parede de alertas.

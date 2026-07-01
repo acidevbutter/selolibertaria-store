@@ -12,6 +12,13 @@ import {
 } from "@/actions/checkout-actions";
 import { useTranslations } from "@/i18n/client";
 import { type AppLocale, getStripeLocale } from "@/i18n/config";
+import {
+	formatCheckoutPhone,
+	formatCpf,
+	getCheckoutBuyerFieldErrors,
+	normalizeBuyerEmail,
+	normalizeBuyerName,
+} from "@/lib/checkout-buyer";
 import { cn, formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { Button } from "@/ui/shadcn/button";
@@ -69,14 +76,13 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 	const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
-	const [buyer, setBuyer] = useState(
-		checkout.buyer ?? {
-			fullName: "",
-			email: "",
-			cpf: "",
-			phone: "",
-		},
-	);
+	const [buyer, setBuyer] = useState(() => ({
+		fullName: checkout.buyer?.fullName ?? "",
+		email: checkout.buyer?.email ?? "",
+		cpf: formatCpf(checkout.buyer?.cpf ?? ""),
+		phone: formatCheckoutPhone(checkout.buyer?.phone ?? ""),
+	}));
+	const [buyerErrors, setBuyerErrors] = useState<Record<string, string>>({});
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
 		checkout.savedPaymentMethods[0]?.id ?? NEW_PAYMENT_METHOD_VALUE,
 	);
@@ -125,6 +131,34 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 		},
 	);
 	const deliveryReady = Boolean(deliveryRate);
+
+	function setBuyerField<K extends keyof typeof buyer>(field: K, value: (typeof buyer)[K]) {
+		setBuyer((current) => ({ ...current, [field]: value }));
+		setBuyerErrors((current) => {
+			if (!current[field]) return current;
+			const next = { ...current };
+			delete next[field];
+			return next;
+		});
+	}
+
+	function validateBuyer(nextBuyer = buyer) {
+		const errors = getCheckoutBuyerFieldErrors(nextBuyer);
+		setBuyerErrors(errors);
+		return errors;
+	}
+
+	function normalizeBuyerField(field: "fullName" | "email" | "cpf" | "phone") {
+		const nextBuyer = {
+			...buyer,
+			fullName: field === "fullName" ? normalizeBuyerName(buyer.fullName) : buyer.fullName,
+			email: field === "email" ? normalizeBuyerEmail(buyer.email) : buyer.email,
+			cpf: field === "cpf" ? formatCpf(buyer.cpf) : buyer.cpf,
+			phone: field === "phone" ? formatCheckoutPhone(buyer.phone) : buyer.phone,
+		};
+		setBuyer(nextBuyer);
+		validateBuyer(nextBuyer);
+	}
 
 	async function applyDeliverySelection(
 		nextMethod: TransparentCheckoutIntent["deliveryMethod"] = selectedDeliveryMethod,
@@ -178,10 +212,25 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 		setMessage(null);
 		setDeliveryMessage(null);
 
+		const normalizedBuyer = {
+			fullName: normalizeBuyerName(buyer.fullName),
+			email: normalizeBuyerEmail(buyer.email),
+			cpf: formatCpf(buyer.cpf),
+			phone: formatCheckoutPhone(buyer.phone),
+		};
+		setBuyer(normalizedBuyer);
+		const buyerValidationErrors = validateBuyer(normalizedBuyer);
+		const firstBuyerError = Object.values(buyerValidationErrors)[0];
+		if (firstBuyerError) {
+			setMessage(firstBuyerError);
+			setIsSubmitting(false);
+			return;
+		}
+
 		const buyerResult = await updateCheckoutBuyerData({
 			paymentIntentId: checkout.paymentIntentId,
 			orderId: checkout.orderId,
-			buyer,
+			buyer: normalizedBuyer,
 		});
 		if ("error" in buyerResult) {
 			setMessage(buyerResult.error);
@@ -269,15 +318,12 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 						<Input
 							id="checkout-full-name"
 							value={buyer.fullName}
-							onChange={(event) => {
-								const { value } = event.currentTarget;
-								return setBuyer((current) => ({
-									...current,
-									fullName: value,
-								}));
-							}}
+							onChange={(event) => setBuyerField("fullName", event.currentTarget.value)}
+							onBlur={() => normalizeBuyerField("fullName")}
+							autoComplete="name"
 							required
 						/>
+						{buyerErrors.fullName ? <p className="text-xs text-destructive">{buyerErrors.fullName}</p> : null}
 					</div>
 					<div className="grid gap-2">
 						<label className="text-sm font-medium" htmlFor="checkout-email">
@@ -287,15 +333,12 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							id="checkout-email"
 							type="email"
 							value={buyer.email}
-							onChange={(event) => {
-								const { value } = event.currentTarget;
-								return setBuyer((current) => ({
-									...current,
-									email: value,
-								}));
-							}}
+							onChange={(event) => setBuyerField("email", event.currentTarget.value)}
+							onBlur={() => normalizeBuyerField("email")}
+							autoComplete="email"
 							required
 						/>
+						{buyerErrors.email ? <p className="text-xs text-destructive">{buyerErrors.email}</p> : null}
 					</div>
 					<div className="grid gap-2">
 						<label className="text-sm font-medium" htmlFor="checkout-cpf">
@@ -304,15 +347,14 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 						<Input
 							id="checkout-cpf"
 							value={buyer.cpf}
-							onChange={(event) => {
-								const { value } = event.currentTarget;
-								return setBuyer((current) => ({
-									...current,
-									cpf: value,
-								}));
-							}}
+							onChange={(event) => setBuyerField("cpf", formatCpf(event.currentTarget.value))}
+							onBlur={() => normalizeBuyerField("cpf")}
+							inputMode="numeric"
+							maxLength={14}
+							placeholder="000.000.000-00"
 							required
 						/>
+						{buyerErrors.cpf ? <p className="text-xs text-destructive">{buyerErrors.cpf}</p> : null}
 					</div>
 					<div className="grid gap-2 md:col-span-2">
 						<label className="text-sm font-medium" htmlFor="checkout-phone">
@@ -322,15 +364,15 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							id="checkout-phone"
 							type="tel"
 							value={buyer.phone}
-							onChange={(event) => {
-								const { value } = event.currentTarget;
-								return setBuyer((current) => ({
-									...current,
-									phone: value,
-								}));
-							}}
+							onChange={(event) => setBuyerField("phone", formatCheckoutPhone(event.currentTarget.value))}
+							onBlur={() => normalizeBuyerField("phone")}
+							autoComplete="tel-national"
+							inputMode="tel"
+							maxLength={15}
+							placeholder="(11) 99999-9999"
 							required
 						/>
+						{buyerErrors.phone ? <p className="text-xs text-destructive">{buyerErrors.phone}</p> : null}
 					</div>
 				</div>
 			</section>

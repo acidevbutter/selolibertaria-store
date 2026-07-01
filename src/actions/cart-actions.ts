@@ -65,6 +65,82 @@ async function buildCartFromMinimalItems(args: {
 	return cart;
 }
 
+function upsertMinimalItem(
+	items: MinimalItem[],
+	nextItem: { productId: string; variantId: string },
+	quantityDelta: number,
+): MinimalItem[] {
+	const updated = [...items];
+	const existing = updated.find((item) => item.variantId === nextItem.variantId);
+
+	if (existing) {
+		existing.quantity += quantityDelta;
+		if (existing.quantity <= 0) {
+			updated.splice(updated.indexOf(existing), 1);
+		}
+		return updated;
+	}
+
+	if (quantityDelta <= 0) {
+		return updated;
+	}
+
+	updated.push({
+		productId: nextItem.productId,
+		variantId: nextItem.variantId,
+		quantity: quantityDelta,
+	});
+
+	return updated;
+}
+
+async function getGuestSnapshotState() {
+	const [cartId, cookieItems, couponCode] = await Promise.all([
+		getCartId(),
+		getCartCookieItems(),
+		getCartCouponCode(),
+	]);
+
+	let items = toMinimalItems(cookieItems ?? []);
+
+	if (items.length === 0 && cartId) {
+		try {
+			const cart = commerce.cart.get({ cartId });
+			if (cart?.items.length) {
+				items = toMinimalItems(cart.items);
+				await persistCartSnapshot({ ...cart, couponCode });
+			}
+		} catch {
+			// Fall back to the cookie snapshot only.
+		}
+	}
+
+	return {
+		cartId,
+		couponCode,
+		items,
+	};
+}
+
+async function persistGuestSnapshot(args: {
+	cartId: string | null;
+	items: MinimalItem[];
+	couponCode?: string | null;
+}): Promise<Cart | null> {
+	if (args.items.length === 0) {
+		await clearCartId();
+		return null;
+	}
+
+	const snapshotId = args.cartId || `guest_${Math.random().toString(36).slice(2)}`;
+	await setCartId(snapshotId, args.items, args.couponCode ?? null);
+	return buildCartFromMinimalItems({
+		cartId: snapshotId,
+		items: args.items,
+		couponCode: args.couponCode ?? null,
+	});
+}
+
 export async function getCartAction(): Promise<Cart | null> {
 	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
@@ -132,34 +208,13 @@ export async function getCartAction(): Promise<Cart | null> {
 		return null;
 	}
 
-	const [cartId, cookieItems, couponCode] = await Promise.all([
-		getCartId(),
-		getCartCookieItems(),
-		getCartCouponCode(),
-	]);
-	if (!cartId && (!cookieItems || cookieItems.length === 0)) return null;
-
-	let minimal: MinimalItem[] = [];
-	if (cartId) {
-		try {
-			const cart = commerce.cart.get({ cartId });
-			if (cart && cart.items.length > 0) {
-				minimal = toMinimalItems(cart.items);
-				await persistCartSnapshot({ ...cart, couponCode });
-			}
-		} catch {}
-	}
-
-	if (minimal.length === 0 && cookieItems && cookieItems.length > 0) {
-		minimal = toMinimalItems(cookieItems);
-	}
-
-	if (minimal.length === 0) return null;
+	const guestSnapshot = await getGuestSnapshotState();
+	if (guestSnapshot.items.length === 0) return null;
 
 	return await buildCartFromMinimalItems({
-		cartId: cartId || "guest-cookie",
-		items: minimal,
-		couponCode,
+		cartId: guestSnapshot.cartId || "guest-cookie",
+		items: guestSnapshot.items,
+		couponCode: guestSnapshot.couponCode,
 	});
 }
 
@@ -200,13 +255,18 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
 		});
 	}
 
-	const [cartId, couponCode] = await Promise.all([getCartId(), getCartCouponCode()]);
-	const cart = await commerce.cart.add({ cartId: cartId || undefined, variantId, quantity });
-	await persistCartSnapshot({ ...cart, couponCode });
-	return await buildCartFromMinimalItems({
-		cartId: cart.id,
-		items: toMinimalItems(cart.items),
-		couponCode,
+	const guestSnapshot = await getGuestSnapshotState();
+	const { product, variant } = await commerce.variant.resolve({ id: variantId });
+	const items = upsertMinimalItem(
+		guestSnapshot.items,
+		{ productId: product.id, variantId: variant.id },
+		quantity,
+	);
+
+	return await persistGuestSnapshot({
+		cartId: guestSnapshot.cartId,
+		items,
+		couponCode: guestSnapshot.couponCode,
 	});
 }
 
@@ -245,14 +305,25 @@ export async function updateCartItemAction(variantId: string, quantity: number):
 		});
 	}
 
-	const [cartId, couponCode] = await Promise.all([getCartId(), getCartCouponCode()]);
-	if (!cartId) return null;
-	const cart = await commerce.cart.update({ cartId, variantId, quantity });
-	await persistCartSnapshot({ ...cart, couponCode });
-	return await buildCartFromMinimalItems({
-		cartId: cart.id,
-		items: toMinimalItems(cart.items),
-		couponCode,
+	const guestSnapshot = await getGuestSnapshotState();
+	if (!guestSnapshot.cartId && guestSnapshot.items.length === 0) return null;
+
+	const nextItems = guestSnapshot.items.flatMap((item) => {
+		if (item.variantId !== variantId) {
+			return [item];
+		}
+
+		if (quantity <= 0) {
+			return [];
+		}
+
+		return [{ ...item, quantity }];
+	});
+
+	return await persistGuestSnapshot({
+		cartId: guestSnapshot.cartId,
+		items: nextItems,
+		couponCode: guestSnapshot.couponCode,
 	});
 }
 

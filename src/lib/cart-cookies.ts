@@ -2,7 +2,7 @@ import { cookies, headers } from "next/headers";
 import type { Cart } from "@/lib/commerce-types";
 
 export const CART_COOKIE = "yns_cart_id";
-const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 dias
+const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
 export interface CartCookieItem {
 	productId: string;
@@ -54,10 +54,17 @@ async function shouldUseSecureCartCookie(): Promise<boolean> {
 }
 
 function sanitizeItems(raw: unknown): CartCookieItem[] | undefined {
-	if (!raw || !Array.isArray(raw)) return undefined;
+	if (!raw || !Array.isArray(raw)) {
+		return undefined;
+	}
+
 	const deduped = new Map<string, CartCookieItem>();
+
 	for (const entry of raw) {
-		if (!entry || typeof entry !== "object") continue;
+		if (!entry || typeof entry !== "object") {
+			continue;
+		}
+
 		const productId =
 			typeof (entry as { productId?: unknown }).productId === "string"
 				? (entry as { productId: string }).productId.trim()
@@ -66,35 +73,71 @@ function sanitizeItems(raw: unknown): CartCookieItem[] | undefined {
 			typeof (entry as { variantId?: unknown }).variantId === "string"
 				? (entry as { variantId: string }).variantId.trim()
 				: "";
-		const quantityRaw = (entry as { quantity?: unknown }).quantity;
-		const quantity = Number.parseInt(String(quantityRaw ?? 0), 10);
-		if (!productId || !variantId || !Number.isFinite(quantity) || quantity <= 0) continue;
-		const existing = deduped.get(variantId);
-		if (existing) existing.quantity += quantity;
-		else deduped.set(variantId, { productId, variantId, quantity });
+		const quantity =
+			typeof (entry as { quantity?: unknown }).quantity === "number"
+				? (entry as { quantity: number }).quantity
+				: Number.parseInt(String((entry as { quantity?: unknown }).quantity ?? ""), 10);
+
+		if (!productId || !variantId || !Number.isFinite(quantity) || quantity <= 0) {
+			continue;
+		}
+
+		const key = variantId;
+		const existing = deduped.get(key);
+		if (existing) {
+			existing.quantity += quantity;
+			continue;
+		}
+
+		deduped.set(key, { productId, variantId, quantity });
 	}
-	if (deduped.size === 0) return undefined;
-	return Array.from(deduped.values());
+
+	return deduped.size > 0 ? Array.from(deduped.values()) : undefined;
 }
 
-function parseCartCookie(raw: string | undefined): CartCookiePayload | null {
-	if (!raw) return null;
-	const trimmed = raw.trim();
-	if (!trimmed) return null;
+function decodeCartCookieValue(raw: string): string {
 	try {
-		const parsed = JSON.parse(trimmed) as { id?: unknown; items?: unknown };
-		if (parsed && typeof parsed.id === "string" && parsed.id) {
-			const items = sanitizeItems(parsed.items);
-			const couponCode =
-				typeof (parsed as { couponCode?: unknown }).couponCode === "string"
-					? String((parsed as { couponCode?: unknown }).couponCode).trim() || null
-					: null;
-			return items ? { id: parsed.id, items, couponCode } : { id: parsed.id, couponCode };
-		}
-	} catch (error) {
-		// Mantém compatibilidade com o formato antigo (string simples)
+		return decodeURIComponent(raw);
+	} catch {
+		return raw;
 	}
-	return { id: trimmed };
+}
+
+export function parseCartCookie(raw: string | undefined): CartCookiePayload | null {
+	if (!raw) {
+		return null;
+	}
+
+	const trimmed = raw.trim();
+	if (!trimmed) {
+		return null;
+	}
+
+	const decoded = decodeCartCookieValue(trimmed).trim();
+	const candidates = decoded && decoded !== trimmed ? [trimmed, decoded] : [trimmed];
+
+	for (const candidate of candidates) {
+		try {
+			const parsed = JSON.parse(candidate) as {
+				id?: unknown;
+				items?: unknown;
+				couponCode?: unknown;
+			};
+
+			if (typeof parsed.id !== "string" || !parsed.id.trim()) {
+				continue;
+			}
+
+			const items = sanitizeItems(parsed.items);
+			const couponCode = typeof parsed.couponCode === "string" ? parsed.couponCode.trim() || null : null;
+
+			return items ? { id: parsed.id.trim(), items, couponCode } : { id: parsed.id.trim(), couponCode };
+		} catch {
+			// Compatibilidade com formatos antigos.
+		}
+	}
+
+	return { id: decoded || trimmed };
 }
 
 export async function getCartCookiePayload(): Promise<CartCookiePayload | null> {
@@ -134,7 +177,8 @@ export async function setCartId(
 			sanitized && sanitized.length > 0
 				? { id: cartId, items: sanitized, couponCode: couponCode?.trim() || null }
 				: { id: cartId, couponCode: couponCode?.trim() || null };
-		(await cookies()).set(CART_COOKIE, JSON.stringify(payload), {
+
+		(await cookies()).set(CART_COOKIE, encodeURIComponent(JSON.stringify(payload)), {
 			httpOnly: true,
 			secure,
 			sameSite: "lax",
@@ -153,6 +197,7 @@ export async function persistCartSnapshot(
 		await clearCartId();
 		return;
 	}
+
 	const minimal = cart.items
 		.map((item) => ({
 			productId: item.productId,
@@ -166,10 +211,12 @@ export async function persistCartSnapshot(
 				Number.isFinite(item.quantity) &&
 				item.quantity > 0,
 		);
+
 	if (minimal.length === 0) {
 		await clearCartId();
 		return;
 	}
+
 	await setCartId(cart.id, minimal, cart.couponCode ?? null);
 }
 

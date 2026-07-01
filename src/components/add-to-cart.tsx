@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import type { ProductInfo } from "@/lib/commerce-types";
@@ -13,6 +14,7 @@ interface AddToCartProps {
 	children?: React.ReactNode;
 	onSuccess?: () => void;
 	productInfo?: ProductInfo;
+	redirectTo?: string;
 }
 
 export function AddToCart({
@@ -22,22 +24,28 @@ export function AddToCart({
 	children,
 	onSuccess,
 	productInfo,
+	redirectTo,
 }: AddToCartProps) {
 	const { openCart, optimisticAdd } = useCart();
+	const router = useRouter();
 	const t = useTranslations("Global.addToCart");
 
 	const handleAddToCart = async () => {
 		try {
 			await optimisticAdd(variantId, quantity, productInfo);
 			onSuccess?.();
-			openCart(); // Open cart sidebar after adding item
-		} catch (error) {
-			// Error is already logged in context, could show error toast here
+			if (redirectTo) {
+				router.push(redirectTo);
+				return;
+			}
+			openCart();
+		} catch {
+			// Error is already logged in context.
 		}
 	};
 
 	return (
-		<Button onClick={handleAddToCart} className={className}>
+		<Button type="button" onClick={handleAddToCart} className={className}>
 			<Plus className="h-4 w-4" />
 			{children || t("actionButton")}
 		</Button>

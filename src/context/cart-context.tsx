@@ -7,7 +7,7 @@ import {
 	startTransition,
 	useContext,
 	useEffect,
-	useOptimistic,
+	useRef,
 	useState,
 } from "react";
 import { addToCartAction, removeFromCartAction, updateCartItemAction } from "@/actions/cart-actions";
@@ -16,8 +16,7 @@ import type { Cart, ProductInfo } from "@/lib/commerce-types";
 type CartAction =
 	| { type: "ADD_ITEM"; variantId: string; quantity: number; product?: ProductInfo }
 	| { type: "UPDATE_ITEM"; variantId: string; quantity: number }
-	| { type: "REMOVE_ITEM"; variantId: string }
-	| { type: "SYNC_CART"; cart: Cart | null };
+	| { type: "REMOVE_ITEM"; variantId: string };
 
 interface CartContextType {
 	cart: Cart | null;
@@ -30,7 +29,6 @@ interface CartContextType {
 	optimisticRemove: (variantId: string) => Promise<void>;
 	cartReady: boolean;
 	replaceCart: (cart: Cart | null) => void;
-	// Force a fresh fetch of the cart from the server
 	refreshCart: () => Promise<void>;
 }
 
@@ -61,17 +59,20 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 
 			if (existingItemIndex >= 0) {
 				const existingItem = state.items[existingItemIndex];
-				if (existingItem) {
-					const updatedItems = [...state.items];
-					updatedItems[existingItemIndex] = {
-						...existingItem,
-						quantity: existingItem.quantity + action.quantity,
-					};
-					return {
-						...state,
-						items: updatedItems,
-					};
+				if (!existingItem) {
+					return state;
 				}
+
+				const updatedItems = [...state.items];
+				updatedItems[existingItemIndex] = {
+					...existingItem,
+					quantity: existingItem.quantity + action.quantity,
+				};
+
+				return {
+					...state,
+					items: updatedItems,
+				};
 			}
 
 			return {
@@ -91,7 +92,9 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 		}
 
 		case "UPDATE_ITEM": {
-			if (!state) return state;
+			if (!state) {
+				return state;
+			}
 
 			if (action.quantity <= 0) {
 				return {
@@ -100,30 +103,25 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 				};
 			}
 
-			const updatedItems = state.items.map((item) => {
-				if ((item.variantId || item.productId) === action.variantId) {
-					return { ...item, quantity: action.quantity };
-				}
-				return item;
-			});
-
 			return {
 				...state,
-				items: updatedItems,
+				items: state.items.map((item) =>
+					(item.variantId || item.productId) === action.variantId
+						? { ...item, quantity: action.quantity }
+						: item,
+				),
 			};
 		}
 
 		case "REMOVE_ITEM": {
-			if (!state) return state;
+			if (!state) {
+				return state;
+			}
 
 			return {
 				...state,
 				items: state.items.filter((item) => (item.variantId || item.productId) !== action.variantId),
 			};
-		}
-
-		case "SYNC_CART": {
-			return action.cart;
 		}
 
 		default:
@@ -134,99 +132,130 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-	const [actualCart, setActualCart] = useState<Cart | null>(null);
-	const [optimisticCart, setOptimisticCart] = useOptimistic(actualCart, cartReducer);
+	const [cart, setCart] = useState<Cart | null>(null);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [cartReady, setCartReady] = useState(false);
+	const latestCartOpRef = useRef(0);
+	const searchParams = useSearchParams();
 
-	// Calculate item count from optimistic cart
-	const itemCount = optimisticCart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+	const itemCount = cart?.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) || 0;
 
-	// Helper to fetch cart via API (reads go through GET endpoint to ensure fresh data)
+	const beginCartOp = () => {
+		latestCartOpRef.current += 1;
+		return latestCartOpRef.current;
+	};
+
+	const isLatestCartOp = (opId: number) => latestCartOpRef.current === opId;
+
+	const syncCartState = (nextCart: Cart | null) => {
+		startTransition(() => {
+			setCart(nextCart);
+		});
+	};
+
 	async function fetchCart(): Promise<Cart | null> {
 		try {
-			const res = await fetch("/api/cart", { method: "GET", cache: "no-store" });
-			if (!res.ok) return null;
-			const data = (await res.json()) as { cart: Cart | null };
+			const response = await fetch("/api/cart", { method: "GET", cache: "no-store" });
+			if (!response.ok) {
+				return null;
+			}
+
+			const data = (await response.json()) as { cart: Cart | null };
 			return data.cart;
-		} catch (e) {
-			console.error("Failed to fetch cart", e);
+		} catch (error) {
+			console.error("Failed to fetch cart", error);
 			return null;
 		}
 	}
 
-	// Expose a stable refresh function to re-fetch the cart and update state
 	const refreshCart = async () => {
+		const opId = beginCartOp();
+
 		try {
-			const cart = await fetchCart();
-			startTransition(() => setActualCart(cart));
-		} catch (e) {
-			console.error("Failed to refresh cart", e);
+			const nextCart = await fetchCart();
+			if (isLatestCartOp(opId)) {
+				syncCartState(nextCart);
+			}
+		} catch (error) {
+			console.error("Failed to refresh cart", error);
 		}
 	};
 
-	const replaceCart = (cart: Cart | null) => {
-		startTransition(() => {
-			setActualCart(cart);
-		});
+	const replaceCart = (nextCart: Cart | null) => {
+		beginCartOp();
+		syncCartState(nextCart);
 	};
 
-	// Load initial cart
 	useEffect(() => {
-		fetchCart()
-			.then((cart) => {
-				startTransition(() => {
-					setActualCart(cart);
-				});
+		let active = true;
+		const opId = beginCartOp();
+
+		void fetchCart()
+			.then((nextCart) => {
+				if (active && isLatestCartOp(opId)) {
+					syncCartState(nextCart);
+				}
 			})
 			.finally(() => {
-				setCartReady(true);
+				if (active) {
+					setCartReady(true);
+				}
 			});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+
+		return () => {
+			active = false;
+		};
 	}, []);
 
-	// Re-fetch cart when returning from checkout (query params change)
-	const searchParams = useSearchParams();
 	useEffect(() => {
 		const status = searchParams?.get("checkout");
 		const sessionId = searchParams?.get("session_id");
 		const orderId = searchParams?.get("order");
 		const paymentIntentId = searchParams?.get("payment_intent");
-		if (!status || (!sessionId && !paymentIntentId && !orderId)) return;
-		const v = status.toLowerCase();
-		if (v === "success" || v === "succeeded" || v === "processing") {
-			fetchCart()
-				.then((cart) => {
-					startTransition(() => setActualCart(cart));
-				})
-				.catch(() => {});
+
+		if (!status || (!sessionId && !paymentIntentId && !orderId)) {
+			return;
 		}
-		// searchParams is a special object that changes identity when query updates
+
+		const normalizedStatus = status.toLowerCase();
+		if (
+			normalizedStatus !== "success" &&
+			normalizedStatus !== "succeeded" &&
+			normalizedStatus !== "processing"
+		) {
+			return;
+		}
+
+		void refreshCart().catch(() => {});
 	}, [searchParams]);
-
-	// (no additional effects) initial cart load is handled above
-
-	// Sync optimistic cart with actual cart when it changes
-	useEffect(() => {
-		startTransition(() => {
-			setOptimisticCart({ type: "SYNC_CART", cart: actualCart });
-		});
-	}, [actualCart, setOptimisticCart]);
 
 	const openCart = () => setIsCartOpen(true);
 	const closeCart = () => setIsCartOpen(false);
 
 	const optimisticAdd = async (variantId: string, quantity = 1, product?: ProductInfo) => {
+		const optimisticSnapshot = cartReducer(cart, {
+			type: "ADD_ITEM",
+			variantId,
+			quantity,
+			product,
+		});
+		const opId = beginCartOp();
+
 		startTransition(() => {
-			setOptimisticCart({ type: "ADD_ITEM", variantId, quantity, product });
+			setCart((currentCart) => cartReducer(currentCart, { type: "ADD_ITEM", variantId, quantity, product }));
 			setIsCartOpen(true);
 		});
+
 		try {
 			const updatedCart = await addToCartAction(variantId, quantity);
-			setActualCart(updatedCart);
-			// Force a fresh fetch (enrichment + migration) from API
-			const refreshed = await fetchCart();
-			if (refreshed) setActualCart(refreshed);
+			if (isLatestCartOp(opId) && updatedCart) {
+				syncCartState(updatedCart);
+			}
+
+			const refreshedCart = await fetchCart();
+			if (isLatestCartOp(opId)) {
+				syncCartState(refreshedCart ?? updatedCart ?? optimisticSnapshot);
+			}
 		} catch (error) {
 			console.error("Failed to add to cart:", error);
 			throw error;
@@ -234,32 +263,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	};
 
 	const optimisticUpdate = async (variantId: string, quantity: number) => {
+		const opId = beginCartOp();
+
 		startTransition(() => {
-			setOptimisticCart({ type: "UPDATE_ITEM", variantId, quantity });
+			setCart((currentCart) => cartReducer(currentCart, { type: "UPDATE_ITEM", variantId, quantity }));
 		});
 
 		try {
-			// Perform server action
 			const updatedCart = await updateCartItemAction(variantId, quantity);
-			setActualCart(updatedCart);
+			if (isLatestCartOp(opId)) {
+				syncCartState(updatedCart);
+			}
 		} catch (error) {
-			// Rollback will happen automatically via useEffect
 			console.error("Failed to update cart item:", error);
 			throw error;
 		}
 	};
 
 	const optimisticRemove = async (variantId: string) => {
+		const opId = beginCartOp();
+
 		startTransition(() => {
-			setOptimisticCart({ type: "REMOVE_ITEM", variantId });
+			setCart((currentCart) => cartReducer(currentCart, { type: "REMOVE_ITEM", variantId }));
 		});
 
 		try {
-			// Perform server action
 			const updatedCart = await removeFromCartAction(variantId);
-			setActualCart(updatedCart);
+			if (isLatestCartOp(opId)) {
+				syncCartState(updatedCart);
+			}
 		} catch (error) {
-			// Rollback will happen automatically via useEffect
 			console.error("Failed to remove from cart:", error);
 			throw error;
 		}
@@ -268,7 +301,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	return (
 		<CartContext.Provider
 			value={{
-				cart: optimisticCart,
+				cart,
 				isCartOpen,
 				itemCount,
 				openCart,
@@ -289,7 +322,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 export function useCart() {
 	const context = useContext(CartContext);
 	if (!context) {
-		throw new Error("useCart must be used within a CartProvider");
+		throw new Error("useCart must be used within CartProvider");
 	}
+
 	return context;
 }

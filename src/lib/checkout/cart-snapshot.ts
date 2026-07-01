@@ -211,8 +211,13 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 			)
 		: null;
 
-	const [guestCartId, guestCouponCode] = await Promise.all([getCartId(), getCartCouponCode()]);
-	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(user?.cart?.items || []));
+	const [guestCartId, guestCartItems, guestCouponCode] = await Promise.all([
+		getCartId(),
+		getCartCookieItems(),
+		getCartCouponCode(),
+	]);
+	const sourceItems = user?.cart?.items?.length ? user.cart.items : (guestCartItems ?? []);
+	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(sourceItems));
 
 	if (minimalItems.length === 0) {
 		return { ok: false, error: "Empty cart" };
