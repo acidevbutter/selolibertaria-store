@@ -6,6 +6,7 @@ import { env, publicUrl } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
+import { buildTransparentCheckoutIdempotencyKey } from "@/lib/checkout/transparent-checkout-idempotency";
 import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Cart } from "@/lib/commerce-types";
@@ -162,6 +163,15 @@ function normalizeCheckoutAddress(address?: CheckoutAddress | null): CheckoutAdd
 	return value;
 }
 
+function normalizeBrazilOnlyCheckoutAddress(address?: CheckoutAddress | null): CheckoutAddress | null {
+	const normalized = normalizeCheckoutAddress(address);
+	if (!normalized) return null;
+	return {
+		...normalized,
+		country: "BR",
+	};
+}
+
 export async function createTransparentCheckoutIntent(): Promise<
 	TransparentCheckoutIntent | { error: string }
 > {
@@ -197,11 +207,34 @@ export async function createTransparentCheckoutIntent(): Promise<
 		{ sort: { createdAt: -1 } },
 	);
 
+	const savedDeliveryAddress = normalizeCheckoutAddress(snapshot.user.address ?? null);
+	const existingDraftAddress = normalizeBrazilOnlyCheckoutAddress(existingDraft?.deliveryAddress ?? null);
 	const draftDeliveryMethod =
-		existingDraft?.deliveryMethod ?? (snapshot.user.address ? "saved-address" : "new-address");
-	const draftDeliveryAddress = existingDraft?.deliveryAddress ?? snapshot.user.address ?? null;
-	const draftShippingRate = existingDraft?.shippingRate ?? snapshot.shippingRate ?? null;
-	const draftShippingError = existingDraft?.shippingError ?? snapshot.shippingError ?? null;
+		existingDraft?.deliveryMethod === "pickup"
+			? "pickup"
+			: existingDraft?.deliveryMethod === "saved-address"
+				? savedDeliveryAddress?.country === "BR"
+					? "saved-address"
+					: "new-address"
+				: existingDraft?.deliveryMethod === "new-address"
+					? "new-address"
+					: savedDeliveryAddress?.country === "BR"
+						? "saved-address"
+						: "new-address";
+	const draftDeliveryAddress =
+		draftDeliveryMethod === "pickup"
+			? null
+			: draftDeliveryMethod === "saved-address"
+				? savedDeliveryAddress
+				: existingDraftAddress;
+	const draftShippingRate =
+		draftDeliveryMethod === "pickup" || draftDeliveryAddress
+			? (existingDraft?.shippingRate ?? snapshot.shippingRate ?? null)
+			: null;
+	const draftShippingError =
+		draftDeliveryMethod === "pickup" || draftDeliveryAddress
+			? (existingDraft?.shippingError ?? snapshot.shippingError ?? null)
+			: null;
 	const draftAmountTotal = existingDraft?.amountTotal ?? snapshot.amountTotal;
 	const buyer = getDefaultBuyer(snapshot, existingDraft);
 
@@ -322,7 +355,18 @@ export async function createTransparentCheckoutIntent(): Promise<
 			},
 		},
 		{
-			idempotencyKey: `transparent-checkout:${snapshot.checkoutOwnerKey}:${snapshot.cartHash}`,
+			idempotencyKey: buildTransparentCheckoutIdempotencyKey({
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				cartHash: snapshot.cartHash,
+				amountTotal: draftAmountTotal,
+				currency: snapshot.currency,
+				customer: stripeCustomerId ?? null,
+				receiptEmail: buyer.email || null,
+				couponCode: snapshot.couponCode ?? null,
+				deliveryMethod: draftDeliveryMethod,
+				deliveryAddress: draftDeliveryAddress,
+				shippingRate: draftShippingRate,
+			}),
 		},
 	);
 
@@ -501,9 +545,11 @@ export async function updateCheckoutDeliverySelection(input: {
 	const savedAddress = normalizeCheckoutAddress(snapshot.user.address ?? null);
 	const selectedAddress =
 		input.deliveryMethod === "saved-address"
-			? savedAddress
+			? savedAddress?.country === "BR"
+				? savedAddress
+				: null
 			: input.deliveryMethod === "new-address"
-				? normalizeCheckoutAddress(input.address ?? null)
+				? normalizeBrazilOnlyCheckoutAddress(input.address ?? null)
 				: null;
 
 	if (input.deliveryMethod === "saved-address" && !savedAddress) {

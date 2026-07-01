@@ -339,6 +339,8 @@ export function serializeMelhorEnvioSettingsForAdmin(
 			normalizeRuntimeText(legacyCredentials.contactEmail ?? legacyCredentials.technicalEmail),
 		supportedCountry: "BR",
 		requiresPostalCode: true,
+		envTokenStatus: env.MELHOR_ENVIO_ACCESS_TOKEN?.trim() ? "configured" : "missing",
+		oauthStatus: "coming-soon",
 		lastUpdatedAt: value?.lastUpdatedAt ?? null,
 		lastUpdatedBy: value?.lastUpdatedBy ?? null,
 	};

@@ -19,7 +19,7 @@ describe("AdminShippingProviders", () => {
 		vi.unstubAllGlobals();
 	});
 
-	it("renders a fixed Melhor Envio section without generic provider UI", async () => {
+	it("renders the fixed Melhor Envio block with environment token status only", async () => {
 		fetchMock.mockResolvedValueOnce({
 			ok: true,
 			json: async () => ({
@@ -37,6 +37,8 @@ describe("AdminShippingProviders", () => {
 						contactEmail: "tech@selolibertaria.com",
 						supportedCountry: "BR",
 						requiresPostalCode: true,
+						envTokenStatus: "configured",
+						oauthStatus: "coming-soon",
 					},
 				},
 			}),
@@ -48,20 +50,21 @@ describe("AdminShippingProviders", () => {
 			expect(screen.getByLabelText("Ativar cálculo de frete")).toBeTruthy();
 		});
 
+		expect(screen.getByText("Conexão Melhor Envio")).toBeTruthy();
+		expect(screen.getByText("Token de ambiente configurado")).toBeTruthy();
+		expect(screen.getByRole("button", { name: "Conectar Melhor Envio" })).toBeDisabled();
+		expect(
+			screen.getByText(
+				"Nesta versão, a cotação usa o token configurado no ambiente da aplicação. A conexão OAuth completa fica preparada para uma próxima etapa.",
+			),
+		).toBeTruthy();
 		expect(screen.getByLabelText("CEP de origem")).toHaveValue("01310-100");
 		expect(screen.getByLabelText("País suportado")).toHaveValue("BR");
-		expect(screen.getByLabelText("Exige CEP")).toHaveValue("true");
-		expect(
-			screen.getByText("O token continua no ambiente do servidor e nunca é salvo no admin.", {
-				exact: false,
-			}),
-		).toBeTruthy();
+		expect(screen.queryByText("env-token")).toBeNull();
 		expect(screen.queryByText("Correios")).toBeNull();
-		expect(screen.queryByRole("button", { name: "Adicionar provedor" })).toBeNull();
-		expect(screen.queryByRole("button", { name: "Adicionar Melhor Envio" })).toBeNull();
 	});
 
-	it("saves shipping toggle and fixed Melhor Envio settings only", async () => {
+	it("saves only operational Melhor Envio settings", async () => {
 		fetchMock
 			.mockResolvedValueOnce({
 				ok: true,
@@ -70,16 +73,18 @@ describe("AdminShippingProviders", () => {
 						shippingEnabled: true,
 						shippingMelhorEnvio: {
 							environment: "sandbox",
-							baseUrl: "",
+							baseUrl: "https://sandbox.melhorenvio.com.br/api/v2",
 							originPostalCode: "01310-100",
 							defaultWeightGrams: 300,
 							defaultLengthCm: 20,
 							defaultWidthCm: 15,
 							defaultHeightCm: 10,
-							userAgent: "",
-							contactEmail: "",
+							userAgent: "Selo Libertária (tech@selolibertaria.com)",
+							contactEmail: "tech@selolibertaria.com",
 							supportedCountry: "BR",
 							requiresPostalCode: true,
+							envTokenStatus: "missing",
+							oauthStatus: "coming-soon",
 						},
 					},
 				}),
@@ -101,6 +106,8 @@ describe("AdminShippingProviders", () => {
 							contactEmail: "ops@selolibertaria.com",
 							supportedCountry: "BR",
 							requiresPostalCode: true,
+							envTokenStatus: "missing",
+							oauthStatus: "coming-soon",
 						},
 					},
 				}),

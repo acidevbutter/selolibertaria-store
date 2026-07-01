@@ -81,16 +81,32 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 		checkout.savedPaymentMethods[0]?.id ?? NEW_PAYMENT_METHOD_VALUE,
 	);
 	const [savePaymentMethod, setSavePaymentMethod] = useState(checkout.savePaymentMethod);
-	const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(checkout.deliveryMethod);
+	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
+	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
+	const initialDeliveryMethod: TransparentCheckoutIntent["deliveryMethod"] =
+		checkout.deliveryMethod === "pickup"
+			? "pickup"
+			: hasBrazilianCheckoutAddress
+				? checkout.deliveryMethod
+				: "new-address";
+	const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(initialDeliveryMethod);
 	const [selectedDeliveryAddress, setSelectedDeliveryAddress] = useState(
-		toAddressValue(checkout.deliveryAddress ?? null),
+		hasBrazilianCheckoutAddress ? initialDeliveryAddress : emptyAddressValue(),
 	);
-	const [deliveryRate, setDeliveryRate] = useState(checkout.shippingRate ?? null);
-	const [deliveryError, setDeliveryError] = useState(checkout.shippingError ?? null);
+	const [deliveryRate, setDeliveryRate] = useState(
+		initialDeliveryMethod === "pickup" || hasBrazilianCheckoutAddress
+			? (checkout.shippingRate ?? null)
+			: null,
+	);
+	const [deliveryError, setDeliveryError] = useState(
+		initialDeliveryMethod === "pickup" || hasBrazilianCheckoutAddress
+			? (checkout.shippingError ?? null)
+			: null,
+	);
 	const [amountTotal, setAmountTotal] = useState(checkout.amountTotal);
 	const [newAddress, setNewAddress] = useState<AddressValue>(
-		checkout.deliveryMethod === "new-address"
-			? toAddressValue(checkout.deliveryAddress ?? null)
+		checkout.deliveryMethod === "new-address" && hasBrazilianCheckoutAddress
+			? initialDeliveryAddress
 			: emptyAddressValue(),
 	);
 
@@ -99,7 +115,7 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 			? null
 			: checkout.savedPaymentMethods.find((method) => method.id === selectedPaymentMethod) || null;
 	const isUsingNewPaymentMethod = !selectedSavedPaymentMethod;
-	const hasSavedAddress = Boolean(checkout.deliveryAddress);
+	const hasSavedAddress = checkout.deliveryMethod === "saved-address" && hasBrazilianCheckoutAddress;
 	const selectedDeliverySummary = getDeliverySummary(
 		selectedDeliveryMethod,
 		selectedDeliveryMethod === "new-address" ? newAddress : selectedDeliveryAddress,
@@ -383,6 +399,11 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 								setDeliveryError(null);
 								setDeliveryMessage(null);
 							}}
+							onResolvedAddress={(value) => {
+								setNewAddress(value);
+								void applyDeliverySelection("new-address", value);
+							}}
+							countryMode="br-only"
 							required
 						/>
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -622,7 +643,7 @@ function toCheckoutAddress(address: AddressValue | null): TransparentCheckoutInt
 		city: address.city.trim(),
 		state: address.state.trim(),
 		postalCode: address.postalCode.trim(),
-		country: address.country.trim().toUpperCase(),
+		country: "BR",
 	};
 }
 

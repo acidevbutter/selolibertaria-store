@@ -19,6 +19,8 @@ type ShippingMelhorEnvioPayload = {
 	contactEmail?: string | null;
 	supportedCountry?: "BR" | null;
 	requiresPostalCode?: boolean;
+	envTokenStatus?: "configured" | "missing" | null;
+	oauthStatus?: "coming-soon" | null;
 };
 
 type SettingsPayload = {
@@ -61,23 +63,29 @@ function buildFormState(value?: ShippingMelhorEnvioPayload | null): ShippingMelh
 		environment: value?.environment === "production" ? "production" : "sandbox",
 		baseUrl: value?.baseUrl ?? "",
 		originPostalCode: value?.originPostalCode ?? "",
-		defaultWeightGrams: String(value?.defaultWeightGrams ?? 300),
-		defaultLengthCm: String(value?.defaultLengthCm ?? 20),
-		defaultWidthCm: String(value?.defaultWidthCm ?? 20),
-		defaultHeightCm: String(value?.defaultHeightCm ?? 10),
+		defaultWeightGrams: String(value?.defaultWeightGrams ?? DEFAULT_FORM_STATE.defaultWeightGrams),
+		defaultLengthCm: String(value?.defaultLengthCm ?? DEFAULT_FORM_STATE.defaultLengthCm),
+		defaultWidthCm: String(value?.defaultWidthCm ?? DEFAULT_FORM_STATE.defaultWidthCm),
+		defaultHeightCm: String(value?.defaultHeightCm ?? DEFAULT_FORM_STATE.defaultHeightCm),
 		userAgent: value?.userAgent ?? "",
 		contactEmail: value?.contactEmail ?? "",
 		supportedCountry: "BR",
-		requiresPostalCode: true,
+		requiresPostalCode: value?.requiresPostalCode !== false,
 	};
 }
 
 export default function AdminShippingProviders() {
-	const [shippingEnabled, setShippingEnabled] = useState(true);
-	const [form, setForm] = useState<ShippingMelhorEnvioFormState>(DEFAULT_FORM_STATE);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [status, setStatus] = useState<string | null>(null);
+	const [shippingEnabled, setShippingEnabled] = useState(true);
+	const [form, setForm] = useState<ShippingMelhorEnvioFormState>(DEFAULT_FORM_STATE);
+	const [connection, setConnection] = useState<
+		Pick<ShippingMelhorEnvioPayload, "envTokenStatus" | "oauthStatus">
+	>({
+		envTokenStatus: "missing",
+		oauthStatus: "coming-soon",
+	});
 
 	useEffect(() => {
 		let mounted = true;
@@ -94,6 +102,10 @@ export default function AdminShippingProviders() {
 
 				setShippingEnabled(data.current?.shippingEnabled !== false);
 				setForm(buildFormState(data.current?.shippingMelhorEnvio));
+				setConnection({
+					envTokenStatus: data.current?.shippingMelhorEnvio?.envTokenStatus ?? "missing",
+					oauthStatus: data.current?.shippingMelhorEnvio?.oauthStatus ?? "coming-soon",
+				});
 			} catch {
 				if (mounted) {
 					setStatus("Não foi possível carregar configurações de frete.");
@@ -153,6 +165,10 @@ export default function AdminShippingProviders() {
 			const data = (await response.json()) as SettingsPayload;
 			setShippingEnabled(data.current?.shippingEnabled !== false);
 			setForm(buildFormState(data.current?.shippingMelhorEnvio));
+			setConnection({
+				envTokenStatus: data.current?.shippingMelhorEnvio?.envTokenStatus ?? "missing",
+				oauthStatus: data.current?.shippingMelhorEnvio?.oauthStatus ?? "coming-soon",
+			});
 			setStatus("Configurações de frete salvas.");
 		} catch {
 			setStatus("Não foi possível salvar configurações de frete.");
@@ -161,6 +177,11 @@ export default function AdminShippingProviders() {
 		}
 	}
 
+	const envTokenStatusLabel =
+		connection.envTokenStatus === "configured"
+			? "Token de ambiente configurado"
+			: "Token de ambiente ausente";
+
 	return (
 		<div className="space-y-6">
 			<div className="space-y-2">
@@ -168,6 +189,27 @@ export default function AdminShippingProviders() {
 					Configure apenas a operação do Melhor Envio neste bloco. O token continua no ambiente do servidor e
 					nunca é salvo no admin.
 				</p>
+			</div>
+
+			<div className="rounded-md border border-border/70 bg-background/70 p-4">
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div className="space-y-1">
+						<h3 className="text-sm font-semibold">Conexão Melhor Envio</h3>
+						<p className="text-sm text-muted-foreground">{envTokenStatusLabel}</p>
+						<p className="text-xs leading-5 text-muted-foreground">
+							Nesta versão, a cotação usa o token configurado no ambiente da aplicação. A conexão OAuth
+							completa fica preparada para uma próxima etapa.
+						</p>
+					</div>
+					<div className="flex items-center gap-2">
+						<Button type="button" variant="outline" disabled>
+							Conectar Melhor Envio
+						</Button>
+						<span className="text-xs text-muted-foreground">
+							{connection.oauthStatus === "coming-soon" ? "Em breve" : ""}
+						</span>
+					</div>
+				</div>
 			</div>
 
 			<div className="flex items-center gap-3 rounded-md border border-border/70 bg-background/70 px-4 py-3">

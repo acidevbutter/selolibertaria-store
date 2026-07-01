@@ -75,6 +75,8 @@ export type MelhorEnvioSettings = {
 	contactEmail?: string | null;
 	supportedCountry?: "BR" | null;
 	requiresPostalCode?: boolean;
+	envTokenStatus?: "configured" | "missing" | null;
+	oauthStatus?: "coming-soon" | null;
 	lastUpdatedAt?: string | null;
 	lastUpdatedBy?: string | null;
 };

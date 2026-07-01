@@ -158,3 +158,8 @@ Confiança vem de:
 
 - No checkout, a pessoa visitante deve sentir continuidade de compra, não uma interrupção de cadastro: os dados pessoais entram como parte natural do pedido e a conta nasce depois da confirmação.
 - Quando a compra for concluída sem senha prévia, o acesso à conta deve chegar por e-mail com um próximo passo único e claro: abrir o magic link, rever o pedido e criar senha se desejar continuar usando a conta.
+
+## Atualização 2026-07-01
+- No checkout e nos formulários de conta/cadastro, a pessoa não deve tomar decisão sobre país neste estágio: a interface fixa `Brasil` e comunica com clareza que a entrega atual atende somente destinos brasileiros.
+- Quando esse travamento estiver ativo, a experiência deve evitar ruído visual: em vez de mostrar um campo de país bloqueado, basta ocultá-lo e manter a comunicação curta sobre atendimento apenas no Brasil.
+- No admin de frete, a pessoa operadora deve entender rapidamente se o token de ambiente do Melhor Envio está presente, sem ver segredo, sem copiar credencial e sem confundir o estado atual com a futura conexão OAuth.

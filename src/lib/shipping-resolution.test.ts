@@ -35,7 +35,7 @@ vi.mock("@/lib/shipping-melhor-envio", () => ({
 	fetchMelhorEnvioQuotes: fetchMelhorEnvioQuotesMock,
 }));
 
-import { resolveShippingQuotesForDestination } from "@/lib/shipping";
+import { resolveShippingQuotesForDestination, serializeMelhorEnvioSettingsForAdmin } from "@/lib/shipping";
 
 const melhorEnvioSettings = {
 	environment: "sandbox" as const,
@@ -263,5 +263,14 @@ describe("shipping resolution", () => {
 		expect(result.quotes).toEqual([]);
 		expect(result.selected).toBeNull();
 		expect(result.error).toBe("O token do Melhor Envio nao foi configurado.");
+	});
+
+	it("serializes only non-secret Melhor Envio admin status", () => {
+		const serialized = serializeMelhorEnvioSettingsForAdmin(melhorEnvioSettings);
+
+		expect(serialized.envTokenStatus).toBe("configured");
+		expect(serialized.oauthStatus).toBe("coming-soon");
+		expect(serialized).not.toHaveProperty("accessToken");
+		expect(JSON.stringify(serialized)).not.toContain("env-token");
 	});
 });
