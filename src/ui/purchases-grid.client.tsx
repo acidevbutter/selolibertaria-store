@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getPurchaseDetails } from "@/actions/order-actions";
 import { Button } from "@/components/ui/button";
 import { useLocale, useTranslations } from "@/i18n/client";
@@ -20,7 +20,10 @@ interface PurchaseSummary {
 	amountTotal: number;
 	currency: string;
 	items: PurchaseSummaryItem[];
-	fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
+	fulfillment?: {
+		status?: "received" | "producing" | "shipped";
+		trackingNumber?: string | null;
+	};
 }
 interface PurchaseDetailsItem {
 	name: string | null;
@@ -37,10 +40,19 @@ interface PurchaseDetails {
 	amountTotal: number;
 	currency: string;
 	items: PurchaseDetailsItem[];
-	fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
+	fulfillment?: {
+		status?: "received" | "producing" | "shipped";
+		trackingNumber?: string | null;
+	};
 }
 
-export function PurchasesGrid({ purchases }: { purchases: PurchaseSummary[] }) {
+export function PurchasesGrid({
+	purchases,
+	initialOpenPurchaseId,
+}: {
+	purchases: PurchaseSummary[];
+	initialOpenPurchaseId?: string;
+}) {
 	const t = useTranslations("/order.fulfillmentStatus");
 	const paymentStatusT = useTranslations("/order.paymentStatus");
 	const sectionT = useTranslations("Purchases");
@@ -49,6 +61,7 @@ export function PurchasesGrid({ purchases }: { purchases: PurchaseSummary[] }) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [details, setDetails] = useState<PurchaseDetails | null>(null);
+	const initialOpenRef = useRef(false);
 
 	function formatCurrency(amountCents: number, currency: string) {
 		const amount = amountCents / 100;
@@ -143,6 +156,12 @@ export function PurchasesGrid({ purchases }: { purchases: PurchaseSummary[] }) {
 		else setDetails(res);
 		setLoading(false);
 	}
+
+	useEffect(() => {
+		if (!initialOpenPurchaseId || initialOpenRef.current) return;
+		initialOpenRef.current = true;
+		void openDetails(initialOpenPurchaseId);
+	}, [initialOpenPurchaseId]);
 
 	return (
 		<>
@@ -246,13 +265,23 @@ export function PurchasesGrid({ purchases }: { purchases: PurchaseSummary[] }) {
 									{formatCurrency(details.amountTotal, details.currency)}
 								</div>
 								<div className="text-xs text-muted-foreground flex flex-wrap gap-2">
-									<span>{sectionT("details.status", { status: getPaymentStatusLabel(details.status) })}</span>
+									<span>
+										{sectionT("details.status", {
+											status: getPaymentStatusLabel(details.status),
+										})}
+									</span>
 									{details.fulfillment?.status && (
-										<span>{sectionT("details.fulfillment", { status: t(details.fulfillment.status) })}</span>
+										<span>
+											{sectionT("details.fulfillment", {
+												status: t(details.fulfillment.status),
+											})}
+										</span>
 									)}
 									{details.fulfillment?.trackingNumber && (
 										<span>
-											{sectionT("details.tracking", { tracking: details.fulfillment.trackingNumber })}
+											{sectionT("details.tracking", {
+												tracking: details.fulfillment.trackingNumber,
+											})}
 										</span>
 									)}
 									<span>{formatDate(details.createdAt)}</span>
@@ -329,7 +358,9 @@ export function PurchasesGrid({ purchases }: { purchases: PurchaseSummary[] }) {
 												{it.name || it.priceId || sectionT("fallbackItem")}
 											</p>
 											<p className="text-xs text-muted-foreground">
-												{sectionT("details.quantity", { quantity: it.quantity })}
+												{sectionT("details.quantity", {
+													quantity: it.quantity,
+												})}
 											</p>
 										</div>
 										<div className="text-sm font-semibold tabular-nums">

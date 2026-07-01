@@ -37,13 +37,8 @@ export async function GET(req: NextRequest) {
 
 	if (orderId || paymentIntentId) {
 		if (orderId && !orderId.startsWith("ord_")) {
-			return NextResponse.redirect(
-				buildRedirectUrl(redirectBase, {
-					[REDIRECT_PARAM]: "error",
-				}),
-			);
+			return NextResponse.redirect(buildRedirectUrl(redirectBase, { [REDIRECT_PARAM]: "error" }));
 		}
-
 		if (paymentIntentId && !paymentIntentId.startsWith("pi_")) {
 			return NextResponse.redirect(
 				buildRedirectUrl(redirectBase, {
@@ -51,7 +46,6 @@ export async function GET(req: NextRequest) {
 				}),
 			);
 		}
-
 		if (!stripe) {
 			return NextResponse.redirect(
 				buildRedirectUrl(redirectBase, {
@@ -60,53 +54,53 @@ export async function GET(req: NextRequest) {
 			);
 		}
 
-		const auth = await requireAuth();
-		if ("error" in auth) {
-			return NextResponse.redirect(`${redirectBase}/login?next=checkout`);
-		}
-
 		try {
-			const db = await getDb();
-			const draft = orderId
-				? await db.collection("orderDrafts").findOne<{ paymentIntentId: string; userId: string }>({
-						orderId,
-						userId: String(auth.session.sub),
-					})
+			const resolvedPaymentIntentId =
+				paymentIntentId ||
+				(orderId
+					? (
+							await (
+								await getDb()
+							)
+								.collection<{ paymentIntentId?: string }>("orderDrafts")
+								.findOne({ orderId }, { projection: { paymentIntentId: 1 } })
+						)?.paymentIntentId || null
+					: null);
+			const paymentIntent = resolvedPaymentIntentId
+				? await stripe.paymentIntents.retrieve(resolvedPaymentIntentId)
 				: null;
-			const resolvedPaymentIntentId = paymentIntentId || draft?.paymentIntentId;
-			if (!resolvedPaymentIntentId?.startsWith("pi_")) {
-				return NextResponse.redirect(
-					buildRedirectUrl(redirectBase, {
-						[REDIRECT_PARAM]: "error",
-					}),
-				);
+			const status = derivePaymentIntentCheckoutStatus(paymentIntent?.status);
+
+			if (status === "success" || status === "processing") {
+				const auth = await requireAuth();
+				const guest = "error" in auth ? "1" : "0";
+				const processingUrl = new URL("/checkout/processing", redirectBase);
+				if (orderId) processingUrl.searchParams.set("order", orderId);
+				if (paymentIntent?.id) processingUrl.searchParams.set("payment_intent", paymentIntent.id);
+				processingUrl.searchParams.set("guest", guest);
+				return NextResponse.redirect(processingUrl);
 			}
 
-			const paymentIntent = await stripe.paymentIntents.retrieve(resolvedPaymentIntentId);
-			if (paymentIntent.metadata?.userId && paymentIntent.metadata.userId !== String(auth.session.sub)) {
-				return NextResponse.redirect(
-					buildRedirectUrl(redirectBase, {
-						[REDIRECT_PARAM]: "forbidden",
-					}),
-				);
-			}
-
-			const sp = new URLSearchParams();
-			if (orderId) sp.set("order", orderId);
-			else sp.set("payment_intent", paymentIntent.id);
-			sp.set("checkout", derivePaymentIntentCheckoutStatus(paymentIntent.status));
-			return NextResponse.redirect(`${redirectBase}/checkout/processing?${sp.toString()}`);
+			return NextResponse.redirect(
+				buildRedirectUrl(redirectBase, {
+					[REDIRECT_PARAM]: status,
+					order: orderId ?? paymentIntent?.metadata?.orderId ?? undefined,
+					payment_intent: paymentIntent?.id,
+				}),
+			);
 		} catch (error) {
 			console.error("[checkout/return] Failed to retrieve payment intent", error);
 			return NextResponse.redirect(
 				buildRedirectUrl(redirectBase, {
 					[REDIRECT_PARAM]: "error",
+					order: orderId ?? undefined,
+					payment_intent: paymentIntentId ?? undefined,
 				}),
 			);
 		}
 	}
 
-	if (!sessionId) {
+	if (!sessionId?.startsWith("cs_")) {
 		return NextResponse.redirect(
 			buildRedirectUrl(redirectBase, {
 				[REDIRECT_PARAM]: "missing_session",
@@ -118,7 +112,6 @@ export async function GET(req: NextRequest) {
 		return NextResponse.redirect(
 			buildRedirectUrl(redirectBase, {
 				[REDIRECT_PARAM]: "stripe_not_configured",
-				session_id: sessionId,
 			}),
 		);
 	}
@@ -127,16 +120,7 @@ export async function GET(req: NextRequest) {
 		const session = await stripe.checkout.sessions.retrieve(sessionId, {
 			expand: ["payment_intent"],
 		});
-
 		const status = deriveCheckoutStatus(session);
-
-		if (status === "success" || status === "processing") {
-			const sp = new URLSearchParams();
-			sp.set("session_id", sessionId);
-			sp.set("checkout", status);
-			return NextResponse.redirect(`${redirectBase}/checkout/processing?${sp.toString()}`);
-		}
-
 		return NextResponse.redirect(
 			buildRedirectUrl(redirectBase, {
 				[REDIRECT_PARAM]: status,
@@ -167,11 +151,9 @@ function deriveCheckoutStatus(session: Stripe.Checkout.Session): CheckoutStatus 
 	) {
 		return "success";
 	}
-
 	if (paymentIntent?.status === "processing") {
 		return "processing";
 	}
-
 	if (
 		paymentIntent?.status === "requires_payment_method" ||
 		paymentIntent?.status === "requires_action" ||
@@ -180,23 +162,13 @@ function deriveCheckoutStatus(session: Stripe.Checkout.Session): CheckoutStatus 
 	) {
 		return "requires_payment_method";
 	}
-
-	if (sessionStatus === "expired") {
-		return "expired";
-	}
-
-	if (sessionStatus === "open") {
-		return "open";
-	}
-
-	if (sessionStatus === "complete" && paymentStatus === "unpaid") {
-		return "failed";
-	}
-
+	if (sessionStatus === "expired") return "expired";
+	if (sessionStatus === "open") return "open";
+	if (sessionStatus === "complete" && paymentStatus === "unpaid") return "failed";
 	return "unknown";
 }
 
-function derivePaymentIntentCheckoutStatus(status: Stripe.PaymentIntent.Status): CheckoutStatus {
+function derivePaymentIntentCheckoutStatus(status?: Stripe.PaymentIntent.Status | null): CheckoutStatus {
 	if (status === "succeeded") return "success";
 	if (status === "processing") return "processing";
 	if (
@@ -216,7 +188,6 @@ function buildRedirectUrl(base: string, params: Record<string, string | undefine
 	for (const [key, value] of Object.entries(params)) {
 		if (value) searchParams.set(key, value);
 	}
-
 	const qs = searchParams.toString();
-	return qs ? `${base}/?${qs}` : `${base}/`;
+	return `${base}/${qs ? `?${qs}` : ""}`;
 }

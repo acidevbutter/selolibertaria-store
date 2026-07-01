@@ -199,3 +199,7 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - No header público, o carrinho deve aparecer como ícone compacto, sem rótulo textual visível no desktop.
 - No mobile, o carrinho do header pode coexistir com um atalho flutuante editorial e mínimo quando já houver itens no carrinho.
 - Na grade de livros, a combinação visual preferida para compra rápida é `Adicionar ao carrinho` como ação secundária e `Comprar` como CTA principal.
+## Atualização 2026-06-30 — checkout convidado
+
+- Em `/checkout`, o topo do formulário deve usar o título `Dados para sua compra`, helper curto sobre criação automática de conta e CTA final `Finalizar compra`.
+- Para pessoa autenticada, as escolhas de entrega no checkout devem priorizar `Usar meu endereço salvo`, `Usar um novo endereço` e `Retirar na loja`, sem introduzir múltiplos endereços salvos nesta etapa.

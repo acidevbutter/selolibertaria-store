@@ -65,7 +65,10 @@ export async function getMongoClient() {
 				return await tryUri(uri);
 			} catch (err: unknown) {
 				primaryError = err;
-				const errObj = err as { message?: string; cause?: { message?: string } };
+				const errObj = err as {
+					message?: string;
+					cause?: { message?: string };
+				};
 				const msg = String(errObj?.message || "");
 				const dnsFailure =
 					/EAI_AGAIN|ENOTFOUND|getaddrinfo/.test(msg) || /EAI_AGAIN/.test(String(errObj?.cause?.message));
@@ -112,11 +115,14 @@ function buildEnhancedError(errors: unknown[], attempted: string[]) {
 	const e = new Error(
 		`Could not connect to MongoDB after fallbacks. Attempts: ${attempted.join(", ")}. Last error: ${String((errors[errors.length - 1] as { message?: string })?.message)}`,
 	);
-	(e as unknown as { causes: Array<{ message: string | undefined; stack: string | undefined }> }).causes =
-		errors.map((x) => {
-			const errX = x as { message?: string; stack?: string };
-			return { message: errX.message, stack: errX.stack };
-		});
+	(
+		e as unknown as {
+			causes: Array<{ message: string | undefined; stack: string | undefined }>;
+		}
+	).causes = errors.map((x) => {
+		const errX = x as { message?: string; stack?: string };
+		return { message: errX.message, stack: errX.stack };
+	});
 	return e;
 }
 
@@ -133,6 +139,9 @@ export async function ensureIndexes() {
 	await db.collection("users").createIndex({ email: 1 }, { unique: true });
 	try {
 		await db.collection("users").createIndex({ "verification.token": 1 }, { sparse: true });
+	} catch {}
+	try {
+		await db.collection("users").createIndex({ "accountAccessTokens.tokenHash": 1 }, { sparse: true });
 	} catch {}
 	try {
 		await db
@@ -205,12 +214,16 @@ export async function ensureIndexes() {
 		await db.collection("promotionRedemptions").createIndex({ userId: 1, promotionCodeId: 1, status: 1 });
 	} catch {}
 	try {
-		await db
-			.collection("promotionNotifications")
-			.createIndex(
-				{ promotionId: 1, userId: 1, productSlug: 1, variantId: 1, effectivePrice: 1 },
-				{ unique: true },
-			);
+		await db.collection("promotionNotifications").createIndex(
+			{
+				promotionId: 1,
+				userId: 1,
+				productSlug: 1,
+				variantId: 1,
+				effectivePrice: 1,
+			},
+			{ unique: true },
+		);
 	} catch {}
 	try {
 		await db.collection("promotionNotifications").createIndex({ status: 1, createdAt: 1 });
@@ -227,7 +240,11 @@ export async function ensureIndexes() {
 
 export type WithId<T> = T & { _id: string };
 
-export type UserCartItem = { productId: string; variantId: string; quantity: number };
+export type UserCartItem = {
+	productId: string;
+	variantId: string;
+	quantity: number;
+};
 
 export interface UserCart {
 	items: Array<UserCartItem>;
@@ -238,6 +255,7 @@ export interface UserDoc {
 	_id?: string;
 	email: string;
 	name?: string;
+	cpf?: string;
 	role?: "admin" | "vendor" | "customer";
 	access?: {
 		blockedAt?: Date | null;
@@ -292,6 +310,12 @@ export interface UserDoc {
 		status: string; // e.g. paid, open, incomplete
 		amountTotal: number;
 		currency: string;
+		buyer?: {
+			fullName?: string | null;
+			email?: string | null;
+			cpf?: string | null;
+			phone?: string | null;
+		} | null;
 		items: Array<{
 			priceId?: string | null;
 			productId?: string | null;
@@ -310,6 +334,13 @@ export interface UserDoc {
 			refundIds?: string[];
 		};
 		cart?: UserCart | null;
+	}>;
+	accountAccessTokens?: Array<{
+		tokenHash: string;
+		orderId: string;
+		expiresAt: Date;
+		createdAt: Date;
+		usedAt?: Date | null;
 	}>;
 	verified?: boolean;
 	verification?: { token: string; expiresAt: Date } | null;

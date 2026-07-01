@@ -6,6 +6,7 @@ import { env, publicUrl } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
+import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Cart } from "@/lib/commerce-types";
 import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
@@ -20,6 +21,13 @@ export interface TransparentCheckoutIntent {
 	clientSecret: string;
 	orderId: string;
 	paymentIntentId: string;
+	isAuthenticated: boolean;
+	buyer: {
+		fullName: string;
+		email: string;
+		cpf: string;
+		phone: string;
+	};
 	subtotal: number;
 	discountTotal: number;
 	amountTotal: number;
@@ -38,11 +46,13 @@ export interface TransparentCheckoutIntent {
 interface OrderDraftDoc {
 	_id: ObjectId;
 	orderId: string;
-	userId: string;
+	checkoutOwnerKey: string;
+	userId?: string | null;
 	paymentIntentId: string;
 	stripeCustomerId?: string | null;
 	cartHash: string;
 	status: string;
+	buyer?: CheckoutBuyerDraft | null;
 	amountTotal: number;
 	currency: string;
 	items: CheckoutSnapshot["items"];
@@ -63,7 +73,7 @@ interface OrderDraftDoc {
 	paymentMethodSetupUsage?: "on_session" | "off_session" | null;
 }
 
-const reusablePaymentIntentStatuses = new Set([
+const reusablePaymentIntentStatuses = new Set<Stripe.PaymentIntent.Status>([
 	"requires_payment_method",
 	"requires_confirmation",
 	"requires_action",
@@ -73,6 +83,7 @@ async function getOrCreateStripeCustomer(
 	stripe: Stripe,
 	snapshot: CheckoutSnapshot,
 ): Promise<string | undefined> {
+	if (!snapshot.isAuthenticated || !snapshot.userId) return undefined;
 	if (snapshot.user.stripeCustomerId) return snapshot.user.stripeCustomerId;
 	if (!snapshot.user.email) return undefined;
 
@@ -97,61 +108,128 @@ async function getOrCreateStripeCustomer(
 	return customer.id;
 }
 
+function getDefaultBuyer(snapshot: CheckoutSnapshot, draft?: OrderDraftDoc | null) {
+	return {
+		fullName: draft?.buyer?.fullName ?? snapshot.user.name ?? "",
+		email: draft?.buyer?.email ?? snapshot.user.email ?? "",
+		cpf: draft?.buyer?.cpf ?? snapshot.user.cpf ?? "",
+		phone: draft?.buyer?.phone ?? snapshot.user.phone ?? "",
+	};
+}
+
+async function resolveDraftAccess(input: {
+	paymentIntentId: string;
+	orderId?: string | null;
+}): Promise<{ draft: OrderDraftDoc; snapshot: CheckoutSnapshot } | { error: string }> {
+	const snapshotResult = await getCheckoutSnapshot();
+	if (!snapshotResult.ok) {
+		return { error: snapshotResult.error };
+	}
+
+	const snapshot = snapshotResult.snapshot;
+	const db = await getDb();
+	const draft = input.orderId?.startsWith("ord_")
+		? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: input.orderId })
+		: await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId: input.paymentIntentId });
+
+	if (!draft) {
+		return { error: "Payment intent not found" };
+	}
+
+	if (draft.checkoutOwnerKey !== snapshot.checkoutOwnerKey) {
+		return { error: "Checkout access is no longer valid" };
+	}
+
+	return { draft, snapshot };
+}
+
+function normalizeCheckoutAddress(address?: CheckoutAddress | null): CheckoutAddress | null {
+	if (!address) return null;
+
+	const value = {
+		line1: address.line1?.trim() || "",
+		line2: address.line2?.trim() || "",
+		number: address.number?.trim() || "",
+		complement: address.complement?.trim() || "",
+		district: address.district?.trim() || "",
+		city: address.city?.trim() || "",
+		state: address.state?.trim() || "",
+		postalCode: address.postalCode?.trim() || "",
+		country: address.country?.trim().toUpperCase() || "",
+	};
+
+	if (!value.country || !value.postalCode) return null;
+	return value;
+}
+
 export async function createTransparentCheckoutIntent(): Promise<
-	TransparentCheckoutIntent | { error: string } | { requireAuth: true }
+	TransparentCheckoutIntent | { error: string }
 > {
 	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
 	if (!env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) return { error: "Missing Stripe publishable key" };
 
 	const snapshotResult = await getCheckoutSnapshot();
 	if (!snapshotResult.ok) {
-		if ("requireAuth" in snapshotResult) return { requireAuth: true };
 		return { error: snapshotResult.error };
 	}
 
 	const snapshot = snapshotResult.snapshot;
 	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
 	const stripeCustomerId = await getOrCreateStripeCustomer(stripe, snapshot).catch((error) => {
-		console.error("Failed to create stripe customer", error);
+		console.error("Failed create stripe customer", error);
 		return undefined;
 	});
-	const savedPaymentMethods = await listSavedCardPaymentMethods(stripe, stripeCustomerId).catch((error) => {
-		console.warn("Failed to list saved payment methods", error);
-		return [];
-	});
+	const savedPaymentMethods =
+		snapshot.isAuthenticated && stripeCustomerId
+			? await listSavedCardPaymentMethods(stripe, stripeCustomerId).catch((error) => {
+					console.warn("Failed list saved payment methods", error);
+					return [];
+				})
+			: [];
 
 	const db = await getDb();
 	const drafts = db.collection<OrderDraftDoc>("orderDrafts");
 	const existingDraft = await drafts.findOne(
 		{
-			userId: snapshot.userId,
+			checkoutOwnerKey: snapshot.checkoutOwnerKey,
 			cartHash: snapshot.cartHash,
 		},
 		{ sort: { createdAt: -1 } },
 	);
 
+	const draftDeliveryMethod =
+		existingDraft?.deliveryMethod ?? (snapshot.user.address ? "saved-address" : "new-address");
+	const draftDeliveryAddress = existingDraft?.deliveryAddress ?? snapshot.user.address ?? null;
+	const draftShippingRate = existingDraft?.shippingRate ?? snapshot.shippingRate ?? null;
+	const draftShippingError = existingDraft?.shippingError ?? snapshot.shippingError ?? null;
+	const draftAmountTotal = existingDraft?.amountTotal ?? snapshot.amountTotal;
+	const buyer = getDefaultBuyer(snapshot, existingDraft);
+
 	if (existingDraft?.paymentIntentId) {
 		if (existingDraft.status === "processing") {
-			return { error: "Payment is already processing. Check your orders for the latest status." };
+			return {
+				error: "Payment is already processing. Check your orders for latest status.",
+			};
 		}
 		if (existingDraft.status === "succeeded") {
-			return { error: "Payment was already confirmed. Check your orders for the latest status." };
+			return {
+				error: "Payment was already confirmed. Check your orders for latest status.",
+			};
 		}
 
 		try {
 			const existingIntent = await stripe.paymentIntents.retrieve(existingDraft.paymentIntentId);
 			if (existingIntent.status === "processing") {
-				return { error: "Payment is already processing. Check your orders for the latest status." };
+				return {
+					error: "Payment is already processing. Check your orders for latest status.",
+				};
 			}
 			if (existingIntent.status === "succeeded") {
-				return { error: "Payment was already confirmed. Check your orders for the latest status." };
+				return {
+					error: "Payment was already confirmed. Check your orders for the latest status.",
+				};
 			}
-			const draftDeliveryMethod =
-				existingDraft.deliveryMethod ?? (snapshot.user.address ? "saved-address" : "new-address");
-			const draftDeliveryAddress = existingDraft.deliveryAddress ?? snapshot.user.address ?? null;
-			const draftShippingRate = existingDraft.shippingRate ?? snapshot.shippingRate ?? null;
-			const draftShippingError = existingDraft.shippingError ?? snapshot.shippingError ?? null;
-			const draftAmountTotal = existingDraft.amountTotal ?? snapshot.amountTotal;
+
 			if (
 				existingIntent.client_secret &&
 				reusablePaymentIntentStatuses.has(existingIntent.status) &&
@@ -160,8 +238,11 @@ export async function createTransparentCheckoutIntent(): Promise<
 				if (existingIntent.amount !== draftAmountTotal) {
 					await stripe.paymentIntents.update(existingIntent.id, {
 						amount: draftAmountTotal,
+						receipt_email: buyer.email || undefined,
 						metadata: {
 							...existingIntent.metadata,
+							...(snapshot.userId ? { userId: snapshot.userId } : {}),
+							checkoutOwnerKey: snapshot.checkoutOwnerKey,
 							deliveryMethod: draftDeliveryMethod,
 							...(draftDeliveryAddress
 								? {
@@ -178,11 +259,14 @@ export async function createTransparentCheckoutIntent(): Promise<
 						},
 					});
 				}
+
 				return {
 					publishableKey: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 					clientSecret: existingIntent.client_secret,
 					orderId: existingDraft.orderId,
 					paymentIntentId: existingIntent.id,
+					isAuthenticated: snapshot.isAuthenticated,
+					buyer,
 					subtotal: existingDraft.subtotal ?? snapshot.subtotal,
 					discountTotal: existingDraft.discountTotal ?? snapshot.discountTotal,
 					amountTotal: draftAmountTotal,
@@ -193,27 +277,28 @@ export async function createTransparentCheckoutIntent(): Promise<
 					shippingError: draftShippingError,
 					deliveryMethod: draftDeliveryMethod,
 					deliveryAddress: draftDeliveryAddress,
-					canSavePaymentMethod: Boolean(existingIntent.customer),
+					canSavePaymentMethod: snapshot.isAuthenticated && Boolean(existingIntent.customer),
 					savePaymentMethod: existingIntent.setup_future_usage === "on_session",
 					savedPaymentMethods,
 				};
 			}
 		} catch (error) {
-			console.warn("Failed to retrieve reusable payment intent", error);
+			console.warn("Failed reuse payment intent", error);
 		}
 	}
 
 	const orderDraftId = new ObjectId();
-	const internalOrderId = createInternalOrderId();
+	const internalOrderId = existingDraft?.orderId || createInternalOrderId();
 	const intent = await stripe.paymentIntents.create(
 		{
-			amount: existingDraft?.amountTotal ?? snapshot.amountTotal,
+			amount: draftAmountTotal,
 			currency: snapshot.currency.toLowerCase(),
 			customer: stripeCustomerId,
-			receipt_email: stripeCustomerId ? undefined : snapshot.user.email,
+			receipt_email: buyer.email || undefined,
 			automatic_payment_methods: { enabled: true },
 			metadata: {
-				userId: snapshot.userId,
+				...(snapshot.userId ? { userId: snapshot.userId } : {}),
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
 				orderDraftId: orderDraftId.toHexString(),
 				orderId: internalOrderId,
 				cartHash: snapshot.cartHash,
@@ -222,32 +307,22 @@ export async function createTransparentCheckoutIntent(): Promise<
 				...(snapshot.couponPromotionId ? { couponPromotionId: snapshot.couponPromotionId } : {}),
 				...(snapshot.couponCodeId ? { couponCodeId: snapshot.couponCodeId } : {}),
 				...(existingDraft?.deliveryMethod ? { deliveryMethod: existingDraft.deliveryMethod } : {}),
-				...(existingDraft?.deliveryAddress?.country
+				...(draftDeliveryAddress?.country
 					? {
-							deliveryCountry: existingDraft.deliveryAddress.country,
-							deliveryPostalCode: existingDraft.deliveryAddress.postalCode ?? "",
+							deliveryCountry: draftDeliveryAddress.country,
+							deliveryPostalCode: draftDeliveryAddress.postalCode ?? "",
 						}
-					: snapshot.user.address?.country
-						? {
-								deliveryCountry: snapshot.user.address.country ?? "",
-								deliveryPostalCode: snapshot.user.address.postalCode ?? "",
-							}
-						: {}),
-				...(existingDraft?.shippingRate
+					: {}),
+				...(draftShippingRate
 					? {
-							shippingProviderCode: existingDraft.shippingRate.providerCode,
-							shippingServiceCode: existingDraft.shippingRate.serviceCode,
+							shippingProviderCode: draftShippingRate.providerCode,
+							shippingServiceCode: draftShippingRate.serviceCode,
 						}
-					: snapshot.shippingRate
-						? {
-								shippingProviderCode: snapshot.shippingRate.providerCode,
-								shippingServiceCode: snapshot.shippingRate.serviceCode,
-							}
-						: {}),
+					: {}),
 			},
 		},
 		{
-			idempotencyKey: `transparent-checkout:${snapshot.userId}:${snapshot.cartHash}`,
+			idempotencyKey: `transparent-checkout:${snapshot.checkoutOwnerKey}:${snapshot.cartHash}`,
 		},
 	);
 
@@ -265,22 +340,23 @@ export async function createTransparentCheckoutIntent(): Promise<
 				createdAt: new Date(),
 			},
 			$set: {
-				userId: snapshot.userId,
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				userId: snapshot.userId ?? null,
 				orderId: existingDraft?.orderId || internalOrderId,
 				paymentIntentId: intent.id,
 				stripeCustomerId: stripeCustomerId || null,
+				buyer,
 				cartHash: existingDraft?.cartHash ?? snapshot.cartHash,
 				status: intent.status,
 				subtotal: existingDraft?.subtotal ?? snapshot.subtotal,
 				discountTotal: existingDraft?.discountTotal ?? snapshot.discountTotal,
-				amountTotal: existingDraft?.amountTotal ?? snapshot.amountTotal,
+				amountTotal: draftAmountTotal,
 				currency: existingDraft?.currency ?? snapshot.currency,
 				items: snapshot.items,
-				shippingRate: existingDraft?.shippingRate ?? snapshot.shippingRate ?? null,
-				shippingError: existingDraft?.shippingError ?? snapshot.shippingError ?? null,
-				deliveryMethod:
-					existingDraft?.deliveryMethod ?? (snapshot.user.address ? "saved-address" : "new-address"),
-				deliveryAddress: existingDraft?.deliveryAddress ?? snapshot.user.address ?? null,
+				shippingRate: draftShippingRate,
+				shippingError: draftShippingError,
+				deliveryMethod: draftDeliveryMethod,
+				deliveryAddress: draftDeliveryAddress,
 				couponCode: snapshot.couponCode ?? null,
 				couponPromotionId: snapshot.couponPromotionId ?? null,
 				couponCodeId: snapshot.couponCodeId ?? null,
@@ -299,38 +375,88 @@ export async function createTransparentCheckoutIntent(): Promise<
 		clientSecret: intent.client_secret,
 		orderId: existingDraft?.orderId || internalOrderId,
 		paymentIntentId: intent.id,
+		isAuthenticated: snapshot.isAuthenticated,
+		buyer,
 		subtotal: existingDraft?.subtotal ?? snapshot.subtotal,
 		discountTotal: existingDraft?.discountTotal ?? snapshot.discountTotal,
-		amountTotal: existingDraft?.amountTotal ?? snapshot.amountTotal,
+		amountTotal: draftAmountTotal,
 		currency: existingDraft?.currency ?? snapshot.currency,
 		items: snapshot.items,
 		couponCode: snapshot.couponCode ?? null,
-		shippingRate: existingDraft?.shippingRate ?? snapshot.shippingRate ?? null,
-		shippingError: existingDraft?.shippingError ?? snapshot.shippingError ?? null,
-		deliveryMethod:
-			existingDraft?.deliveryMethod ?? (snapshot.user.address ? "saved-address" : "new-address"),
-		deliveryAddress: existingDraft?.deliveryAddress ?? snapshot.user.address ?? null,
-		canSavePaymentMethod: Boolean(intent.customer),
+		shippingRate: draftShippingRate,
+		shippingError: draftShippingError,
+		deliveryMethod: draftDeliveryMethod,
+		deliveryAddress: draftDeliveryAddress,
+		canSavePaymentMethod: snapshot.isAuthenticated && Boolean(intent.customer),
 		savePaymentMethod: false,
 		savedPaymentMethods,
 	};
 }
 
-function normalizeCheckoutAddress(address?: CheckoutAddress | null): CheckoutAddress | null {
-	if (!address) return null;
-	const value = {
-		line1: address.line1?.trim() || "",
-		line2: address.line2?.trim() || "",
-		number: address.number?.trim() || "",
-		complement: address.complement?.trim() || "",
-		district: address.district?.trim() || "",
-		city: address.city?.trim() || "",
-		state: address.state?.trim() || "",
-		postalCode: address.postalCode?.trim() || "",
-		country: address.country?.trim().toUpperCase() || "",
-	};
-	if (!value.country || !value.postalCode) return null;
-	return value;
+export async function updateCheckoutBuyerData(input: {
+	paymentIntentId: string;
+	orderId?: string | null;
+	buyer: CheckoutBuyerDraft;
+}): Promise<{ ok: true; buyer: CheckoutBuyerDraft } | { error: string }> {
+	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
+	if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
+
+	let buyer: CheckoutBuyerDraft;
+	try {
+		buyer = normalizeCheckoutBuyer(input.buyer);
+	} catch (error) {
+		const message =
+			error &&
+			typeof error === "object" &&
+			"issues" in error &&
+			Array.isArray((error as { issues?: unknown[] }).issues)
+				? ((error as { issues: Array<{ message?: string }> }).issues[0]?.message ??
+					"Invalid checkout buyer data")
+				: error instanceof Error
+					? error.message
+					: "Invalid checkout buyer data";
+		return { error: message };
+	}
+
+	const access = await resolveDraftAccess({
+		orderId: input.orderId,
+		paymentIntentId: input.paymentIntentId,
+	});
+	if ("error" in access) {
+		return { error: access.error };
+	}
+
+	const { draft, snapshot } = access;
+	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
+	const intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
+	if (!reusablePaymentIntentStatuses.has(intent.status)) {
+		return { error: "Buyer data can no longer be changed" };
+	}
+
+	await stripe.paymentIntents.update(input.paymentIntentId, {
+		receipt_email: buyer.email,
+		metadata: {
+			...intent.metadata,
+			...(snapshot.userId ? { userId: snapshot.userId } : {}),
+			checkoutOwnerKey: snapshot.checkoutOwnerKey,
+			buyerEmail: buyer.email,
+			buyerName: buyer.fullName,
+		},
+	});
+
+	await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
+		{ paymentIntentId: input.paymentIntentId },
+		{
+			$set: {
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				userId: snapshot.userId ?? draft.userId ?? null,
+				buyer,
+				updatedAt: new Date(),
+			},
+		},
+	);
+
+	return { ok: true, buyer };
 }
 
 export async function updateCheckoutDeliverySelection(input: {
@@ -353,43 +479,33 @@ export async function updateCheckoutDeliverySelection(input: {
 			currency: string;
 	  }
 	| { error: string }
-	| { requireAuth: true }
 > {
 	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
 	if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
 
-	const auth = await requireAuth();
-	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnSelolibertaria(auth.session.role))
-		return { error: "Backoffice users cannot perform purchases." };
+	const access = await resolveDraftAccess({
+		orderId: input.orderId,
+		paymentIntentId: input.paymentIntentId,
+	});
+	if ("error" in access) {
+		return { error: access.error };
+	}
 
-	const userId = auth.session.sub as string;
-	const db = await getDb();
-	const draft = input.orderId?.startsWith("ord_")
-		? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: input.orderId, userId })
-		: await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId: input.paymentIntentId });
-	if (!draft || draft.userId !== userId) return { error: "Payment intent not found" };
-
+	const { draft, snapshot } = access;
 	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
 	const intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
-	if (intent.metadata?.userId && intent.metadata.userId !== userId) {
-		return { error: "Payment intent does not belong to user" };
-	}
 	if (!reusablePaymentIntentStatuses.has(intent.status)) {
 		return { error: "Delivery selection can no longer be changed" };
 	}
 
-	const user = await db.collection("users").findOne<{
-		address?: CheckoutAddress | null;
-	}>({ _id: new ObjectId(userId) }, { projection: { address: 1 } });
-
-	const savedAddress = normalizeCheckoutAddress(user?.address ?? null);
+	const savedAddress = normalizeCheckoutAddress(snapshot.user.address ?? null);
 	const selectedAddress =
 		input.deliveryMethod === "saved-address"
 			? savedAddress
 			: input.deliveryMethod === "new-address"
 				? normalizeCheckoutAddress(input.address ?? null)
 				: null;
+
 	if (input.deliveryMethod === "saved-address" && !savedAddress) {
 		return { error: "No saved delivery address found" };
 	}
@@ -414,6 +530,10 @@ export async function updateCheckoutDeliverySelection(input: {
 	const quotedShippingRate = shippingRate
 		? {
 				...shippingRate,
+				fixed_amount: {
+					amount: shippingRate.fixed_amount.amount,
+					currency: shippingRate.currency ?? snapshot.currency,
+				},
 				quotedAt: new Date().toISOString(),
 			}
 		: null;
@@ -425,6 +545,8 @@ export async function updateCheckoutDeliverySelection(input: {
 		amount: nextAmountTotal,
 		metadata: {
 			...intent.metadata,
+			...(snapshot.userId ? { userId: snapshot.userId } : {}),
+			checkoutOwnerKey: snapshot.checkoutOwnerKey,
 			deliveryMethod: input.deliveryMethod,
 			...(selectedAddress
 				? {
@@ -441,10 +563,12 @@ export async function updateCheckoutDeliverySelection(input: {
 		},
 	});
 
-	await db.collection<OrderDraftDoc>("orderDrafts").updateOne(
+	await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
 		{ paymentIntentId: input.paymentIntentId },
 		{
 			$set: {
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				userId: snapshot.userId ?? draft.userId ?? null,
 				deliveryMethod: input.deliveryMethod,
 				deliveryAddress: selectedAddress,
 				shippingRate: quotedShippingRate,
@@ -482,14 +606,15 @@ export async function updatePaymentMethodSavingPreference({
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnSelolibertaria(auth.session.role))
+	if (!canBuyOnSelolibertaria(auth.session.role)) {
 		return { error: "Backoffice users cannot perform purchases." };
+	}
 
 	const userId = auth.session.sub as string;
 	const db = await getDb();
 	const draft = await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId });
 	if (!draft || draft.userId !== userId) return { error: "Payment intent not found" };
-	if (!reusablePaymentIntentStatuses.has(draft.status)) {
+	if (!reusablePaymentIntentStatuses.has(draft.status as Stripe.PaymentIntent.Status)) {
 		return { error: "Payment method preference can no longer be changed" };
 	}
 
@@ -540,13 +665,16 @@ export async function createCheckoutSession(): Promise<
 
 	const auth = await requireAuth();
 	if ("error" in auth) return { requireAuth: true };
-	if (!canBuyOnSelolibertaria(auth.session.role))
+	if (!canBuyOnSelolibertaria(auth.session.role)) {
 		return { error: "Backoffice users cannot perform purchases." };
+	}
 
 	const userId = auth.session.sub as string;
 	const db = await getDb();
 	const user = await db.collection("users").findOne<{
-		cart?: { items: { productId: string; variantId: string; quantity: number }[] };
+		cart?: {
+			items: { productId: string; variantId: string; quantity: number }[];
+		};
 		email?: string;
 		name?: string;
 		phone?: string;
@@ -555,22 +683,35 @@ export async function createCheckoutSession(): Promise<
 		purchases?: Array<unknown>;
 	}>(
 		{ _id: new ObjectId(userId) },
-		{ projection: { cart: 1, email: 1, name: 1, phone: 1, stripeCustomerId: 1, verified: 1, purchases: 1 } },
+		{
+			projection: {
+				cart: 1,
+				email: 1,
+				name: 1,
+				phone: 1,
+				stripeCustomerId: 1,
+				verified: 1,
+				purchases: 1,
+			},
+		},
 	);
 
-	// If user is unverified and already has purchases, block further checkout attempts
 	if (user && user.verified === false) {
 		const hasPurchases = Array.isArray(user.purchases) && user.purchases.length > 0;
-		if (hasPurchases)
-			return { error: "E-mail não verificado. Confirme seu e-mail para realizar novas compras." };
+		if (hasPurchases) {
+			return {
+				error: "E-mail não verificado. Confirme seu e-mail para realizar novas compras.",
+			};
+		}
 	}
+
 	const minimal = user?.cart?.items || [];
 	if (minimal.length === 0) {
-		// Fallback: attempt to import cookie cart (guest cart) on first checkout after signup/login
 		try {
 			const { getCartId, clearCartId, getCartCookieItems } = await import("@/lib/cart-cookies");
 			const [cartId, cookieItems] = await Promise.all([getCartId(), getCartCookieItems()]);
 			const aggregated = new Map<string, { productId: string; variantId: string; quantity: number }>();
+
 			if (cookieItems && cookieItems.length > 0) {
 				for (const item of cookieItems) {
 					const key = item.variantId;
@@ -579,6 +720,7 @@ export async function createCheckoutSession(): Promise<
 					else aggregated.set(key, { ...item });
 				}
 			}
+
 			if (cartId) {
 				const guestCart = commerce.cart.get({ cartId });
 				if (guestCart && guestCart.items.length > 0) {
@@ -586,15 +728,17 @@ export async function createCheckoutSession(): Promise<
 						const key = line.variantId;
 						const current = aggregated.get(key);
 						if (current) current.quantity += line.quantity;
-						else
+						else {
 							aggregated.set(key, {
 								productId: line.productId,
 								variantId: line.variantId,
 								quantity: line.quantity,
 							});
+						}
 					}
 				}
 			}
+
 			if (aggregated.size > 0) {
 				const mergedItems = Array.from(aggregated.values());
 				await db
@@ -606,35 +750,44 @@ export async function createCheckoutSession(): Promise<
 				await clearCartId();
 				return await createCheckoutSession();
 			}
-		} catch (e) {
-			console.warn("Guest cart fallback import failed", e);
+		} catch (error) {
+			console.warn("Guest cart fallback import failed", error);
 		}
+
 		return { error: "Empty cart" };
 	}
 
 	const enrichedItems: Cart["items"] = [];
-	for (const m of minimal) {
+	for (const item of minimal) {
 		const resolved = await commerce.variant
-			.resolve({ id: m.variantId })
-			.catch(async () => commerce.variant.resolve({ id: m.productId }).catch(() => null));
+			.resolve({ id: item.variantId })
+			.catch(async () => commerce.variant.resolve({ id: item.productId }).catch(() => null));
 		if (!resolved) continue;
+
 		const { product, variant } = resolved;
 		enrichedItems.push({
-			id: m.variantId,
+			id: item.variantId,
 			productId: product.id,
 			variantId: variant.id,
-			quantity: m.quantity,
+			quantity: item.quantity,
 			price: variant.price || product.price || 0,
-			product: { id: product.id, name: product.name, images: product.images, summary: product.summary },
+			product: {
+				id: product.id,
+				name: product.name,
+				images: product.images,
+				summary: product.summary,
+			},
 		});
 	}
+
 	if (enrichedItems.length === 0) return { error: "Empty cart" };
+
 	const currency = (env.STRIPE_CURRENCY || "USD").toUpperCase();
 	const cart: Cart = {
 		id: "user-cart",
 		items: enrichedItems,
-		total: enrichedItems.reduce((s, i) => s + i.price * i.quantity, 0),
-		currency: currency.toUpperCase(),
+		total: enrichedItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+		currency,
 	};
 
 	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
@@ -657,12 +810,12 @@ export async function createCheckoutSession(): Promise<
 			await db
 				.collection("users")
 				.updateOne({ _id: new ObjectId(userId) }, { $set: { stripeCustomerId, updatedAt: new Date() } });
-		} catch (e) {
-			console.error("Failed to create stripe customer", e);
+		} catch (error) {
+			console.error("Failed create stripe customer", error);
 		}
 	}
 
-	const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.items.map((item) => ({
+	const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.items.map((item) => ({
 		price: item.variantId || item.productId,
 		quantity: item.quantity,
 	}));
@@ -670,7 +823,7 @@ export async function createCheckoutSession(): Promise<
 	try {
 		const session = await stripe.checkout.sessions.create({
 			mode: "payment",
-			line_items,
+			line_items: lineItems,
 			customer: stripeCustomerId,
 			customer_email: !stripeCustomerId ? user?.email : undefined,
 			phone_number_collection: user?.phone ? { enabled: true } : undefined,
@@ -679,12 +832,14 @@ export async function createCheckoutSession(): Promise<
 			success_url: `${baseUrl}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: `${baseUrl}/?checkout=cancel`,
 		});
+
 		if (!session.url) {
 			return { error: "Could not create checkout session" };
 		}
+
 		return { url: session.url };
-	} catch (err) {
-		console.error("Error creating checkout session", err);
-		return { error: (err as Error).message };
+	} catch (error) {
+		console.error("Error creating checkout session", error);
+		return { error: (error as Error).message };
 	}
 }

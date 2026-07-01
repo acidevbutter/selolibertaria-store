@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
-import { getCartCookieItems, getCartId } from "@/lib/cart-cookies";
+import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
 import { commerce } from "@/lib/commerce-stripe";
 import type { AppliedPromotion } from "@/lib/commerce-types";
@@ -16,6 +16,18 @@ interface MinimalItem {
 	productId: string;
 	variantId: string;
 	quantity: number;
+}
+
+interface CheckoutUserAddress {
+	line1?: string;
+	line2?: string;
+	number?: string;
+	complement?: string;
+	district?: string;
+	city?: string;
+	state?: string;
+	postalCode?: string;
+	country?: string;
 }
 
 export interface CheckoutSnapshotItem {
@@ -38,24 +50,17 @@ export interface CheckoutSnapshotItem {
 }
 
 export interface CheckoutSnapshot {
-	userId: string;
+	checkoutOwnerKey: string;
+	isAuthenticated: boolean;
+	userId?: string | null;
 	user: {
 		email?: string;
 		name?: string;
+		cpf?: string;
 		phone?: string;
 		stripeCustomerId?: string;
 		preferredCurrency?: string;
-		address?: {
-			line1?: string;
-			line2?: string;
-			number?: string;
-			complement?: string;
-			district?: string;
-			city?: string;
-			state?: string;
-			postalCode?: string;
-			country?: string;
-		};
+		address?: CheckoutUserAddress;
 	};
 	items: CheckoutSnapshotItem[];
 	subtotal: number;
@@ -71,30 +76,41 @@ export interface CheckoutSnapshot {
 		providerLabel: string;
 		serviceCode: string;
 		serviceName: string;
-		fixed_amount: { amount: number };
-		currency?: string;
+		fixed_amount: {
+			amount: number;
+			currency: string;
+		};
 		estimated_days?: number | null;
-		quotedAt?: string | null;
+		quotedAt?: string;
 	} | null;
 	shippingError?: string | null;
 }
 
-export type CheckoutSnapshotResult =
-	| { ok: true; snapshot: CheckoutSnapshot }
-	| { ok: false; requireAuth: true }
-	| { ok: false; error: string };
+export type CheckoutSnapshotResult = { ok: true; snapshot: CheckoutSnapshot } | { ok: false; error: string };
 
 function normalizeMinimalItems(items: MinimalItem[]): MinimalItem[] {
 	const map = new Map<string, MinimalItem>();
+
 	for (const item of items) {
 		const quantity = Number.isFinite(item.quantity)
 			? item.quantity
 			: Number.parseInt(String(item.quantity), 10);
+
 		if (!item.productId || !item.variantId || !Number.isFinite(quantity) || quantity <= 0) continue;
+
 		const current = map.get(item.variantId);
-		if (current) current.quantity += quantity;
-		else map.set(item.variantId, { productId: item.productId, variantId: item.variantId, quantity });
+		if (current) {
+			current.quantity += quantity;
+			continue;
+		}
+
+		map.set(item.variantId, {
+			productId: item.productId,
+			variantId: item.variantId,
+			quantity,
+		});
 	}
+
 	return Array.from(map.values()).sort((a, b) => a.variantId.localeCompare(b.variantId));
 }
 
@@ -161,65 +177,81 @@ async function resolveCheckoutItems(existingItems: MinimalItem[]) {
 
 export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 	const auth = await requireAuth();
-	if ("error" in auth) return { ok: false, requireAuth: true };
-	if (!canBuyOnSelolibertaria(auth.session.role)) {
+	const isAuthenticated = !("error" in auth);
+
+	if (isAuthenticated && !canBuyOnSelolibertaria(auth.session.role)) {
 		return { ok: false, error: "Backoffice users cannot perform purchases." };
 	}
 
-	const userId = auth.session.sub as string;
+	const userId = isAuthenticated ? (auth.session.sub as string) : null;
 	const db = await getDb();
-	const user = await db.collection("users").findOne<{
-		cart?: { items: MinimalItem[]; couponCode?: string | null };
-		email?: string;
-		name?: string;
-		phone?: string;
-		stripeCustomerId?: string;
-		verified?: boolean;
-		address?: {
-			line1?: string;
-			line2?: string;
-			number?: string;
-			complement?: string;
-			district?: string;
-			city?: string;
-			state?: string;
-			postalCode?: string;
-			country?: string;
-		};
-		purchases?: Array<unknown>;
-	}>(
-		{ _id: new ObjectId(userId) },
-		{ projection: { cart: 1, email: 1, name: 1, phone: 1, stripeCustomerId: 1, verified: 1, purchases: 1 } },
-	);
 
-	if (user?.verified === false && Array.isArray(user.purchases) && user.purchases.length > 0) {
-		return { ok: false, error: "E-mail não verificado. Confirme seu e-mail para realizar novas compras." };
+	const user = userId
+		? await db.collection("users").findOne<{
+				cart?: { items: MinimalItem[]; couponCode?: string | null };
+				email?: string;
+				name?: string;
+				cpf?: string;
+				phone?: string;
+				stripeCustomerId?: string;
+				address?: CheckoutUserAddress;
+			}>(
+				{ _id: new ObjectId(userId) },
+				{
+					projection: {
+						cart: 1,
+						email: 1,
+						name: 1,
+						cpf: 1,
+						phone: 1,
+						stripeCustomerId: 1,
+						address: 1,
+					},
+				},
+			)
+		: null;
+
+	const [guestCartId, guestCouponCode] = await Promise.all([getCartId(), getCartCouponCode()]);
+	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(user?.cart?.items || []));
+
+	if (minimalItems.length === 0) {
+		return { ok: false, error: "Empty cart" };
 	}
 
-	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(user?.cart?.items || []));
-	if (minimalItems.length === 0) return { ok: false, error: "Empty cart" };
+	const preferredCurrency = userId ? await getUserPreferredCurrencyById(userId) : null;
 	const priced = await buildPricedCartPayload({
-		cartId: "checkout-snapshot",
+		cartId: userId ? "checkout-snapshot" : guestCartId || "guest-checkout-snapshot",
 		minimalItems,
-		couponCode: user?.cart?.couponCode ?? null,
+		couponCode: user?.cart?.couponCode ?? guestCouponCode ?? null,
 		userId,
 		strictCoupon: true,
-		preferredCurrency: await getUserPreferredCurrencyById(userId),
-	}).catch((error) => ({ error: error instanceof Error ? error.message : "Invalid coupon" }));
-	if ("error" in priced) return { ok: false, error: priced.error };
+		preferredCurrency,
+	}).catch((error) => ({
+		error: error instanceof Error ? error.message : "Invalid coupon",
+	}));
+
+	if ("error" in priced) {
+		return { ok: false, error: priced.error };
+	}
+
 	const { cart, checkoutItems, couponContext } = priced;
-	if (checkoutItems.length === 0 || cart.total <= 0) return { ok: false, error: "Empty cart" };
+	if (checkoutItems.length === 0 || cart.total <= 0) {
+		return { ok: false, error: "Empty cart" };
+	}
 
 	return {
 		ok: true,
 		snapshot: {
+			checkoutOwnerKey: userId ? `user:${userId}` : `guest:${guestCartId || "cookie-cart"}`,
+			isAuthenticated,
 			userId,
 			user: {
 				email: user?.email,
 				name: user?.name,
+				cpf: user?.cpf,
 				phone: user?.phone,
 				stripeCustomerId: user?.stripeCustomerId,
-				preferredCurrency: (await getUserPreferredCurrencyById(userId)) ?? undefined,
+				preferredCurrency: preferredCurrency ?? undefined,
 				address: user?.address,
 			},
 			items: checkoutItems,
@@ -230,7 +262,16 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 			couponCode: cart.couponCode ?? null,
 			couponPromotionId: couponContext?.promotionId ?? null,
 			couponCodeId: couponContext?.promotionCodeId ?? null,
-			shippingRate: cart.shippingRate ?? null,
+			shippingRate: cart.shippingRate
+				? {
+						...cart.shippingRate,
+						fixed_amount: {
+							amount: cart.shippingRate.fixed_amount.amount,
+							currency:
+								cart.shippingRate.currency || cart.currency || (env.STRIPE_CURRENCY || "USD").toUpperCase(),
+						},
+					}
+				: null,
 			shippingError: cart.shippingError ?? null,
 			cartHash: buildCartHash(
 				checkoutItems,

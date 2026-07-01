@@ -13,10 +13,10 @@ interface CheckoutStartPageProps {
 
 /**
  * Server page that:
- * 1. Redirects guest-cart preparation to a Route Handler when cookie mutation is needed
- * 2. Creates or reuses a Stripe PaymentIntent from the server-validated cart
- * 3. Renders Stripe Elements inside the site checkout UI
- * If not authenticated, user is redirected to login before payment starts.
+ * 1. Redirects guest-cart preparation Route Handler when cookie mutation is needed
+ * 2. Creates or reuses Stripe PaymentIntent from server-validated cart
+ * 3. Renders Stripe Elements inside site checkout UI
+ * Guests can complete the checkout without creating an account first.
  */
 export default async function CheckoutStartPage({ searchParams }: CheckoutStartPageProps) {
 	const resolvedSearchParams = await searchParams;
@@ -32,10 +32,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 
 	const [locale, t] = await Promise.all([getLocale(), getTranslations("Checkout.page")]);
 	const res = await createTransparentCheckoutIntent();
-	if ("requireAuth" in res) {
-		redirect("/login?next=checkout");
-	}
-	// Fallback: show error and a link back
+
 	if ("error" in res) {
 		return (
 			<main className="mx-auto max-w-md px-6 py-12">
@@ -60,6 +57,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 				</div>
 				<CheckoutForm checkout={res} locale={locale} />
 			</section>
+
 			<aside className="h-fit rounded-xl border bg-card p-6 shadow-sm">
 				<h2 className="text-lg font-semibold">{t("summaryTitle")}</h2>
 				<div className="mt-5 space-y-4">
@@ -89,12 +87,20 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 						</div>
 					))}
 				</div>
+
 				<div className="mt-6 border-t pt-4">
 					<div className="space-y-2 text-sm text-muted-foreground">
 						<div className="flex items-center justify-between">
 							<span>{t("summary.subtotal")}</span>
-							<span>{formatMoney({ amount: res.subtotal, currency: res.currency, locale })}</span>
+							<span>
+								{formatMoney({
+									amount: res.subtotal,
+									currency: res.currency,
+									locale,
+								})}
+							</span>
 						</div>
+
 						{res.shippingRate ? (
 							<div className="flex items-center justify-between">
 								<span>
@@ -114,6 +120,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 								{res.shippingError}
 							</p>
 						) : null}
+
 						{res.discountTotal > 0 ? (
 							<div className="flex items-center justify-between text-red-600">
 								<span>
@@ -131,10 +138,17 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 								</span>
 							</div>
 						) : null}
-					</div>
-					<div className="flex items-center justify-between text-base font-semibold">
-						<span>{t("summary.total")}</span>
-						<span>{formatMoney({ amount: res.amountTotal, currency: res.currency, locale })}</span>
+
+						<div className="flex items-center justify-between text-base font-semibold">
+							<span>{t("summary.total")}</span>
+							<span>
+								{formatMoney({
+									amount: res.amountTotal,
+									currency: res.currency,
+									locale,
+								})}
+							</span>
+						</div>
 					</div>
 				</div>
 			</aside>

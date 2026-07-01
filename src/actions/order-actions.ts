@@ -23,148 +23,22 @@ import {
 	shouldPreserveAuthoritativePurchaseStatus,
 } from "@/lib/payment-status";
 
-/**
- * Clears the cart stored on the user document after the checkout is finalized.
- * Also removes the legacy in-memory/cookie cart, if it exists, to keep things consistent.
- */
-export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
-	const auth = await requireAuth();
-	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
-
-	const userId = auth.session.sub as string;
-
-	try {
-		const db = await getDb();
-
-		await db
-			.collection("users")
-			.updateOne({ _id: new ObjectId(userId) }, { $unset: { cart: "" }, $set: { updatedAt: new Date() } });
-
-		const cartId = await getCartId();
-
-		if (cartId) {
-			try {
-				await commerce.cart.clear({ cartId });
-			} catch (e) {}
-			await clearCartId();
-		}
-
-		return { ok: true };
-	} catch (err) {
-		console.error("[finalizeCheckoutCleanup]", err);
-		return { error: "Falha ao limpar o carrinho" };
-	}
-}
-
-/**
- * Saves a purchase on the user document using the session_id returned on success_url.
- * This doesn't replace the webhook (source of truth), but it allows immediate recording.
- */
-export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok: true } | { error: string }> {
-	if (!sessionId || !sessionId.startsWith("cs_")) return { error: "ID de sessão inválido" };
-	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
-
-	const auth = await requireAuth();
-	let userId: string | null = null;
-
-	if (!("error" in auth)) {
-		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
-		userId = auth.session.sub as string;
-	}
-
-	try {
-		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
-		const session = await stripe.checkout.sessions.retrieve(sessionId, {
-			expand: ["line_items.data.price.product"],
-		});
-
-		if (session.metadata?.userId) {
-			const metaUserId = String(session.metadata.userId);
-			if (userId && metaUserId !== userId) return { error: "A sessão não pertence a esta pessoa usuária" };
-			if (!userId) userId = metaUserId;
-		}
-
-		if (!userId) return { error: "Não autorizado" };
-
-		const items = (session.line_items?.data || []).map((li) => {
-			const prod = typeof li.price?.product === "object" ? (li.price?.product as Stripe.Product) : undefined;
-			return {
-				priceId: li.price?.id || null,
-				productId: prod?.id || null,
-				name: prod?.name || null,
-				quantity: li.quantity || 0,
-				unitAmount: li.price?.unit_amount ?? null,
-			};
-		});
-		const db = await getDb();
-		const userObjectId = new ObjectId(userId);
-		const paymentIntentId =
-			typeof session.payment_intent === "string"
-				? session.payment_intent
-				: (session.payment_intent?.id ?? null);
-		const draft = paymentIntentId?.startsWith("pi_")
-			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId })
-			: null;
-		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
-			deliveryMethod: draft?.deliveryMethod ?? null,
-			deliveryAddress: draft?.deliveryAddress ?? null,
-			shippingRate: draft?.shippingRate ?? null,
-		});
-		const purchase = {
-			id: session.id,
-			createdAt: new Date(),
-			status: session.payment_status || session.status || "unknown",
-			amountTotal: session.amount_total || 0,
-			currency: (session.currency || env.STRIPE_CURRENCY || "USD").toUpperCase(),
-			items,
-			invoiceId: (session.invoice as string) || null,
-			paymentIntentId,
-			...shippingSnapshot,
-		};
-		const usersCol = db.collection("users");
-		const userDoc = await usersCol.findOne<{ cart?: UserCart }>(
-			{ _id: userObjectId },
-			{ projection: { cart: 1 } },
-		);
-		const cartSnapshot: UserCart | null = userDoc?.cart
-			? { items: userDoc.cart.items.map((item) => ({ ...item })) }
-			: null;
-		const userUpdateCol = usersCol as unknown as {
-			updateOne: (filter: unknown, update: unknown) => Promise<unknown>;
-		};
-
-		// Idempotência: não insere se já existir purchase com mesmo id
-		const existing = await usersCol.findOne(
-			{ _id: userObjectId, "purchases.id": session.id },
-			{ projection: { _id: 1 } },
-		);
-		if (!existing) {
-			await userUpdateCol.updateOne(
-				{ _id: userObjectId },
-				{
-					$push: { purchases: { ...purchase, cart: cartSnapshot } },
-					$set: { updatedAt: new Date() },
-					$unset: { cart: "" },
-				},
-			);
-		}
-		return { ok: true };
-	} catch (e) {
-		console.error("[recordSuccessfulCheckout]", e);
-		return { error: "Falha ao registrar a compra" };
-	}
-}
-
 interface OrderDraftDoc {
 	orderId?: string;
-	userId: string;
+	checkoutOwnerKey?: string;
+	userId?: string | null;
 	paymentIntentId: string;
 	status: string;
 	subtotal?: number;
 	discountTotal?: number;
 	amountTotal: number;
 	currency: string;
+	buyer?: {
+		fullName?: string;
+		email?: string;
+		cpf?: string;
+		phone?: string;
+	} | null;
 	couponCode?: string | null;
 	couponPromotionId?: string | null;
 	couponCodeId?: string | null;
@@ -183,77 +57,215 @@ interface BrowserSyncPurchaseDoc {
 	};
 }
 
+interface PurchaseItemDoc {
+	name?: string | null;
+	quantity?: number;
+	unitAmount?: number | null;
+	priceId?: string | null;
+	productId?: string | null;
+	image?: string | null;
+}
+
+interface PurchaseDoc {
+	id: string;
+	status: string;
+	createdAt: Date | string;
+	amountTotal: number;
+	currency: string;
+	items?: PurchaseItemDoc[];
+	fulfillment?: {
+		status?: "received" | "producing" | "shipped";
+		trackingNumber?: string | null;
+	};
+	relatedIds?: {
+		paymentIntentId?: string;
+		sessionId?: string;
+	};
+}
+
+/**
+ * Clears cart stored on user document after checkout finalized.
+ * Also removes legacy in-memory/cookie cart, if exists, to keep things consistent.
+ */
+export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
+	const auth = await requireAuth();
+
+	try {
+		if (!("error" in auth)) {
+			if (!canBuyOnSelolibertaria(auth.session.role)) {
+				return { error: "Acesso negado" };
+			}
+
+			const userId = auth.session.sub as string;
+			const db = await getDb();
+			await db
+				.collection("users")
+				.updateOne({ _id: new ObjectId(userId) }, { $unset: { cart: "" }, $set: { updatedAt: new Date() } });
+		}
+
+		const cartId = await getCartId();
+		if (cartId) {
+			try {
+				await commerce.cart.clear({ cartId });
+			} catch {
+				// noop
+			}
+			await clearCartId();
+		}
+
+		return { ok: true };
+	} catch (error) {
+		console.error("[finalizeCheckoutCleanup]", error);
+		return { error: "Falha ao limpar o carrinho" };
+	}
+}
+
+/**
+ * Saves a purchase on user document using session_id returned on success_url.
+ * This doesn't replace webhook (source of truth), but it allows immediate recording.
+ */
+export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok: true } | { error: string }> {
+	if (!sessionId || !sessionId.startsWith("cs_")) return { error: "ID de sessão inválido" };
+	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
+
+	const auth = await requireAuth();
+	let userId: string | null = null;
+	if (!("error" in auth)) {
+		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
+		userId = auth.session.sub as string;
+	}
+
+	try {
+		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
+		const session = await stripe.checkout.sessions.retrieve(sessionId, {
+			expand: ["line_items.data.price.product"],
+		});
+
+		if (session.metadata?.userId) {
+			const metaUserId = String(session.metadata.userId);
+			if (userId && metaUserId !== userId) {
+				return { error: "A sessão não pertence a esta pessoa usuária" };
+			}
+			if (!userId) userId = metaUserId;
+		}
+
+		if (!userId) return { error: "Não autorizado" };
+
+		const items = (session.line_items?.data || []).map((lineItem) => {
+			const product =
+				typeof lineItem.price?.product === "object" ? (lineItem.price.product as Stripe.Product) : undefined;
+			return {
+				priceId: lineItem.price?.id || null,
+				productId: product?.id || null,
+				name: product?.name || null,
+				quantity: lineItem.quantity || 0,
+				unitAmount: lineItem.price?.unit_amount ?? null,
+			};
+		});
+
+		const db = await getDb();
+		const userObjectId = new ObjectId(userId);
+		const paymentIntentId =
+			typeof session.payment_intent === "string"
+				? session.payment_intent
+				: (session.payment_intent?.id ?? null);
+		const draft = paymentIntentId?.startsWith("pi_")
+			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId })
+			: null;
+		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
+			deliveryMethod: draft?.deliveryMethod ?? null,
+			deliveryAddress: draft?.deliveryAddress ?? null,
+			shippingRate: draft?.shippingRate ?? null,
+		});
+
+		const purchase = {
+			id: session.id,
+			createdAt: new Date(),
+			status: session.payment_status || session.status || "unknown",
+			amountTotal: session.amount_total || 0,
+			currency: (session.currency || env.STRIPE_CURRENCY || "USD").toUpperCase(),
+			buyer: draft?.buyer ?? null,
+			items,
+			invoiceId: (session.invoice as string) || null,
+			paymentIntentId,
+			...shippingSnapshot,
+		};
+
+		const usersCol = db.collection("users");
+		const userDoc = await usersCol.findOne<{ cart?: UserCart }>(
+			{ _id: userObjectId },
+			{ projection: { cart: 1 } },
+		);
+		const cartSnapshot: UserCart | null = userDoc?.cart
+			? { items: userDoc.cart.items.map((item) => ({ ...item })) }
+			: null;
+		const userUpdateCol = usersCol as unknown as {
+			updateOne: (filter: unknown, update: unknown) => Promise<unknown>;
+		};
+
+		const existing = await usersCol.findOne(
+			{ _id: userObjectId, "purchases.id": session.id },
+			{ projection: { _id: 1 } },
+		);
+		if (!existing) {
+			await userUpdateCol.updateOne(
+				{ _id: userObjectId },
+				{
+					$push: { purchases: { ...purchase, cart: cartSnapshot } },
+					$set: { updatedAt: new Date() },
+					$unset: { cart: "" },
+				},
+			);
+		}
+
+		return { ok: true };
+	} catch (error) {
+		console.error("[recordSuccessfulCheckout]", error);
+		return { error: "Falha ao registrar a compra" };
+	}
+}
+
 export async function recordPaymentIntentCheckout(input: {
 	paymentIntentId?: string | null;
 	orderId?: string | null;
 }): Promise<{ ok: true; status: string; cartCleared: boolean } | { error: string; status?: string }> {
 	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
 
-	const auth = await requireAuth();
-	if ("error" in auth) return { error: "Não autorizado" };
-	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
-
-	const userId = auth.session.sub as string;
+	const paymentIntentIdFromInput =
+		typeof input.paymentIntentId === "string" && input.paymentIntentId.startsWith("pi_")
+			? input.paymentIntentId
+			: null;
+	const orderIdFromInput =
+		typeof input.orderId === "string" && input.orderId.startsWith("ord_") ? input.orderId : null;
 
 	try {
 		const db = await getDb();
-		const paymentIntentIdFromInput =
-			typeof input.paymentIntentId === "string" && input.paymentIntentId.startsWith("pi_")
-				? input.paymentIntentId
-				: null;
-		const orderIdFromInput =
-			typeof input.orderId === "string" && input.orderId.startsWith("ord_") ? input.orderId : null;
 		const draftByOrder = orderIdFromInput
-			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: orderIdFromInput, userId })
+			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: orderIdFromInput })
 			: null;
 		const resolvedPaymentIntentId = paymentIntentIdFromInput || draftByOrder?.paymentIntentId || null;
 
-		if (!resolvedPaymentIntentId || !resolvedPaymentIntentId.startsWith("pi_")) {
-			return { error: "ID de intenção de pagamento inválido" };
+		if (!resolvedPaymentIntentId) {
+			return { error: "ID da intenção de pagamento ausente" };
 		}
 
 		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
 		const paymentIntent = await stripe.paymentIntents.retrieve(resolvedPaymentIntentId, {
 			expand: ["latest_charge"],
 		});
-
-		if (paymentIntent.metadata?.userId && paymentIntent.metadata.userId !== userId) {
-			return { error: "A intenção de pagamento não pertence a esta pessoa usuária" };
-		}
-
-		const usersCol = db.collection("users");
-		const userUpdateCol = usersCol as unknown as {
-			updateOne: (filter: unknown, update: unknown) => Promise<{ matchedCount?: number }>;
-		};
 		const draft =
 			draftByOrder ||
-			(await db
-				.collection<OrderDraftDoc>("orderDrafts")
-				.findOne({ paymentIntentId: resolvedPaymentIntentId }));
-		const userDoc = await usersCol.findOne<{ purchases?: BrowserSyncPurchaseDoc[] }>(
-			{ _id: new ObjectId(userId) },
-			{ projection: { purchases: 1 } },
-		);
-
-		if (draft?.userId && draft.userId !== userId) {
-			return { error: "A intenção de pagamento não pertence a esta pessoa usuária" };
-		}
+			(await db.collection<OrderDraftDoc>("orderDrafts").findOne({
+				paymentIntentId: resolvedPaymentIntentId,
+			}));
 
 		const status = paymentIntent.status;
 		const clientVisibleStatus = getClientVisiblePaymentIntentStatus(status);
 		const orderId = draft?.orderId || paymentIntent.metadata?.orderId || paymentIntent.id;
-		const existingPurchase = userDoc?.purchases?.find(
-			(purchase) =>
-				matchesOrderIdentifier(purchase, orderId) || matchesOrderIdentifier(purchase, paymentIntent.id),
-		);
-		const existingAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(existingPurchase?.status)
-			? existingPurchase?.status
-			: undefined;
 		const draftAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(draft?.status)
 			? draft?.status
 			: undefined;
-		const authoritativeStatus =
-			existingAuthoritativeStatus || draftAuthoritativeStatus || clientVisibleStatus;
+		const authoritativeStatus = draftAuthoritativeStatus || clientVisibleStatus;
 
 		await db.collection("orderDrafts").updateOne(
 			{ paymentIntentId: resolvedPaymentIntentId },
@@ -269,6 +281,59 @@ export async function recordPaymentIntentCheckout(input: {
 			return { error: "O pagamento ainda não foi concluído", status };
 		}
 
+		const auth = await requireAuth();
+		if ("error" in auth) {
+			return {
+				ok: true,
+				status: authoritativeStatus,
+				cartCleared: isFinalizedPaymentStatus(authoritativeStatus),
+			};
+		}
+		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
+
+		const userId = auth.session.sub as string;
+		if (draft?.userId && draft.userId !== userId) {
+			return {
+				error: "A intenção de pagamento não pertence a esta pessoa usuária",
+			};
+		}
+		if (paymentIntent.metadata?.userId && paymentIntent.metadata.userId !== userId) {
+			return {
+				error: "A intenção de pagamento não pertence a esta pessoa usuária",
+			};
+		}
+
+		const usersCol = db.collection("users");
+		const userUpdateCol = usersCol as unknown as {
+			updateOne: (
+				filter: unknown,
+				update: unknown,
+			) => Promise<{
+				matchedCount?: number;
+			}>;
+		};
+		const userDoc = await usersCol.findOne<{
+			purchases?: BrowserSyncPurchaseDoc[];
+		}>({ _id: new ObjectId(userId) }, { projection: { purchases: 1 } });
+
+		const existingPurchase = userDoc?.purchases?.find(
+			(purchase) =>
+				matchesOrderIdentifier(purchase, orderId) || matchesOrderIdentifier(purchase, paymentIntent.id),
+		);
+		const existingAuthoritativeStatus = shouldPreserveAuthoritativePurchaseStatus(existingPurchase?.status)
+			? existingPurchase?.status
+			: undefined;
+		const finalStatus = existingAuthoritativeStatus || authoritativeStatus;
+		const chargeId =
+			typeof paymentIntent.latest_charge === "object" && paymentIntent.latest_charge
+				? paymentIntent.latest_charge.id
+				: typeof paymentIntent.latest_charge === "string"
+					? paymentIntent.latest_charge
+					: null;
+		const relatedIds = {
+			paymentIntentId: paymentIntent.id,
+			...(chargeId ? { chargeIds: [chargeId] } : {}),
+		};
 		const items = (draft?.items || []).map((item) => ({
 			name: item.name,
 			quantity: item.quantity,
@@ -277,22 +342,12 @@ export async function recordPaymentIntentCheckout(input: {
 			productId: item.productId,
 			image: item.image,
 		}));
-		const chargeId =
-			typeof paymentIntent.latest_charge === "object" && paymentIntent.latest_charge
-				? paymentIntent.latest_charge.id
-				: typeof paymentIntent.latest_charge === "string"
-					? paymentIntent.latest_charge
-					: null;
-		const eventId = `browser-sync:${paymentIntent.id}:${status}`;
-		const relatedIds = {
-			paymentIntentId: paymentIntent.id,
-			...(chargeId ? { chargeIds: [chargeId] } : {}),
-		};
 		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
 			deliveryMethod: draft?.deliveryMethod ?? null,
 			deliveryAddress: draft?.deliveryAddress ?? null,
 			shippingRate: draft?.shippingRate ?? null,
 		});
+		const eventId = `browser-sync:${paymentIntent.id}:${status}`;
 
 		const updateExisting = await userUpdateCol.updateOne(
 			{
@@ -301,12 +356,13 @@ export async function recordPaymentIntentCheckout(input: {
 			},
 			{
 				$set: {
-					"purchases.$.status": authoritativeStatus,
+					"purchases.$.status": finalStatus,
 					"purchases.$.amountTotal": paymentIntent.amount,
 					"purchases.$.currency": paymentIntent.currency.toUpperCase(),
 					"purchases.$.items": items,
-					"purchases.$.kind": "payment_intent",
-					"purchases.$.paymentIntentId": paymentIntent.id,
+					"purchases.$.buyer": draft?.buyer ?? null,
+					"purchases.$.relatedIds": relatedIds,
+					"purchases.$.fulfillment.status": "received",
 					...(draft
 						? {
 								"purchases.$.pricing": {
@@ -324,13 +380,13 @@ export async function recordPaymentIntentCheckout(input: {
 								"purchases.$.shippingRate": shippingSnapshot.shippingRate ?? null,
 							}
 						: {}),
-					"purchases.$.relatedIds": relatedIds,
+					updatedAt: new Date(),
 				},
 				$addToSet: {
 					"purchases.$.events": {
 						eventId,
 						type: "browser.payment_intent.sync",
-						status: authoritativeStatus,
+						status: finalStatus,
 						createdAt: new Date(),
 					},
 				},
@@ -345,9 +401,10 @@ export async function recordPaymentIntentCheckout(input: {
 						purchases: {
 							id: orderId,
 							createdAt: new Date(),
-							status: authoritativeStatus,
+							status: finalStatus,
 							amountTotal: paymentIntent.amount,
 							currency: paymentIntent.currency.toUpperCase(),
+							buyer: draft?.buyer ?? null,
 							items,
 							kind: "payment_intent",
 							paymentIntentId: paymentIntent.id,
@@ -372,7 +429,7 @@ export async function recordPaymentIntentCheckout(input: {
 								{
 									eventId,
 									type: "browser.payment_intent.sync",
-									status: authoritativeStatus,
+									status: finalStatus,
 									createdAt: new Date(),
 								},
 							],
@@ -383,14 +440,14 @@ export async function recordPaymentIntentCheckout(input: {
 			);
 		}
 
-		if (isOrderReceivedEligibleStatus(authoritativeStatus)) {
+		if (isOrderReceivedEligibleStatus(finalStatus)) {
 			await ensureOrderReceivedEmail(userId, orderId);
 		}
 
 		return {
 			ok: true,
-			status: authoritativeStatus,
-			cartCleared: isFinalizedPaymentStatus(authoritativeStatus),
+			status: finalStatus,
+			cartCleared: isFinalizedPaymentStatus(finalStatus),
 		};
 	} catch (error) {
 		console.error("[recordPaymentIntentCheckout]", error);
@@ -414,33 +471,21 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 				productId: string | null;
 				image: string | null;
 			}>;
-			fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
+			fulfillment?: {
+				status?: "received" | "producing" | "shipped";
+				trackingNumber?: string | null;
+			};
 	  }
 > {
 	if (!purchaseId) return { error: "ID do pedido ausente" };
+
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" };
 	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
+
 	try {
 		const db = await getDb();
 		const userId = new ObjectId(auth.session.sub as string);
-		interface PurchaseItemDoc {
-			name?: string | null;
-			quantity?: number;
-			unitAmount?: number | null;
-			priceId?: string | null;
-			productId?: string | null;
-		}
-		interface PurchaseDoc {
-			id: string;
-			status: string;
-			createdAt: Date | string;
-			amountTotal: number;
-			currency: string;
-			items?: PurchaseItemDoc[];
-			fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
-			relatedIds?: { paymentIntentId?: string; sessionId?: string };
-		}
 		const userDoc = await db.collection("users").findOne<{ purchases?: PurchaseDoc[] }>(
 			{
 				_id: userId,
@@ -452,8 +497,9 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 			},
 			{ projection: { purchases: 1 } },
 		);
-		const purchase = userDoc?.purchases?.find((p) => matchesOrderIdentifier(p, purchaseId));
+		const purchase = userDoc?.purchases?.find((entry) => matchesOrderIdentifier(entry, purchaseId));
 		if (!purchase) return { error: "Pedido não encontrado" };
+
 		let enrichedItems: Array<{
 			name: string | null;
 			quantity: number;
@@ -462,46 +508,59 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 			productId: string | null;
 			image: string | null;
 		}> = [];
+
 		if (env.STRIPE_SECRET_KEY) {
 			try {
-				const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
-				for (const it of purchase.items || []) {
-					let name: string | null = it.name || null;
+				const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+					apiVersion: undefined,
+				});
+				for (const item of purchase.items || []) {
+					let name: string | null = item.name || null;
 					let image: string | null = null;
-					if (it.priceId) {
+
+					if (item.priceId) {
 						try {
-							const price = await stripe.prices.retrieve(it.priceId);
+							const price = await stripe.prices.retrieve(item.priceId);
 							const productId = typeof price.product === "string" ? price.product : price.product?.id;
 							if (productId) {
 								try {
 									const product = await stripe.products.retrieve(productId);
 									name = product.name || name;
 									image = product.images?.[0] || null;
-								} catch (e) {}
+								} catch {
+									// noop
+								}
 							}
-						} catch (e) {}
+						} catch {
+							// noop
+						}
 					}
+
 					enrichedItems.push({
 						name,
-						quantity: it.quantity || 0,
-						unitAmount: it.unitAmount ?? null,
-						priceId: it.priceId || null,
-						productId: it.productId || null,
+						quantity: item.quantity || 0,
+						unitAmount: item.unitAmount ?? null,
+						priceId: item.priceId ?? null,
+						productId: item.productId ?? null,
 						image,
 					});
 				}
-			} catch (e) {}
+			} catch {
+				// noop
+			}
 		}
+
 		if (enrichedItems.length === 0) {
-			enrichedItems = (purchase.items || []).map((it: PurchaseItemDoc) => ({
-				name: it.name || null,
-				quantity: it.quantity || 0,
-				unitAmount: it.unitAmount ?? null,
-				priceId: it.priceId || null,
-				productId: it.productId || null,
-				image: null,
+			enrichedItems = (purchase.items || []).map((item) => ({
+				name: item.name || null,
+				quantity: item.quantity || 0,
+				unitAmount: item.unitAmount ?? null,
+				priceId: item.priceId ?? null,
+				productId: item.productId ?? null,
+				image: item.image ?? null,
 			}));
 		}
+
 		return {
 			id: purchase.id,
 			status: purchase.status,
@@ -511,8 +570,8 @@ export async function getPurchaseDetails(purchaseId: string): Promise<
 			items: enrichedItems,
 			fulfillment: purchase.fulfillment,
 		};
-	} catch (e) {
-		console.error("[getPurchaseDetails]", e);
-		return { error: "Falha ao carregar os detalhes do pedido" };
+	} catch (error) {
+		console.error("[getPurchaseDetails]", error);
+		return { error: "Falha ao carregar o pedido" };
 	}
 }

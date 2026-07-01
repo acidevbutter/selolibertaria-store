@@ -261,3 +261,5 @@ Also validate:
 
 - no storefront do Selo Libertária, o carrinho deve ficar sempre acessível como ícone compacto no header público e, no mobile, pode ganhar um atalho flutuante apenas quando já houver itens no carrinho; `Carrinho` e `Comprar` nunca entram no menu principal.
 - nos cards de catálogo público, mantenha `Adicionar ao carrinho` como ação de permanência na página com atualização de badge e reserve `Comprar` para fluxo de compra imediata com redirecionamento ao checkout; se a seleção segura de variante não existir, prefira levar à PDP em vez de adicionar cegamente.
+- no checkout público do Selo Libertária, visitante com carrinho válido deve entrar direto em `/checkout` sem login prévio, vendo o bloco `Dados para sua compra` com copy de criação automática de conta e sem qualquer barreira de confirmação de e-mail antes do pagamento.
+- após um pedido concluído no checkout convidado, o acesso inicial à conta deve acontecer por magic link expirável enviado por e-mail, vinculado ao usuário e ao pedido, com redirecionamento para `Compras` e CTA explícito para criação de senha quando a conta ainda não tiver senha definida.

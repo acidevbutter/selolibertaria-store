@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from argparse import ArgumentParser
 import html
+from os import name
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -14,10 +16,31 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import KeepTogether, ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+parser = ArgumentParser(
+    prog=__name__,
+)
+
+parser.add_argument(
+    "-i",
+    "--input",
+    type=str,
+    default=True,
+)
+parser.add_argument(
+    "-o",
+    "--output",
+    type=str,
+    default=None,
+)
+
+parsed_args = parser.parse_args()
+
+input_name = parsed_args.input
+output_name = parsed_args.output or input_name
 
 ROOT = Path(__file__).resolve().parent
-SOURCE_PATH = ROOT / "proposta-comercial-selo-libertaria.md"
-OUTPUT_PATH = ROOT / "proposta-comercial-selo-libertaria.pdf"
+SOURCE_PATH = ROOT / f"{input_name}.md"
+OUTPUT_PATH = ROOT / f"{output_name}.pdf"
 
 ACCENT = colors.HexColor("#6f2437")
 ACCENT_DARK = colors.HexColor("#3b1822")

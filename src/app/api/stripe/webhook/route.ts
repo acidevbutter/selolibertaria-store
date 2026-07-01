@@ -1,6 +1,8 @@
 import { ObjectId } from "mongodb";
 import type { NextRequest } from "next/server";
 import Stripe from "stripe";
+import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
+import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
 import { getDb } from "@/lib/mongodb";
 import { notifyOrderStatusChange } from "@/lib/notify-order-status";
 import { recordOrderAuditEntry } from "@/lib/order-audit";
@@ -207,9 +209,33 @@ export async function POST(req: NextRequest) {
 		const paymentIntentIdForLookup = kind === "payment_intent" ? rootId : related.paymentIntentId;
 		if (!userId && paymentIntentIdForLookup) {
 			const draft = await db
-				.collection<{ userId?: string }>("orderDrafts")
-				.findOne({ paymentIntentId: paymentIntentIdForLookup }, { projection: { userId: 1 } });
-			if (draft?.userId) userId = draft.userId;
+				.collection<OrderDraftDoc>("orderDrafts")
+				.findOne({ paymentIntentId: paymentIntentIdForLookup });
+			if (draft?.userId) {
+				userId = draft.userId;
+			} else if (draft?.buyer?.email && draft.orderId) {
+				try {
+					const normalizedBuyer = normalizeCheckoutBuyer(draft.buyer);
+					const resolved = await resolveCheckoutUserForDraft({
+						orderId: draft.orderId,
+						userId: draft.userId ?? null,
+						buyer: normalizedBuyer,
+						deliveryAddress: draft.deliveryAddress ?? null,
+					});
+					userId = resolved.userId;
+					await db.collection("orderDrafts").updateOne(
+						{ paymentIntentId: paymentIntentIdForLookup },
+						{
+							$set: {
+								userId,
+								updatedAt: new Date(),
+							},
+						},
+					);
+				} catch (error) {
+					console.error("[stripe webhook] failed to resolve checkout user", error);
+				}
+			}
 		}
 
 		if (!userId) {
@@ -255,13 +281,19 @@ export async function POST(req: NextRequest) {
 
 		interface OrderDraftDoc {
 			orderId?: string;
-			userId: string;
+			userId?: string | null;
 			paymentIntentId: string;
 			status: string;
 			subtotal?: number;
 			discountTotal?: number;
 			amountTotal: number;
 			currency: string;
+			buyer?: {
+				fullName?: string;
+				email?: string;
+				cpf?: string;
+				phone?: string;
+			} | null;
 			shippingRate?: {
 				providerCode: string;
 				providerLabel: string;
@@ -293,6 +325,12 @@ export async function POST(req: NextRequest) {
 			status: string;
 			amountTotal: number;
 			currency: string;
+			buyer?: {
+				fullName?: string;
+				email?: string;
+				cpf?: string;
+				phone?: string;
+			} | null;
 			items: UserPurchaseItem[];
 			pricing?: {
 				subtotal?: number;
@@ -354,7 +392,9 @@ export async function POST(req: NextRequest) {
 				{ projection: { _id: 1 } },
 			);
 			if (!existing) {
-				const lineItems = await stripe.checkout.sessions.listLineItems(rootId, { limit: 100 });
+				const lineItems = await stripe.checkout.sessions.listLineItems(rootId, {
+					limit: 100,
+				});
 				items = lineItems.data.map((li) => ({
 					name: li.description,
 					quantity: li.quantity || 0,
@@ -452,6 +492,7 @@ export async function POST(req: NextRequest) {
 				status: derivedStatus,
 				amountTotal,
 				currency,
+				buyer: paymentIntentDraft?.buyer ?? null,
 				items,
 				pricing: paymentIntentDraft
 					? {
@@ -483,6 +524,7 @@ export async function POST(req: NextRequest) {
 				} = {
 					$set: {
 						"purchases.$.status": derivedStatus,
+						"purchases.$.buyer": paymentIntentDraft?.buyer ?? null,
 					},
 					$push: { "purchases.$.events": eventDoc },
 				};

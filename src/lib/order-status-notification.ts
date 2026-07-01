@@ -87,6 +87,7 @@ export function shouldNotifyCustomerOrderStatusChange(
 ) {
 	const nextKey = getCustomerOrderStatusKey(nextStatus);
 	if (!nextKey) return false;
+	if (nextKey === "payment_confirmed" || nextKey === "fulfillment_received") return false;
 	const previousKey = getCustomerOrderStatusKey(previousStatus);
 	return previousKey !== nextKey;
 }
