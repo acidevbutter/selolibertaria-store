@@ -5,11 +5,13 @@ import { AddToCart } from "@/components/add-to-cart";
 import { publicUrl } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Product, YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialProductPage } from "@/lib/editorial-content-store";
-import { isFavorite } from "@/lib/favorites";
+import { buildFavoriteKey, isFavorite, listFavoriteKeysForUser } from "@/lib/favorites";
+import { getProductCardActionState } from "@/lib/product-card-action-state";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
@@ -17,6 +19,7 @@ import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
+import { ProductTeaserActions } from "@/ui/products/product-teaser-actions.client";
 import { Badge } from "@/ui/shadcn/badge";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -144,6 +147,8 @@ export default async function SingleProductPage(props: {
 		.slice(0, 2);
 
 	const session = await auth();
+	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();
+	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
 	const favoriteActive = session
 		? await isFavorite({
 				userId: session.user.id,
@@ -365,6 +370,10 @@ export default async function SingleProductPage(props: {
 										key={related.id}
 										product={related}
 										fallbackSummary={pageContent.related?.fallbackSummary || "Novo título em breve"}
+										favoriteActive={favoriteKeys.has(
+											buildFavoriteKey(related.slug, getProductCardActionState(related).variantId),
+										)}
+										canPurchase={canPurchase}
 									/>
 								))}
 							</div>
@@ -412,35 +421,61 @@ export default async function SingleProductPage(props: {
 	);
 }
 
-function RelatedBookCard({ product, fallbackSummary }: { product: Product; fallbackSummary: string }) {
+function RelatedBookCard({
+	product,
+	fallbackSummary,
+	favoriteActive,
+	canPurchase,
+}: {
+	product: Product;
+	fallbackSummary: string;
+	favoriteActive: boolean;
+	canPurchase: boolean;
+}) {
+	const actionState = getProductCardActionState(product);
+
 	return (
 		<LiftOnHover>
-			<YnsLink href={`/product/${product.slug}`} className="group block h-full">
-				<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
-					<div className="aspect-[0.72] overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]">
-						{product.images[0] ? (
-							<Image
-								src={product.images[0]}
-								alt={product.name}
-								width={420}
-								height={580}
-								className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-								sizes="220px"
-								{...getProductImageOptimizationProps(product.images[0])}
-							/>
-						) : null}
+			<article className="group h-full">
+				<YnsLink href={`/product/${product.slug}`} className="block">
+					<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
+						<div className="aspect-[0.72] overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]">
+							{product.images[0] ? (
+								<Image
+									src={product.images[0]}
+									alt={product.name}
+									width={420}
+									height={580}
+									className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+									sizes="220px"
+									{...getProductImageOptimizationProps(product.images[0])}
+								/>
+							) : null}
+						</div>
 					</div>
-				</div>
-				<h3 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:text-[color:var(--editorial-accent)]">
-					{product.name}
-				</h3>
+					<h3 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:text-[color:var(--editorial-accent)]">
+						{product.name}
+					</h3>
+				</YnsLink>
 				<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
 					{product.summary ?? fallbackSummary}
 				</p>
-				<span className="mt-4 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:border-[color:var(--editorial-accent)] group-hover:bg-[color:rgba(216,208,196,0.24)]">
-					Ver livro
-				</span>
-			</YnsLink>
+				<ProductTeaserActions
+					href={`/product/${product.slug}`}
+					productSlug={product.slug}
+					variantId={actionState.variantId}
+					favoriteActive={favoriteActive}
+					canPurchase={canPurchase}
+					allowQuickAdd={actionState.quickAddAllowed}
+					productInfo={actionState.productInfo}
+					className="mt-4"
+					favoriteClassName="border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]"
+					addToCartClassName="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+					viewLinkClassName="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)]"
+					addToCartLabel="Adicionar ao carrinho"
+					viewLabel="Ver livro"
+				/>
+			</article>
 		</LiftOnHover>
 	);
 }

@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { Cart } from "@/lib/commerce-types";
 
 export const CART_COOKIE = "yns_cart_id";
@@ -14,6 +14,43 @@ interface CartCookiePayload {
 	id: string;
 	items?: CartCookieItem[];
 	couponCode?: string | null;
+}
+
+async function shouldUseSecureCartCookie(): Promise<boolean> {
+	if (process.env.NODE_ENV !== "production") {
+		return false;
+	}
+
+	try {
+		const headerStore = await headers();
+		const forwardedProto = headerStore.get("x-forwarded-proto");
+		const origin = headerStore.get("origin");
+		const referer = headerStore.get("referer");
+		const host = headerStore.get("host");
+		const isLocalHost = Boolean(host && /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host));
+		const hintedHttps =
+			forwardedProto === "https" || origin?.startsWith("https://") || referer?.startsWith("https://");
+
+		if (isLocalHost && !hintedHttps) {
+			return false;
+		}
+
+		if (forwardedProto) {
+			return forwardedProto === "https";
+		}
+
+		if (origin) {
+			return origin.startsWith("https://");
+		}
+
+		if (referer) {
+			return referer.startsWith("https://");
+		}
+
+		return !isLocalHost;
+	} catch {
+		return true;
+	}
 }
 
 function sanitizeItems(raw: unknown): CartCookieItem[] | undefined {
@@ -91,6 +128,7 @@ export async function setCartId(
 	couponCode?: string | null,
 ): Promise<void> {
 	try {
+		const secure = await shouldUseSecureCartCookie();
 		const sanitized = sanitizeItems(items) ?? undefined;
 		const payload: CartCookiePayload =
 			sanitized && sanitized.length > 0
@@ -98,7 +136,7 @@ export async function setCartId(
 				: { id: cartId, couponCode: couponCode?.trim() || null };
 		(await cookies()).set(CART_COOKIE, JSON.stringify(payload), {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
+			secure,
 			sameSite: "lax",
 			maxAge: CART_COOKIE_MAX_AGE,
 			path: "/",

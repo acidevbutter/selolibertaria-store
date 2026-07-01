@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
@@ -59,32 +60,72 @@ export function ProductCard({
 	priority,
 }: ProductCardProps) {
 	const { openCart, optimisticAdd } = useCart();
+	const router = useRouter();
 	const productT = useTranslations("/product.page");
 	const seloT = useTranslations("Selo");
-	const [isAdding, setIsAdding] = useState(false);
+	const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(null);
 	const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
 		() => variantOptions.find((variant) => variant.inStock)?.id ?? variantId ?? variantOptions[0]?.id ?? null,
 	);
+
 	const selectedVariant = variantOptions.find((variant) => variant.id === selectedVariantId) ?? null;
 	const resolvedVariantId = selectedVariant?.id ?? variantId ?? null;
 	const resolvedQuickAddDisabled = selectedVariant ? !selectedVariant.inStock : quickAddDisabled;
 	const resolvedPriceLabel = selectedVariant?.priceLabel ?? priceLabel;
-	const resolvedCompareAtLabel = selectedVariant ? (selectedVariant.compareAtLabel ?? null) : compareAtLabel;
-	const resolvedPromotionLabel = selectedVariant ? (selectedVariant.promotionLabel ?? null) : promotionLabel;
+	const resolvedCompareAtLabel = selectedVariant?.compareAtLabel ?? compareAtLabel;
+	const resolvedPromotionLabel = selectedVariant?.promotionLabel ?? promotionLabel;
+	const isAdding = pendingAction === "add";
+	const isBuying = pendingAction === "buy";
+
+	async function addSelectedVariant() {
+		if (!resolvedVariantId || resolvedQuickAddDisabled || pendingAction) {
+			return false;
+		}
+
+		try {
+			await optimisticAdd(resolvedVariantId, 1, productInfo);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
 	const handleQuickAdd = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 		event.stopPropagation();
-		if (!resolvedVariantId || resolvedQuickAddDisabled || isAdding) return;
 
-		setIsAdding(true);
+		setPendingAction("add");
 		try {
-			await optimisticAdd(resolvedVariantId, 1, productInfo);
-			openCart();
-		} catch {
-			// Cart context already logs failures.
+			const added = await addSelectedVariant();
+			if (added) {
+				openCart();
+			}
 		} finally {
-			setIsAdding(false);
+			setPendingAction(null);
+		}
+	};
+
+	const handleBuyNow = async (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+		event.stopPropagation();
+
+		if (resolvedQuickAddDisabled) {
+			return;
+		}
+
+		if (!resolvedVariantId) {
+			router.push(href);
+			return;
+		}
+
+		setPendingAction("buy");
+		try {
+			const added = await addSelectedVariant();
+			if (added) {
+				router.push("/checkout");
+			}
+		} finally {
+			setPendingAction(null);
 		}
 	};
 
@@ -99,7 +140,7 @@ export function ProductCard({
 			<div className="absolute right-5 top-5 z-20">
 				<FavoriteToggle
 					productSlug={productSlug}
-					variantId={variantId ?? null}
+					variantId={selectedVariantId ?? variantId ?? null}
 					initialActive={favoriteActive}
 					className="border-white/70 bg-background/90 shadow-md backdrop-blur-sm hover:border-red-500"
 				/>
@@ -108,21 +149,19 @@ export function ProductCard({
 			<div className="relative overflow-hidden border border-[color:var(--editorial-border)] bg-[color:rgba(216,208,196,0.18)]">
 				<YnsLink href={href} className="block">
 					{imageUrl ? (
-						<>
-							<div className="aspect-[0.84] w-full overflow-hidden bg-[color:rgba(247,244,239,0.72)]">
-								<Image
-									className="h-full w-full object-contain object-center p-5 transition duration-500 group-hover:scale-[1.02] group-focus-within:scale-[1.02] sm:p-7"
-									src={imageUrl}
-									width={768}
-									height={768}
-									loading={loading}
-									priority={priority}
-									sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 700px"
-									alt={imageAlt}
-									{...getProductImageOptimizationProps(imageUrl)}
-								/>
-							</div>
-						</>
+						<div className="aspect-[0.84] w-full overflow-hidden bg-[color:rgba(247,244,239,0.72)]">
+							<Image
+								className="h-full w-full object-contain object-center p-5 transition duration-500 group-hover:scale-[1.02] group-focus-within:scale-[1.02] sm:p-7"
+								src={imageUrl}
+								width={768}
+								height={768}
+								loading={loading}
+								priority={priority}
+								sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 700px"
+								alt={imageAlt}
+								{...getProductImageOptimizationProps(imageUrl)}
+							/>
+						</div>
 					) : (
 						<div className="flex aspect-square items-center justify-center bg-muted text-sm text-muted-foreground">
 							{productT("imagesTitle")}
@@ -138,13 +177,16 @@ export function ProductCard({
 							{name}
 						</h2>
 					</YnsLink>
+
 					<p className="text-[11px] uppercase tracking-[0.22em] text-[color:var(--editorial-accent)]">
 						{seloT("product.selectedEdition")}
 					</p>
+
 					<p className="line-clamp-3 min-h-[4.5rem] text-sm leading-7 text-[color:var(--editorial-muted)]">
 						{productInfo.summary ??
 							"Uma edição do catálogo do Selo Libertária pensada para leitura, presença e continuidade cultural."}
 					</p>
+
 					<div className="min-h-[3.75rem] space-y-0.5 text-card-foreground">
 						<p className="price-font text-base text-[color:var(--editorial-ink)]">{resolvedPriceLabel}</p>
 						{resolvedCompareAtLabel ? (
@@ -156,57 +198,77 @@ export function ProductCard({
 							</p>
 						) : null}
 					</div>
+
+					<div className="min-h-6">
+						{variantOptions.length > 1 ? (
+							<ul className="flex flex-wrap gap-2 pt-1 text-xs text-muted-foreground">
+								{variantOptions.map((variant) => (
+									<li key={variant.id}>
+										<button
+											type="button"
+											onClick={(event) => handleVariantSelect(event, variant.id)}
+											aria-pressed={selectedVariantId === variant.id}
+											className={cn(
+												"inline-flex items-center justify-center border px-2.5 py-1 uppercase tracking-[0.16em] transition-colors",
+												selectedVariantId === variant.id
+													? "border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
+													: "border-[color:var(--editorial-border)] text-[color:var(--editorial-muted)] hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-ink)]",
+												!variant.inStock ? "opacity-45" : "",
+											)}
+										>
+											{variant.label}
+										</button>
+									</li>
+								))}
+							</ul>
+						) : null}
+					</div>
 				</div>
 
-				<div className="min-h-6">
-					{variantOptions.length > 1 ? (
-						<ul className="flex flex-wrap gap-2 pt-1 text-xs text-muted-foreground">
-							{variantOptions.map((variant) => (
-								<li key={variant.id}>
-									<button
-										type="button"
-										onClick={(event) => handleVariantSelect(event, variant.id)}
-										aria-pressed={selectedVariantId === variant.id}
-										className={cn(
-											"inline-flex items-center justify-center border px-2.5 py-1 transition-[color,background-color,border-color,transform,box-shadow,opacity,padding] duration-300",
-											selectedVariantId === variant.id
-												? "border-[color:var(--editorial-accent)] bg-[color:var(--editorial-accent)] px-3.5 py-1.5 text-[color:var(--editorial-paper)]"
-												: "border-border bg-background/70 hover:-translate-y-px hover:border-[color:var(--editorial-accent)]/70 hover:bg-background/90 hover:text-foreground",
-											!variant.inStock && "opacity-45 line-through",
-										)}
-									>
-										{variant.label}
-									</button>
-								</li>
-							))}
-						</ul>
-					) : null}
-				</div>
-
-				<div className="mt-2 grid gap-3 sm:grid-cols-2">
+				<div className="space-y-3 pt-2">
 					{canPurchase ? (
-						<Button
-							type="button"
-							onClick={handleQuickAdd}
-							disabled={resolvedQuickAddDisabled || !resolvedVariantId || isAdding}
-							aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("addToCart")}
-							className="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)] disabled:bg-[color:var(--editorial-border)] disabled:text-[color:var(--editorial-muted)]"
-						>
-							{isAdding ? (
-								<span className="inline-flex items-center gap-2">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									{productT("addToCart")}
-								</span>
-							) : resolvedQuickAddDisabled ? (
-								productT("outOfStock")
-							) : (
-								productT("buyNow")
-							)}
-						</Button>
+						<div className="flex flex-wrap gap-3">
+							<Button
+								type="button"
+								onClick={handleQuickAdd}
+								disabled={resolvedQuickAddDisabled || !resolvedVariantId || pendingAction !== null}
+								aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("addToCart")}
+								className="min-h-11 rounded-none border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)] disabled:border-[color:var(--editorial-border)] disabled:bg-[color:var(--editorial-paper)] disabled:text-[color:var(--editorial-muted)]"
+							>
+								{isAdding ? (
+									<span className="inline-flex items-center gap-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										{productT("addToCart")}
+									</span>
+								) : (
+									productT("addToCart")
+								)}
+							</Button>
+
+							<Button
+								type="button"
+								onClick={handleBuyNow}
+								disabled={resolvedQuickAddDisabled || pendingAction !== null}
+								aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("buyNow")}
+								className="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)] disabled:bg-[color:var(--editorial-border)] disabled:text-[color:var(--editorial-muted)]"
+							>
+								{isBuying ? (
+									<span className="inline-flex items-center gap-2">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										{productT("buyNow")}
+									</span>
+								) : resolvedQuickAddDisabled ? (
+									productT("outOfStock")
+								) : (
+									productT("buyNow")
+								)}
+							</Button>
+						</div>
 					) : null}
+
 					<YnsLink
 						href={href}
-						className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)]"
+						className="inline-flex text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-accent)]"
 					>
 						{productT("viewBook")}
 					</YnsLink>

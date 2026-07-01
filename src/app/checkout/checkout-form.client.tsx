@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import {
 	type TransparentCheckoutIntent,
+	updateCheckoutBuyerData,
 	updateCheckoutDeliverySelection,
 	updatePaymentMethodSavingPreference,
 } from "@/actions/checkout-actions";
@@ -14,10 +15,10 @@ import { type AppLocale, getStripeLocale } from "@/i18n/config";
 import { cn, formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
 
 const NEW_PAYMENT_METHOD_VALUE = "new-payment-method";
-
 const stripePromises = new Map<string, Promise<Stripe | null>>();
 
 function getStripePromise(publishableKey: string) {
@@ -52,81 +53,69 @@ export function CheckoutForm({
 					},
 				}}
 			>
-				<CheckoutFormInner
-					clientSecret={checkout.clientSecret}
-					deliveryAddress={checkout.deliveryAddress ?? null}
-					deliveryMethod={checkout.deliveryMethod}
-					initialAmountTotal={checkout.amountTotal}
-					initialShippingError={checkout.shippingError ?? null}
-					initialShippingRate={checkout.shippingRate ?? null}
-					currency={checkout.currency}
-					locale={locale}
-					canSavePaymentMethod={checkout.canSavePaymentMethod}
-					orderId={checkout.orderId}
-					paymentIntentId={checkout.paymentIntentId}
-					savePaymentMethod={checkout.savePaymentMethod}
-					savedPaymentMethods={checkout.savedPaymentMethods}
-				/>
+				<CheckoutFormInner checkout={checkout} locale={locale} />
 			</Elements>
 		</div>
 	);
 }
 
-function CheckoutFormInner({
-	clientSecret,
-	deliveryAddress: initialDeliveryAddress,
-	deliveryMethod: initialDeliveryMethod,
-	initialAmountTotal,
-	initialShippingError,
-	initialShippingRate,
-	currency,
-	locale,
-	canSavePaymentMethod,
-	orderId,
-	paymentIntentId,
-	savePaymentMethod: initialSavePaymentMethod,
-	savedPaymentMethods,
-}: {
-	clientSecret: string;
-	deliveryAddress: TransparentCheckoutIntent["deliveryAddress"] | null;
-	deliveryMethod: TransparentCheckoutIntent["deliveryMethod"];
-	initialAmountTotal: number;
-	initialShippingError: string | null;
-	initialShippingRate: TransparentCheckoutIntent["shippingRate"] | null;
-	currency: string;
-	locale: AppLocale;
-	canSavePaymentMethod: boolean;
-	orderId: string;
-	paymentIntentId: string;
-	savePaymentMethod: boolean;
-	savedPaymentMethods: TransparentCheckoutIntent["savedPaymentMethods"];
-}) {
+function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckoutIntent; locale: AppLocale }) {
 	const router = useRouter();
 	const stripe = useStripe();
 	const elements = useElements();
 	const t = useTranslations("Checkout.form");
+
 	const [message, setMessage] = useState<string | null>(null);
 	const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
-	const [savePaymentMethod, setSavePaymentMethod] = useState(initialSavePaymentMethod);
-	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(NEW_PAYMENT_METHOD_VALUE);
+	const [buyer, setBuyer] = useState(
+		checkout.buyer ?? {
+			fullName: "",
+			email: "",
+			cpf: "",
+			phone: "",
+		},
+	);
+	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
+		checkout.savedPaymentMethods[0]?.id ?? NEW_PAYMENT_METHOD_VALUE,
+	);
+	const [savePaymentMethod, setSavePaymentMethod] = useState(checkout.savePaymentMethod);
+	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
+	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
+	const initialDeliveryMethod: TransparentCheckoutIntent["deliveryMethod"] =
+		checkout.deliveryMethod === "pickup"
+			? "pickup"
+			: hasBrazilianCheckoutAddress
+				? checkout.deliveryMethod
+				: "new-address";
 	const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(initialDeliveryMethod);
 	const [selectedDeliveryAddress, setSelectedDeliveryAddress] = useState(
-		toAddressValue(initialDeliveryAddress),
+		hasBrazilianCheckoutAddress ? initialDeliveryAddress : emptyAddressValue(),
 	);
-	const [deliveryRate, setDeliveryRate] = useState(initialShippingRate);
-	const [deliveryError, setDeliveryError] = useState(initialShippingError);
-	const [amountTotal, setAmountTotal] = useState(initialAmountTotal);
+	const [deliveryRate, setDeliveryRate] = useState(
+		initialDeliveryMethod === "pickup" || hasBrazilianCheckoutAddress
+			? (checkout.shippingRate ?? null)
+			: null,
+	);
+	const [deliveryError, setDeliveryError] = useState(
+		initialDeliveryMethod === "pickup" || hasBrazilianCheckoutAddress
+			? (checkout.shippingError ?? null)
+			: null,
+	);
+	const [amountTotal, setAmountTotal] = useState(checkout.amountTotal);
 	const [newAddress, setNewAddress] = useState<AddressValue>(
-		initialDeliveryMethod === "new-address" ? toAddressValue(initialDeliveryAddress) : emptyAddressValue(),
+		checkout.deliveryMethod === "new-address" && hasBrazilianCheckoutAddress
+			? initialDeliveryAddress
+			: emptyAddressValue(),
 	);
+
 	const selectedSavedPaymentMethod =
 		selectedPaymentMethod === NEW_PAYMENT_METHOD_VALUE
 			? null
-			: savedPaymentMethods.find((method) => method.id === selectedPaymentMethod) || null;
+			: checkout.savedPaymentMethods.find((method) => method.id === selectedPaymentMethod) || null;
 	const isUsingNewPaymentMethod = !selectedSavedPaymentMethod;
-	const hasSavedAddress = Boolean(initialDeliveryAddress);
+	const hasSavedAddress = checkout.deliveryMethod === "saved-address" && hasBrazilianCheckoutAddress;
 	const selectedDeliverySummary = getDeliverySummary(
 		selectedDeliveryMethod,
 		selectedDeliveryMethod === "new-address" ? newAddress : selectedDeliveryAddress,
@@ -144,9 +133,10 @@ function CheckoutFormInner({
 		setIsUpdatingDelivery(true);
 		setDeliveryMessage(null);
 		setMessage(null);
+
 		const result = await updateCheckoutDeliverySelection({
-			paymentIntentId,
-			orderId,
+			paymentIntentId: checkout.paymentIntentId,
+			orderId: checkout.orderId,
 			deliveryMethod: nextMethod,
 			address: nextMethod === "new-address" ? toCheckoutAddress(address) : null,
 		});
@@ -156,15 +146,10 @@ function CheckoutFormInner({
 			setIsUpdatingDelivery(false);
 			return false;
 		}
-		if ("requireAuth" in result) {
-			router.replace("/login?next=checkout");
-			setIsUpdatingDelivery(false);
-			return false;
-		}
 
 		setSelectedDeliveryMethod(result.deliveryMethod);
 		setSelectedDeliveryAddress(toAddressValue(result.deliveryAddress));
-		setDeliveryRate(result.shippingRate);
+		setDeliveryRate(result.shippingRate ?? null);
 		setDeliveryError(result.shippingError);
 		setAmountTotal(result.amountTotal);
 		setIsUpdatingDelivery(false);
@@ -174,6 +159,7 @@ function CheckoutFormInner({
 	async function handleDeliveryMethodChange(nextMethod: TransparentCheckoutIntent["deliveryMethod"]) {
 		setDeliveryMessage(null);
 		setMessage(null);
+
 		if (nextMethod === "new-address") {
 			setSelectedDeliveryMethod(nextMethod);
 			setDeliveryError(null);
@@ -192,6 +178,17 @@ function CheckoutFormInner({
 		setMessage(null);
 		setDeliveryMessage(null);
 
+		const buyerResult = await updateCheckoutBuyerData({
+			paymentIntentId: checkout.paymentIntentId,
+			orderId: checkout.orderId,
+			buyer,
+		});
+		if ("error" in buyerResult) {
+			setMessage(buyerResult.error);
+			setIsSubmitting(false);
+			return;
+		}
+
 		if (!deliveryReady || selectedDeliveryMethod === "new-address") {
 			const applied = await applyDeliverySelection(selectedDeliveryMethod, newAddress);
 			if (!applied) {
@@ -200,9 +197,9 @@ function CheckoutFormInner({
 			}
 		}
 
-		if (canSavePaymentMethod) {
+		if (checkout.canSavePaymentMethod) {
 			const preference = await updatePaymentMethodSavingPreference({
-				paymentIntentId,
+				paymentIntentId: checkout.paymentIntentId,
 				savePaymentMethod: isUsingNewPaymentMethod ? savePaymentMethod : false,
 			});
 			if ("error" in preference) {
@@ -213,11 +210,11 @@ function CheckoutFormInner({
 		}
 
 		const returnUrl = new URL("/checkout/return", window.location.origin);
-		returnUrl.searchParams.set("order", orderId);
+		returnUrl.searchParams.set("order", checkout.orderId);
 
 		const confirmationResult = selectedSavedPaymentMethod
 			? await stripe.confirmPayment({
-					clientSecret,
+					clientSecret: checkout.clientSecret,
 					confirmParams: {
 						return_url: returnUrl.toString(),
 						payment_method: selectedSavedPaymentMethod.id,
@@ -242,7 +239,12 @@ function CheckoutFormInner({
 
 		const checkoutStatus = normalizePaymentIntentCheckoutStatus(confirmationResult.paymentIntent?.status);
 		if (checkoutStatus === "success" || checkoutStatus === "processing") {
-			router.replace(`/checkout/processing?order=${orderId}`);
+			const paymentIntentId = confirmationResult.paymentIntent?.id || checkout.paymentIntentId;
+			router.replace(
+				`/checkout/processing?order=${checkout.orderId}&payment_intent=${paymentIntentId}&guest=${
+					(checkout.isAuthenticated ?? false) ? "0" : "1"
+				}`,
+			);
 			return;
 		}
 
@@ -251,6 +253,88 @@ function CheckoutFormInner({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
+			<section className="space-y-4 rounded-xl border bg-background p-4">
+				<div className="space-y-1">
+					<h2 className="text-base font-semibold">Dados para sua compra</h2>
+					<p className="text-sm leading-6 text-muted-foreground">
+						Informe seus dados para concluir a compra. Sua conta será criada automaticamente e enviaremos o
+						acesso por e-mail após a confirmação do pedido.
+					</p>
+				</div>
+				<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid gap-2 md:col-span-2">
+						<label className="text-sm font-medium" htmlFor="checkout-full-name">
+							Nome completo
+						</label>
+						<Input
+							id="checkout-full-name"
+							value={buyer.fullName}
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
+									...current,
+									fullName: value,
+								}));
+							}}
+							required
+						/>
+					</div>
+					<div className="grid gap-2">
+						<label className="text-sm font-medium" htmlFor="checkout-email">
+							E-mail
+						</label>
+						<Input
+							id="checkout-email"
+							type="email"
+							value={buyer.email}
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
+									...current,
+									email: value,
+								}));
+							}}
+							required
+						/>
+					</div>
+					<div className="grid gap-2">
+						<label className="text-sm font-medium" htmlFor="checkout-cpf">
+							CPF
+						</label>
+						<Input
+							id="checkout-cpf"
+							value={buyer.cpf}
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
+									...current,
+									cpf: value,
+								}));
+							}}
+							required
+						/>
+					</div>
+					<div className="grid gap-2 md:col-span-2">
+						<label className="text-sm font-medium" htmlFor="checkout-phone">
+							Telefone
+						</label>
+						<Input
+							id="checkout-phone"
+							type="tel"
+							value={buyer.phone}
+							onChange={(event) => {
+								const { value } = event.currentTarget;
+								return setBuyer((current) => ({
+									...current,
+									phone: value,
+								}));
+							}}
+							required
+						/>
+					</div>
+				</div>
+			</section>
+
 			<section className="space-y-4 rounded-xl border bg-background p-4">
 				<div className="space-y-1">
 					<h2 className="text-sm font-semibold">{t("delivery.title")}</h2>
@@ -263,7 +347,7 @@ function CheckoutFormInner({
 					}
 					className="gap-3"
 				>
-					{hasSavedAddress && initialDeliveryAddress ? (
+					{hasSavedAddress && checkout.deliveryAddress ? (
 						<DeliveryOptionCard
 							id="saved-address"
 							value="saved-address"
@@ -273,7 +357,7 @@ function CheckoutFormInner({
 							summary={
 								selectedDeliveryMethod === "saved-address"
 									? selectedDeliverySummary
-									: formatAddressBrief(initialDeliveryAddress)
+									: formatAddressBrief(checkout.deliveryAddress)
 							}
 							radioLabel={t("delivery.savedAddress.label")}
 						/>
@@ -303,6 +387,7 @@ function CheckoutFormInner({
 						radioLabel={t("delivery.pickup.label")}
 					/>
 				</RadioGroup>
+
 				{selectedDeliveryMethod === "new-address" ? (
 					<div className="space-y-4 rounded-lg border bg-muted/20 p-4">
 						<AddressFields
@@ -314,6 +399,11 @@ function CheckoutFormInner({
 								setDeliveryError(null);
 								setDeliveryMessage(null);
 							}}
+							onResolvedAddress={(value) => {
+								setNewAddress(value);
+								void applyDeliverySelection("new-address", value);
+							}}
+							countryMode="br-only"
 							required
 						/>
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -330,6 +420,7 @@ function CheckoutFormInner({
 						</div>
 					</div>
 				) : null}
+
 				{deliveryMessage ? (
 					<p
 						className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
@@ -342,6 +433,7 @@ function CheckoutFormInner({
 						{deliveryError}
 					</p>
 				) : null}
+
 				<div className="grid gap-3 rounded-lg border bg-background p-4 text-sm">
 					<div className="flex items-center justify-between gap-4">
 						<span className="text-muted-foreground">{t("delivery.summary.shipping")}</span>
@@ -349,7 +441,7 @@ function CheckoutFormInner({
 							{deliveryRate
 								? formatMoney({
 										amount: deliveryRate.fixed_amount.amount,
-										currency,
+										currency: checkout.currency,
 										locale,
 									})
 								: t("delivery.summary.pending")}
@@ -359,19 +451,26 @@ function CheckoutFormInner({
 						<span className="text-muted-foreground">{t("delivery.summary.eta")}</span>
 						<span className="font-medium">
 							{deliveryRate?.estimated_days != null
-								? t("delivery.summary.days", { count: deliveryRate.estimated_days })
+								? t("delivery.summary.days", {
+										count: deliveryRate.estimated_days,
+									})
 								: t("delivery.summary.pending")}
 						</span>
 					</div>
 					<div className="flex items-center justify-between gap-4 border-t pt-3">
 						<span className="font-semibold">{t("delivery.summary.total")}</span>
 						<span className="text-base font-semibold">
-							{formatMoney({ amount: amountTotal, currency, locale })}
+							{formatMoney({
+								amount: amountTotal,
+								currency: checkout.currency,
+								locale,
+							})}
 						</span>
 					</div>
 				</div>
 			</section>
-			{savedPaymentMethods.length > 0 && (
+
+			{checkout.savedPaymentMethods.length > 0 ? (
 				<div className="space-y-3 rounded-xl border bg-background p-4">
 					<div className="space-y-1">
 						<h2 className="text-sm font-semibold">{t("paymentMethod.title")}</h2>
@@ -382,7 +481,7 @@ function CheckoutFormInner({
 						onValueChange={setSelectedPaymentMethod}
 						className="gap-3"
 					>
-						{savedPaymentMethods.map((method) => (
+						{checkout.savedPaymentMethods.map((method) => (
 							<label
 								key={method.id}
 								htmlFor={method.id}
@@ -392,69 +491,44 @@ function CheckoutFormInner({
 								)}
 							>
 								<RadioGroupItem id={method.id} value={method.id} className="mt-0.5" />
-								<span className="block">
+								<span className="block flex-1">
 									<span className="block font-medium">
 										{method.card
-											? t("paymentMethod.savedCard", {
-													brand: formatBrand(method.card.brand),
-													last4: method.card.last4,
-												})
-											: t("paymentMethod.savedFallback")}
+											? `${formatBrand(method.card.brand)} •••• ${method.card.last4}`
+											: t("paymentMethod.selectedFallback")}
 									</span>
-									{method.card && (
-										<span className="mt-1 block text-xs leading-5 text-muted-foreground">
-											{t("paymentMethod.expires", {
-												expiry: formatExpiry(method.card.expMonth, method.card.expYear),
-											})}
-										</span>
-									)}
+									<span className="mt-1 block text-xs leading-5 text-muted-foreground">
+										{method.card
+											? t("paymentMethod.expires", {
+													expiry: formatExpiry(method.card.expMonth, method.card.expYear),
+												})
+											: method.billingDetails?.email || method.billingDetails?.name || ""}
+									</span>
 								</span>
 							</label>
 						))}
-						<label
-							htmlFor={NEW_PAYMENT_METHOD_VALUE}
-							className={cn(
-								"flex cursor-pointer items-start gap-3 rounded-lg border p-4 text-sm transition-colors",
-								isUsingNewPaymentMethod && "border-foreground bg-muted/30",
-							)}
-						>
-							<RadioGroupItem
-								id={NEW_PAYMENT_METHOD_VALUE}
-								value={NEW_PAYMENT_METHOD_VALUE}
-								className="mt-0.5"
-							/>
-							<span className="block">
-								<span className="block font-medium">{t("paymentMethod.useNew")}</span>
-								<span className="mt-1 block text-xs leading-5 text-muted-foreground">
-									{t("paymentMethod.useNewDescription")}
-								</span>
-							</span>
-						</label>
+						<DeliveryOptionCard
+							id={NEW_PAYMENT_METHOD_VALUE}
+							value={NEW_PAYMENT_METHOD_VALUE as TransparentCheckoutIntent["deliveryMethod"]}
+							selected={selectedPaymentMethod === NEW_PAYMENT_METHOD_VALUE}
+							title={t("paymentMethod.useNew")}
+							description={t("paymentMethod.useNewDescription")}
+							summary={t("paymentMethod.selectedFallback")}
+							radioLabel={t("paymentMethod.selectedDescription")}
+						/>
 					</RadioGroup>
 				</div>
-			)}
+			) : null}
+
 			{isUsingNewPaymentMethod ? (
 				<PaymentElement
 					options={{
 						layout: "tabs",
 					}}
 				/>
-			) : (
-				<div className="rounded-lg border bg-background p-4 text-sm">
-					<p className="font-medium">
-						{selectedSavedPaymentMethod?.card
-							? t("paymentMethod.savedCard", {
-									brand: formatBrand(selectedSavedPaymentMethod.card.brand),
-									last4: selectedSavedPaymentMethod.card.last4,
-								})
-							: t("paymentMethod.selectedFallback")}
-					</p>
-					<p className="mt-1 text-xs leading-5 text-muted-foreground">
-						{t("paymentMethod.selectedDescription")}
-					</p>
-				</div>
-			)}
-			{canSavePaymentMethod && isUsingNewPaymentMethod && (
+			) : null}
+
+			{checkout.canSavePaymentMethod && isUsingNewPaymentMethod ? (
 				<label className="flex gap-3 rounded-lg border bg-background p-4 text-sm">
 					<input
 						type="checkbox"
@@ -469,22 +543,20 @@ function CheckoutFormInner({
 						</span>
 					</span>
 				</label>
-			)}
-			{message && (
+			) : null}
+
+			{message ? (
 				<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
 					{message}
 				</p>
-			)}
+			) : null}
+
 			<Button
 				type="submit"
 				className="h-11 w-full"
 				disabled={!stripe || (!selectedSavedPaymentMethod && !elements) || isSubmitting || isUpdatingDelivery}
 			>
-				{isSubmitting
-					? t("actions.processing")
-					: selectedSavedPaymentMethod
-						? t("actions.payWithSavedCard")
-						: t("actions.payNow")}
+				{isSubmitting ? t("actions.processing") : "Finalizar compra"}
 			</Button>
 			<p className="text-center text-xs text-muted-foreground">{t("securityNotice")}</p>
 		</form>
@@ -501,7 +573,7 @@ function DeliveryOptionCard({
 	radioLabel,
 }: {
 	id: string;
-	value: TransparentCheckoutIntent["deliveryMethod"];
+	value: string;
 	selected: boolean;
 	title: string;
 	description: string;
@@ -548,19 +620,15 @@ function toAddressValue(
 ): AddressValue {
 	return {
 		...emptyAddressValue(),
-		...(address
-			? {
-					line1: address.line1 ?? "",
-					line2: address.line2 ?? "",
-					number: address.number ?? "",
-					complement: address.complement ?? "",
-					district: address.district ?? "",
-					city: address.city ?? "",
-					state: address.state ?? "",
-					postalCode: address.postalCode ?? "",
-					country: address.country?.toUpperCase() || "BR",
-				}
-			: {}),
+		line1: address?.line1 ?? "",
+		line2: address?.line2 ?? "",
+		number: address?.number ?? "",
+		complement: address?.complement ?? "",
+		district: address?.district ?? "",
+		city: address?.city ?? "",
+		state: address?.state ?? "",
+		postalCode: address?.postalCode ?? "",
+		country: address?.country ?? "BR",
 	};
 }
 
@@ -568,14 +636,14 @@ function toCheckoutAddress(address: AddressValue | null): TransparentCheckoutInt
 	if (!address) return null;
 	return {
 		line1: address.line1.trim(),
-		line2: address.line2.trim() || null,
+		line2: address.line2.trim(),
 		number: address.number.trim(),
-		complement: address.complement.trim() || null,
+		complement: address.complement.trim(),
 		district: address.district.trim(),
 		city: address.city.trim(),
 		state: address.state.trim(),
 		postalCode: address.postalCode.trim(),
-		country: address.country.trim().toUpperCase(),
+		country: "BR",
 	};
 }
 
@@ -585,7 +653,7 @@ function formatAddressBrief(address: TransparentCheckoutIntent["deliveryAddress"
 		address.line1,
 		address.number,
 		address.district,
-		`${address.city ?? ""} - ${address.state ?? ""}`,
+		`${address.city ?? ""} - ${address.state ?? ""}`.trim(),
 		address.postalCode,
 	]
 		.filter((part): part is string => Boolean(part?.trim()))

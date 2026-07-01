@@ -165,10 +165,11 @@ export default async function AdminSettingsPage() {
 									Entrega
 								</p>
 								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Provedores de frete
+									Cálculo de frete
 								</div>
 								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Configure provedores, prioridade e regras de reserva em um único bloco.
+									Ative a cotação e ajuste apenas os parâmetros operacionais do Melhor Envio, mantendo o token
+									técnico fora do admin.
 								</p>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">

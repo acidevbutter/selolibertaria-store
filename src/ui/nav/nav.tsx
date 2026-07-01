@@ -51,6 +51,11 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 								includeSessionLink={!hideAuthCta && !lightweight}
 							/>
 						</div>
+						{hideAuthCta || isAdminSession ? null : (
+							<div className="hidden lg:flex lg:items-center">
+								<CartIcon />
+							</div>
+						)}
 						{hideAuthCta ? null : (
 							<>
 								<div className="flex items-center gap-2 lg:hidden">

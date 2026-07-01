@@ -21,7 +21,7 @@ export type OAuthProviderSettings = {
 export type OAuthProvidersSettings = Partial<Record<OAuthProviderId, OAuthProviderSettings>>;
 
 export type ShippingProviderMode = "flat" | "http";
-export type ShippingProviderKind = "custom" | "correios" | "jadlog" | "easypost";
+export type ShippingProviderKind = "custom" | "correios" | "jadlog" | "easypost" | "melhorenvio";
 export type ShippingProviderAuthType = "none" | "bearer" | "basic" | "query" | "custom";
 export type ShippingProviderEnvironment = "sandbox" | "production";
 export type ShippingProviderEndpoints = {
@@ -63,6 +63,24 @@ export type ShippingProviderSettings = {
 
 export type ShippingProvidersSettings = ShippingProviderSettings[];
 
+export type MelhorEnvioSettings = {
+	environment?: ShippingProviderEnvironment | null;
+	baseUrl?: string | null;
+	originPostalCode?: string | null;
+	defaultWeightGrams?: number | null;
+	defaultLengthCm?: number | null;
+	defaultWidthCm?: number | null;
+	defaultHeightCm?: number | null;
+	userAgent?: string | null;
+	contactEmail?: string | null;
+	supportedCountry?: "BR" | null;
+	requiresPostalCode?: boolean;
+	envTokenStatus?: "configured" | "missing" | null;
+	oauthStatus?: "coming-soon" | null;
+	lastUpdatedAt?: string | null;
+	lastUpdatedBy?: string | null;
+};
+
 export type SettingsCurrent = {
 	theme?: "light" | "dark";
 	supportEmail?: string | null;
@@ -70,6 +88,7 @@ export type SettingsCurrent = {
 	defaultLocale?: AppLocale | null;
 	oauthProviders?: OAuthProvidersSettings;
 	shippingEnabled?: boolean;
+	shippingMelhorEnvio?: MelhorEnvioSettings | null;
 	shippingProviders?: ShippingProvidersSettings;
 };
 

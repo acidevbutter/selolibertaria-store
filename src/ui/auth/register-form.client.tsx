@@ -413,7 +413,13 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 						Você já passou pela parte principal. Agora só precisamos do endereço para entrega e acompanhamento
 						dos pedidos.
 					</div>
-					<AddressFields idPrefix="register-address" value={address} onChange={setAddress} required />
+					<AddressFields
+						idPrefix="register-address"
+						value={address}
+						onChange={setAddress}
+						countryMode="br-only"
+						required
+					/>
 				</div>
 			) : null}
 

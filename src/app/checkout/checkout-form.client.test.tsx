@@ -7,11 +7,13 @@ import ptBrMessages from "../../../messages/pt-BR.json";
 const {
 	replaceMock,
 	confirmPaymentMock,
+	updateCheckoutBuyerDataMock,
 	updatePaymentMethodSavingPreferenceMock,
 	updateCheckoutDeliverySelectionMock,
 } = vi.hoisted(() => ({
 	replaceMock: vi.fn(),
 	confirmPaymentMock: vi.fn(),
+	updateCheckoutBuyerDataMock: vi.fn(),
 	updatePaymentMethodSavingPreferenceMock: vi.fn(),
 	updateCheckoutDeliverySelectionMock: vi.fn(),
 }));
@@ -33,7 +35,7 @@ vi.mock("@stripe/stripe-js", () => ({
 }));
 
 vi.mock("@stripe/react-stripe-js", () => ({
-	Elements: ({ children }: { children: unknown }) => children,
+	Elements: ({ children }: { children: React.ReactNode }) => children,
 	PaymentElement: () => <div data-testid="payment-element">payment-element</div>,
 	useStripe: () => ({
 		confirmPayment: confirmPaymentMock,
@@ -42,133 +44,210 @@ vi.mock("@stripe/react-stripe-js", () => ({
 }));
 
 vi.mock("@/actions/checkout-actions", () => ({
+	updateCheckoutBuyerData: updateCheckoutBuyerDataMock,
 	updatePaymentMethodSavingPreference: updatePaymentMethodSavingPreferenceMock,
 	updateCheckoutDeliverySelection: updateCheckoutDeliverySelectionMock,
 }));
+
+vi.mock("@/ui/auth/address-fields.client", () => ({
+	AddressFields: ({
+		countryMode,
+		onChange,
+		onResolvedAddress,
+	}: {
+		countryMode?: string;
+		onChange?: (value: Record<string, string>) => void;
+		onResolvedAddress?: (value: Record<string, string>) => void;
+	}) => {
+		const resolvedAddress = {
+			line1: "SQS 102 Bloco A",
+			line2: "",
+			number: "12",
+			complement: "",
+			district: "Asa Sul",
+			city: "Brasilia",
+			state: "DF",
+			postalCode: "71015-210",
+			country: "BR",
+		};
+
+		return (
+			<div>
+				<span data-testid="country-mode">{countryMode}</span>
+				<button
+					type="button"
+					onClick={() => {
+						onChange?.(resolvedAddress);
+						onResolvedAddress?.(resolvedAddress);
+					}}
+				>
+					Simular CEP
+				</button>
+			</div>
+		);
+	},
+}));
+
+const baseCheckout = {
+	publishableKey: "pk_test_123",
+	clientSecret: "pi_client_secret_123",
+	orderId: "ord_123",
+	paymentIntentId: "pi_123",
+	isAuthenticated: true,
+	buyer: {
+		fullName: "Pessoa Leitora",
+		email: "leitora@selo.com",
+		cpf: "12345678901",
+		phone: "11999999999",
+	},
+	subtotal: 5000,
+	discountTotal: 0,
+	amountTotal: 5000,
+	currency: "BRL",
+	items: [],
+	deliveryMethod: "pickup" as const,
+	deliveryAddress: null,
+	canSavePaymentMethod: true,
+	savePaymentMethod: false,
+	savedPaymentMethods: [
+		{
+			id: "pm_saved",
+			brand: "visa",
+			last4: "4242",
+			expMonth: 12,
+			expYear: 2030,
+		},
+	],
+};
+
+function renderCheckout(override: Partial<typeof baseCheckout> = {}) {
+	return render(
+		<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+			<CheckoutForm locale="pt-BR" checkout={{ ...baseCheckout, ...override }} />
+		</IntlClientProvider>,
+	);
+}
 
 describe("CheckoutForm", () => {
 	beforeEach(() => {
 		replaceMock.mockReset();
 		confirmPaymentMock.mockReset();
+		updateCheckoutBuyerDataMock.mockReset();
 		updatePaymentMethodSavingPreferenceMock.mockReset();
 		updateCheckoutDeliverySelectionMock.mockReset();
+
+		updateCheckoutBuyerDataMock.mockResolvedValue({
+			ok: true,
+			buyer: {
+				fullName: "Pessoa Leitora",
+				email: "leitora@selo.com",
+				cpf: "12345678901",
+				phone: "11999999999",
+			},
+		});
 		updatePaymentMethodSavingPreferenceMock.mockResolvedValue({ ok: true });
 		updateCheckoutDeliverySelectionMock.mockResolvedValue({
 			ok: true,
 			orderId: "ord_123",
 			paymentIntentId: "pi_123",
-			deliveryMethod: "saved-address",
-			deliveryAddress: {
-				line1: "Rua Teste",
-				line2: null,
-				number: "123",
-				complement: null,
-				district: "Centro",
-				city: "São Paulo",
-				state: "SP",
-				postalCode: "01000-000",
-				country: "BR",
-			},
-			shippingRate: {
-				providerCode: "correios",
-				providerLabel: "Correios",
-				serviceCode: "SEDEX",
-				serviceName: "SEDEX",
-				fixed_amount: { amount: 2500 },
-				currency: "USD",
-				estimated_days: 3,
-			},
+			deliveryMethod: "pickup",
+			deliveryAddress: null,
+			shippingRate: null,
 			shippingError: null,
-			subtotal: 1000,
+			subtotal: 5000,
 			discountTotal: 0,
-			amountTotal: 3500,
-			currency: "USD",
+			amountTotal: 5000,
+			currency: "BRL",
 		});
-		globalThis.ResizeObserver = ResizeObserverMock;
-		window.history.replaceState({}, "", "/checkout");
+
+		vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 	});
 
-	it("confirma o pagamento com um método salvo selecionado", async () => {
+	it("confirma o pagamento com um metodo salvo selecionado", async () => {
 		confirmPaymentMock.mockResolvedValue({
 			paymentIntent: {
+				id: "pi_123",
 				status: "succeeded",
 			},
 		});
 
-		render(
-			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
-				<CheckoutForm
-					locale="pt-BR"
-					checkout={{
-						publishableKey: "pk_test_123",
-						clientSecret: "pi_123_secret_abc",
-						orderId: "ord_123",
-						paymentIntentId: "pi_123",
-						subtotal: 1000,
-						discountTotal: 0,
-						amountTotal: 1000,
-						currency: "USD",
-						items: [],
-						couponCode: null,
-						shippingRate: {
-							providerCode: "pickup",
-							providerLabel: "Store pickup",
-							serviceCode: "pickup",
-							serviceName: "Pick up at the store",
-							fixed_amount: { amount: 0 },
-							currency: "USD",
-							estimated_days: 1,
-						},
-						shippingError: null,
-						deliveryMethod: "pickup",
-						deliveryAddress: null,
-						canSavePaymentMethod: true,
-						savePaymentMethod: false,
-						savedPaymentMethods: [
-							{
-								id: "pm_123",
-								type: "card",
-								billingDetails: {
-									name: "Teste",
-									email: "teste@example.com",
-								},
-								card: {
-									brand: "visa",
-									last4: "4242",
-									expMonth: 12,
-									expYear: 2030,
-								},
-								created: 1,
-							},
-						],
-					}}
-				/>
-			</IntlClientProvider>,
-		);
+		renderCheckout();
 
-		fireEvent.click(screen.getByRole("radio", { name: /Visa terminado em 4242/i }));
-		fireEvent.click(screen.getByRole("button", { name: /Pagar com cartão salvo/i }));
+		fireEvent.click(screen.getByRole("button", { name: "Finalizar compra" }));
 
 		await waitFor(() => {
-			expect(updatePaymentMethodSavingPreferenceMock).toHaveBeenCalledWith({
-				paymentIntentId: "pi_123",
-				savePaymentMethod: false,
-			});
+			expect(updateCheckoutBuyerDataMock).toHaveBeenCalledTimes(1);
+			expect(confirmPaymentMock).toHaveBeenCalledTimes(1);
+			expect(replaceMock).toHaveBeenCalledWith(
+				"/checkout/processing?order=ord_123&payment_intent=pi_123&guest=0",
+			);
 		});
+	});
 
-		await waitFor(() => {
-			expect(confirmPaymentMock).toHaveBeenCalledWith({
-				clientSecret: "pi_123_secret_abc",
-				confirmParams: {
-					return_url: "http://localhost:3000/checkout/return?order=ord_123",
-					payment_method: "pm_123",
+	it("recalcula o frete apos o CEP resolvido e trava o pais em BR no checkout", async () => {
+		updateCheckoutDeliverySelectionMock.mockResolvedValue({
+			ok: true,
+			orderId: "ord_123",
+			paymentIntentId: "pi_123",
+			deliveryMethod: "new-address",
+			deliveryAddress: {
+				line1: "SQS 102 Bloco A",
+				line2: "",
+				number: "12",
+				complement: "",
+				district: "Asa Sul",
+				city: "Brasilia",
+				state: "DF",
+				postalCode: "71015-210",
+				country: "BR",
+			},
+			shippingRate: {
+				providerCode: "melhorenvio",
+				serviceCode: "best",
+				serviceName: "SEDEX",
+				fixed_amount: {
+					amount: 1990,
 				},
-				redirect: "if_required",
-			});
+				estimated_days: 4,
+			},
+			shippingError: null,
+			subtotal: 5000,
+			discountTotal: 0,
+			amountTotal: 6990,
+			currency: "BRL",
 		});
 
+		renderCheckout({
+			deliveryMethod: "new-address",
+			deliveryAddress: {
+				line1: "",
+				line2: "",
+				number: "",
+				complement: "",
+				district: "",
+				city: "",
+				state: "",
+				postalCode: "",
+				country: "BR",
+			},
+			savedPaymentMethods: [],
+			canSavePaymentMethod: false,
+		});
+
+		expect(screen.getByTestId("country-mode")).toHaveTextContent("br-only");
+
+		fireEvent.click(screen.getByRole("button", { name: "Simular CEP" }));
+
 		await waitFor(() => {
-			expect(replaceMock).toHaveBeenCalledWith("/checkout/processing?order=ord_123");
+			expect(updateCheckoutDeliverySelectionMock).toHaveBeenCalledWith({
+				paymentIntentId: "pi_123",
+				orderId: "ord_123",
+				deliveryMethod: "new-address",
+				address: expect.objectContaining({
+					postalCode: "71015-210",
+					country: "BR",
+				}),
+			});
 		});
 	});
 });

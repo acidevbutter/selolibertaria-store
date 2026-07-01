@@ -188,6 +188,51 @@ export const SHIPPING_PROVIDER_PRESETS: Record<ShippingProviderKind, ShippingPro
 			},
 		],
 	},
+	melhorenvio: {
+		kind: "melhorenvio",
+		label: "Melhor Envio",
+		description:
+			"Cotação via Melhor Envio para fretes no Brasil, usando token já autorizado e sem emissão de etiquetas nesta etapa.",
+		defaultAuthType: "bearer",
+		defaultBaseUrl: "https://www.melhorenvio.com.br/api/v2",
+		defaultEnvironment: "sandbox",
+		defaultEndpoints: {
+			quote: "/me/shipment/calculate",
+			shipment: "",
+			tracking: "",
+			token: "",
+		},
+		defaultSupportedCountries: ["BR"],
+		defaultRequiresPostalCode: true,
+		credentialFields: [
+			{
+				key: "accessToken",
+				label: "Token de acesso",
+				placeholder: "token-do-melhor-envio",
+				secret: true,
+				required: true,
+				helpText: "Token de acesso já autorizado. Renovação automática ficará para a PR 3B.",
+			},
+			{
+				key: "originPostalCode",
+				label: "CEP de origem",
+				placeholder: "01000-000",
+				required: true,
+			},
+			{
+				key: "userAgent",
+				label: "User-Agent opcional",
+				placeholder: "Selo Libertária (tech@exemplo.com)",
+				helpText: "Se vazio, use um cabeçalho técnico baseado no nome do provedor e no e-mail abaixo.",
+			},
+			{
+				key: "contactEmail",
+				label: "E-mail técnico opcional",
+				placeholder: "tech@exemplo.com",
+				helpText: "Ajuda a compor o cabeçalho técnico quando o User-Agent não for informado manualmente.",
+			},
+		],
+	},
 };
 
 export function getShippingProviderPreset(kind?: ShippingProviderKind | null) {

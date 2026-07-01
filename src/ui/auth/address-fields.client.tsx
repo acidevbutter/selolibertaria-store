@@ -24,6 +24,8 @@ type Props = {
 	value: AddressValue;
 	onChange: (value: AddressValue) => void;
 	required?: boolean;
+	countryMode?: "select" | "br-only";
+	onResolvedAddress?: (value: AddressValue) => void;
 };
 
 type PostalLookupResult = {
@@ -41,12 +43,21 @@ type PostalLookupOutcome =
 	| { status: "not-found" }
 	| { status: "unavailable" };
 
-export function AddressFields({ idPrefix, value, onChange, required }: Props) {
+export function AddressFields({
+	idPrefix,
+	value,
+	onChange,
+	required,
+	countryMode = "select",
+	onResolvedAddress,
+}: Props) {
 	const locale = useLocale();
 	const t = useTranslations("Address");
 	const [lookupStatus, setLookupStatus] = useState<string | null>(null);
 	const [postalFieldsLocked, setPostalFieldsLocked] = useState(false);
 	const lastLookupKeyRef = useRef<string | null>(null);
+	const isBrazilOnly = countryMode === "br-only";
+
 	const current: AddressValue = {
 		line1: value.line1 ?? "",
 		line2: value.line2 ?? "",
@@ -58,126 +69,156 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 		postalCode: value.postalCode ?? "",
 		country: value.country || "BR",
 	};
-	const postalLabel = getPostalCodeLabel(current.country, locale);
+
+	const effectiveCountry = isBrazilOnly ? "BR" : current.country;
+	const postalLabel = getPostalCodeLabel(effectiveCountry, locale);
+
+	function withCountryConstraint(next: AddressValue): AddressValue {
+		return isBrazilOnly ? { ...next, country: "BR" } : next;
+	}
 
 	function clearPostalDerivedAddress(postalCode = current.postalCode) {
 		setPostalFieldsLocked(false);
-		onChange({
-			...current,
-			line1: "",
-			district: "",
-			city: "",
-			state: "",
-			postalCode,
-		});
+		onChange(
+			withCountryConstraint({
+				...current,
+				line1: "",
+				district: "",
+				city: "",
+				state: "",
+				postalCode,
+			}),
+		);
 	}
 
 	async function lookupPostalCode(postalCodeValue = current.postalCode, force = false) {
 		const postalCode = postalCodeValue.trim();
 		const postalDigits = postalCode.replace(/\D+/g, "");
-		if (current.country !== "BR" || postalDigits.length !== 8) return;
-		const lookupKey = `${current.country}:${postalDigits}`;
+
+		if (effectiveCountry !== "BR" || postalDigits.length !== 8) return;
+
+		const lookupKey = `${effectiveCountry}:${postalDigits}`;
 		if (!force && lastLookupKeyRef.current === lookupKey) return;
 		lastLookupKeyRef.current = lookupKey;
+
 		setLookupStatus(t("lookup.loading"));
+
 		try {
-			const lookup = await resolvePostalLookup(current.country, postalCode);
+			const lookup = await resolvePostalLookup(effectiveCountry, postalCode);
 			if (lookup.status === "unavailable") {
 				setLookupStatus(t("lookup.unavailable"));
-				clearPostalDerivedAddress(normalizePostalCode(current.country, postalCode));
+				clearPostalDerivedAddress(normalizePostalCode(effectiveCountry, postalCode));
 				return;
 			}
+
 			if (lookup.status === "not-found") {
 				setLookupStatus(t("lookup.notFound"));
-				clearPostalDerivedAddress(normalizePostalCode(current.country, postalCode));
+				clearPostalDerivedAddress(normalizePostalCode(effectiveCountry, postalCode));
 				return;
 			}
-			onChange({
+
+			const nextAddress = withCountryConstraint({
 				...current,
 				line1: lookup.result.line1 ?? "",
 				district: lookup.result.district ?? lookup.result.line2 ?? "",
 				city: lookup.result.city ?? "",
 				state: lookup.result.state ?? "",
-				postalCode: lookup.result.postalCode || normalizePostalCode(current.country, postalCode),
-				country: lookup.result.country || current.country,
+				postalCode: lookup.result.postalCode || normalizePostalCode(effectiveCountry, postalCode),
+				country: lookup.result.country || effectiveCountry,
 			});
-			setPostalFieldsLocked(current.country === "BR");
+
+			onChange(nextAddress);
+			onResolvedAddress?.(nextAddress);
+			setPostalFieldsLocked(effectiveCountry === "BR");
 			setLookupStatus(t("lookup.success"));
 		} catch {
 			setPostalFieldsLocked(false);
 			setLookupStatus(t("lookup.unavailable"));
-			clearPostalDerivedAddress(normalizePostalCode(current.country, postalCode));
+			clearPostalDerivedAddress(normalizePostalCode(effectiveCountry, postalCode));
 		}
 	}
 
 	useEffect(() => {
 		const postalDigits = current.postalCode.replace(/\D+/g, "");
-		if (current.country !== "BR" || postalDigits.length !== 8) return;
+		if (effectiveCountry !== "BR" || postalDigits.length !== 8) return;
 
 		const lookupDelay = window.setTimeout(() => {
 			void lookupPostalCode(current.postalCode);
 		}, 400);
 
 		return () => window.clearTimeout(lookupDelay);
-	}, [current.country, current.postalCode]);
+	}, [effectiveCountry, current.postalCode]);
 
 	function setField<K extends keyof AddressValue>(key: K, next: AddressValue[K]) {
-		onChange({ ...current, [key]: next });
+		onChange(withCountryConstraint({ ...current, [key]: next }));
 	}
 
 	function handlePostalCodeChange(rawValue: string) {
-		const nextPostalCode = normalizePostalCode(current.country, rawValue);
+		const nextPostalCode = normalizePostalCode(effectiveCountry, rawValue);
 		const postalDigits = nextPostalCode.replace(/\D+/g, "");
+
 		lastLookupKeyRef.current = null;
 		setPostalFieldsLocked(false);
 		setLookupStatus(null);
-		onChange({
-			...current,
-			postalCode: nextPostalCode,
-			...(current.country === "BR" && (postalDigits.length < 8 || nextPostalCode !== current.postalCode)
-				? {
-						line1: "",
-						district: "",
-						city: "",
-						state: "",
-					}
-				: {}),
-		});
+
+		onChange(
+			withCountryConstraint({
+				...current,
+				postalCode: nextPostalCode,
+				...(effectiveCountry === "BR" && (postalDigits.length < 8 || nextPostalCode !== current.postalCode)
+					? {
+							line1: "",
+							district: "",
+							city: "",
+							state: "",
+						}
+					: {}),
+			}),
+		);
 	}
 
 	return (
 		<div className="grid gap-4">
 			<div className="grid gap-4 md:grid-cols-2">
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-country`}>{t("country")}</Label>
-					<CountrySelect
-						id={`${idPrefix}-country`}
-						value={current.country}
-						onChange={(country) =>
-							onChange({
-								...current,
-								country,
-								postalCode: normalizePostalCode(country, current.postalCode),
-							})
-						}
-					/>
-				</div>
+				{isBrazilOnly ? (
+					<div className="md:col-span-2">
+						<p className="text-xs text-muted-foreground">No momento, atendemos apenas endereços no Brasil.</p>
+					</div>
+				) : (
+					<div className="grid gap-2">
+						<Label htmlFor={`${idPrefix}-country`}>{t("country")}</Label>
+						<CountrySelect
+							id={`${idPrefix}-country`}
+							value={current.country}
+							onChange={(country) =>
+								onChange({
+									...current,
+									country,
+									postalCode: normalizePostalCode(country, current.postalCode),
+								})
+							}
+						/>
+					</div>
+				)}
+
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-postal-code`}>{postalLabel}</Label>
 					<Input
 						id={`${idPrefix}-postal-code`}
 						value={current.postalCode}
 						onChange={(event) => handlePostalCodeChange(event.target.value)}
-						onBlur={() => lookupPostalCode(current.postalCode, true)}
+						onBlur={() => void lookupPostalCode(current.postalCode, true)}
 						autoComplete="postal-code"
-						placeholder={current.country === "BR" ? "00000-000" : postalLabel}
-						inputMode={current.country === "BR" ? "numeric" : "text"}
-						maxLength={current.country === "BR" ? 9 : undefined}
+						placeholder={effectiveCountry === "BR" ? "00000-000" : postalLabel}
+						inputMode={effectiveCountry === "BR" ? "numeric" : "text"}
+						maxLength={effectiveCountry === "BR" ? 9 : undefined}
 						required={required}
 					/>
 				</div>
 			</div>
+
 			{lookupStatus ? <p className="-mt-2 text-xs text-muted-foreground">{lookupStatus}</p> : null}
+
 			<div className="grid gap-2">
 				<Label htmlFor={`${idPrefix}-line1`}>{t("fields.streetAddress")}</Label>
 				<Input
@@ -186,11 +227,12 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 					onChange={(event) => setField("line1", event.target.value)}
 					autoComplete="address-line1"
 					placeholder={t("placeholders.streetAddress")}
-					disabled={postalFieldsLocked && current.country === "BR"}
-					title={postalFieldsLocked && current.country === "BR" ? t("fieldAutoFilled") : undefined}
+					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
 					required={required}
 				/>
 			</div>
+
 			<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px]">
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-district`}>{t("fields.district")}</Label>
@@ -199,11 +241,12 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 						value={current.district}
 						onChange={(event) => setField("district", event.target.value)}
 						placeholder={t("placeholders.district")}
-						disabled={postalFieldsLocked && current.country === "BR"}
-						title={postalFieldsLocked && current.country === "BR" ? t("fieldAutoFilled") : undefined}
-						required={required && current.country === "BR"}
+						disabled={postalFieldsLocked && effectiveCountry === "BR"}
+						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
+						required={required && effectiveCountry === "BR"}
 					/>
 				</div>
+
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-city`}>{t("fields.city")}</Label>
 					<Input
@@ -211,11 +254,12 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 						value={current.city}
 						onChange={(event) => setField("city", event.target.value)}
 						autoComplete="address-level2"
-						disabled={postalFieldsLocked && current.country === "BR"}
-						title={postalFieldsLocked && current.country === "BR" ? t("fieldAutoFilled") : undefined}
+						disabled={postalFieldsLocked && effectiveCountry === "BR"}
+						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
 						required={required}
 					/>
 				</div>
+
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-state`}>{t("fields.state")}</Label>
 					<Input
@@ -223,13 +267,14 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 						value={current.state}
 						onChange={(event) => setField("state", event.target.value)}
 						autoComplete="address-level1"
-						maxLength={current.country === "BR" ? 2 : undefined}
-						disabled={postalFieldsLocked && current.country === "BR"}
-						title={postalFieldsLocked && current.country === "BR" ? t("fieldAutoFilled") : undefined}
+						maxLength={effectiveCountry === "BR" ? 2 : undefined}
+						disabled={postalFieldsLocked && effectiveCountry === "BR"}
+						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
 						required={required}
 					/>
 				</div>
 			</div>
+
 			<div className="grid gap-4 md:grid-cols-[160px_minmax(0,1fr)]">
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-number`}>{t("fields.number")}</Label>
@@ -242,13 +287,20 @@ export function AddressFields({ idPrefix, value, onChange, required }: Props) {
 						required={required}
 					/>
 				</div>
+
 				<div className="grid gap-2">
 					<Label htmlFor={`${idPrefix}-complement`}>{t("fields.complement")}</Label>
 					<Input
 						id={`${idPrefix}-complement`}
 						value={current.complement || current.line2}
 						onChange={(event) =>
-							onChange({ ...current, complement: event.target.value, line2: event.target.value })
+							onChange(
+								withCountryConstraint({
+									...current,
+									complement: event.target.value,
+									line2: event.target.value,
+								}),
+							)
 						}
 						autoComplete="address-line3"
 						placeholder={t("placeholders.complement")}
@@ -317,12 +369,14 @@ async function lookupBrazilianPostalCodeFromViaCep(digits: string): Promise<Post
 			uf?: string;
 			cep?: string;
 		};
+
 		if (data.erro) return { status: "not-found" };
 
 		return {
 			status: "success",
 			result: {
 				line1: data.logradouro || "",
+				line2: "",
 				district: data.bairro || "",
 				city: data.localidade || "",
 				state: data.uf || "",
@@ -352,6 +406,7 @@ async function lookupBrazilianPostalCodeFromBrasilApi(digits: string): Promise<P
 			status: "success",
 			result: {
 				line1: data.street || "",
+				line2: "",
 				district: data.neighborhood || "",
 				city: data.city || "",
 				state: data.state || "",

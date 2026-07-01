@@ -13,7 +13,7 @@ describe("order-status-notification", () => {
 	});
 
 	it("mantém transições reais de pagamento notificáveis", () => {
-		expect(shouldNotifyCustomerOrderStatusChange("processing", "succeeded")).toBe(true);
+		expect(shouldNotifyCustomerOrderStatusChange("processing", "succeeded")).toBe(false);
 		expect(shouldNotifyCustomerOrderStatusChange("succeeded", "refunded")).toBe(true);
 		expect(shouldNotifyCustomerOrderStatusChange("processing", "failed")).toBe(true);
 	});

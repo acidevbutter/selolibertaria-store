@@ -1,9 +1,14 @@
 "server-only";
 
 import { ObjectId } from "mongodb";
+import { env } from "@/env.mjs";
 import { getDb } from "@/lib/mongodb";
 import { decryptStoredSecret } from "@/lib/oauth/secrets";
-import type { ShippingProviderSettings, ShippingProvidersSettings } from "@/lib/settings";
+import type {
+	MelhorEnvioSettings,
+	ShippingProviderSettings,
+	ShippingProvidersSettings,
+} from "@/lib/settings";
 import { getDefaultCountrySetting, getSettingsDoc } from "@/lib/settings-store";
 import {
 	type CheckoutAddress,
@@ -17,6 +22,7 @@ import {
 	selectBestShippingQuote,
 	toShippingRate,
 } from "@/lib/shipping-core";
+import { fetchMelhorEnvioQuotes } from "@/lib/shipping-melhor-envio";
 
 const REQUEST_TIMEOUT_MS = 8_000;
 
@@ -28,6 +34,10 @@ type RuntimePackageSummary = {
 	heightCm: number;
 };
 
+type RuntimeShippingProviderSettings = ShippingProviderSettings & {
+	runtimeCredentials?: Record<string, string>;
+};
+
 function normalizeCountryCode(value?: string | null) {
 	const normalized = value?.trim().toUpperCase() ?? "";
 	return /^[A-Z]{2}$/.test(normalized) ? normalized : null;
@@ -36,6 +46,16 @@ function normalizeCountryCode(value?: string | null) {
 function normalizePostalCode(value?: string | null) {
 	const trimmed = value?.trim() ?? "";
 	return trimmed ? trimmed : null;
+}
+
+function normalizeRuntimeText(value?: string | null) {
+	const trimmed = value?.trim() ?? "";
+	return trimmed ? trimmed : null;
+}
+
+function normalizeRuntimeNumber(value: number | string | null | undefined, fallback: number) {
+	const numeric = Number(value);
+	return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
 }
 
 function buildAbsoluteUrl(baseUrl?: string | null, path?: string | null) {
@@ -56,6 +76,15 @@ function maskPlainSecret(value: string) {
 
 function decryptProviderCredentials(provider: ShippingProviderSettings) {
 	const next: Record<string, string> = {};
+	const runtimeCredentials = (provider as RuntimeShippingProviderSettings).runtimeCredentials;
+	if (runtimeCredentials) {
+		for (const [key, rawValue] of Object.entries(runtimeCredentials)) {
+			if (rawValue.trim()) next[key] = rawValue.trim();
+		}
+	}
+	if (isMelhorEnvioProvider(provider) && env.MELHOR_ENVIO_ACCESS_TOKEN?.trim()) {
+		next.accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN.trim();
+	}
 	if (provider.credentialsEncrypted) {
 		const decrypted = decryptStoredSecret(provider.credentialsEncrypted);
 		if (decrypted) {
@@ -179,6 +208,153 @@ function buildPackageSummary(provider: ShippingProviderSettings, items: QuoteIte
 		widthCm: Math.max(1, provider.defaultWidthCm ?? 20),
 		heightCm: Math.max(1, provider.defaultHeightCm ?? 10),
 	};
+}
+
+function isMelhorEnvioProvider(provider: ShippingProviderSettings) {
+	const kind = String(provider.kind ?? "").toLowerCase();
+	const baseUrl = String(provider.baseUrl ?? "").toLowerCase();
+	const endpointUrl = String(provider.endpointUrl ?? "").toLowerCase();
+	const quoteEndpoint = String(provider.endpoints?.quote ?? "").toLowerCase();
+
+	return (
+		kind === "melhorenvio" ||
+		baseUrl.includes("melhorenvio.com.br") ||
+		endpointUrl.includes("me/shipment/calculate") ||
+		quoteEndpoint.includes("me/shipment/calculate")
+	);
+}
+
+function shouldPreferMelhorEnvio(destination: ShippingDestination, providers: ShippingProviderSettings[]) {
+	const destinationCountry = normalizeCountryCode(destination.country);
+	const destinationPostalCode = normalizePostalCode(destination.postalCode);
+
+	return (
+		destinationCountry === "BR" &&
+		Boolean(destinationPostalCode) &&
+		providers.some((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider))
+	);
+}
+
+function findLegacyMelhorEnvioProvider(
+	providers: ShippingProviderSettings[],
+): ShippingProviderSettings | null {
+	return providers.find((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider)) ?? null;
+}
+
+function buildFixedMelhorEnvioProvider(args: {
+	config?: MelhorEnvioSettings | null;
+	legacyProvider?: ShippingProviderSettings | null;
+}): ShippingProviderSettings {
+	const legacyProvider = args.legacyProvider ?? null;
+	const legacyCredentials = legacyProvider ? decryptProviderCredentials(legacyProvider) : {};
+	const config = args.config ?? null;
+	const accessToken = env.MELHOR_ENVIO_ACCESS_TOKEN?.trim() ?? "";
+	const originPostalCode =
+		normalizeRuntimeText(config?.originPostalCode) ??
+		normalizeRuntimeText(legacyCredentials.originPostalCode ?? legacyCredentials.fromPostalCode);
+	const userAgent =
+		normalizeRuntimeText(config?.userAgent) ??
+		normalizeRuntimeText(legacyCredentials.userAgent ?? legacyCredentials.applicationName);
+	const contactEmail =
+		normalizeRuntimeText(config?.contactEmail) ??
+		normalizeRuntimeText(legacyCredentials.contactEmail ?? legacyCredentials.technicalEmail);
+
+	const runtimeCredentials = {
+		...(accessToken ? { accessToken } : {}),
+		...(originPostalCode ? { originPostalCode } : {}),
+		...(userAgent ? { userAgent } : {}),
+		...(contactEmail ? { contactEmail } : {}),
+	};
+
+	const provider: RuntimeShippingProviderSettings = {
+		...normalizeShippingProviderInput(
+			{
+				code: "melhorenvio",
+				label: "Melhor Envio",
+				enabled: true,
+				priority: 0,
+				mode: "http",
+				kind: "melhorenvio",
+				authType: "bearer",
+				baseUrl:
+					normalizeRuntimeText(config?.baseUrl) ??
+					normalizeRuntimeText(legacyProvider?.baseUrl) ??
+					"https://www.melhorenvio.com.br/api/v2",
+				environment: config?.environment ?? legacyProvider?.environment ?? "sandbox",
+				endpoints: {
+					quote: "/me/shipment/calculate",
+					shipment: null,
+					tracking: null,
+					token: null,
+				},
+				supportedCountries: ["BR"],
+				requiresPostalCode: true,
+				defaultWeightGrams: normalizeRuntimeNumber(
+					config?.defaultWeightGrams ?? legacyProvider?.defaultWeightGrams,
+					300,
+				),
+				defaultLengthCm: normalizeRuntimeNumber(
+					config?.defaultLengthCm ?? legacyProvider?.defaultLengthCm,
+					20,
+				),
+				defaultWidthCm: normalizeRuntimeNumber(config?.defaultWidthCm ?? legacyProvider?.defaultWidthCm, 20),
+				defaultHeightCm: normalizeRuntimeNumber(
+					config?.defaultHeightCm ?? legacyProvider?.defaultHeightCm,
+					10,
+				),
+				credentials: runtimeCredentials,
+			},
+			0,
+		),
+		runtimeCredentials,
+	};
+
+	return provider;
+}
+
+export function serializeMelhorEnvioSettingsForAdmin(
+	value: MelhorEnvioSettings | null | undefined,
+	legacyProviders?: ShippingProvidersSettings,
+): MelhorEnvioSettings {
+	const legacyProvider = findLegacyMelhorEnvioProvider(
+		(legacyProviders ?? []).map((provider, index) => normalizeShippingProviderRuntime(provider, index)),
+	);
+	const legacyCredentials = legacyProvider ? decryptProviderCredentials(legacyProvider) : {};
+
+	return {
+		environment: value?.environment ?? legacyProvider?.environment ?? "sandbox",
+		baseUrl: value?.baseUrl ?? legacyProvider?.baseUrl ?? null,
+		originPostalCode:
+			value?.originPostalCode ??
+			normalizeRuntimeText(legacyCredentials.originPostalCode ?? legacyCredentials.fromPostalCode),
+		defaultWeightGrams: value?.defaultWeightGrams ?? legacyProvider?.defaultWeightGrams ?? 300,
+		defaultLengthCm: value?.defaultLengthCm ?? legacyProvider?.defaultLengthCm ?? 20,
+		defaultWidthCm: value?.defaultWidthCm ?? legacyProvider?.defaultWidthCm ?? 20,
+		defaultHeightCm: value?.defaultHeightCm ?? legacyProvider?.defaultHeightCm ?? 10,
+		userAgent:
+			value?.userAgent ??
+			normalizeRuntimeText(legacyCredentials.userAgent ?? legacyCredentials.applicationName),
+		contactEmail:
+			value?.contactEmail ??
+			normalizeRuntimeText(legacyCredentials.contactEmail ?? legacyCredentials.technicalEmail),
+		supportedCountry: "BR",
+		requiresPostalCode: true,
+		envTokenStatus: env.MELHOR_ENVIO_ACCESS_TOKEN?.trim() ? "configured" : "missing",
+		oauthStatus: "coming-soon",
+		lastUpdatedAt: value?.lastUpdatedAt ?? null,
+		lastUpdatedBy: value?.lastUpdatedBy ?? null,
+	};
+}
+
+function buildMelhorEnvioUserAgent(credentials: Record<string, string>, provider: ShippingProviderSettings) {
+	const explicitUserAgent = credentials.userAgent?.trim();
+	if (explicitUserAgent) return explicitUserAgent;
+
+	const technicalEmail = credentials.technicalEmail?.trim() || credentials.contactEmail?.trim();
+	const applicationName = credentials.applicationName?.trim() || provider.label.trim();
+	if (technicalEmail) return `${applicationName} (${technicalEmail})`;
+
+	return "";
 }
 
 async function fetchJson(input: string, init: RequestInit) {
@@ -502,6 +678,34 @@ async function buildHttpQuotes(
 	}
 	if (provider.requiresPostalCode && !normalizePostalCode(destination.postalCode)) return [];
 
+	if (isMelhorEnvioProvider(provider)) {
+		const credentials = decryptProviderCredentials(provider);
+		const originPostalCode = normalizePostalCode(credentials.originPostalCode ?? credentials.fromPostalCode);
+		const destinationPostalCode = normalizePostalCode(destination.postalCode);
+		const destinationCountry = normalizeCountryCode(destination.country);
+		const accessToken = credentials.apiKey ?? credentials.accessToken ?? credentials.token ?? "";
+		const userAgent = buildMelhorEnvioUserAgent(credentials, provider);
+		if (!originPostalCode || !destinationPostalCode) return [];
+		if (destinationCountry && destinationCountry !== "BR") {
+			throw new Error("O adapter do Melhor Envio aceita apenas envios no Brasil.");
+		}
+
+		const packageSummary = buildPackageSummary(provider, items);
+		return await fetchMelhorEnvioQuotes({
+			providerCode: provider.code,
+			providerLabel: provider.label,
+			originPostalCode,
+			destinationPostalCode,
+			package: packageSummary,
+			declaredValueCents: subtotal,
+			accessToken,
+			userAgent,
+			baseUrl: provider.baseUrl ?? null,
+			environment: provider.environment ?? "production",
+			currency,
+		});
+	}
+
 	switch (provider.kind) {
 		case "correios":
 			return await buildCorreiosQuotes(provider, destination, currency, items);
@@ -538,17 +742,6 @@ export async function resolveShippingQuotesForDestination(args: {
 	deliveryMethod: CheckoutDeliveryMethod;
 }): Promise<ShippingQuoteResolution & { provider: ShippingProviderSettings | null }> {
 	const settings = await getSettingsDoc();
-	if (settings?.current?.shippingEnabled === false) {
-		return {
-			quotes: [],
-			selected: null,
-			provider: null,
-			error: null,
-		};
-	}
-	const providers = (settings?.current?.shippingProviders ?? []).map((provider, index) =>
-		normalizeShippingProviderRuntime(provider, index),
-	);
 	if (args.deliveryMethod === "pickup") {
 		const quote = buildPickupQuote(args.currency);
 		return {
@@ -557,6 +750,24 @@ export async function resolveShippingQuotesForDestination(args: {
 			provider: null,
 		};
 	}
+	if (settings?.current?.shippingEnabled === false) {
+		return {
+			quotes: [],
+			selected: null,
+			provider: null,
+			error: null,
+		};
+	}
+	const legacyProviders = (settings?.current?.shippingProviders ?? []).map((provider, index) =>
+		normalizeShippingProviderRuntime(provider, index),
+	);
+	const legacyMelhorEnvioProvider = findLegacyMelhorEnvioProvider(legacyProviders);
+	const providers = [
+		buildFixedMelhorEnvioProvider({
+			config: settings?.current?.shippingMelhorEnvio ?? null,
+			legacyProvider: legacyMelhorEnvioProvider,
+		}),
+	];
 	if (!providers.length) {
 		return { quotes: [], selected: null, provider: null, error: "Nenhum provedor de frete foi configurado." };
 	}
@@ -565,10 +776,19 @@ export async function resolveShippingQuotesForDestination(args: {
 	const orderedProviders = [...providers]
 		.filter((provider) => provider.enabled !== false)
 		.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0) || a.label.localeCompare(b.label));
+	const preferredProviders = shouldPreferMelhorEnvio(destination, orderedProviders)
+		? orderedProviders.filter((provider) => provider.mode === "http" && isMelhorEnvioProvider(provider))
+		: orderedProviders;
+	let lastProviderError: string | null = null;
 
-	for (const provider of orderedProviders) {
+	for (const provider of preferredProviders) {
 		if (provider.mode === "http") {
-			const quotes = await buildHttpQuotes(provider, destination, args.currency, args.subtotal, args.items);
+			let quotes: ShippingQuote[] = [];
+			try {
+				quotes = await buildHttpQuotes(provider, destination, args.currency, args.subtotal, args.items);
+			} catch (error) {
+				lastProviderError = error instanceof Error ? error.message : "Nao foi possivel cotar o frete.";
+			}
 			if (quotes.length > 0) {
 				return {
 					quotes,
@@ -593,7 +813,7 @@ export async function resolveShippingQuotesForDestination(args: {
 		quotes: [],
 		selected: null,
 		provider: null,
-		error: "No shipping quote is available for the current destination.",
+		error: lastProviderError ?? "No shipping quote is available for the current destination.",
 	};
 }
 

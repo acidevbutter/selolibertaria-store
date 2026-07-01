@@ -241,6 +241,14 @@ Also validate:
 - 2026-06-25: the locale contract is now `pt-BR` only across storefront and admin shell; ignore `Accept-Language`, ignore locale cookies, collapse legacy `/en`, `/en-us`, `/es` and `/pt-br` prefixes into canonical routes, and never reintroduce public English fallback copy.
 - 2026-06-28: nos formulários do admin editorial, prefira labels contextuais por seção e helpers curtos para campos ambíguos como CTA, slug, ordem e mídia; após salvar copy estrutural, mantenha um feedback persistente de sucesso visível no próprio formulário.
 - 2026-06-28: nas telas de copy do admin editorial, use seções recolhíveis com a primeira seção principal aberta por padrão e blocos secundários recolhidos por padrão para reduzir formulários longos sem alterar save, validação ou nomes de campo.
+- 2026-06-28: no fechamento de pedidos, preserve no registro final o snapshot de entrega escolhido no checkout com `deliveryMethod`, endereço essencial e cotação mínima de frete; no admin, a leitura desse bloco deve ser opcional para manter compatibilidade com pedidos legados.
+- 2026-06-28: adapters novos de frete devem entrar só no servidor, reaproveitando o contrato existente de `ShippingQuote` e `ShippingRate`, sem expor credenciais no cliente, sem alterar checkout/admin UI e com falha segura em mensagem normalizada quando a transportadora externa nao responder.
+- 2026-06-28: ao adicionar um novo provedor de frete no admin, preserve o padrão atual de presets e segredo criptografado em `credentialsEncrypted`; para Melhor Envio, trate a configuração como cotação-only, com token manual e sem refresh automático antes da PR 3B.
+- 2026-06-28: no admin de configurações do Selo Libertária, exponha apenas o preset configurável de frete do Melhor Envio; presets legados podem aparecer só para remoção e nunca devem ser recriados automaticamente após exclusão.
+- 2026-06-28: quando o frete do Selo Libertária depender só do Melhor Envio, mantenha a configuração técnica exclusivamente em variáveis de ambiente e deixe no admin apenas um toggle operacional de ativar ou pausar a cotação.
+- 2026-06-28: no checkout com CEP brasileiro, se houver Melhor Envio habilitado, prefira a cotação dele no servidor e escolha internamente apenas o menor serviço válido, mantendo `pickup` intacto e reutilizando o fluxo atual de erro quando a cotação falhar.
+- 2026-06-29: ao documentar o Melhor Envio em arquivos de ambiente do Selo Libertária, mantenha apenas segredos em `env`, com `MELHOR_ENVIO_ACCESS_TOKEN` como chave ativa atual e opções operacionais fora do `.env.example`.
+- 2026-06-29: no Selo admin, o frete deve aparecer como um único bloco fixo do Melhor Envio: segredo/token apenas em `env`, opções operacionais em `current.shippingMelhorEnvio`, `shippingEnabled` separado e `shippingProviders` preservado só como legado invisível para fallback.
 
 @RTK.md
 ## Addendum — P3.75B
@@ -248,3 +256,14 @@ Also validate:
 - copy pública editorial e comercial deve sair de documentos editoriais dedicados no Mongo/admin; não recolocar esses textos em `messages/pt-BR.json`.
 - labels técnicos repetidos da vitrine e da PDP permanecem hardcoded em pt-BR mesmo quando a página recebe blocos editoriais do admin.
 - migrations editoriais em produção devem apenas criar documentos novos e preencher paths ausentes; `--force` fica manual e nunca como comportamento padrão.
+
+## AI patterns addendum — 2026-06-30
+
+- no storefront do Selo Libertária, o carrinho deve ficar sempre acessível como ícone compacto no header público e, no mobile, pode ganhar um atalho flutuante apenas quando já houver itens no carrinho; `Carrinho` e `Comprar` nunca entram no menu principal.
+- nos cards de catálogo público, mantenha `Adicionar ao carrinho` como ação de permanência na página com atualização de badge e reserve `Comprar` para fluxo de compra imediata com redirecionamento ao checkout; se a seleção segura de variante não existir, prefira levar à PDP em vez de adicionar cegamente.
+- no checkout público do Selo Libertária, visitante com carrinho válido deve entrar direto em `/checkout` sem login prévio, vendo o bloco `Dados para sua compra` com copy de criação automática de conta e sem qualquer barreira de confirmação de e-mail antes do pagamento.
+- após um pedido concluído no checkout convidado, o acesso inicial à conta deve acontecer por magic link expirável enviado por e-mail, vinculado ao usuário e ao pedido, com redirecionamento para `Compras` e CTA explícito para criação de senha quando a conta ainda não tiver senha definida.
+- 2026-07-01: no checkout, no cadastro e na edição de endereço da conta, o país deve ficar travado em `Brasil/BR` enquanto a operação do selo for nacional; após um CEP brasileiro válido preencher o endereço no checkout, a cotação de frete deve disparar automaticamente e, no admin, o bloco do Melhor Envio pode expor apenas status seguro do token de ambiente com CTA OAuth marcada como `Em breve`, sem revelar segredos.
+- 2026-07-01: quando o fluxo de endereço estiver em modo `BR-only`, não renderize um campo de país desabilitado; esconda o campo por completo e mantenha apenas uma mensagem curta informando que a entrega atende somente endereços no Brasil.
+- 2026-07-01: no checkout transparente com Stripe, a chave de idempotência da criação do `PaymentIntent` deve refletir os parâmetros reais que podem mudar entre tentativas, como total, frete e destino; não reutilize uma key baseada apenas em `checkoutOwnerKey/cartHash` quando a requisição já não é semanticamente a mesma.
+- 2026-07-01: no adapter de cotação do Melhor Envio, trate qualquer serviço retornado com preço válido como elegível, mesmo quando o código ou o nome não fizer parte de uma lista conhecida; preserve `serviceCode`, `serviceName`, priorize `custom_price` e `custom_delivery_time` quando existirem e deixe `Registro Módico`, `Impresso`, `Impresso Normal` e equivalentes participarem normalmente da seleção do menor frete.

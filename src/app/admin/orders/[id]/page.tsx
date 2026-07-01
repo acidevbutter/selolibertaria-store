@@ -107,6 +107,42 @@ function getFulfillmentLabel(status?: "received" | "producing" | "shipped") {
 	}
 }
 
+function getDeliveryMethodLabel(method?: "saved-address" | "new-address" | "pickup" | null) {
+	switch (method) {
+		case "saved-address":
+			return "Endereço salvo";
+		case "new-address":
+			return "Novo endereço";
+		case "pickup":
+			return "Retirada";
+		default:
+			return "Não informado";
+	}
+}
+
+function formatShippingAddress(
+	address?: {
+		line1?: string | null;
+		line2?: string | null;
+		number?: string | null;
+		complement?: string | null;
+		district?: string | null;
+		city?: string | null;
+		state?: string | null;
+		postalCode?: string | null;
+		country?: string | null;
+	} | null,
+) {
+	if (!address) return [];
+
+	const street = [address.line1, address.number].filter(Boolean).join(", ");
+	const extra = [address.line2, address.complement, address.district].filter(Boolean).join(" • ");
+	const locality = [address.city, address.state].filter(Boolean).join(" / ");
+	const region = [address.postalCode, address.country].filter(Boolean).join(" • ");
+
+	return [street, extra, locality, region].filter(Boolean);
+}
+
 function getActorRoleLabel(role?: string | null) {
 	switch (role) {
 		case "admin":
@@ -164,12 +200,34 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		items?: Array<{ name?: string | null; quantity: number; unitAmount?: number | null }>;
 		fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
 		relatedIds?: { paymentIntentId?: string; sessionId?: string };
+		deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
+		deliveryAddress?: {
+			line1?: string | null;
+			line2?: string | null;
+			number?: string | null;
+			complement?: string | null;
+			district?: string | null;
+			city?: string | null;
+			state?: string | null;
+			postalCode?: string | null;
+			country?: string | null;
+		} | null;
+		shippingRate?: {
+			providerCode?: string | null;
+			serviceCode?: string | null;
+			serviceName?: string | null;
+			amount?: number | null;
+			currency?: string | null;
+			estimatedDays?: number | null;
+			quotedAt?: string | null;
+		} | null;
 	};
 	if (!matchesOrderIdentifier(p, purchaseId)) redirect("/admin/orders");
 	const history = await listOrderAuditEntries(p.id, 15);
 	const itemCount = p.items?.reduce((total, item) => total + (item.quantity || 0), 0) ?? 0;
 	const auditCount = history.length;
 	const fulfillmentLabel = getFulfillmentLabel(p.fulfillment?.status);
+	const shippingAddressLines = formatShippingAddress(p.deliveryAddress);
 
 	return (
 		<AdminEditorialPage>
@@ -260,6 +318,64 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
 								Atualize status e rastreio. A mudança aparece no histórico logo abaixo.
 							</p>
+						</div>
+						<div className="mb-4 space-y-3 border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-3">
+							<div className="space-y-1">
+								<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									Entrega selecionada
+								</div>
+								<div className="text-sm text-[color:var(--editorial-ink)]">
+									{getDeliveryMethodLabel(p.deliveryMethod)}
+								</div>
+							</div>
+							{p.shippingRate ? (
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Frete cotado
+									</div>
+									<div className="text-sm text-[color:var(--editorial-ink)]">
+										{p.shippingRate.serviceName || "Serviço não informado"}
+									</div>
+									<div className="text-xs text-[color:var(--editorial-muted)]">
+										{[
+											p.shippingRate.providerCode ? `Provedor: ${p.shippingRate.providerCode}` : null,
+											p.shippingRate.serviceCode ? `Serviço: ${p.shippingRate.serviceCode}` : null,
+										]
+											.filter(Boolean)
+											.join(" • ")}
+									</div>
+									<div className="text-sm text-[color:var(--editorial-muted)]">
+										{typeof p.shippingRate.amount === "number"
+											? formatMoney(
+													p.shippingRate.amount,
+													p.shippingRate.currency || p.currency,
+													locale,
+													fallbackCurrency,
+												)
+											: "Valor não informado"}
+										{typeof p.shippingRate.estimatedDays === "number"
+											? ` • ${p.shippingRate.estimatedDays} dia${p.shippingRate.estimatedDays === 1 ? "" : "s"} estimados`
+											: ""}
+									</div>
+									{p.shippingRate.quotedAt ? (
+										<div className="text-xs text-[color:var(--editorial-muted)]">
+											Cotado em {formatDateTime(p.shippingRate.quotedAt, locale)}
+										</div>
+									) : null}
+								</div>
+							) : null}
+							{shippingAddressLines.length > 0 ? (
+								<div className="space-y-1">
+									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+										Endereço de entrega
+									</div>
+									<div className="space-y-1 text-sm text-[color:var(--editorial-ink)]">
+										{shippingAddressLines.map((line) => (
+											<div key={line}>{line}</div>
+										))}
+									</div>
+								</div>
+							) : null}
 						</div>
 						<UpdateFulfillment
 							id={p.id}

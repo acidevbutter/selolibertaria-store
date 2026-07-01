@@ -16,7 +16,11 @@ import { PurchasesGrid } from "@/ui/purchases-grid.client";
 
 export const dynamic = "force-dynamic"; // ensures cookie revalidation
 
-type UserPageSearchParams = { section?: string };
+type UserPageSearchParams = {
+	section?: string;
+	order?: string;
+	setupPassword?: string;
+};
 
 export default async function UserPage({ searchParams }: { searchParams?: Promise<UserPageSearchParams> }) {
 	const resolvedSearchParams = (searchParams ? await searchParams : {}) as UserPageSearchParams;
@@ -83,7 +87,10 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 			unitAmount?: number | null;
 			priceId?: string | null;
 		}>;
-		fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
+		fulfillment?: {
+			status?: "received" | "producing" | "shipped";
+			trackingNumber?: string | null;
+		};
 	}> | null = null;
 	let favorites: Awaited<ReturnType<typeof getFavoriteViewModels>> | null = null;
 	if (section === "purchases") {
@@ -176,7 +183,11 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 											<div className="mt-4 space-y-1">
 												{typeof effectivePrice === "number" ? (
 													<p className="text-lg font-semibold">
-														{formatMoney({ amount: effectivePrice, currency, locale })}
+														{formatMoney({
+															amount: effectivePrice,
+															currency,
+															locale,
+														})}
 													</p>
 												) : (
 													<p className="text-sm text-muted-foreground">{t("favorites.priceUnavailable")}</p>
@@ -185,7 +196,11 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 												typeof basePrice === "number" &&
 												basePrice > effectivePrice ? (
 													<p className="text-sm text-muted-foreground line-through">
-														{formatMoney({ amount: basePrice, currency, locale })}
+														{formatMoney({
+															amount: basePrice,
+															currency,
+															locale,
+														})}
 													</p>
 												) : null}
 											</div>
@@ -211,12 +226,29 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 						<div className="flex items-center justify-between gap-4 flex-wrap">
 							<h2 className="text-2xl font-semibold tracking-tight">{t("purchases.title")}</h2>
 						</div>
+						{resolvedSearchParams.setupPassword === "1" ? (
+							<div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+								<p className="font-medium">Crie sua senha para acessar sua conta quando quiser.</p>
+								<p className="mt-1 text-amber-800">
+									Seu pedido já está disponível e você pode definir a senha no primeiro acesso.
+								</p>
+								<div className="mt-3">
+									<Button asChild>
+										<Link
+											href={`/api/auth/password-setup?next=${encodeURIComponent(`/user?section=purchases${resolvedSearchParams.order ? `&order=${resolvedSearchParams.order}` : ""}`)}`}
+										>
+											Criar senha agora
+										</Link>
+									</Button>
+								</div>
+							</div>
+						) : null}
 						{!purchases || purchases.length === 0 ? (
 							<div className="rounded-lg border border-dashed p-10 text-center">
 								<p className="text-sm text-muted-foreground">{t("purchases.empty")}</p>
 							</div>
 						) : (
-							<PurchasesGrid purchases={purchases} />
+							<PurchasesGrid purchases={purchases} initialOpenPurchaseId={resolvedSearchParams.order} />
 						)}
 					</div>
 				);

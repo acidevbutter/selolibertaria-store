@@ -1,7 +1,11 @@
 import Image from "next/image";
 import { getLocale } from "@/i18n/server";
+import { auth } from "@/lib/auth";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import type { Product } from "@/lib/commerce-types";
 import type { EditorialHomePage } from "@/lib/editorial-content";
+import { buildFavoriteKey, listFavoriteKeysForUser } from "@/lib/favorites";
+import { getProductCardActionState } from "@/lib/product-card-action-state";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
 import { formatMoney } from "@/lib/utils";
 import {
@@ -11,6 +15,7 @@ import {
 	EditorialShell,
 } from "@/ui/editorial/editorial-primitives";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
+import { ProductTeaserActions } from "@/ui/products/product-teaser-actions.client";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeFeaturedBooks({
@@ -20,7 +25,9 @@ export async function HomeFeaturedBooks({
 	products: Product[];
 	content?: EditorialHomePage | null;
 }) {
-	const locale = await getLocale();
+	const [locale, session] = await Promise.all([getLocale(), auth()]);
+	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();
+	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
 	const featured = products[0] ?? null;
 	const catalog = products.slice(0, 3);
 	const tags = ["Erotismo", "Cidade", "Corpo"];
@@ -149,12 +156,27 @@ export async function HomeFeaturedBooks({
 											<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
 												{product.summary ?? (index === 0 ? primaryCardSummary : defaultCardSummary)}
 											</p>
-											<YnsLink
-												href={`/product/${product.slug}`}
-												className="mt-6 inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
-											>
-												{(product.stock ?? 1) > 0 ? viewBookLabel : launchAlertLabel}
-											</YnsLink>
+											{(() => {
+												const actionState = getProductCardActionState(product);
+												const favoriteKey = buildFavoriteKey(product.slug, actionState.variantId);
+												return (
+													<ProductTeaserActions
+														href={`/product/${product.slug}`}
+														productSlug={product.slug}
+														variantId={actionState.variantId}
+														favoriteActive={favoriteKeys.has(favoriteKey)}
+														canPurchase={canPurchase}
+														allowQuickAdd={actionState.quickAddAllowed}
+														productInfo={actionState.productInfo}
+														className="mt-6"
+														favoriteClassName="border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]"
+														addToCartClassName="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+														viewLinkClassName="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(216,208,196,0.24)]"
+														addToCartLabel="Adicionar ao carrinho"
+														viewLabel={(product.stock ?? 1) > 0 ? viewBookLabel : launchAlertLabel}
+													/>
+												);
+											})()}
 										</EditorialPanel>
 									</LiftOnHover>
 								</Reveal>

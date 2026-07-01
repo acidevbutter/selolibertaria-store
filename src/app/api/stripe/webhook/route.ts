@@ -1,10 +1,17 @@
 import { ObjectId } from "mongodb";
 import type { NextRequest } from "next/server";
 import Stripe from "stripe";
+import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
+import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
 import { getDb } from "@/lib/mongodb";
 import { notifyOrderStatusChange } from "@/lib/notify-order-status";
 import { recordOrderAuditEntry } from "@/lib/order-audit";
 import { ensureOrderReceivedEmail } from "@/lib/order-received";
+import {
+	buildPersistedOrderShippingSnapshot,
+	type PersistedOrderDeliveryAddress,
+	type PersistedOrderShippingRate,
+} from "@/lib/order-shipping-snapshot";
 import { shouldNotifyCustomerOrderStatusChange } from "@/lib/order-status-notification";
 import { isOrderReceivedEligibleStatus } from "@/lib/payment-status";
 import { recordPromotionRedemption } from "@/lib/promotions";
@@ -202,9 +209,33 @@ export async function POST(req: NextRequest) {
 		const paymentIntentIdForLookup = kind === "payment_intent" ? rootId : related.paymentIntentId;
 		if (!userId && paymentIntentIdForLookup) {
 			const draft = await db
-				.collection<{ userId?: string }>("orderDrafts")
-				.findOne({ paymentIntentId: paymentIntentIdForLookup }, { projection: { userId: 1 } });
-			if (draft?.userId) userId = draft.userId;
+				.collection<OrderDraftDoc>("orderDrafts")
+				.findOne({ paymentIntentId: paymentIntentIdForLookup });
+			if (draft?.userId) {
+				userId = draft.userId;
+			} else if (draft?.buyer?.email && draft.orderId) {
+				try {
+					const normalizedBuyer = normalizeCheckoutBuyer(draft.buyer);
+					const resolved = await resolveCheckoutUserForDraft({
+						orderId: draft.orderId,
+						userId: draft.userId ?? null,
+						buyer: normalizedBuyer,
+						deliveryAddress: draft.deliveryAddress ?? null,
+					});
+					userId = resolved.userId;
+					await db.collection("orderDrafts").updateOne(
+						{ paymentIntentId: paymentIntentIdForLookup },
+						{
+							$set: {
+								userId,
+								updatedAt: new Date(),
+							},
+						},
+					);
+				} catch (error) {
+					console.error("[stripe webhook] failed to resolve checkout user", error);
+				}
+			}
 		}
 
 		if (!userId) {
@@ -250,13 +281,19 @@ export async function POST(req: NextRequest) {
 
 		interface OrderDraftDoc {
 			orderId?: string;
-			userId: string;
+			userId?: string | null;
 			paymentIntentId: string;
 			status: string;
 			subtotal?: number;
 			discountTotal?: number;
 			amountTotal: number;
 			currency: string;
+			buyer?: {
+				fullName?: string;
+				email?: string;
+				cpf?: string;
+				phone?: string;
+			} | null;
 			shippingRate?: {
 				providerCode: string;
 				providerLabel: string;
@@ -265,10 +302,13 @@ export async function POST(req: NextRequest) {
 				fixed_amount: { amount: number };
 				currency?: string;
 				estimated_days?: number | null;
+				quotedAt?: string | null;
 			} | null;
 			couponCode?: string | null;
 			couponPromotionId?: string | null;
 			couponCodeId?: string | null;
+			deliveryMethod?: "saved-address" | "new-address" | "pickup";
+			deliveryAddress?: PersistedOrderDeliveryAddress | null;
 			items?: Array<{
 				name: string;
 				quantity: number;
@@ -285,6 +325,12 @@ export async function POST(req: NextRequest) {
 			status: string;
 			amountTotal: number;
 			currency: string;
+			buyer?: {
+				fullName?: string;
+				email?: string;
+				cpf?: string;
+				phone?: string;
+			} | null;
 			items: UserPurchaseItem[];
 			pricing?: {
 				subtotal?: number;
@@ -299,11 +345,15 @@ export async function POST(req: NextRequest) {
 					fixed_amount: { amount: number };
 					currency?: string;
 					estimated_days?: number | null;
+					quotedAt?: string | null;
 				} | null;
 				couponCode?: string | null;
 				couponPromotionId?: string | null;
 				couponCodeId?: string | null;
 			};
+			deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
+			deliveryAddress?: PersistedOrderDeliveryAddress | null;
+			shippingRate?: PersistedOrderShippingRate | null;
 			kind: string; // e.g. checkout.session | payment_intent | subscription
 			events?: UserPurchaseEventDoc[];
 			relatedIds?: {
@@ -342,7 +392,9 @@ export async function POST(req: NextRequest) {
 				{ projection: { _id: 1 } },
 			);
 			if (!existing) {
-				const lineItems = await stripe.checkout.sessions.listLineItems(rootId, { limit: 100 });
+				const lineItems = await stripe.checkout.sessions.listLineItems(rootId, {
+					limit: 100,
+				});
 				items = lineItems.data.map((li) => ({
 					name: li.description,
 					quantity: li.quantity || 0,
@@ -419,6 +471,11 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
+		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
+			deliveryMethod: paymentIntentDraft?.deliveryMethod ?? null,
+			deliveryAddress: paymentIntentDraft?.deliveryAddress ?? null,
+			shippingRate: paymentIntentDraft?.shippingRate ?? null,
+		});
 		const userWithPurchases = await usersCol.findOne({ _id: userObjectId }, { projection: { purchases: 1 } });
 		const existingPurchase = userWithPurchases?.purchases?.find((purchase) =>
 			matchesStripeWebhookPurchase(purchase, rootId),
@@ -435,6 +492,7 @@ export async function POST(req: NextRequest) {
 				status: derivedStatus,
 				amountTotal,
 				currency,
+				buyer: paymentIntentDraft?.buyer ?? null,
 				items,
 				pricing: paymentIntentDraft
 					? {
@@ -448,6 +506,7 @@ export async function POST(req: NextRequest) {
 							couponCodeId: paymentIntentDraft.couponCodeId ?? null,
 						}
 					: undefined,
+				...shippingSnapshot,
 				kind,
 				events: [eventDoc],
 				relatedIds: buildRelatedIds(related),
@@ -465,6 +524,7 @@ export async function POST(req: NextRequest) {
 				} = {
 					$set: {
 						"purchases.$.status": derivedStatus,
+						"purchases.$.buyer": paymentIntentDraft?.buyer ?? null,
 					},
 					$push: { "purchases.$.events": eventDoc },
 				};
@@ -491,6 +551,10 @@ export async function POST(req: NextRequest) {
 						couponPromotionId: paymentIntentDraft.couponPromotionId ?? null,
 						couponCodeId: paymentIntentDraft.couponCodeId ?? null,
 					};
+					existingPurchaseUpdate.$set["purchases.$.deliveryMethod"] = shippingSnapshot.deliveryMethod ?? null;
+					existingPurchaseUpdate.$set["purchases.$.deliveryAddress"] =
+						shippingSnapshot.deliveryAddress ?? null;
+					existingPurchaseUpdate.$set["purchases.$.shippingRate"] = shippingSnapshot.shippingRate ?? null;
 				}
 
 				const relatedArrayAddToSet: Record<string, unknown> = {};

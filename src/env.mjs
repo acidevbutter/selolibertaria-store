@@ -34,6 +34,7 @@ export const env = createEnv({
 		BREVO_API_KEY: z.string().optional(),
 		BREVO_SENDER_EMAIL: z.string().email().optional(),
 		BREVO_SENDER_NAME: z.string().optional(),
+		MELHOR_ENVIO_ACCESS_TOKEN: z.string().optional(),
 	},
 	client: {
 		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
@@ -73,6 +74,7 @@ export const env = createEnv({
 		BREVO_API_KEY: process.env.BREVO_API_KEY,
 		BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
 		BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME,
+		MELHOR_ENVIO_ACCESS_TOKEN: process.env.MELHOR_ENVIO_ACCESS_TOKEN,
 	},
 });
 

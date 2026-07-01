@@ -75,6 +75,14 @@ const registerSchema = z.object({
 		.optional(),
 });
 
+function normalizeBrazilOnlyAddress(address: z.infer<typeof registerSchema>["address"]) {
+	if (!address) return address;
+	return {
+		...address,
+		country: "BR",
+	};
+}
+
 export async function POST(req: Request) {
 	try {
 		const body = await req.json();
@@ -152,7 +160,7 @@ export async function POST(req: Request) {
 			phone: data.phone,
 			preferredCurrency: data.preferredCurrency,
 			phoneDetails: data.phoneDetails,
-			address: data.address,
+			address: normalizeBrazilOnlyAddress(data.address),
 			passwordHash,
 			cart: mergedCartItems ? { items: mergedCartItems, couponCode: mergedCouponCode } : undefined,
 			marketing: {

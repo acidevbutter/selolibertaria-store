@@ -52,6 +52,14 @@ const updateUserSchema = z.object({
 		.optional(),
 });
 
+function normalizeBrazilOnlyAddress(address: z.infer<typeof updateUserSchema>["address"]) {
+	if (!address) return address;
+	return {
+		...address,
+		country: "BR",
+	};
+}
+
 function isValidObjectId(id: string | undefined | null): id is string {
 	return !!id && /^[0-9a-fA-F]{24}$/.test(id);
 }
@@ -164,7 +172,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
 		if (data.phone) update.phone = data.phone;
 		if (data.preferredCurrency) update.preferredCurrency = data.preferredCurrency;
 		if (data.phoneDetails) update.phoneDetails = data.phoneDetails;
-		if (data.address) update.address = data.address;
+		if (data.address) update.address = normalizeBrazilOnlyAddress(data.address);
 		if (data.marketing?.email) {
 			update.marketing = {
 				email: {

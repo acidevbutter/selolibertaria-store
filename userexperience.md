@@ -143,3 +143,23 @@ Confiança vem de:
 - A dona do site deve conseguir alterar a narrativa pública principal sem deploy.
 - A experiência editorial pública depende do admin como fonte primária de copy.
 - A manutenção preserva labels técnicos estáveis em `pt-BR` para reduzir atrito operacional.
+
+## Atualização 2026-06-29
+
+- Na tela `/admin/settings`, a pessoa operadora não deve tomar decisões sobre provedores de frete; ela só ativa ou pausa a cotação e ajusta parâmetros operacionais do Melhor Envio em um bloco único e claro.
+- Credenciais ficam fora do admin para reduzir risco operacional; a interface deve deixar explícito que o token permanece no ambiente do servidor e nunca é salvo no Mongo.
+
+## Atualização 2026-06-30
+
+- `Adicionar ao carrinho` no catálogo deve manter a pessoa na página e sinalizar continuidade pelo badge do carrinho.
+- `Comprar` na grade deve funcionar como atalho de compra imediata para o checkout quando a variante já estiver segura.
+- Mesmo discreto, o carrinho precisa permanecer encontrável durante toda a navegação pública; no mobile, um atalho flutuante só deve aparecer depois da primeira adição ao carrinho.
+## Atualização 2026-06-30 — checkout convidado
+
+- No checkout, a pessoa visitante deve sentir continuidade de compra, não uma interrupção de cadastro: os dados pessoais entram como parte natural do pedido e a conta nasce depois da confirmação.
+- Quando a compra for concluída sem senha prévia, o acesso à conta deve chegar por e-mail com um próximo passo único e claro: abrir o magic link, rever o pedido e criar senha se desejar continuar usando a conta.
+
+## Atualização 2026-07-01
+- No checkout e nos formulários de conta/cadastro, a pessoa não deve tomar decisão sobre país neste estágio: a interface fixa `Brasil` e comunica com clareza que a entrega atual atende somente destinos brasileiros.
+- Quando esse travamento estiver ativo, a experiência deve evitar ruído visual: em vez de mostrar um campo de país bloqueado, basta ocultá-lo e manter a comunicação curta sobre atendimento apenas no Brasil.
+- No admin de frete, a pessoa operadora deve entender rapidamente se o token de ambiente do Melhor Envio está presente, sem ver segredo, sem copiar credencial e sem confundir o estado atual com a futura conexão OAuth.

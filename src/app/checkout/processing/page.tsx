@@ -18,13 +18,23 @@ const ERROR_REDIRECT_DELAY_MS = 2600;
 
 type ProcessingPhase = "processing" | "finalized" | "warning" | "error";
 type WarningReason = "timeout" | "disputed";
-const PURCHASES_PATH = "/user?section=purchases";
 
-function redirectToPurchases(router: ReturnType<typeof useRouter>) {
-	router.replace(PURCHASES_PATH);
+function replaceLocation(router: ReturnType<typeof useRouter>, path: string) {
+	router.replace(path);
 	if (typeof window === "undefined") return;
 	if (typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent)) return;
-	window.location.replace(PURCHASES_PATH);
+	window.location.replace(path);
+}
+
+function safelyRefreshCart(refreshCart: ReturnType<typeof useCart>["refreshCart"]) {
+	try {
+		const result = refreshCart();
+		if (result && typeof (result as Promise<unknown>).catch === "function") {
+			(result as Promise<unknown>).catch(() => {});
+		}
+	} catch {
+		// noop
+	}
 }
 
 export default function ProcessingPage() {
@@ -33,6 +43,7 @@ export default function ProcessingPage() {
 	const sessionId = searchParams.get("session_id");
 	const orderId = searchParams.get("order");
 	const paymentIntentId = searchParams.get("payment_intent");
+	const isGuest = searchParams.get("guest") === "1";
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
 	const { refreshCart, closeCart } = useCart();
@@ -44,71 +55,38 @@ export default function ProcessingPage() {
 		let pollTimer: ReturnType<typeof setTimeout> | null = null;
 		let hardTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
 		let cancelled = false;
-		if (ranRef.current) return;
-		ranRef.current = true;
 
-		const clearTimers = () => {
+		function getSuccessPath() {
+			return isGuest ? "/" : "/user?section=purchases";
+		}
+
+		function clearTimers() {
 			if (redirectTimer) clearTimeout(redirectTimer);
 			if (pollTimer) clearTimeout(pollTimer);
 			if (hardTimeoutTimer) clearTimeout(hardTimeoutTimer);
-		};
+		}
 
-		const scheduleRedirect = (delay: number) => {
-			if (redirectTimer) clearTimeout(redirectTimer);
+		function scheduleRedirect(delayMs: number, path = getSuccessPath()) {
 			redirectTimer = setTimeout(() => {
-				redirectToPurchases(router);
-			}, delay);
-		};
+				replaceLocation(router, path);
+			}, delayMs);
+		}
 
-		hardTimeoutTimer = setTimeout(() => {
-			if (cancelled) return;
-			redirectToPurchases(router);
-		}, PROCESSING_TIMEOUT_MS);
+		async function syncPaymentIntentOnce() {
+			const result = await recordPaymentIntentCheckout({
+				orderId,
+				paymentIntentId,
+			});
 
-		const setWarningPhase = (reason: WarningReason) => {
-			setWarningReason(reason);
-			setPhase("warning");
-			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
-		};
-
-		const syncPaymentIntentOnce = async () => {
-			if (!orderId?.startsWith("ord_") && !paymentIntentId?.startsWith("pi_")) {
-				redirectToPurchases(router);
-				return "resolved" as const;
-			}
-
-			try {
-				const res = await recordPaymentIntentCheckout({
-					orderId,
-					paymentIntentId,
-				});
-				if (cancelled) return "resolved" as const;
-
-				if ("ok" in res) {
-					if (res.cartCleared) closeCart();
-					refreshCart().catch(() => {});
-
-					if (isWarningCheckoutStatus(res.status)) {
-						setWarningPhase("disputed");
-						return "resolved" as const;
-					}
-
-					if (isResolvedCheckoutStatus(res.status)) {
-						setPhase("finalized");
-						scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
-						return "resolved" as const;
-					}
-
-					setPhase("processing");
-					return "retry" as const;
-				}
-
-				if (isWarningCheckoutStatus(res.status)) {
-					setWarningPhase("disputed");
+			if ("error" in result) {
+				if (result.status && isWarningCheckoutStatus(result.status)) {
+					setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
+					setPhase("warning");
+					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
 					return "resolved" as const;
 				}
 
-				if (res.status === "processing") {
+				if (result.status && !isResolvedCheckoutStatus(result.status)) {
 					setPhase("processing");
 					return "retry" as const;
 				}
@@ -116,25 +94,61 @@ export default function ProcessingPage() {
 				setPhase("error");
 				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
 				return "resolved" as const;
-			} catch {
-				if (cancelled) return "resolved" as const;
+			}
+
+			if (!isResolvedCheckoutStatus(result.status) && !isWarningCheckoutStatus(result.status)) {
 				setPhase("processing");
 				return "retry" as const;
 			}
-		};
 
-		const startedAt = Date.now();
-		const pollPaymentIntent = async () => {
+			if (result.cartCleared) {
+				try {
+					const cleanup = await finalizeCheckoutCleanup();
+					if ("ok" in cleanup) closeCart();
+				} catch {
+					// noop
+				}
+			}
+
+			safelyRefreshCart(refreshCart);
+
+			if (result.status && isWarningCheckoutStatus(result.status)) {
+				setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
+				setPhase("warning");
+				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
+				return "resolved" as const;
+			}
+
+			setPhase("finalized");
+			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
+			return "resolved" as const;
+		}
+
+		async function pollPaymentIntent() {
 			const result = await syncPaymentIntentOnce();
 			if (cancelled || result !== "retry") return;
 			if (Date.now() - startedAt >= PROCESSING_TIMEOUT_MS) {
-				redirectToPurchases(router);
+				setPhase("warning");
+				setWarningReason("timeout");
+				replaceLocation(router, getSuccessPath());
 				return;
 			}
+
 			pollTimer = setTimeout(() => {
 				void pollPaymentIntent();
 			}, PROCESSING_POLL_INTERVAL_MS);
-		};
+		}
+
+		if (ranRef.current) return;
+		ranRef.current = true;
+
+		const startedAt = Date.now();
+		hardTimeoutTimer = setTimeout(() => {
+			if (cancelled) return;
+			setPhase("warning");
+			setWarningReason("timeout");
+			replaceLocation(router, getSuccessPath());
+		}, PROCESSING_TIMEOUT_MS);
 
 		void (async () => {
 			if (orderId?.startsWith("ord_") || paymentIntentId?.startsWith("pi_")) {
@@ -142,24 +156,22 @@ export default function ProcessingPage() {
 			} else if (sessionId?.startsWith("cs_")) {
 				try {
 					await recordSuccessfulCheckout(sessionId);
-				} catch {}
+				} catch {
+					// noop
+				}
+
 				try {
-					const res = await finalizeCheckoutCleanup();
-					if ("ok" in res) {
-						closeCart();
-						setPhase("finalized");
-						refreshCart().catch(() => {});
-						scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
-					} else {
-						setPhase("error");
-						scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-					}
+					const cleanup = await finalizeCheckoutCleanup();
+					if ("ok" in cleanup) closeCart();
+					safelyRefreshCart(refreshCart);
+					setPhase("finalized");
+					scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
 				} catch {
 					setPhase("error");
 					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
 				}
 			} else {
-				redirectToPurchases(router);
+				replaceLocation(router, getSuccessPath());
 			}
 		})();
 
@@ -167,7 +179,7 @@ export default function ProcessingPage() {
 			cancelled = true;
 			clearTimers();
 		};
-	}, [router, sessionId, orderId, paymentIntentId, refreshCart, closeCart]);
+	}, [router, sessionId, orderId, paymentIntentId, isGuest]);
 
 	const done = phase === "finalized";
 	const isWarning = phase === "warning";
@@ -187,59 +199,26 @@ export default function ProcessingPage() {
 				: phase === "warning"
 					? t(`${warningKey}.description`)
 					: t("error.description");
-	const statusLabel =
-		phase === "processing"
-			? t("processing.waiting")
-			: phase === "warning"
-				? t(`${warningKey}.waiting`)
-				: t("redirecting");
 
 	return (
-		<main className="flex flex-col items-center justify-center py-24 px-6 text-center">
-			<div className="max-w-md">
-				<h1 className="text-2xl font-bold mb-4">{title}</h1>
-				<p className="text-sm text-muted-foreground mb-8">{description}</p>
-				<div className="flex flex-col items-center">
-					<div className="relative w-20 h-20 mb-6">
-						{phase === "processing" && (
-							<div className="absolute inset-0 animate-spin rounded-full border-4 border-muted border-t-primary" />
-						)}
-						<div
-							className={`absolute inset-0 flex items-center justify-center transition-opacity ${done ? "opacity-100" : "opacity-0"}`}
-						>
-							<svg
-								className="w-14 h-14 text-primary"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="M20 6L9 17l-5-5" />
-							</svg>
-						</div>
-						{(phase === "error" || phase === "warning") && (
-							<div className="absolute inset-0 flex items-center justify-center text-destructive">
-								<svg
-									className="w-12 h-12"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M12 9v4" />
-									<path d="M12 17h.01" />
-									<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-								</svg>
-							</div>
-						)}
-					</div>
-					<p className="text-sm font-medium mb-2">{statusLabel}</p>
-					<p className="text-xs text-muted-foreground">{t("redirectSoon")}</p>
+		<main className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center px-6 py-12">
+			<div className="w-full rounded-2xl border bg-card p-8 text-center shadow-sm">
+				<div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border bg-background">
+					{phase === "processing" ? (
+						<span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+					) : phase === "finalized" ? (
+						<span className="text-2xl">✓</span>
+					) : (
+						<span className="text-2xl">!</span>
+					)}
 				</div>
+				<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+				<p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
+				{isGuest && done ? (
+					<p className="mt-4 text-sm leading-6 text-muted-foreground">
+						Enviamos o acesso da sua conta por e-mail assim que o pedido for confirmado.
+					</p>
+				) : null}
 			</div>
 		</main>
 	);

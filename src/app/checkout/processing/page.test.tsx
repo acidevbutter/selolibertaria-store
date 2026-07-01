@@ -113,7 +113,7 @@ describe("Checkout processing page", () => {
 		});
 
 		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
-		expect(screen.getByText("Pedido recebido")).toBeTruthy();
+		expect(screen.getByText("Pagamento ainda em processamento")).toBeTruthy();
 	});
 
 	it("interrompe o loading quando o status autoritativo já está em disputa", async () => {

@@ -267,6 +267,7 @@ export function ProfileEditor({
 					setAddress(nextAddress);
 					setDirty(true);
 				}}
+				countryMode="br-only"
 			/>
 			<label className="flex items-start gap-3 rounded-lg border bg-card/60 p-4 text-sm">
 				<input

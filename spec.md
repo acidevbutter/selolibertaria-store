@@ -224,3 +224,10 @@ Mitigação:
 - `site_global` concentra newsletter e rodapé públicos.
 - `page_projects`, `page_products` e `page_product` sustentam a copy estrutural dessas rotas.
 - A migration editorial padrão é idempotente e não sobrescreve edições reais; ela só cria documentos ausentes e preenche campos ausentes.
+## Addendum — P0B checkout sem pré-cadastro
+
+- O checkout público deve aceitar compra convidada sem login nem confirmação prévia de e-mail.
+- O formulário do pedido deve coletar nome completo, e-mail, CPF, telefone e endereço completo do pedido atual.
+- Após a confirmação do pagamento, o sistema deve reaproveitar o usuário existente por e-mail ou criar a conta automaticamente sem duplicidade.
+- O pedido confirmado deve ficar vinculado ao usuário resolvido e disparar e-mail transacional com resumo do pedido e magic link seguro para acessar a conta.
+- No primeiro acesso por magic link, a pessoa deve conseguir entrar em `Compras`, localizar o pedido e criar senha sem perder o contexto desse pedido.
