@@ -1,6 +1,11 @@
 import { BookOpen, CalendarDays, Globe2, House, Info, Mail, NotebookText } from "lucide-react";
 import Link from "next/link";
 import {
+	getEditorialAboutRecord,
+	getEditorialContactRecord,
+	getEditorialSarauRecord,
+} from "@/app/admin/editorial/actions";
+import {
 	getEditorialEventsPageCopyRecord,
 	getEditorialHomeCopyRecord,
 	getEditorialProductPageCopyRecord,
@@ -79,21 +84,43 @@ export default async function AdminEditorialIndexPage() {
 	const session = await auth();
 	if (!session || !hasCapability(session.user.role, "editorial.write")) return null;
 
-	const [events, projects, home, eventsPage, projectsPage, productsPage, productPage, globalPage] =
-		await Promise.all([
-			listEditorialRecordsForAdmin("event"),
-			listEditorialRecordsForAdmin("project"),
-			getEditorialHomeCopyRecord(),
-			getEditorialEventsPageCopyRecord(),
-			getEditorialProjectsPageCopyRecord(),
-			getEditorialProductsPageCopyRecord(),
-			getEditorialProductPageCopyRecord(),
-			getEditorialSiteGlobalCopyRecord(),
-		]);
+	const [
+		events,
+		projects,
+		home,
+		eventsPage,
+		projectsPage,
+		productsPage,
+		productPage,
+		globalPage,
+		aboutPage,
+		contactPage,
+		sarauPage,
+	] = await Promise.all([
+		listEditorialRecordsForAdmin("event"),
+		listEditorialRecordsForAdmin("project"),
+		getEditorialHomeCopyRecord(),
+		getEditorialEventsPageCopyRecord(),
+		getEditorialProjectsPageCopyRecord(),
+		getEditorialProductsPageCopyRecord(),
+		getEditorialProductPageCopyRecord(),
+		getEditorialSiteGlobalCopyRecord(),
+		getEditorialAboutRecord(),
+		getEditorialContactRecord(),
+		getEditorialSarauRecord(),
+	]);
 
-	const publishedStaticPages = [home, eventsPage, projectsPage, productsPage, productPage, globalPage].filter(
-		(item) => item?.published,
-	).length;
+	const publishedStaticPages = [
+		home,
+		eventsPage,
+		projectsPage,
+		productsPage,
+		productPage,
+		globalPage,
+		aboutPage,
+		contactPage,
+		sarauPage,
+	].filter((item) => item?.published).length;
 
 	return (
 		<AdminEditorialPage>

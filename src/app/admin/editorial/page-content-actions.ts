@@ -123,6 +123,15 @@ function buildHomePageDoc(
 	current: EditorialHomePage | null,
 ): EditorialHomePage {
 	const now = new Date().toISOString();
+	const featureTitle = formData.has("heroFeatureTitle")
+		? optionalString(formData.get("heroFeatureTitle"))
+		: (current?.hero?.featureTitle ?? null);
+	const featureBody = formData.has("heroFeatureBody")
+		? optionalString(formData.get("heroFeatureBody"))
+		: (current?.hero?.featureBody ?? null);
+	const featuredTitle = formData.has("featuredTitle")
+		? optionalString(formData.get("featuredTitle"))
+		: (current?.featuredBook?.title ?? null);
 
 	return {
 		type: "page_home",
@@ -141,9 +150,10 @@ function buildHomePageDoc(
 			secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
 			supportingLine: optionalString(formData.get("heroSupportingLine")),
 			featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
-			featureTitle: optionalString(formData.get("heroFeatureTitle")),
-			featureBody: optionalString(formData.get("heroFeatureBody")),
+			featureTitle,
+			featureBody,
 			featureQuote: optionalString(formData.get("heroFeatureQuote")),
+			featureImage: current?.hero?.featureImage ?? null,
 		},
 		manifesto: {
 			title: optionalString(formData.get("manifestoTitle")),
@@ -152,8 +162,9 @@ function buildHomePageDoc(
 			linkHref: optionalString(formData.get("manifestoLinkHref")),
 		},
 		featuredBook: {
+			productSlug: optionalString(formData.get("featuredProductSlug")),
 			eyebrow: optionalString(formData.get("featuredEyebrow")),
-			title: optionalString(formData.get("featuredTitle")),
+			title: featuredTitle,
 			body: optionalString(formData.get("featuredBody")),
 			primaryCtaLabel: optionalString(formData.get("featuredPrimaryCtaLabel")),
 			secondaryCtaLabel: optionalString(formData.get("featuredSecondaryCtaLabel")),

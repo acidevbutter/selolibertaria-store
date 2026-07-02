@@ -189,6 +189,7 @@ export type EditorialHomePage = EditorialBase & {
 		linkHref?: string | null;
 	} | null;
 	featuredBook?: {
+		productSlug?: string | null;
 		eyebrow?: string | null;
 		title?: string | null;
 		body?: string | null;

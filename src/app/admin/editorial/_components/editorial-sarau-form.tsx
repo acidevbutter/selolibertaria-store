@@ -111,6 +111,34 @@ export function EditorialSarauForm({
 									<Textarea name="heroBody" defaultValue={page.hero?.body ?? ""} rows={4} />
 								</Field>
 							</div>
+							<Field label="CTA principal · rótulo" name="heroPrimaryCtaLabel">
+								<Input
+									id="heroPrimaryCtaLabel"
+									name="heroPrimaryCtaLabel"
+									defaultValue={page.hero?.primaryCtaLabel ?? ""}
+								/>
+							</Field>
+							<Field label="CTA principal · link" name="heroPrimaryCtaHref">
+								<Input
+									id="heroPrimaryCtaHref"
+									name="heroPrimaryCtaHref"
+									defaultValue={page.hero?.primaryCtaHref ?? ""}
+								/>
+							</Field>
+							<Field label="CTA secundário · rótulo" name="heroSecondaryCtaLabel">
+								<Input
+									id="heroSecondaryCtaLabel"
+									name="heroSecondaryCtaLabel"
+									defaultValue={page.hero?.secondaryCtaLabel ?? ""}
+								/>
+							</Field>
+							<Field label="CTA secundário · link" name="heroSecondaryCtaHref">
+								<Input
+									id="heroSecondaryCtaHref"
+									name="heroSecondaryCtaHref"
+									defaultValue={page.hero?.secondaryCtaHref ?? ""}
+								/>
+							</Field>
 						</div>
 						<Field label="Imagem" name="heroImageSrc">
 							<AdminImageUrlList

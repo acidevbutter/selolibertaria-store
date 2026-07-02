@@ -75,15 +75,33 @@ export function EditorialContactForm({
 
 					<section className="grid gap-4 rounded-lg border p-5">
 						<h2 className="text-base font-semibold">Hero</h2>
-						<Field label="Eyebrow" name="heroEyebrow">
-							<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
-						</Field>
-						<Field label="Título" name="heroTitle">
-							<Input id="heroTitle" name="heroTitle" defaultValue={page.hero?.title ?? ""} />
-						</Field>
-						<Field label="Texto" name="heroBody">
-							<Textarea name="heroBody" defaultValue={page.hero?.body ?? ""} rows={4} />
-						</Field>
+						<div className="grid gap-4 md:grid-cols-2">
+							<Field label="Eyebrow" name="heroEyebrow">
+								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
+							</Field>
+							<Field label="Título" name="heroTitle">
+								<Input id="heroTitle" name="heroTitle" defaultValue={page.hero?.title ?? ""} />
+							</Field>
+							<div className="md:col-span-2">
+								<Field label="Texto" name="heroBody">
+									<Textarea name="heroBody" defaultValue={page.hero?.body ?? ""} rows={4} />
+								</Field>
+							</div>
+							<Field label="Destaque lateral · rótulo" name="heroFeaturedLabel">
+								<Input
+									id="heroFeaturedLabel"
+									name="heroFeaturedLabel"
+									defaultValue={page.hero?.featuredLabel ?? ""}
+								/>
+							</Field>
+							<Field label="Destaque lateral · valor" name="heroFeaturedValue">
+								<Input
+									id="heroFeaturedValue"
+									name="heroFeaturedValue"
+									defaultValue={page.hero?.featuredValue ?? ""}
+								/>
+							</Field>
+						</div>
 					</section>
 
 					<section className="grid gap-4 rounded-lg border p-5">
@@ -94,6 +112,15 @@ export function EditorialContactForm({
 						<Field label="Descrição do bloco" name="formDescription">
 							<Textarea name="formDescription" defaultValue={page.form?.description ?? ""} rows={3} />
 						</Field>
+						{[1, 2, 3, 4, 5, 6].map((index) => (
+							<Field key={index} label={`Assunto ${index}`} name={`subject${index}`}>
+								<Input
+									id={`subject${index}`}
+									name={`subject${index}`}
+									defaultValue={page.form?.subjects?.[index - 1] ?? ""}
+								/>
+							</Field>
+						))}
 					</section>
 
 					<section className="grid gap-4 rounded-lg border p-5">
@@ -133,6 +160,9 @@ export function EditorialContactForm({
 
 					<section className="grid gap-4 rounded-lg border p-5">
 						<h2 className="text-base font-semibold">Caminhos comuns</h2>
+						<Field label="Título da faixa final" name="closingTitle">
+							<Input id="closingTitle" name="closingTitle" defaultValue={page.closing?.title ?? ""} />
+						</Field>
 						<Field label="Título do bloco" name="pathsTitle">
 							<Input id="pathsTitle" name="pathsTitle" defaultValue={page.paths?.title ?? ""} />
 						</Field>

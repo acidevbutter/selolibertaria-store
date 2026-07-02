@@ -501,6 +501,10 @@ export async function updateEditorialSarauAction(formData: FormData) {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
 					body: optionalString(formData.get("heroBody")),
+					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
+					primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
+					secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
 					image: await parseImageByPrefix(formData, "heroImage"),
 				},
 				why: {
@@ -570,6 +574,8 @@ export async function updateEditorialAboutAction(formData: FormData) {
 					title: optionalString(formData.get("sectionTitle")),
 					body: optionalString(formData.get("sectionBody")),
 					extended: optionalString(formData.get("sectionExtended")),
+					primaryCtaLabel: optionalString(formData.get("sectionPrimaryCtaLabel")),
+					primaryCtaHref: optionalString(formData.get("sectionPrimaryCtaHref")),
 					image: await parseImageByPrefix(formData, "sectionImage"),
 				},
 				cards,
@@ -604,6 +610,9 @@ export async function updateEditorialContactAction(formData: FormData) {
 	const db = await getDb();
 	const now = new Date().toISOString();
 	const title = requiredString(formData, "title");
+	const subjects = [1, 2, 3, 4, 5, 6]
+		.map((index) => optionalString(formData.get(`subject${index}`)))
+		.filter((value): value is string => Boolean(value));
 
 	const directLinks = [1, 2, 3]
 		.map((index) => ({
@@ -638,10 +647,13 @@ export async function updateEditorialContactAction(formData: FormData) {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
 					body: optionalString(formData.get("heroBody")),
+					featuredLabel: optionalString(formData.get("heroFeaturedLabel")),
+					featuredValue: optionalString(formData.get("heroFeaturedValue")),
 				},
 				form: {
 					title: optionalString(formData.get("formTitle")),
 					description: optionalString(formData.get("formDescription")),
+					subjects,
 				},
 				direct: {
 					title: optionalString(formData.get("directTitle")),
@@ -652,6 +664,9 @@ export async function updateEditorialContactAction(formData: FormData) {
 					title: optionalString(formData.get("pathsTitle")),
 					description: optionalString(formData.get("pathsDescription")),
 					links: pathLinks,
+				},
+				closing: {
+					title: optionalString(formData.get("closingTitle")),
 				},
 				updatedAt: now,
 				updatedBy: String(session.sub),

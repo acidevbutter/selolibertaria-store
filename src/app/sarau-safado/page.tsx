@@ -22,6 +22,7 @@ export default async function SarauSafadoPage() {
 	const t = await getTranslations("Selo");
 	const [sarau, events] = await Promise.all([getEditorialSarauPage(), listEditorialEvents()]);
 	const agenda = events.filter((event) => event.published).slice(0, 3);
+	const signals = sarau.signals?.filter(Boolean) ?? [];
 	const notes = sarau.programNotes?.length
 		? sarau.programNotes
 		: [
@@ -81,18 +82,30 @@ export default async function SarauSafadoPage() {
 								</p>
 								<div className="flex flex-wrap gap-3 pt-2">
 									<YnsLink
-										href="/events"
+										href={sarau.hero?.primaryCtaHref || "/events"}
 										className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 									>
-										Próxima edição
+										{sarau.hero?.primaryCtaLabel || "Próxima edição"}
 									</YnsLink>
 									<YnsLink
-										href="/events"
+										href={sarau.hero?.secondaryCtaHref || "/events"}
 										className="inline-flex min-h-11 items-center justify-center border border-white/20 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-white/8"
 									>
-										Memória do Sarau
+										{sarau.hero?.secondaryCtaLabel || "Memória do Sarau"}
 									</YnsLink>
 								</div>
+								{signals.length > 0 ? (
+									<div className="flex flex-wrap gap-2 pt-2">
+										{signals.map((signal) => (
+											<span
+												key={signal}
+												className="border border-[color:rgba(247,244,239,0.22)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
+											>
+												{signal}
+											</span>
+										))}
+									</div>
+								) : null}
 							</div>
 						</EditorialShell>
 					</section>

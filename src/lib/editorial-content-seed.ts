@@ -97,6 +97,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 			linkHref: "/about",
 		},
 		featuredBook: {
+			productSlug: "ninfas-do-tiete",
 			eyebrow: "Livro em destaque",
 			title: "Ninfas do Tietê",
 			body: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",

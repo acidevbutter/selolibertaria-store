@@ -8,9 +8,10 @@ import { Input } from "@/ui/shadcn/input";
 
 interface ContactFormProps {
 	className?: string;
+	subjectSuggestions?: string[];
 }
 
-export function ContactForm({ className }: ContactFormProps) {
+export function ContactForm({ className, subjectSuggestions = [] }: ContactFormProps) {
 	const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
 	const t = useTranslations("/contact.form");
 
@@ -79,8 +80,16 @@ export function ContactForm({ className }: ContactFormProps) {
 					name="subject"
 					required
 					placeholder={t("placeholders.subject")}
+					list={subjectSuggestions.length > 0 ? "contact-subject-suggestions" : undefined}
 					className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
 				/>
+				{subjectSuggestions.length > 0 ? (
+					<datalist id="contact-subject-suggestions">
+						{subjectSuggestions.map((subject) => (
+							<option key={subject} value={subject} />
+						))}
+					</datalist>
+				) : null}
 			</div>
 			<div className="space-y-2">
 				<label

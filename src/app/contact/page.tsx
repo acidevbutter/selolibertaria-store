@@ -98,7 +98,7 @@ export default async function ContactPage() {
 								</p>
 							</div>
 							<div className="pt-2">
-								<ContactForm />
+								<ContactForm subjectSuggestions={subjects} />
 							</div>
 						</EditorialPanel>
 					</Reveal>
@@ -171,6 +171,11 @@ export default async function ContactPage() {
 					<section className="bg-[color:rgba(216,208,196,0.62)]">
 						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 							<div>
+								{contact.paths?.title ? (
+									<p className="text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-accent)]">
+										{contact.paths.title}
+									</p>
+								) : null}
 								<h2 className="max-w-3xl text-3xl leading-[1.02] font-black sm:text-4xl">
 									{contact.closing?.title || "Continue pelo Instagram, newsletter ou agenda do Sarau."}
 								</h2>

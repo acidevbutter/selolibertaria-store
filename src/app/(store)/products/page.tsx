@@ -69,7 +69,7 @@ export default async function AllProductsPage() {
 				}}
 				featureQuote={page.hero?.quote || "Uma prateleira curta, quente e curada."}
 				primaryCtaLabel={page.hero?.primaryCtaLabel || "Ver catálogo"}
-				primaryCtaHref="#catalogo-publicado"
+				primaryCtaHref={page.hero?.primaryCtaHref || "#catalogo-publicado"}
 				secondaryCtaLabel={page.hero?.secondaryCtaLabel || "Comprar destaque"}
 				secondaryCtaHref={page.hero?.secondaryCtaHref || featuredHref}
 				tone="dark"
@@ -81,7 +81,7 @@ export default async function AllProductsPage() {
 						products={products}
 						anchorId="catalogo-publicado"
 						eyebrow={page.listing?.label || "Catálogo"}
-						title={page.curatorialNote?.title || "Catálogo publicado"}
+						title={page.listing?.title || page.curatorialNote?.title || "Catálogo publicado"}
 						description={
 							page.curatorialNote?.body ||
 							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial."

@@ -21,11 +21,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-	const [homeContent, featuredEvents, sarauPage, t] = await Promise.all([
-		getEditorialHomePage(),
+	const homeContent = await getEditorialHomePage();
+	const [featuredEvents, sarauPage, t, featuredProduct] = await Promise.all([
 		listEditorialEvents(),
 		getEditorialSarauPage(),
 		getTranslations("Selo.home.fallback"),
+		homeContent.featuredBook?.productSlug
+			? commerce.product.get({ slug: homeContent.featuredBook.productSlug }).catch(() => null)
+			: Promise.resolve(null),
 	]);
 	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
 	try {
@@ -37,7 +40,7 @@ export default async function Home() {
 				<HomeHero content={homeContent.hero} />
 				<div className="space-y-8 md:space-y-12">
 					<HomeManifesto content={homeContent.manifesto} />
-					<HomeFeaturedBooks products={products} content={homeContent} />
+					<HomeFeaturedBooks products={products} content={homeContent} featuredProduct={featuredProduct} />
 					<HomeProgramGrid event={featuredEvent} sarau={sarauPage} content={homeContent.program} />
 				</div>
 			</div>

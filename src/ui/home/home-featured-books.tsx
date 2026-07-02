@@ -21,15 +21,24 @@ import { YnsLink } from "@/ui/yns-link";
 export async function HomeFeaturedBooks({
 	products,
 	content,
+	featuredProduct,
 }: {
 	products: Product[];
 	content?: EditorialHomePage | null;
+	featuredProduct?: Product | null;
 }) {
 	const [locale, session] = await Promise.all([getLocale(), auth()]);
 	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();
 	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
-	const featured = products[0] ?? null;
-	const catalog = products.slice(0, 3);
+	const featured =
+		featuredProduct ??
+		(content?.featuredBook?.productSlug
+			? (products.find((product) => product.slug === content.featuredBook?.productSlug) ?? null)
+			: null) ??
+		products[0] ??
+		null;
+	const catalogSource = featured ? products.filter((product) => product.slug !== featured.slug) : products;
+	const catalog = (catalogSource.length > 0 ? catalogSource : products).slice(0, 3);
 	const tags = ["Erotismo", "Cidade", "Corpo"];
 	const fallbackSummary =
 		content?.featuredBook?.body ??

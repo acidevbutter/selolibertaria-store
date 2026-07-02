@@ -114,6 +114,20 @@ export function EditorialAboutForm({
 									<Textarea name="sectionExtended" defaultValue={page.section?.extended ?? ""} rows={4} />
 								</Field>
 							</div>
+							<Field label="CTA principal · rótulo" name="sectionPrimaryCtaLabel">
+								<Input
+									id="sectionPrimaryCtaLabel"
+									name="sectionPrimaryCtaLabel"
+									defaultValue={page.section?.primaryCtaLabel ?? ""}
+								/>
+							</Field>
+							<Field label="CTA principal · link" name="sectionPrimaryCtaHref">
+								<Input
+									id="sectionPrimaryCtaHref"
+									name="sectionPrimaryCtaHref"
+									defaultValue={page.section?.primaryCtaHref ?? ""}
+								/>
+							</Field>
 						</div>
 						<Field label="Imagem" name="sectionImageSrc">
 							<AdminImageUrlList
