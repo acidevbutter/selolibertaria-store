@@ -20,6 +20,8 @@ function isPublicApiPath(pathname: string) {
 		pathname === "/api/auth/forgot-password" ||
 		pathname === "/api/auth/reset-password" ||
 		pathname === "/api/stripe/webhook" ||
+		pathname === "/api/cart" ||
+		pathname === "/api/cart/merge" ||
 		pathname === "/api/auth/oauth/complete" ||
 		pathname.startsWith("/api/auth/oauth/") ||
 		pathname === "/api/address/postal-lookup"

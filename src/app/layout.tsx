@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Suspense } from "react";
+import { getCartAction } from "@/actions/cart-actions";
 import { CheckoutSuccessHandler } from "@/components/checkout-success-handler.client";
 import { CredentialSaveOnAuth } from "@/components/credential-save-on-auth.client";
 import SplashLoader from "@/components/splash-loader.client";
@@ -46,7 +47,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-	const messages = await getMessages();
+	const [messages, initialCart] = await Promise.all([getMessages(), getCartAction()]);
 
 	return (
 		<html
@@ -94,7 +95,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 				<ThemeProviderWrapper>
 					<IntlClientProvider messages={messages} locale="pt-BR">
 						<Suspense fallback={null}>
-							<CartProvider>
+							<CartProvider initialCart={initialCart}>
 								<Suspense fallback={null}>
 									<CheckoutSuccessHandler />
 								</Suspense>

@@ -5,12 +5,20 @@ import { getDb } from "@/lib/mongodb";
 
 const ACCOUNT_ACCESS_TTL_MS = 1000 * 60 * 60 * 72;
 const PASSWORD_SETUP_TTL_MS = 1000 * 60 * 60 * 24;
+const PASSWORD_RESET_TTL_MS = 1000 * 60 * 60;
 
 interface StoredAccountAccessToken {
 	tokenHash: string;
 	orderId: string;
 	expiresAt: Date | string;
 	createdAt?: Date | string;
+}
+
+interface StoredPasswordResetToken {
+	tokenHash: string;
+	expiresAt: Date | string;
+	createdAt?: Date | string;
+	purpose?: "setup" | "reset";
 }
 
 function hashToken(token: string) {
@@ -21,22 +29,32 @@ function createRawToken() {
 	return randomBytes(32).toString("base64url");
 }
 
+function isExpired(rawDate: Date | string | undefined | null, now = new Date()) {
+	if (!rawDate) {
+		return true;
+	}
+
+	const parsed = new Date(rawDate);
+	return Number.isNaN(parsed.getTime()) || parsed <= now;
+}
+
 export async function issueAccountAccessToken(input: { userId: string; orderId: string }) {
 	const token = createRawToken();
 	const expiresAt = new Date(Date.now() + ACCOUNT_ACCESS_TTL_MS);
 	const now = new Date();
 	const db = await getDb();
 	const users = db.collection("users");
-	const existingUser = await users.findOne<{
-		accountAccessTokens?: StoredAccountAccessToken[];
-	}>({ _id: new ObjectId(input.userId) }, { projection: { accountAccessTokens: 1 } });
+	const existingUser = await users.findOne<{ accountAccessTokens?: StoredAccountAccessToken[] }>(
+		{ _id: new ObjectId(input.userId) },
+		{ projection: { accountAccessTokens: 1 } },
+	);
 
 	const preservedTokens =
 		existingUser?.accountAccessTokens?.filter((entry) => {
-			const entryExpiresAt = new Date(entry.expiresAt);
-			if (Number.isNaN(entryExpiresAt.getTime()) || entryExpiresAt <= now) {
+			if (isExpired(entry.expiresAt, now)) {
 				return false;
 			}
+
 			return entry.orderId !== input.orderId;
 		}) ?? [];
 
@@ -73,13 +91,15 @@ export async function consumeAccountAccessToken(token: string): Promise<
 				hasPassword: boolean;
 			};
 	  }
-	| { ok: false; error: "invalid" | "expired" }
+	| { ok: false; error: "invalid" | "expired" | "missing_user" }
 > {
 	const db = await getDb();
+	const users = db.collection("users");
 	const tokenHash = hashToken(token);
-	const user = await db.collection("users").findOne<{
+	const now = new Date();
+	const user = await users.findOne<{
 		_id: ObjectId;
-		email: string;
+		email?: string;
 		name?: string;
 		role?: UserRole;
 		passwordHash?: string;
@@ -97,15 +117,41 @@ export async function consumeAccountAccessToken(token: string): Promise<
 		},
 	);
 
-	if (!user) return { ok: false, error: "invalid" };
+	if (!user?.email) {
+		return { ok: false, error: "missing_user" };
+	}
 
 	const matchedToken = user.accountAccessTokens?.find((entry) => entry.tokenHash === tokenHash);
-	if (!matchedToken) return { ok: false, error: "invalid" };
+	if (!matchedToken) {
+		return { ok: false, error: "invalid" };
+	}
 
-	const expiresAt = new Date(matchedToken.expiresAt);
-	if (Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+	if (isExpired(matchedToken.expiresAt, now)) {
+		await users.updateOne(
+			{ _id: user._id },
+			{
+				$set: {
+					accountAccessTokens: (user.accountAccessTokens ?? []).filter(
+						(entry) => entry.tokenHash !== tokenHash && !isExpired(entry.expiresAt, now),
+					),
+					updatedAt: now,
+				},
+			},
+		);
 		return { ok: false, error: "expired" };
 	}
+
+	await users.updateOne(
+		{ _id: user._id },
+		{
+			$set: {
+				accountAccessTokens: (user.accountAccessTokens ?? []).filter(
+					(entry) => entry.tokenHash !== tokenHash && !isExpired(entry.expiresAt, now),
+				),
+				updatedAt: now,
+			},
+		},
+	);
 
 	return {
 		ok: true,
@@ -120,20 +166,77 @@ export async function consumeAccountAccessToken(token: string): Promise<
 	};
 }
 
-export async function issuePasswordSetupToken(userId: string) {
+export async function issuePasswordResetToken(input: {
+	userId: string;
+	ttlMs?: number;
+	purpose?: "setup" | "reset";
+}) {
 	const token = createRawToken();
-	const expiresAt = new Date(Date.now() + PASSWORD_SETUP_TTL_MS);
-	const db = await getDb();
+	const now = new Date();
+	const expiresAt = new Date(now.getTime() + (input.ttlMs ?? PASSWORD_RESET_TTL_MS));
+	const passwordReset: StoredPasswordResetToken = {
+		tokenHash: hashToken(token),
+		expiresAt,
+		createdAt: now,
+		purpose: input.purpose ?? "reset",
+	};
 
+	const db = await getDb();
 	await db.collection("users").updateOne(
-		{ _id: new ObjectId(userId) },
+		{ _id: new ObjectId(input.userId) },
 		{
 			$set: {
-				passwordReset: { token, expiresAt },
-				updatedAt: new Date(),
+				passwordReset,
+				updatedAt: now,
 			},
 		},
 	);
 
 	return { token, expiresAt };
+}
+
+export async function issuePasswordSetupToken(userId: string) {
+	return issuePasswordResetToken({
+		userId,
+		ttlMs: PASSWORD_SETUP_TTL_MS,
+		purpose: "setup",
+	});
+}
+
+export async function resolvePasswordResetToken(token: string): Promise<
+	| {
+			ok: true;
+			user: {
+				_id: ObjectId;
+				passwordHash?: string;
+				passwordReset?: StoredPasswordResetToken;
+			};
+	  }
+	| { ok: false; error: "invalid" | "expired" }
+> {
+	const db = await getDb();
+	const tokenHash = hashToken(token);
+	const user = await db.collection("users").findOne<{
+		_id: ObjectId;
+		passwordHash?: string;
+		passwordReset?: StoredPasswordResetToken;
+	}>({ "passwordReset.tokenHash": tokenHash }, { projection: { passwordHash: 1, passwordReset: 1 } });
+
+	if (!user?.passwordReset) {
+		return { ok: false, error: "invalid" };
+	}
+
+	if (user.passwordReset.tokenHash !== tokenHash) {
+		return { ok: false, error: "invalid" };
+	}
+
+	if (isExpired(user.passwordReset.expiresAt)) {
+		return { ok: false, error: "expired" };
+	}
+
+	return { ok: true, user };
+}
+
+export function hashAccountAccessToken(token: string) {
+	return hashToken(token);
 }

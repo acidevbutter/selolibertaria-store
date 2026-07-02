@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,7 +10,29 @@ import { useTranslations } from "@/i18n/client";
 import { hasCapability, type UserRole } from "@/lib/authz";
 import { cn } from "@/lib/utils";
 
-type SidebarUser = { name?: string | null; email?: string | null; role?: UserRole };
+type SidebarUser = {
+	name?: string | null;
+	email?: string | null;
+	role?: UserRole;
+};
+
+function AdminBrandMark({ size = 44 }: { size?: number }) {
+	return (
+		<div
+			className="grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#fffdf8] ring-1 ring-white/8"
+			style={{ height: size, width: size }}
+		>
+			<Image
+				src="/images/selolibertaria.png"
+				alt="Logo do Selo Libertária"
+				width={size}
+				height={size}
+				className="h-full w-full object-contain p-1.5"
+				priority
+			/>
+		</div>
+	);
+}
 
 export function AdminSidebar({
 	user,
@@ -22,6 +45,7 @@ export function AdminSidebar({
 	const t = useTranslations("AdminShell");
 	const [navigating, setNavigating] = useState(false);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(user?.role, item.capability));
+
 	useEffect(() => {
 		setNavigating(false);
 	}, [pathname]);
@@ -30,7 +54,7 @@ export function AdminSidebar({
 		<aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 overflow-hidden bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:flex md:flex-col">
 			<div className="px-7 pb-7 pt-7">
 				<Link href="/admin" className="flex items-start gap-4">
-					<div className="h-11 w-11 shrink-0 rounded-xl bg-[#fffdf8]" />
+					<AdminBrandMark />
 					<div className="space-y-1">
 						<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 							LIBERTÁRIA
@@ -52,22 +76,25 @@ export function AdminSidebar({
 					</form>
 				</div>
 			</div>
-			<nav className="flex-1 space-y-1 px-[18px] py-4">
+
+			<nav className="space-y-1 px-[18px] py-4">
 				{visibleNavItems.map(({ href, label }: NavItem) => {
 					const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+
 					return (
 						<Link
 							key={href}
 							href={href}
-							onClick={(e) => {
+							onClick={(event) => {
 								if (active) {
-									e.preventDefault();
+									event.preventDefault();
 									return;
 								}
+
 								setNavigating(true);
 							}}
 							className={cn(
-								"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em] transition-colors",
+								"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em]",
 								active
 									? "bg-[#f7f1e8] text-[#0b0b0b]"
 									: "text-[#cfc6bd] hover:bg-white/4 hover:text-[#fffdf8]",
@@ -81,6 +108,7 @@ export function AdminSidebar({
 					);
 				})}
 			</nav>
+
 			<div className="mt-auto px-7 pb-6 pt-4">
 				<div className="h-px w-[208px] bg-[#2a2422]" />
 				<div className="pt-7 text-xs text-white/60">
@@ -93,11 +121,12 @@ export function AdminSidebar({
 					<div className="mt-1 truncate text-xs text-[#beb3a8]">{user?.email ?? ""}</div>
 				</div>
 			</div>
-			{navigating && (
+
+			{navigating ? (
 				<div className="absolute inset-0 z-50 grid place-items-center bg-black/55">
 					<Loader2 className="h-6 w-6 animate-spin text-[#fffdf8]" />
 				</div>
-			)}
+			) : null}
 		</aside>
 	);
 }

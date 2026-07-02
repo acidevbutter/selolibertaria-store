@@ -16,7 +16,7 @@
 		"lint": "biome check --write",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"prepare": "husky",
+		"prepare": "sh -c 'if [ -x node_modules/.bin/husky ]; then husky; else echo \"Skipping husky install: dependency not available in this environment.\"; fi'",
 		"docker:build": "docker build -t selolibertaria .",
 		"docker:run": "docker run -d -p 3000:3000 selolibertaria"
 	},

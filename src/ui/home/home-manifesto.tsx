@@ -9,8 +9,8 @@ export async function HomeManifesto({ content }: { content?: EditorialHomePage["
 	const manifesto = content ?? null;
 	const title =
 		manifesto?.title ||
-		t("home.manifesto.title") ||
-		"O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.";
+		// t("home.manifesto.title") ||
+		"oi";
 	const body = manifesto?.body || t("home.manifesto.body");
 	const linkLabel = manifesto?.linkLabel || t("home.manifesto.link");
 

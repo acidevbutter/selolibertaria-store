@@ -1,11 +1,11 @@
 import { UserIcon } from "lucide-react";
 import Image from "next/image";
 import { CartIcon } from "@/components/cart-icon";
+import { CartSidebarHost } from "@/components/cart-sidebar-host";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { NavMenu } from "@/ui/nav/nav-menu";
-// import ThemeToggle from "@/ui/theme-toggle.client";
 import { YnsLink } from "@/ui/yns-link";
 
 type NavProps = {
@@ -17,6 +17,7 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 	const session = hideAuthCta || lightweight ? null : await auth();
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
+
 	return (
 		<header className="sticky top-0 z-50 bg-[color:rgba(247,244,239,0.98)] backdrop-blur-xs">
 			<div className="w-full bg-[color:var(--editorial-paper)] px-4 pt-5 sm:px-8 lg:px-12">
@@ -51,28 +52,29 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 								includeSessionLink={!hideAuthCta && !lightweight}
 							/>
 						</div>
+
 						{hideAuthCta || isAdminSession ? null : (
 							<div className="hidden lg:flex lg:items-center">
 								<CartIcon />
 							</div>
 						)}
+
 						{hideAuthCta ? null : (
-							<>
-								<div className="flex items-center gap-2 lg:hidden">
-									{!isAdminSession ? <CartIcon /> : null}
-									<YnsLink
-										href={authHref}
-										className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
-									>
-										<UserIcon className="h-4 w-4" />
-									</YnsLink>
-								</div>
-							</>
+							<div className="flex items-center gap-2 lg:hidden">
+								{!isAdminSession ? <CartIcon /> : null}
+								<YnsLink
+									href={authHref}
+									className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
+								>
+									<UserIcon className="h-4 w-4" />
+								</YnsLink>
+							</div>
 						)}
 					</div>
 				</div>
-				<div className="border-b border-[color:var(--editorial-ink)]" />
 			</div>
+			{!hideAuthCta && !isAdminSession ? <CartSidebarHost /> : null}
+			<div className="border-b border-[color:var(--editorial-ink)]" />
 		</header>
 	);
 };

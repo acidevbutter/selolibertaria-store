@@ -163,3 +163,9 @@ Confiança vem de:
 - No checkout e nos formulários de conta/cadastro, a pessoa não deve tomar decisão sobre país neste estágio: a interface fixa `Brasil` e comunica com clareza que a entrega atual atende somente destinos brasileiros.
 - Quando esse travamento estiver ativo, a experiência deve evitar ruído visual: em vez de mostrar um campo de país bloqueado, basta ocultá-lo e manter a comunicação curta sobre atendimento apenas no Brasil.
 - No admin de frete, a pessoa operadora deve entender rapidamente se o token de ambiente do Melhor Envio está presente, sem ver segredo, sem copiar credencial e sem confundir o estado atual com a futura conexão OAuth.
+- No checkout, a validação dos dados pessoais deve reduzir retrabalho: formatar `CPF` e `Telefone` enquanto a pessoa digita, apontar erros no próprio campo e impedir tentativa de pagamento quando nome completo, e-mail, CPF ou telefone ainda não estiverem coerentes.
+- Em `Livros`, a pessoa deve sentir uma entrada editorial já na primeira dobra: fundo preto, texto curto, capa em destaque e saída clara para continuar no catálogo sem parecer uma listagem genérica.
+- Ao acionar `Ver catálogo` dentro de `/products`, a experiência correta é continuidade no mesmo documento com rolagem até os livros publicados, nunca um botão sem efeito aparente.
+- Depois de um `Adicionar ao carrinho` como visitante, a pessoa precisa perceber continuidade imediata no mesmo lugar: badge no header, drawer e checkout devem mostrar exatamente o mesmo item, sem oscilar para estado vazio.
+- O drawer do carrinho deve parecer uma extensão calma da livraria, não um painel promocional pesado: cabeçalho preto para orientação, corpo em papel para leitura e vinho apenas como acento de ação e feedback.
+- 2026-07-02: no admin, a pessoa operadora deve reconhecer a marca já no topo da sidebar e do menu móvel; o logo oficial precisa ocupar esse ponto de orientação sem competir com a navegação nem parecer avatar vazio.

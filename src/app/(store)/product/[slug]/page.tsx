@@ -240,6 +240,15 @@ export default async function SingleProductPage(props: {
 										<div className="flex flex-wrap gap-4">
 											<AddToCart
 												variantId={selectedVariantId}
+												productInfo={{
+													id: product.id,
+													name: selectedVariant?.label
+														? formatProductName(product.name, selectedVariant.label)
+														: product.name,
+													images,
+													summary: product.summary ?? null,
+												}}
+												redirectTo="/checkout"
 												className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-12 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]`}
 											>
 												{isOutOfStock ? t("outOfStock") : "Comprar"}

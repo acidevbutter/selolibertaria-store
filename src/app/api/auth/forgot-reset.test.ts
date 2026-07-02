@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
 import { describe, expect, it } from "vitest";
+import { issuePasswordResetToken } from "@/lib/account-access";
 
 const describeIntegration = process.env.RUN_INTEGRATION_TESTS === "true" ? describe : describe.skip;
 
 describeIntegration("forgot/reset integration", () => {
-	it("creates a token and resets the password", async () => {
+	it("creates hashed token and resets password", async () => {
 		const [{ POST: forgotPOST }, { POST: resetPOST }, { getDb }] = await Promise.all([
 			import("@/app/api/auth/forgot-password/route"),
 			import("@/app/api/auth/reset-password/route"),
@@ -13,48 +14,46 @@ describeIntegration("forgot/reset integration", () => {
 		const db = await getDb();
 		const users = db.collection("users");
 		const email = `test+forgot-${Date.now()}@example.com`;
-		// create test user
 		const insert = await users.insertOne({ email, name: "Test User", passwordHash: "OLD_HASH" });
 		const id = insert.insertedId;
+
 		try {
-			// Call forgot-password
-			const req1 = new Request("http://localhost/api/auth/forgot-password", {
+			const forgotRequest = new Request("http://localhost/api/auth/forgot-password", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ email }),
 			});
-			const res1 = await forgotPOST(req1 as unknown as Request);
-			expect(res1).toBeTruthy();
-			expect(res1.status).toBe(200);
+			const forgotResponse = await forgotPOST(forgotRequest as Request);
+			expect(forgotResponse.status).toBe(200);
 
-			// Load user and check token
-			const userAfter = await users.findOne({ _id: id });
-			expect(userAfter).toBeTruthy();
-			const token = userAfter!.passwordReset!.token;
-			const expiresAt = userAfter!.passwordReset!.expiresAt;
-			expect(typeof token).toBe("string");
-			expect(token.length).toBeGreaterThanOrEqual(16);
-			expect(expiresAt).toBeTruthy();
+			const userAfterForgot = await users.findOne<{
+				passwordReset?: { tokenHash?: string; expiresAt?: Date | string; token?: string };
+			}>({ _id: id });
+			expect(userAfterForgot?.passwordReset?.tokenHash).toBeTruthy();
+			expect(userAfterForgot?.passwordReset?.token).toBeUndefined();
+			expect(userAfterForgot?.passwordReset?.expiresAt).toBeTruthy();
 
-			// Call reset-password with a strong password
+			const { token } = await issuePasswordResetToken({
+				userId: id.toHexString(),
+				purpose: "reset",
+			});
+
 			const newPassword = "Str0ng!Passw0rd";
-			const req2 = new Request("http://localhost/api/auth/reset-password", {
+			const resetRequest = new Request("http://localhost/api/auth/reset-password", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ token, password: newPassword }),
 			});
-			const res2 = await resetPOST(req2 as unknown as Request);
-			expect(res2).toBeTruthy();
-			expect(res2.status).toBe(200);
+			const resetResponse = await resetPOST(resetRequest as Request);
+			expect(resetResponse.status).toBe(200);
 
-			const userFinal = await users.findOne({ _id: id });
-			expect(userFinal).toBeTruthy();
-			expect(userFinal!.passwordReset).toBeUndefined();
-			// verify hashed password matches
-			const ok = await bcrypt.compare(newPassword, userFinal!.passwordHash);
-			expect(ok).toBeTruthy();
+			const userAfterReset = await users.findOne<{ passwordHash?: string; passwordReset?: unknown }>({
+				_id: id,
+			});
+			expect(userAfterReset?.passwordReset).toBeUndefined();
+			expect(userAfterReset?.passwordHash).toBeTruthy();
+			expect(await bcrypt.compare(newPassword, userAfterReset!.passwordHash!)).toBe(true);
 		} finally {
-			// cleanup
 			await users.deleteOne({ _id: id });
 		}
 	});

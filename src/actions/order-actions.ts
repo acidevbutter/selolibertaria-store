@@ -4,9 +4,11 @@ import { ObjectId } from "mongodb";
 import Stripe from "stripe";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
-import { canBuyOnSelolibertaria } from "@/lib/authz";
+import { canBuyOnSelolibertaria, normalizeUserRole } from "@/lib/authz";
 import { clearCartId, getCartId } from "@/lib/cart-cookies";
 import type { CheckoutSnapshot, CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
+import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
+import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
 import { commerce } from "@/lib/commerce-stripe";
 import type { UserCart } from "@/lib/mongodb";
 import { getDb } from "@/lib/mongodb";
@@ -22,6 +24,7 @@ import {
 	isOrderReceivedEligibleStatus,
 	shouldPreserveAuthoritativePurchaseStatus,
 } from "@/lib/payment-status";
+import { createPersistentSession } from "@/lib/session";
 
 interface OrderDraftDoc {
 	orderId?: string;
@@ -83,6 +86,98 @@ interface PurchaseDoc {
 	};
 }
 
+type CheckoutBrowserAccess =
+	| {
+			ok: true;
+			userId: string;
+			setupPasswordRequired: boolean;
+	  }
+	| {
+			ok: false;
+			error: string;
+	  };
+
+async function resolveCheckoutBrowserAccess(input: {
+	auth: Awaited<ReturnType<typeof requireAuth>> | { error: string };
+	draft?: OrderDraftDoc | null;
+	paymentIntentUserId?: string | null;
+}): Promise<CheckoutBrowserAccess> {
+	const db = await getDb();
+	let userId: string | null =
+		!("error" in input.auth) && canBuyOnSelolibertaria(input.auth.session.role)
+			? (input.auth.session.sub as string)
+			: null;
+
+	if (!("error" in input.auth) && !canBuyOnSelolibertaria(input.auth.session.role)) {
+		return { ok: false, error: "Acesso negado" };
+	}
+
+	if (input.paymentIntentUserId) {
+		if (userId && input.paymentIntentUserId !== userId) {
+			return { ok: false, error: "A intenção de pagamento não pertence a esta pessoa usuária" };
+		}
+		userId = input.paymentIntentUserId;
+	}
+
+	if (input.draft?.userId) {
+		if (userId && input.draft.userId !== userId) {
+			return { ok: false, error: "A intenção de pagamento não pertence a esta pessoa usuária" };
+		}
+		userId = input.draft.userId;
+	}
+
+	if (!userId && input.draft?.buyer?.email && input.draft.orderId) {
+		const resolved = await resolveCheckoutUserForDraft({
+			orderId: input.draft.orderId,
+			userId: input.draft.userId ?? null,
+			buyer: normalizeCheckoutBuyer(input.draft.buyer),
+			deliveryAddress: input.draft.deliveryAddress ?? null,
+		});
+		userId = resolved.userId;
+
+		await db.collection("orderDrafts").updateOne(
+			{ paymentIntentId: input.draft.paymentIntentId },
+			{
+				$set: {
+					userId,
+					updatedAt: new Date(),
+				},
+			},
+		);
+	}
+
+	if (!userId) {
+		return { ok: false, error: "Não foi possível preparar o acesso da conta" };
+	}
+
+	const user = await db.collection("users").findOne<{
+		_id: ObjectId;
+		email?: string;
+		name?: string;
+		role?: string;
+		passwordHash?: string;
+	}>({ _id: new ObjectId(userId) }, { projection: { email: 1, name: 1, role: 1, passwordHash: 1 } });
+
+	if (!user?.email) {
+		return { ok: false, error: "Conta da compra não encontrada" };
+	}
+
+	if ("error" in input.auth) {
+		await createPersistentSession({
+			id: user._id.toHexString(),
+			email: user.email,
+			name: user.name,
+			role: normalizeUserRole(user.role),
+		});
+	}
+
+	return {
+		ok: true,
+		userId: user._id.toHexString(),
+		setupPasswordRequired: !user.passwordHash,
+	};
+}
+
 /**
  * Clears cart stored on user document after checkout finalized.
  * Also removes legacy in-memory/cookie cart, if exists, to keep things consistent.
@@ -124,16 +219,13 @@ export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error:
  * Saves a purchase on user document using session_id returned on success_url.
  * This doesn't replace webhook (source of truth), but it allows immediate recording.
  */
-export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok: true } | { error: string }> {
+export async function recordSuccessfulCheckout(
+	sessionId: string,
+): Promise<{ ok: true; setupPasswordRequired: boolean } | { error: string }> {
 	if (!sessionId || !sessionId.startsWith("cs_")) return { error: "ID de sessão inválido" };
 	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
 
 	const auth = await requireAuth();
-	let userId: string | null = null;
-	if (!("error" in auth)) {
-		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
-		userId = auth.session.sub as string;
-	}
 
 	try {
 		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
@@ -141,16 +233,26 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 			expand: ["line_items.data.price.product"],
 		});
 
-		if (session.metadata?.userId) {
-			const metaUserId = String(session.metadata.userId);
-			if (userId && metaUserId !== userId) {
-				return { error: "A sessão não pertence a esta pessoa usuária" };
-			}
-			if (!userId) userId = metaUserId;
+		const db = await getDb();
+		const paymentIntentId =
+			typeof session.payment_intent === "string"
+				? session.payment_intent
+				: (session.payment_intent?.id ?? null);
+		const draft = paymentIntentId?.startsWith("pi_")
+			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId })
+			: null;
+		const browserAccess = await resolveCheckoutBrowserAccess({
+			auth,
+			draft,
+			paymentIntentUserId: session.metadata?.userId ? String(session.metadata.userId) : null,
+		});
+
+		if (!browserAccess.ok) {
+			return { error: browserAccess.error };
 		}
 
-		if (!userId) return { error: "Não autorizado" };
-
+		const userId = browserAccess.userId;
+		const purchaseId = draft?.orderId || session.id;
 		const items = (session.line_items?.data || []).map((lineItem) => {
 			const product =
 				typeof lineItem.price?.product === "object" ? (lineItem.price.product as Stripe.Product) : undefined;
@@ -162,24 +264,19 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 				unitAmount: lineItem.price?.unit_amount ?? null,
 			};
 		});
-
-		const db = await getDb();
 		const userObjectId = new ObjectId(userId);
-		const paymentIntentId =
-			typeof session.payment_intent === "string"
-				? session.payment_intent
-				: (session.payment_intent?.id ?? null);
-		const draft = paymentIntentId?.startsWith("pi_")
-			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId })
-			: null;
 		const shippingSnapshot = buildPersistedOrderShippingSnapshot({
 			deliveryMethod: draft?.deliveryMethod ?? null,
 			deliveryAddress: draft?.deliveryAddress ?? null,
 			shippingRate: draft?.shippingRate ?? null,
 		});
+		const relatedIds = {
+			sessionId: session.id,
+			...(paymentIntentId ? { paymentIntentId } : {}),
+		};
 
 		const purchase = {
-			id: session.id,
+			id: purchaseId,
 			createdAt: new Date(),
 			status: session.payment_status || session.status || "unknown",
 			amountTotal: session.amount_total || 0,
@@ -188,6 +285,8 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 			items,
 			invoiceId: (session.invoice as string) || null,
 			paymentIntentId,
+			relatedIds,
+			fulfillment: { status: "received" as const },
 			...shippingSnapshot,
 		};
 
@@ -204,7 +303,14 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 		};
 
 		const existing = await usersCol.findOne(
-			{ _id: userObjectId, "purchases.id": session.id },
+			{
+				_id: userObjectId,
+				$or: [
+					{ "purchases.id": purchaseId },
+					{ "purchases.relatedIds.sessionId": session.id },
+					...(paymentIntentId ? [{ "purchases.relatedIds.paymentIntentId": paymentIntentId }] : []),
+				],
+			},
 			{ projection: { _id: 1 } },
 		);
 		if (!existing) {
@@ -218,7 +324,11 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 			);
 		}
 
-		return { ok: true };
+		if (isOrderReceivedEligibleStatus(purchase.status)) {
+			await ensureOrderReceivedEmail(userId, purchaseId);
+		}
+
+		return { ok: true, setupPasswordRequired: browserAccess.setupPasswordRequired };
 	} catch (error) {
 		console.error("[recordSuccessfulCheckout]", error);
 		return { error: "Falha ao registrar a compra" };
@@ -228,7 +338,10 @@ export async function recordSuccessfulCheckout(sessionId: string): Promise<{ ok:
 export async function recordPaymentIntentCheckout(input: {
 	paymentIntentId?: string | null;
 	orderId?: string | null;
-}): Promise<{ ok: true; status: string; cartCleared: boolean } | { error: string; status?: string }> {
+}): Promise<
+	| { ok: true; status: string; cartCleared: boolean; setupPasswordRequired: boolean }
+	| { error: string; status?: string }
+> {
 	if (!env.STRIPE_SECRET_KEY) return { error: "Stripe não configurado" };
 
 	const paymentIntentIdFromInput =
@@ -282,26 +395,16 @@ export async function recordPaymentIntentCheckout(input: {
 		}
 
 		const auth = await requireAuth();
-		if ("error" in auth) {
-			return {
-				ok: true,
-				status: authoritativeStatus,
-				cartCleared: isFinalizedPaymentStatus(authoritativeStatus),
-			};
+		const browserAccess = await resolveCheckoutBrowserAccess({
+			auth,
+			draft,
+			paymentIntentUserId: paymentIntent.metadata?.userId ?? null,
+		});
+		if (!browserAccess.ok) {
+			return { error: browserAccess.error, status: authoritativeStatus };
 		}
-		if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
 
-		const userId = auth.session.sub as string;
-		if (draft?.userId && draft.userId !== userId) {
-			return {
-				error: "A intenção de pagamento não pertence a esta pessoa usuária",
-			};
-		}
-		if (paymentIntent.metadata?.userId && paymentIntent.metadata.userId !== userId) {
-			return {
-				error: "A intenção de pagamento não pertence a esta pessoa usuária",
-			};
-		}
+		const userId = browserAccess.userId;
 
 		const usersCol = db.collection("users");
 		const userUpdateCol = usersCol as unknown as {
@@ -448,6 +551,7 @@ export async function recordPaymentIntentCheckout(input: {
 			ok: true,
 			status: finalStatus,
 			cartCleared: isFinalizedPaymentStatus(finalStatus),
+			setupPasswordRequired: browserAccess.setupPasswordRequired,
 		};
 	} catch (error) {
 		console.error("[recordPaymentIntentCheckout]", error);
