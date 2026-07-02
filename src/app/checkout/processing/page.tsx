@@ -56,8 +56,15 @@ export default function ProcessingPage() {
 		let hardTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
 		let cancelled = false;
 
-		function getSuccessPath() {
-			return isGuest ? "/" : "/user?section=purchases";
+		function getSuccessPath(setupPasswordRequired = false) {
+			const params = new URLSearchParams({ section: "purchases" });
+			if (orderId?.startsWith("ord_")) {
+				params.set("order", orderId);
+			}
+			if (setupPasswordRequired) {
+				params.set("setupPassword", "1");
+			}
+			return `/user?${params.toString()}`;
 		}
 
 		function clearTimers() {
@@ -120,7 +127,7 @@ export default function ProcessingPage() {
 			}
 
 			setPhase("finalized");
-			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
+			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
 			return "resolved" as const;
 		}
 
@@ -155,17 +162,23 @@ export default function ProcessingPage() {
 				await pollPaymentIntent();
 			} else if (sessionId?.startsWith("cs_")) {
 				try {
-					await recordSuccessfulCheckout(sessionId);
-				} catch {
-					// noop
-				}
+					const result = await recordSuccessfulCheckout(sessionId);
+					if ("error" in result) {
+						throw new Error(result.error);
+					}
 
-				try {
-					const cleanup = await finalizeCheckoutCleanup();
-					if ("ok" in cleanup) closeCart();
-					safelyRefreshCart(refreshCart);
-					setPhase("finalized");
-					scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS);
+					const redirectPath = getSuccessPath(result.setupPasswordRequired);
+
+					try {
+						const cleanup = await finalizeCheckoutCleanup();
+						if ("ok" in cleanup) closeCart();
+						safelyRefreshCart(refreshCart);
+						setPhase("finalized");
+						scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, redirectPath);
+					} catch {
+						setPhase("error");
+						scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
+					}
 				} catch {
 					setPhase("error");
 					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
@@ -216,7 +229,7 @@ export default function ProcessingPage() {
 				<p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
 				{isGuest && done ? (
 					<p className="mt-4 text-sm leading-6 text-muted-foreground">
-						Enviamos o acesso da sua conta por e-mail assim que o pedido for confirmado.
+						Sua conta já está pronta. Você também vai receber por e-mail o link seguro para definir sua senha.
 					</p>
 				) : null}
 			</div>

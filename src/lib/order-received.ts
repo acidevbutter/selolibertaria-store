@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { publicUrl } from "@/env.mjs";
-import { issueAccountAccessToken } from "./account-access";
+import { issueAccountAccessToken, issuePasswordSetupToken } from "./account-access";
 import { sendEmail } from "./email";
 import { purchaseCompletedEmailHtml } from "./email-templates/purchase-completed";
 import { getDb } from "./mongodb";
@@ -48,34 +48,31 @@ export async function ensureOrderReceivedEmail(userId: string, purchaseIdentifie
 	const user = await users.findOne<{
 		email?: string;
 		name?: string;
+		passwordHash?: string;
 		purchases?: PurchaseDoc[];
-	}>({ _id: userObjectId }, { projection: { email: 1, name: 1, purchases: 1 } });
+	}>({ _id: userObjectId }, { projection: { email: 1, name: 1, passwordHash: 1, purchases: 1 } });
+
 	const purchase = user?.purchases?.find((entry) => matchesOrderIdentifier(entry, purchaseIdentifier));
-	if (!user?.email || !purchase) return false;
-
-	const purchaseId = purchase.id;
-	const alreadySent = Boolean(purchase.notifications?.orderReceivedEmailSentAt);
-
-	if (!purchase.fulfillment?.status) {
-		await users.updateOne(
-			{ _id: userObjectId, "purchases.id": purchaseId },
-			{
-				$set: {
-					"purchases.$.fulfillment.status": "received",
-					updatedAt: new Date(),
-				},
-			},
-		);
+	if (!user?.email || !purchase) {
+		return false;
 	}
 
-	if (alreadySent) return false;
+	const purchaseId = purchase.id;
+	if (purchase.notifications?.orderReceivedEmailSentAt || !purchase.fulfillment?.status) {
+		return false;
+	}
 
 	try {
-		const { token } = await issueAccountAccessToken({
+		const { token: accountToken } = await issueAccountAccessToken({
 			userId,
 			orderId: purchaseId,
 		});
-		const accountUrl = `${publicUrl.replace(/\/$/, "")}/account/access?token=${encodeURIComponent(token)}`;
+		const accountUrl = `${publicUrl.replace(/\/$/, "")}/account/access?token=${encodeURIComponent(accountToken)}`;
+		const passwordSetupUrl = !user.passwordHash
+			? `${publicUrl.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(
+					(await issuePasswordSetupToken(userId)).token,
+				)}`
+			: undefined;
 		const total = formatMoney(purchase.amountTotal, purchase.currency);
 		const items = (purchase.items || []).map((item) => ({
 			name: item.name || "Item",
@@ -90,16 +87,23 @@ export async function ensureOrderReceivedEmail(userId: string, purchaseIdentifie
 			name: buyerName,
 			orderId: purchaseId,
 			accountUrl,
+			passwordSetupUrl,
 			items,
 			total,
 			baseUrl: publicUrl,
 		});
 
+		const textParts = [
+			`${buyerName ? `Olá, ${buyerName}. ` : ""}Sua compra foi confirmada.`,
+			`Acesse sua conta: ${accountUrl}`,
+			passwordSetupUrl ? `Crie ou defina sua senha: ${passwordSetupUrl}` : null,
+		].filter(Boolean);
+
 		await sendEmail({
 			to: user.email,
 			subject: "Compra concluída — Selo Libertária",
 			html,
-			text: `${buyerName ? `Olá, ${buyerName}. ` : ""}Sua compra foi confirmada. Acesse sua conta: ${accountUrl}`,
+			text: textParts.join("\n"),
 			log: {
 				kind: "purchase_completed",
 				source: "order-received",
@@ -117,9 +121,10 @@ export async function ensureOrderReceivedEmail(userId: string, purchaseIdentifie
 				},
 			},
 		);
+
 		return true;
 	} catch (error) {
-		console.error("Failed to send purchase completed email", error);
+		console.error("Failed send purchase completed email", error);
 		return false;
 	}
 }

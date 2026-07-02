@@ -26,6 +26,7 @@ const {
 		order: "ord_123" as string | null,
 		payment_intent: "pi_123" as string | null,
 		checkout: "success" as string | null,
+		guest: null as string | null,
 	},
 }));
 
@@ -65,6 +66,7 @@ describe("Checkout processing page", () => {
 		searchParamsState.order = "ord_123";
 		searchParamsState.payment_intent = "pi_123";
 		searchParamsState.checkout = "success";
+		searchParamsState.guest = null;
 	});
 
 	afterEach(() => {
@@ -94,7 +96,7 @@ describe("Checkout processing page", () => {
 			await vi.advanceTimersByTimeAsync(15000);
 		});
 
-		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&order=ord_123");
 		expect(recordPaymentIntentCheckoutMock.mock.calls.length).toBeGreaterThan(1);
 	});
 
@@ -112,7 +114,7 @@ describe("Checkout processing page", () => {
 			await vi.advanceTimersByTimeAsync(15000);
 		});
 
-		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&order=ord_123");
 		expect(screen.getByText("Pagamento ainda em processamento")).toBeTruthy();
 	});
 
@@ -161,7 +163,7 @@ describe("Checkout processing page", () => {
 			await vi.runAllTimersAsync();
 		});
 
-		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&order=ord_123");
 		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
 	});
 
@@ -188,8 +190,63 @@ describe("Checkout processing page", () => {
 			await vi.runAllTimersAsync();
 		});
 
-		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases");
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&order=ord_123");
 		expect(recordPaymentIntentCheckoutMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("mantém o acesso autenticado e o setup de senha no redirect do checkout convidado", async () => {
+		searchParamsState.guest = "1";
+		recordPaymentIntentCheckoutMock.mockResolvedValue({
+			ok: true,
+			status: "succeeded",
+			cartCleared: false,
+			setupPasswordRequired: true,
+		});
+
+		render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			await vi.runAllTimersAsync();
+		});
+
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&order=ord_123&setupPassword=1");
+	});
+
+	it("redireciona o fluxo por session_id com setup de senha quando a conta nasce no checkout", async () => {
+		searchParamsState.order = null;
+		searchParamsState.payment_intent = null;
+		searchParamsState.session_id = "cs_123";
+		searchParamsState.guest = "1";
+		recordSuccessfulCheckoutMock.mockResolvedValue({
+			ok: true,
+			setupPasswordRequired: true,
+		});
+		finalizeCheckoutCleanupMock.mockResolvedValue({ ok: true });
+
+		render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<ProcessingPage />
+			</IntlClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		await act(async () => {
+			await vi.runAllTimersAsync();
+		});
+
+		expect(recordSuccessfulCheckoutMock).toHaveBeenCalledWith("cs_123");
+		expect(replaceMock).toHaveBeenCalledWith("/user?section=purchases&setupPassword=1");
 	});
 
 	it("redireciona imediatamente quando entra sem order, intent ou session", async () => {

@@ -4,6 +4,7 @@ type Props = {
 	name?: string | null;
 	orderId: string;
 	accountUrl: string;
+	passwordSetupUrl?: string;
 	items: Array<{ name: string; quantity: number; price?: string }>;
 	total?: string;
 	supportEmail?: string;
@@ -14,6 +15,7 @@ export function purchaseCompletedEmailHtml({
 	name,
 	orderId,
 	accountUrl,
+	passwordSetupUrl,
 	items,
 	total,
 	supportEmail,
@@ -33,7 +35,6 @@ export function purchaseCompletedEmailHtml({
 			`,
 		)
 		.join("");
-
 	const totalHtml = total
 		? `
 			<div class="meta-grid">
@@ -55,7 +56,28 @@ export function purchaseCompletedEmailHtml({
 				</div>
 			</div>
 		`;
-
+	const accountButton = emailButtonHtml({
+		href: accountUrl,
+		label: "Acessar minha conta",
+	});
+	const passwordButton = passwordSetupUrl
+		? emailButtonHtml({
+				href: passwordSetupUrl,
+				label: "Criar minha senha",
+			})
+		: "";
+	const passwordCard = passwordSetupUrl
+		? `
+			<div class="info-card">
+				<strong>Defina sua senha</strong>
+				<p style="margin:8px 0 0">
+					Sua conta já está pronta. Use o link abaixo para criar sua senha com segurança e voltar quando quiser.
+				</p>
+			</div>
+			<p class="cta-wrap">${passwordButton}</p>
+			<div class="link-block">${escapeEmailHtml(passwordSetupUrl)}</div>
+		`
+		: "";
 	const bodyHtml = `
 		<p class="lead">${greeting}</p>
 		<p>Sua compra foi confirmada no Selo Libertária.</p>
@@ -65,22 +87,19 @@ export function purchaseCompletedEmailHtml({
 			<strong>Resumo do pedido</strong>
 			<table class="items-table" role="presentation">${itemsHtml}</table>
 		</div>
-		<div class="cta-wrap">
-			${emailButtonHtml({ href: accountUrl, label: "Acessar minha conta" })}
-		</div>
-		<div class="note-card">
-			<strong>Primeiro acesso</strong>
-			<p style="margin:8px 0 0">Se você ainda não tem senha, poderá criá-la no primeiro acesso.</p>
-		</div>
+		<p>Você já pode acompanhar o pedido e rever seus dados na sua conta.</p>
+		<p class="cta-wrap">${accountButton}</p>
+		<div class="link-block">${escapeEmailHtml(accountUrl)}</div>
+		${passwordCard}
 	`;
 
 	return emailShellHtml({
 		title: "Compra concluída",
-		eyebrow: "Selo Libertária",
-		preheader: `Compra concluída - pedido #${orderId}`,
+		eyebrow: "Pedido confirmado",
+		preheader: "Sua compra foi confirmada e sua conta já pode ser acessada.",
 		bodyHtml,
 		supportEmail,
 		baseUrl,
-		footerNote: "Você está recebendo esta mensagem porque um pedido foi confirmado com este e-mail.",
+		footerNote: "Se precisar de ajuda com este pedido, responda este e-mail ou fale com nosso suporte.",
 	});
 }
