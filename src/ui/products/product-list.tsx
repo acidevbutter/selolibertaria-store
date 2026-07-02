@@ -150,9 +150,9 @@ export const ProductList = async ({
 				className="space-y-8 scroll-mt-28 border-t border-[color:var(--editorial-border)] pt-8"
 			>
 				{productsWithDisplayData.length === 1 && singleEntry ? (
-					<div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(340px,400px)] xl:items-start">
+					<div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_320px] xl:items-start">
 						{header}
-						<div className="w-full max-w-[25rem] xl:justify-self-end">
+						<div className="w-full max-w-[20rem] xl:justify-self-end">
 							<Reveal delay={0.06}>
 								<ProductCard
 									href={`/product/${singleEntry.product.slug}`}
@@ -193,7 +193,7 @@ export const ProductList = async ({
 							}`}
 						>
 							{productsWithDisplayData.map((entry, idx) => (
-								<li key={entry.product.id} className="relative w-full max-w-[25rem]">
+								<li key={entry.product.id} className="relative w-full max-w-[20rem]">
 									<Reveal delay={0.04 * idx}>
 										<ProductCard
 											href={`/product/${entry.product.slug}`}

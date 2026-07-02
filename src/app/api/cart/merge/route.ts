@@ -10,7 +10,7 @@ import { requireAuth } from "@/lib/api-auth";
 export async function POST() {
 	const auth = await requireAuth();
 	if ("error" in auth) {
-		return NextResponse.json({ merged: false, reason: "unauthorized" }, { status: 401 });
+		return NextResponse.json({ merged: false, reason: "guest" });
 	}
 	try {
 		const merged = await mergeGuestCartIntoUser();

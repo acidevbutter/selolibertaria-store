@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
@@ -78,7 +78,7 @@ export function ProductCard({
 	const isBuying = pendingAction === "buy";
 
 	async function addSelectedVariant() {
-		if (!resolvedVariantId || resolvedQuickAddDisabled || pendingAction) {
+		if (!resolvedVariantId || resolvedQuickAddDisabled) {
 			return false;
 		}
 
@@ -136,7 +136,7 @@ export function ProductCard({
 	};
 
 	return (
-		<article className="group relative flex h-full flex-col border border-[color:rgba(11,11,11,0.22)] bg-[color:var(--editorial-paper)] p-5 transition duration-300 hover:-translate-y-1 hover:border-[color:rgba(122,30,34,0.42)] focus-within:-translate-y-1 focus-within:border-[color:rgba(122,30,34,0.42)] sm:p-6">
+		<article className="group relative flex h-full flex-col border border-[color:rgba(11,11,11,0.22)] bg-[color:var(--editorial-paper)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[color:rgba(122,30,34,0.42)] focus-within:-translate-y-1 focus-within:border-[color:rgba(122,30,34,0.42)] sm:p-5">
 			<div className="absolute right-4 top-4 z-10">
 				<FavoriteToggle
 					productSlug={productSlug}
@@ -147,8 +147,8 @@ export function ProductCard({
 			</div>
 
 			<YnsLink href={href} className="block">
-				<div className="mx-auto w-full max-w-[16rem] overflow-hidden bg-[color:rgba(216,208,196,0.45)] p-4 sm:p-5">
-					<div className="relative aspect-[0.72] w-full overflow-hidden bg-[color:rgba(247,244,239,0.82)]">
+				<div className="mx-auto w-full max-w-[14rem] overflow-hidden bg-[color:rgba(216,208,196,0.45)] p-3 sm:p-4">
+					<div className="relative aspect-[2/3] w-full overflow-hidden bg-[color:rgba(247,244,239,0.82)]">
 						{imageUrl ? (
 							<Image
 								src={imageUrl}
@@ -157,7 +157,7 @@ export function ProductCard({
 								loading={loading}
 								priority={priority}
 								className="object-contain p-3 transition duration-500 group-hover:scale-[1.02] group-focus-within:scale-[1.02]"
-								sizes="(max-width: 768px) 72vw, (max-width: 1280px) 320px, 280px"
+								sizes="(max-width: 768px) min(72vw, 224px), 224px"
 								{...getProductImageOptimizationProps(imageUrl)}
 							/>
 						) : (
@@ -169,14 +169,14 @@ export function ProductCard({
 				</div>
 			</YnsLink>
 
-			<div className="mt-6 flex flex-1 flex-col justify-between gap-5">
+			<div className="mt-5 flex flex-1 flex-col justify-between gap-4">
 				<div className="space-y-4">
 					<div className="space-y-2">
 						<p className="text-[10px] uppercase tracking-[0.26em] text-[color:var(--editorial-accent)]">
 							{resolvedQuickAddDisabled ? "Em breve" : "Disponível"}
 						</p>
 						<YnsLink href={href} className="block">
-							<h2 className="line-clamp-2 text-[clamp(1.85rem,3vw,2.35rem)] leading-[0.95] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] transition-colors group-hover:text-[color:var(--editorial-accent)] group-focus-within:text-[color:var(--editorial-accent)]">
+							<h2 className="line-clamp-2 text-[clamp(1.45rem,2vw,1.9rem)] leading-[0.96] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] transition-colors group-hover:text-[color:var(--editorial-accent)] group-focus-within:text-[color:var(--editorial-accent)]">
 								{name}
 							</h2>
 						</YnsLink>
@@ -186,7 +186,7 @@ export function ProductCard({
 					</div>
 
 					<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-						<p className="text-2xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)]">
+						<p className="text-xl font-black tracking-[-0.04em] text-[color:var(--editorial-ink)] sm:text-2xl">
 							{resolvedPriceLabel}
 						</p>
 						{resolvedCompareAtLabel ? (
@@ -201,7 +201,7 @@ export function ProductCard({
 						) : null}
 					</div>
 
-					<p className="line-clamp-4 text-sm leading-7 text-[color:var(--editorial-muted)]">
+					<p className="line-clamp-3 text-sm leading-6 text-[color:var(--editorial-muted)]">
 						{productInfo.summary ??
 							"Uma edição do catálogo do Selo Libertária pensada para leitura, presença e continuidade cultural."}
 					</p>
@@ -236,21 +236,24 @@ export function ProductCard({
 				</div>
 
 				{canPurchase ? (
-					<div className="grid gap-3 sm:grid-cols-2">
+					<div className="flex items-stretch gap-3">
 						<Button
 							type="button"
 							onClick={handleQuickAdd}
 							disabled={resolvedQuickAddDisabled || !resolvedVariantId || pendingAction !== null}
 							aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("addToCart")}
-							className="min-h-11 rounded-none border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] px-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)] disabled:border-[color:var(--editorial-border)] disabled:bg-[color:var(--editorial-paper)] disabled:text-[color:var(--editorial-muted)]"
+							className="h-11 w-11 shrink-0 rounded-none border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] px-0 text-[color:var(--editorial-ink)] hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)] disabled:border-[color:var(--editorial-border)] disabled:bg-[color:var(--editorial-paper)] disabled:text-[color:var(--editorial-muted)]"
 						>
 							{isAdding ? (
-								<span className="inline-flex items-center gap-2">
+								<span className="inline-flex items-center justify-center">
 									<Loader2 className="h-4 w-4 animate-spin" />
-									{productT("addToCart")}
+									<span className="sr-only">{productT("addToCart")}</span>
 								</span>
 							) : (
-								productT("addToCart")
+								<span className="inline-flex items-center justify-center">
+									<ShoppingBag className="h-4 w-4" />
+									<span className="sr-only">{productT("addToCart")}</span>
+								</span>
 							)}
 						</Button>
 
@@ -259,7 +262,7 @@ export function ProductCard({
 							onClick={handleBuyNow}
 							disabled={resolvedQuickAddDisabled || pendingAction !== null}
 							aria-label={resolvedQuickAddDisabled ? productT("outOfStock") : productT("buyNow")}
-							className="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)] disabled:bg-[color:rgba(11,11,11,0.32)]"
+							className="min-h-11 flex-1 rounded-none bg-[color:var(--editorial-ink)] px-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)] disabled:bg-[color:rgba(11,11,11,0.32)]"
 						>
 							{isBuying ? (
 								<span className="inline-flex items-center gap-2">

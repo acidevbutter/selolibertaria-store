@@ -1,25 +1,54 @@
 "use client";
-import { useEffect, useState } from "react";
 
-/**
- * This lightweight client component attempts to trigger a guest cart merge
- * after the user authenticates. It calls an internal API route that invokes
- * the server action only when needed.
- */
+import { useEffect, useRef } from "react";
+import { useCart } from "@/context/cart-context";
+import type { Cart } from "@/lib/commerce-types";
+
+type MergeResponse = {
+	merged?: boolean;
+	cart?: Cart | null;
+	reason?: string;
+};
+
 export function CartMergeOnAuth() {
-	const [done, setDone] = useState(false);
+	const { replaceCart, refreshCart } = useCart();
+	const attemptedRef = useRef(false);
+
 	useEffect(() => {
-		if (done) return;
-		(async () => {
+		if (attemptedRef.current) {
+			return;
+		}
+
+		attemptedRef.current = true;
+
+		void (async () => {
 			try {
-				// Fire-and-forget; API will decide if merge is needed.
-				await fetch("/api/cart/merge", { method: "POST", cache: "no-store" });
-			} catch (e) {
-				console.warn("Cart merge call failed", e);
-			} finally {
-				setDone(true);
+				const response = await fetch("/api/cart/merge", {
+					method: "POST",
+					cache: "no-store",
+				});
+
+				if (!response.ok) {
+					if (response.status !== 401) {
+						await refreshCart();
+					}
+					return;
+				}
+
+				const payload = (await response.json()) as MergeResponse;
+				if (payload.cart) {
+					replaceCart(payload.cart);
+					return;
+				}
+
+				if (payload.merged) {
+					await refreshCart();
+				}
+			} catch (error) {
+				console.warn("Cart merge call failed", error);
 			}
 		})();
-	}, [done]);
+	}, [refreshCart, replaceCart]);
+
 	return null;
 }

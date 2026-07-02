@@ -1,15 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import {
-	createContext,
-	type ReactNode,
-	startTransition,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { addToCartAction, removeFromCartAction, updateCartItemAction } from "@/actions/cart-actions";
 import type { Cart, ProductInfo } from "@/lib/commerce-types";
 
@@ -31,6 +23,11 @@ interface CartContextType {
 	replaceCart: (cart: Cart | null) => void;
 	refreshCart: () => Promise<void>;
 }
+
+type CartProviderProps = {
+	children: ReactNode;
+	initialCart?: Cart | null;
+};
 
 function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 	switch (action.type) {
@@ -129,10 +126,14 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 	}
 }
 
+function cartHasItems(cart: Cart | null | undefined): boolean {
+	return Boolean(cart?.items.some((item) => Number(item.quantity) > 0));
+}
+
 const CartContext = createContext<CartContextType | null>(null);
 
-export function CartProvider({ children }: { children: ReactNode }) {
-	const [cart, setCart] = useState<Cart | null>(null);
+export function CartProvider({ children, initialCart = null }: CartProviderProps) {
+	const [cart, setCart] = useState<Cart | null>(initialCart);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [cartReady, setCartReady] = useState(false);
 	const latestCartOpRef = useRef(0);
@@ -147,9 +148,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 	const isLatestCartOp = (opId: number) => latestCartOpRef.current === opId;
 
-	const syncCartState = (nextCart: Cart | null) => {
-		startTransition(() => {
-			setCart(nextCart);
+	const syncCartState = (nextCart: Cart | null, options?: { preservePopulated?: boolean }) => {
+		setCart((currentCart) => {
+			if (options?.preservePopulated && cartHasItems(currentCart) && !cartHasItems(nextCart)) {
+				return currentCart;
+			}
+
+			return nextCart;
 		});
 	};
 
@@ -163,7 +168,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 			const data = (await response.json()) as { cart: Cart | null };
 			return data.cart;
 		} catch (error) {
-			console.error("Failed to fetch cart", error);
+			console.error("Failed fetch cart", error);
 			return null;
 		}
 	}
@@ -177,7 +182,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				syncCartState(nextCart);
 			}
 		} catch (error) {
-			console.error("Failed to refresh cart", error);
+			console.error("Failed refresh cart", error);
 		}
 	};
 
@@ -193,7 +198,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		void fetchCart()
 			.then((nextCart) => {
 				if (active && isLatestCartOp(opId)) {
-					syncCartState(nextCart);
+					syncCartState(nextCart, { preservePopulated: true });
 				}
 			})
 			.finally(() => {
@@ -241,38 +246,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		});
 		const opId = beginCartOp();
 
-		startTransition(() => {
-			setCart((currentCart) => cartReducer(currentCart, { type: "ADD_ITEM", variantId, quantity, product }));
-			setIsCartOpen(true);
-		});
+		setCart((currentCart) => cartReducer(currentCart, { type: "ADD_ITEM", variantId, quantity, product }));
+		setIsCartOpen(true);
 
 		try {
 			const updatedCart = await addToCartAction(variantId, quantity);
-			if (isLatestCartOp(opId) && updatedCart) {
-				syncCartState(updatedCart);
-			}
-
-			const refreshedCart = await fetchCart();
 			if (isLatestCartOp(opId)) {
-				syncCartState(refreshedCart ?? updatedCart ?? optimisticSnapshot);
+				syncCartState(updatedCart ?? optimisticSnapshot);
+				const confirmedCart = await fetchCart();
+				if (isLatestCartOp(opId)) {
+					syncCartState(confirmedCart ?? updatedCart ?? optimisticSnapshot);
+				}
 			}
 		} catch (error) {
-			console.error("Failed to add to cart:", error);
+			console.error("Failed to add cart:", error);
 			throw error;
 		}
 	};
 
 	const optimisticUpdate = async (variantId: string, quantity: number) => {
+		const optimisticSnapshot = cartReducer(cart, {
+			type: "UPDATE_ITEM",
+			variantId,
+			quantity,
+		});
 		const opId = beginCartOp();
 
-		startTransition(() => {
-			setCart((currentCart) => cartReducer(currentCart, { type: "UPDATE_ITEM", variantId, quantity }));
-		});
+		setCart((currentCart) => cartReducer(currentCart, { type: "UPDATE_ITEM", variantId, quantity }));
 
 		try {
 			const updatedCart = await updateCartItemAction(variantId, quantity);
 			if (isLatestCartOp(opId)) {
-				syncCartState(updatedCart);
+				syncCartState(updatedCart ?? optimisticSnapshot);
+				const confirmedCart = await fetchCart();
+				if (isLatestCartOp(opId)) {
+					syncCartState(confirmedCart ?? updatedCart ?? optimisticSnapshot);
+				}
 			}
 		} catch (error) {
 			console.error("Failed to update cart item:", error);
@@ -281,16 +290,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	};
 
 	const optimisticRemove = async (variantId: string) => {
+		const optimisticSnapshot = cartReducer(cart, {
+			type: "REMOVE_ITEM",
+			variantId,
+		});
 		const opId = beginCartOp();
 
-		startTransition(() => {
-			setCart((currentCart) => cartReducer(currentCart, { type: "REMOVE_ITEM", variantId }));
-		});
+		setCart((currentCart) => cartReducer(currentCart, { type: "REMOVE_ITEM", variantId }));
 
 		try {
 			const updatedCart = await removeFromCartAction(variantId);
 			if (isLatestCartOp(opId)) {
-				syncCartState(updatedCart);
+				syncCartState(updatedCart ?? optimisticSnapshot);
+				const confirmedCart = await fetchCart();
+				if (isLatestCartOp(opId)) {
+					syncCartState(confirmedCart ?? updatedCart ?? optimisticSnapshot);
+				}
 			}
 		} catch (error) {
 			console.error("Failed to remove from cart:", error);

@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,24 +11,45 @@ import { hasCapability, type UserRole } from "@/lib/authz";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/ui/shadcn/sheet";
 
+function AdminBrandMark({ size = 36 }: { size?: number }) {
+	return (
+		<div
+			className="grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#fffdf8] ring-1 ring-white/8"
+			style={{ height: size, width: size }}
+		>
+			<Image
+				src="/images/selolibertaria.png"
+				alt="Logo do Selo Libertária"
+				width={size}
+				height={size}
+				className="h-full w-full object-contain p-1.5"
+				priority
+			/>
+		</div>
+	);
+}
+
 export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAction: () => Promise<void> }) {
 	const pathname = usePathname();
 	const t = useTranslations("AdminShell");
 	const [navigating, setNavigating] = useState(false);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(role, item.capability));
+
 	useEffect(() => {
 		setNavigating(false);
 	}, [pathname]);
+
 	return (
 		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
 			<div className="flex h-16 items-center justify-between px-5">
 				<Link href="/admin" className="flex items-center gap-3">
-					<div className="h-9 w-9 rounded-xl bg-[#fffdf8]" />
+					<AdminBrandMark />
 					<div className="space-y-0.5">
 						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
 						<div className="text-[11px] font-medium text-[#beb3a8]">{t("brandSubtitle")}</div>
 					</div>
 				</Link>
+
 				<Sheet>
 					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
 						<Menu className="h-5 w-5" />
@@ -40,7 +62,7 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 						<SheetTitle className="sr-only">{t("navTitle")}</SheetTitle>
 						<div className="px-7 pb-7 pt-7">
 							<div className="flex items-start gap-4">
-								<div className="h-11 w-11 shrink-0 rounded-xl bg-[#fffdf8]" />
+								<AdminBrandMark size={44} />
 								<div className="space-y-1">
 									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
 										LIBERTÁRIA
@@ -62,18 +84,21 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 								</form>
 							</div>
 						</div>
+
 						<nav className="space-y-1 px-[18px] py-4">
 							{visibleNavItems.map(({ href, label }) => {
 								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+
 								return (
 									<SheetClose asChild key={href}>
 										<Link
 											href={href}
-											onClick={(e) => {
+											onClick={(event) => {
 												if (active) {
-													e.preventDefault();
+													event.preventDefault();
 													return;
 												}
+
 												setNavigating(true);
 											}}
 											className={cn(
@@ -98,11 +123,12 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 					</SheetContent>
 				</Sheet>
 			</div>
-			{navigating && (
+
+			{navigating ? (
 				<div className="fixed inset-0 z-[60] grid place-items-center bg-black/55">
-					<Loader2 className="h-8 w-8 animate-spin text-[color:var(--editorial-paper)]" />
+					<Loader2 className="h-6 w-6 animate-spin text-[#fffdf8]" />
 				</div>
-			)}
+			) : null}
 		</div>
 	);
 }

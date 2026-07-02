@@ -22,22 +22,6 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 	const locale = useLocale();
 	const t = useTranslations("CartSidebar");
 
-	async function handleUpdateQuantity(variantId: string, quantity: number) {
-		try {
-			await optimisticUpdate(variantId, quantity);
-		} catch (error) {
-			// Error is already logged in context, could show toast here
-		}
-	}
-
-	async function handleRemoveItem(variantId: string) {
-		try {
-			await optimisticRemove(variantId);
-		} catch (error) {
-			// Error is already logged in context, could show toast here
-		}
-	}
-
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [couponCode, setCouponCode] = useState(cart?.couponCode ?? "");
@@ -45,6 +29,26 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 	useEffect(() => {
 		setCouponCode(cart?.couponCode ?? "");
 	}, [cart?.couponCode]);
+
+	if (!isOpen) {
+		return null;
+	}
+
+	async function handleUpdateQuantity(variantId: string, quantity: number) {
+		try {
+			await optimisticUpdate(variantId, quantity);
+		} catch {
+			// Already logged by cart context.
+		}
+	}
+
+	async function handleRemoveItem(variantId: string) {
+		try {
+			await optimisticRemove(variantId);
+		} catch {
+			// Already logged by cart context.
+		}
+	}
 
 	async function handleApplyCoupon() {
 		setError(null);
@@ -58,253 +62,266 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
 	async function handleRemoveCoupon() {
 		setError(null);
-		const nextCart = await removeCartCouponAction();
-		setCouponCode("");
-		replaceCart(nextCart);
+		const result = await removeCartCouponAction();
+		replaceCart(result);
 	}
 
-	if (!isOpen) return null;
+	const hasItems = Boolean(cart?.items?.length);
+	const cartItems = cart?.items ?? [];
+	const cartCurrency = cart?.currency || "USD";
+	const subtotal = typeof cart?.subtotal === "number" ? cart.subtotal : cart?.total || 0;
+	const total = cart?.total || 0;
 
 	return (
 		<>
-			{/* Overlay with blur */}
-			<div
-				className="fixed inset-0 z-40 h-screen w-screen backdrop-blur-sm bg-black/30 transition-opacity"
+			<button
+				type="button"
+				aria-label={t("actions.close")}
+				className="fixed inset-0 z-40 bg-[color:rgba(11,11,11,0.16)] backdrop-blur-[2px]"
 				onClick={onClose}
 			/>
 
-			{/* Sidebar */}
-			<div className="fixed right-0 top-0 z-50 h-screen w-96 max-w-full bg-white dark:bg-neutral-900 shadow-xl transition-transform">
-				<div className="flex h-full flex-col">
-					{/* Header */}
-					<div className="flex items-center justify-between border-b border-gray-200 dark:border-neutral-800 p-4">
-						<div className="flex items-center gap-2">
-							<ShoppingBag className="h-5 w-5 hover:text-red-600 dark:hover:text-red-400" />
-							<h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
-								{t("title", { count: itemCount })}
-							</h2>
+			<aside className="fixed right-0 top-0 z-50 flex h-screen w-full max-w-[26rem] flex-col border-l border-[color:rgba(11,11,11,0.12)] bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] shadow-[-18px_0_48px_rgba(11,11,11,0.14)]">
+				<div className="flex items-center justify-between bg-[color:var(--editorial-ink)] px-5 py-4 text-[color:var(--editorial-paper)]">
+					<div className="flex items-center gap-3">
+						<ShoppingBag className="h-4 w-4" />
+						<div>
+							<p className="text-[10px] uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.7)]">
+								Carrinho
+							</p>
+							<h2 className="text-base font-semibold">{t("title", { count: itemCount })}</h2>
 						</div>
-						<button
-							onClick={onClose}
-							className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-red-600 dark:hover:text-red-400"
-							aria-label={t("actions.close")}
-						>
-							<X className="h-5 w-5" />
-						</button>
 					</div>
+					<button
+						type="button"
+						onClick={onClose}
+						aria-label={t("actions.close")}
+						className="inline-flex h-9 w-9 items-center justify-center border border-[color:rgba(247,244,239,0.16)] text-[color:var(--editorial-paper)] transition-colors hover:border-[color:rgba(122,30,34,0.6)] hover:text-[color:var(--editorial-paper)]"
+					>
+						<X className="h-4 w-4" />
+					</button>
+				</div>
 
-					{/* Content */}
-					<div className="flex-1 overflow-y-auto">
-						{!cart || !cart.items || cart.items.length === 0 ? (
-							<div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-								<ShoppingBag className="h-12 w-12 text-gray-300 dark:text-neutral-600 hover:text-red-600 dark:hover:text-red-400" />
-								<div>
-									<h3 className="font-medium text-gray-900 dark:text-neutral-100">{t("empty.title")}</h3>
-									<p className="display-font text-sm text-gray-500 dark:text-neutral-400">
-										{t("empty.description")}
-									</p>
-								</div>
-							</div>
-						) : (
-							<div className="p-4 space-y-4">
-								{cart.items.map((item) => {
-									// Product info is now directly available in item.product
-									const product = item.product;
-									const price = item.price; // Already in dollars
+				<div className="flex-1 overflow-y-auto">
+					{hasItems ? (
+						<div className="space-y-5 px-5 py-5">
+							{cartItems.map((item) => {
+								const product = item.product;
+								const linePrice = (item.finalPrice ?? item.price) * item.quantity;
+								const quantityKey = item.variantId || item.productId;
 
-									return (
-										<div
-											key={item.id}
-											className="flex items-start gap-3 border-b border-gray-100 dark:border-neutral-800 pb-4"
-										>
-											{/* Product Image */}
-											<div className="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden">
+								return (
+									<article
+										key={item.id}
+										className="border-b border-[color:rgba(11,11,11,0.1)] pb-5 last:border-b-0"
+									>
+										<div className="flex items-start gap-4">
+											<div className="relative h-[6.6rem] w-[4.4rem] shrink-0 overflow-hidden border border-[color:rgba(11,11,11,0.12)] bg-[color:rgba(216,208,196,0.34)]">
 												{product?.images?.[0] ? (
 													<Image
 														src={product.images[0]}
 														alt={product.name || t("fallback.product")}
-														width={64}
-														height={64}
-														className="w-full h-full object-cover"
+														fill
+														className="object-cover"
+														sizes="72px"
 														{...getProductImageOptimizationProps(product.images[0])}
 													/>
 												) : (
-													<div className="w-full h-full flex items-center justify-center">
-														<ShoppingBag className="h-6 w-6 text-gray-300 hover:text-red-600 dark:hover:text-red-400" />
+													<div className="flex h-full items-center justify-center text-[color:var(--editorial-muted)]">
+														<ShoppingBag className="h-5 w-5" />
 													</div>
 												)}
 											</div>
 
-											{/* Product Info */}
-											<div className="flex-1 min-w-0">
-												<h3 className="font-medium text-sm text-gray-900 dark:text-neutral-100 truncate hover:text-red-600 dark:hover:text-red-400">
-													{product?.name || t("fallback.product")}
-												</h3>
-												<div className="mt-1 space-y-1">
-													<p className="price-font text-sm text-gray-600 dark:text-neutral-400">
+											<div className="min-w-0 flex-1 space-y-3">
+												<div className="space-y-1">
+													<h3 className="line-clamp-2 text-base font-semibold leading-tight text-[color:var(--editorial-ink)]">
+														{product?.name || t("fallback.product")}
+													</h3>
+													<p className="text-[10px] uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]">
+														Edição selecionada
+													</p>
+													<p className="text-sm font-medium text-[color:var(--editorial-ink)]">
 														{formatMoney({
-															amount: price,
-															currency: cart.currency || "USD",
+															amount: linePrice,
+															currency: cartCurrency,
 															locale,
 														})}
 													</p>
-													{typeof item.basePrice === "number" && item.basePrice > price ? (
-														<p className="text-xs text-muted-foreground line-through">
-															{formatMoney({
-																amount: item.basePrice,
-																currency: cart.currency || "USD",
-																locale,
-															})}
-														</p>
-													) : null}
 												</div>
-											</div>
 
-											{/* Quantity Controls */}
-											<div className="flex flex-col items-end gap-2">
-												<button
-													onClick={() => handleRemoveItem(item.variantId || item.productId)}
-													className="text-red-500 hover:text-red-700 p-1"
-													aria-label={t("actions.removeItem")}
-												>
-													<X className="h-4 w-4" />
-												</button>
-												<div className="flex items-center gap-1 bg-gray-50 dark:bg-neutral-800 rounded-full px-2 py-1">
+												<div className="flex items-center justify-between gap-3">
+													<div className="inline-flex items-center border border-[color:rgba(11,11,11,0.14)] bg-[color:rgba(247,244,239,0.82)]">
+														<button
+															type="button"
+															onClick={() => handleUpdateQuantity(quantityKey, item.quantity - 1)}
+															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
+															disabled={item.quantity <= 1}
+														>
+															<Minus className="h-3 w-3" />
+														</button>
+														<span className="min-w-8 text-center text-sm font-medium">{item.quantity}</span>
+														<button
+															type="button"
+															onClick={() => handleUpdateQuantity(quantityKey, item.quantity + 1)}
+															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
+														>
+															<Plus className="h-3 w-3" />
+														</button>
+													</div>
+
 													<button
-														onClick={() =>
-															handleUpdateQuantity(item.variantId || item.productId, item.quantity - 1)
-														}
-														className="rounded-full p-1 hover:bg-gray-200 dark:hover:bg-neutral-700"
-														disabled={item.quantity <= 1}
+														type="button"
+														onClick={() => handleRemoveItem(quantityKey)}
+														className="text-[11px] font-medium uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-accent)]"
 													>
-														<Minus className="h-3 w-3" />
-													</button>
-													<span className="min-w-[1.5rem] text-center text-sm font-medium">
-														{item.quantity}
-													</span>
-													<button
-														onClick={() =>
-															handleUpdateQuantity(item.variantId || item.productId, item.quantity + 1)
-														}
-														className="rounded-full p-1 hover:bg-gray-200 dark:hover:bg-neutral-700"
-													>
-														<Plus className="h-3 w-3" />
+														{t("actions.removeItem")}
 													</button>
 												</div>
 											</div>
 										</div>
-									);
-								})}
+									</article>
+								);
+							})}
+						</div>
+					) : (
+						<div className="flex h-full flex-col justify-between px-5 py-6">
+							<div className="space-y-4">
+								<div className="inline-flex h-12 w-12 items-center justify-center border border-[color:rgba(11,11,11,0.12)] bg-[color:rgba(216,208,196,0.22)] text-[color:var(--editorial-ink)]">
+									<ShoppingBag className="h-5 w-5" />
+								</div>
+								<div className="space-y-2">
+									<h3 className="text-xl font-semibold text-[color:var(--editorial-ink)]">
+										{t("empty.title")}
+									</h3>
+									<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
+										{t("empty.description")}
+									</p>
+								</div>
 							</div>
-						)}
-					</div>
 
-					{/* Footer with Total */}
-					{cart && cart.items.length > 0 && (
-						<div className="border-t border-gray-100 dark:border-neutral-800 p-4 space-y-4">
-							<div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-950/40">
-								<p className="text-sm font-medium">{t("coupon.title")}</p>
+							<button
+								type="button"
+								onClick={() => {
+									onClose();
+									router.push("/products");
+								}}
+								className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
+							>
+								Ver livros
+							</button>
+						</div>
+					)}
+				</div>
+
+				<div className="border-t border-[color:rgba(11,11,11,0.1)] bg-[color:rgba(247,244,239,0.96)] px-5 py-5">
+					{hasItems ? (
+						<div className="space-y-4">
+							<div className="space-y-2 border border-[color:rgba(11,11,11,0.1)] bg-[color:rgba(255,255,255,0.45)] p-3">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)]">
+									{t("coupon.title")}
+								</p>
 								<div className="flex gap-2">
 									<Input
 										value={couponCode}
 										onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
 										placeholder={t("coupon.placeholder")}
+										className="border-[color:rgba(11,11,11,0.12)] bg-[color:var(--editorial-paper)]"
 									/>
 									<button
 										type="button"
 										onClick={handleApplyCoupon}
-										className="rounded-lg border px-3 py-2 text-sm font-medium"
+										className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
 									>
 										{t("coupon.apply")}
 									</button>
 								</div>
-								{cart.couponCode ? (
-									<div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+								{cart?.couponCode ? (
+									<div className="flex items-center justify-between gap-2 text-xs text-[color:var(--editorial-muted)]">
 										<span>{t("coupon.active", { code: cart.couponCode })}</span>
-										<button type="button" onClick={handleRemoveCoupon} className="font-medium text-red-600">
+										<button
+											type="button"
+											onClick={handleRemoveCoupon}
+											className="font-medium text-[color:var(--editorial-accent)]"
+										>
 											{t("coupon.remove")}
 										</button>
 									</div>
 								) : null}
-								{cart.couponError ? <p className="text-xs text-red-600">{cart.couponError}</p> : null}
+								{cart?.couponError ? (
+									<p className="text-xs text-[color:var(--editorial-accent)]">{cart.couponError}</p>
+								) : null}
 							</div>
-							{typeof cart.subtotal === "number" ? (
-								<div className="space-y-2 text-sm text-gray-700 dark:text-neutral-300">
-									<div className="flex items-center justify-between">
-										<span>{t("summary.subtotal")}</span>
-										<span>
-											{formatMoney({
-												amount: cart.subtotal,
-												currency: cart.currency || "USD",
-												locale,
-											})}
-										</span>
-									</div>
-									{cart.shippingRate ? (
-										<div className="flex items-center justify-between">
-											<span>
-												{cart.shippingRate.providerLabel}
-												{cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""}
-											</span>
-											<span>
-												{formatMoney({
-													amount: cart.shippingRate.fixed_amount.amount,
-													currency: cart.currency || "USD",
-													locale,
-												})}
-											</span>
-										</div>
-									) : cart.shippingError ? (
-										<div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-											{cart.shippingError}
-										</div>
-									) : null}
-									{(cart.discountTotal ?? 0) > 0 ? (
-										<div className="flex items-center justify-between text-red-600 dark:text-red-400">
-											<span>{t("summary.discounts")}</span>
-											<span>
-												-
-												{formatMoney({
-													amount: cart.discountTotal ?? 0,
-													currency: cart.currency || "USD",
-													locale,
-												})}
-											</span>
-										</div>
-									) : null}
+
+							<div className="space-y-2 text-sm text-[color:var(--editorial-ink)]">
+								<div className="flex items-center justify-between">
+									<span>{t("summary.subtotal")}</span>
+									<span className="font-medium">
+										{formatMoney({
+											amount: subtotal,
+											currency: cartCurrency,
+											locale,
+										})}
+									</span>
 								</div>
-							) : null}
-							<div className="flex items-center justify-between text-lg font-semibold text-gray-900 dark:text-neutral-100">
-								<span>{t("summary.total")}</span>
-								<span className="price-font">
-									{formatMoney({
-										amount: cart.total || 0,
-										currency: cart.currency || "USD",
-										locale,
-									})}
-								</span>
+								<div className="flex items-start justify-between gap-4 text-[color:var(--editorial-muted)]">
+									<span>Frete</span>
+									<span className="max-w-[14rem] text-right">
+										{cart?.shippingRate
+											? `${cart.shippingRate.providerLabel}${cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""}`
+											: "Calculado no checkout"}
+									</span>
+								</div>
+								<div className="flex items-center justify-between border-t border-[color:rgba(11,11,11,0.1)] pt-2 text-base font-semibold">
+									<span>{t("summary.total")}</span>
+									<span>
+										{formatMoney({
+											amount: total,
+											currency: cartCurrency,
+											locale,
+										})}
+									</span>
+								</div>
 							</div>
-							{error && (
-								<p className="text-sm text-red-600" role="alert">
+
+							{error ? (
+								<p className="text-sm text-[color:var(--editorial-accent)]" role="alert">
 									{error}
 								</p>
-							)}
-							<button
-								onClick={() => {
-									if (loading) return;
-									setError(null);
-									setLoading(true);
-									router.push("/checkout");
-								}}
-								disabled={loading || !cart || cart.items.length === 0}
-								className="w-full rounded-lg bg-black px-6 py-3 text-white hover:bg-gray-800 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed"
-							>
-								{loading ? t("actions.openingCheckout") : t("actions.checkout")}
-							</button>
+							) : null}
+
+							<div className="grid gap-3 sm:grid-cols-[1fr_1.25fr]">
+								<button
+									type="button"
+									onClick={() => {
+										onClose();
+										router.push("/products");
+									}}
+									className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
+								>
+									Ver livros
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										if (loading) {
+											return;
+										}
+										setLoading(true);
+										setError(null);
+										onClose();
+										router.push("/checkout");
+									}}
+									disabled={loading}
+									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:rgba(122,30,34,0.96)] disabled:bg-[color:rgba(11,11,11,0.42)]"
+								>
+									{loading ? t("actions.openingCheckout") : t("actions.checkout")}
+								</button>
+							</div>
 						</div>
-					)}
+					) : null}
 				</div>
-			</div>
+			</aside>
 		</>
 	);
 }

@@ -23,6 +23,7 @@ vi.mock("@/actions/cart-actions", () => ({
 function createDeferred<T>() {
 	let resolve!: (value: T | PromiseLike<T>) => void;
 	let reject!: (reason?: unknown) => void;
+
 	const promise = new Promise<T>((res, rej) => {
 		resolve = res;
 		reject = rej;
@@ -54,6 +55,34 @@ function CartHarness() {
 	);
 }
 
+function createGuestCart(): Cart {
+	return {
+		id: "guest_cart",
+		items: [
+			{
+				id: "item_1",
+				productId: "prod_123",
+				variantId: "price_123",
+				quantity: 1,
+				price: 4200,
+				product: {
+					id: "prod_123",
+					name: "Livro",
+					images: ["/capa.png"],
+					summary: "Resumo",
+				},
+			},
+		],
+		total: 4200,
+		subtotal: 4200,
+		discountTotal: 0,
+		currency: "BRL",
+		couponCode: null,
+		couponError: null,
+		appliedPromotions: [],
+	};
+}
+
 describe("CartProvider", () => {
 	beforeEach(() => {
 		searchParamsGet.mockReset();
@@ -62,36 +91,18 @@ describe("CartProvider", () => {
 		updateCartItemAction.mockReset();
 		searchParamsGet.mockReturnValue(null);
 		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 	});
 
 	it("mantém o contador do carrinho após add-to-cart mesmo com refresh inicial atrasado", async () => {
+		const guestCart = createGuestCart();
 		const initialCartRequest = createDeferred<Response>();
 		const refreshCartRequest = createDeferred<Response>();
-		const guestCart: Cart = {
-			id: "guest_cart",
-			items: [
-				{
-					id: "price_123",
-					productId: "prod_123",
-					variantId: "price_123",
-					quantity: 1,
-					price: 2500,
-					product: {
-						id: "prod_123",
-						name: "Livro",
-						images: ["/capa.png"],
-						summary: "Resumo",
-					},
-				},
-			],
-			total: 2500,
-			currency: "BRL",
-		};
-
 		const fetchMock = vi
-			.fn<typeof fetch>()
+			.fn()
 			.mockImplementationOnce(() => initialCartRequest.promise)
 			.mockImplementationOnce(() => refreshCartRequest.promise);
+
 		vi.stubGlobal("fetch", fetchMock);
 		addToCartAction.mockResolvedValue(guestCart);
 
@@ -122,6 +133,33 @@ describe("CartProvider", () => {
 				headers: { "Content-Type": "application/json" },
 			}),
 		);
+
+		await waitFor(() => {
+			expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+		});
+	});
+
+	it("preserva um carrinho convidado já populado quando a hidratação passiva retorna vazio", async () => {
+		const guestCart = createGuestCart();
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ cart: null }), {
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+
+		vi.stubGlobal("fetch", fetchMock);
+
+		render(
+			<CartProvider initialCart={guestCart}>
+				<CartHarness />
+			</CartProvider>,
+		);
+
+		expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+
+		await waitFor(() => {
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+		});
 
 		await waitFor(() => {
 			expect(screen.getByTestId("item-count")).toHaveTextContent("1");
