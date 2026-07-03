@@ -70,12 +70,7 @@ export default async function AdminEditorialEventsPage() {
 				<EditorialPageCopyForm
 					action={updateEditorialEventsPageCopyAction}
 					submitLabel="Salvar textos de /events"
-					base={{
-						title: page.title,
-						summary: page.summary,
-						order: page.order,
-						published: page.published,
-					}}
+					base={{ published: page.published }}
 					sections={[
 						{
 							title: "Hero",

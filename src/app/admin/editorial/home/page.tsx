@@ -61,7 +61,7 @@ export default async function AdminEditorialHomePage() {
 			<EditorialPageCopyForm
 				action={updateEditorialHomeCopyAction}
 				submitLabel="Salvar página inicial"
-				base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+				base={{ published: page.published }}
 				sections={[
 					{
 						title: "Chamada principal",

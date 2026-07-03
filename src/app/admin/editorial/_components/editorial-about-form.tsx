@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
+import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialAboutPage } from "@/lib/editorial-content";
-import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
@@ -25,7 +26,7 @@ function Textarea({
 	);
 }
 
-function Field({ label, name, children }: { label: string; name: string; children: React.ReactNode }) {
+function Field({ label, name, children }: { label: string; name: string; children: ReactNode }) {
 	return (
 		<div className="space-y-2">
 			<Label htmlFor={name}>{label}</Label>
@@ -51,33 +52,7 @@ export function EditorialAboutForm({
 				<CardTitle>Editar página sobre</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6">
-					<section className="grid gap-4 rounded-lg border p-5 md:grid-cols-2">
-						<Field label="Título interno" name="title">
-							<Input id="title" name="title" defaultValue={page.title} required />
-						</Field>
-						<Field label="Ordem" name="order">
-							<Input
-								id="order"
-								name="order"
-								type="number"
-								min="1"
-								step="1"
-								defaultValue={String(page.order ?? 1)}
-							/>
-						</Field>
-						<div className="md:col-span-2">
-							<Field label="Resumo" name="summary">
-								<Textarea name="summary" defaultValue={page.summary} rows={3} />
-							</Field>
-						</div>
-						<div className="md:col-span-2">
-							<Field label="Texto complementar" name="body">
-								<Textarea name="body" defaultValue={page.body} rows={4} />
-							</Field>
-						</div>
-					</section>
-
+				<form action={action} className="space-y-6 pb-28 md:pb-32">
 					<section className="grid gap-4 rounded-lg border p-5">
 						<h2 className="text-base font-semibold">Hero</h2>
 						<div className="grid gap-4 md:grid-cols-2">
@@ -223,7 +198,9 @@ export function EditorialAboutForm({
 						</div>
 					</section>
 
-					<Button type="submit">{submitLabel}</Button>
+					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina sobre.">
+						{submitLabel}
+					</EditorialFloatingSaveBar>
 				</form>
 			</CardContent>
 		</Card>

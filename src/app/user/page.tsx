@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PasswordResetMenuButton } from "@/app/user/password-reset-menu-button.client";
 import { Button } from "@/components/ui/button";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
@@ -42,6 +43,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		email: string;
 		name?: string;
 		phone?: string;
+		cpf?: string;
 		preferredCurrency?: "USD" | "BRL" | "EUR";
 		phoneDetails?: {
 			country?: string;
@@ -123,6 +125,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 					name: fullUser?.name ?? user.name,
 					email: fullUser?.email ?? user.email,
 					phone: fullUser?.phone,
+					cpf: fullUser?.cpf,
 					preferredCurrency: fullUser?.preferredCurrency ?? defaultCurrency,
 					phoneDetails: fullUser?.phoneDetails,
 					address: fullUser?.address,
@@ -313,6 +316,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 					>
 						{t("actions.backHome")}
 					</Link>
+					<PasswordResetMenuButton email={fullUser?.email ?? user.email} />
 					<form action={logout}>
 						<Button variant="outline" className="w-full" type="submit">
 							{t("actions.logout")}

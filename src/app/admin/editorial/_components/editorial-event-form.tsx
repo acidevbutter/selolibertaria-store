@@ -1,10 +1,7 @@
+import type { FocusEvent, FormEvent } from "react";
+import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
-import {
-	Field,
-	FormSection,
-	SubmitButton,
-	Textarea,
-} from "@/app/admin/products/_components/product-form-fields";
+import { Field, FormSection, Textarea } from "@/app/admin/products/_components/product-form-fields";
 import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -32,11 +29,11 @@ function formatSlugWhileTyping(value: string) {
 		.replace(/^-+/, "");
 }
 
-function handleSlugInput(event: React.FormEvent<HTMLInputElement>) {
+function handleSlugInput(event: FormEvent<HTMLInputElement>) {
 	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
 }
 
-function handleSlugBlur(event: React.FocusEvent<HTMLInputElement>) {
+function handleSlugBlur(event: FocusEvent<HTMLInputElement>) {
 	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
 }
 
@@ -55,7 +52,7 @@ export function EditorialEventForm({
 				<CardTitle>{event ? "Editar evento" : "Novo evento"}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6">
+				<form action={action} className="space-y-6 pb-28 md:pb-32">
 					{event ? <input type="hidden" name="currentSlug" value={event.slug} /> : null}
 
 					<FormSection
@@ -197,7 +194,10 @@ export function EditorialEventForm({
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
 						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
-					<SubmitButton>{submitLabel}</SubmitButton>
+
+					<EditorialFloatingSaveBar hint="Salvar alteracoes do evento.">
+						{submitLabel}
+					</EditorialFloatingSaveBar>
 				</form>
 			</CardContent>
 		</Card>

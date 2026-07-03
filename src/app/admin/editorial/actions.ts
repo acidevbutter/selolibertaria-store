@@ -467,7 +467,8 @@ export async function updateEditorialSarauAction(formData: FormData) {
 	const session = await requireEditorialManager();
 	const db = await getDb();
 	const now = new Date().toISOString();
-	const title = requiredString(formData, "title");
+	const current = await getEditorialRecordForAdmin("page_sarau");
+	const title = optionalString(formData.get("title")) ?? current?.title ?? "Sarau Safado";
 
 	const programNotes = [
 		{
@@ -493,10 +494,10 @@ export async function updateEditorialSarauAction(formData: FormData) {
 				type: "page_sarau",
 				slug: "sarau-safado",
 				title,
-				summary: optionalString(formData.get("summary")),
-				body: optionalString(formData.get("body")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
+				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+				body: optionalString(formData.get("body")) ?? current?.body ?? null,
+				published: parseBoolean(formData.get("published"), current?.published ?? true),
+				order: parseOrder(formData.get("order"), current?.order ?? 1),
 				hero: {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
@@ -541,7 +542,8 @@ export async function updateEditorialAboutAction(formData: FormData) {
 	const session = await requireEditorialManager();
 	const db = await getDb();
 	const now = new Date().toISOString();
-	const title = requiredString(formData, "title");
+	const current = await getEditorialRecordForAdmin("page_about");
+	const title = optionalString(formData.get("title")) ?? current?.title ?? "Sobre";
 
 	const cards = [1, 2, 3]
 		.map((index) => ({
@@ -560,10 +562,10 @@ export async function updateEditorialAboutAction(formData: FormData) {
 				type: "page_about",
 				slug: "about",
 				title,
-				summary: optionalString(formData.get("summary")),
-				body: optionalString(formData.get("body")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
+				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+				body: optionalString(formData.get("body")) ?? current?.body ?? null,
+				published: parseBoolean(formData.get("published"), current?.published ?? true),
+				order: parseOrder(formData.get("order"), current?.order ?? 1),
 				hero: {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
@@ -609,7 +611,8 @@ export async function updateEditorialContactAction(formData: FormData) {
 	const session = await requireEditorialManager();
 	const db = await getDb();
 	const now = new Date().toISOString();
-	const title = requiredString(formData, "title");
+	const current = await getEditorialRecordForAdmin("page_contact");
+	const title = optionalString(formData.get("title")) ?? current?.title ?? "Contato";
 	const subjects = [1, 2, 3, 4, 5, 6]
 		.map((index) => optionalString(formData.get(`subject${index}`)))
 		.filter((value): value is string => Boolean(value));
@@ -640,9 +643,9 @@ export async function updateEditorialContactAction(formData: FormData) {
 				type: "page_contact",
 				slug: "contact",
 				title,
-				summary: optionalString(formData.get("summary")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
+				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+				published: parseBoolean(formData.get("published"), current?.published ?? true),
+				order: parseOrder(formData.get("order"), current?.order ?? 1),
 				hero: {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
