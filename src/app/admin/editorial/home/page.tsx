@@ -61,7 +61,7 @@ export default async function AdminEditorialHomePage() {
 			<EditorialPageCopyForm
 				action={updateEditorialHomeCopyAction}
 				submitLabel="Salvar página inicial"
-				base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+				base={{ published: page.published }}
 				sections={[
 					{
 						title: "Chamada principal",
@@ -107,18 +107,6 @@ export default async function AdminEditorialHomePage() {
 								label: "Linha do destaque",
 								defaultValue: page.hero?.featureEyebrow,
 							},
-							{
-								name: "heroFeatureTitle",
-								label: "Título do destaque",
-								defaultValue: page.hero?.featureTitle,
-							},
-							{
-								name: "heroFeatureBody",
-								label: "Texto do destaque",
-								type: "textarea",
-								rows: 3,
-								defaultValue: page.hero?.featureBody,
-							},
 							{ name: "heroFeatureQuote", label: "Frase de apoio", defaultValue: page.hero?.featureQuote },
 						],
 					},
@@ -144,8 +132,13 @@ export default async function AdminEditorialHomePage() {
 						description: "Texto estrutural do bloco principal de livro.",
 						route: "/",
 						fields: [
+							{
+								name: "featuredProductSlug",
+								label: "Slug do livro em destaque",
+								defaultValue: page.featuredBook?.productSlug,
+								help: "Use o slug publicado em /product/nome-do-livro para controlar qual obra aparece nesse bloco.",
+							},
 							{ name: "featuredEyebrow", label: "Linha curta", defaultValue: page.featuredBook?.eyebrow },
-							{ name: "featuredTitle", label: "Título do bloco", defaultValue: page.featuredBook?.title },
 							{
 								name: "featuredBody",
 								label: "Texto",

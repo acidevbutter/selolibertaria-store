@@ -1,6 +1,7 @@
+import type { FocusEvent, FormEvent, ReactNode } from "react";
+import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialProject } from "@/lib/editorial-content";
-import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
@@ -28,11 +29,11 @@ function formatSlugWhileTyping(value: string) {
 		.replace(/^-+/, "");
 }
 
-function handleSlugInput(event: React.FormEvent<HTMLInputElement>) {
+function handleSlugInput(event: FormEvent<HTMLInputElement>) {
 	event.currentTarget.value = formatSlugWhileTyping(event.currentTarget.value);
 }
 
-function handleSlugBlur(event: React.FocusEvent<HTMLInputElement>) {
+function handleSlugBlur(event: FocusEvent<HTMLInputElement>) {
 	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
 }
 
@@ -64,7 +65,7 @@ function Field({
 }: {
 	label: string;
 	name: string;
-	children: React.ReactNode;
+	children: ReactNode;
 	hint?: string;
 }) {
 	return (
@@ -91,8 +92,9 @@ export function EditorialProjectForm({
 				<CardTitle>{project ? "Editar projeto" : "Novo projeto"}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6">
+				<form action={action} className="space-y-6 pb-28 md:pb-32">
 					{project ? <input type="hidden" name="currentSlug" value={project.slug} /> : null}
+
 					<section className="grid gap-4 rounded-lg border p-5 md:grid-cols-2">
 						<Field label="Título do projeto" name="title">
 							<Input id="title" name="title" defaultValue={project?.title ?? ""} required />
@@ -148,6 +150,7 @@ export function EditorialProjectForm({
 							</Field>
 						</div>
 					</section>
+
 					<section className="space-y-4 rounded-lg border p-5">
 						<div className="space-y-1">
 							<h2 className="text-base font-semibold">Imagem principal</h2>
@@ -176,9 +179,11 @@ export function EditorialProjectForm({
 							</Field>
 						</div>
 					</section>
+
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
 						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
+
 					<section className="rounded-lg border p-5">
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
@@ -207,7 +212,10 @@ export function EditorialProjectForm({
 							</label>
 						</div>
 					</section>
-					<Button type="submit">{submitLabel}</Button>
+
+					<EditorialFloatingSaveBar hint="Salvar alteracoes do projeto.">
+						{submitLabel}
+					</EditorialFloatingSaveBar>
 				</form>
 			</CardContent>
 		</Card>

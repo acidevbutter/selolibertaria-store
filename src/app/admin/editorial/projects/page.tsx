@@ -74,12 +74,7 @@ export default async function AdminEditorialProjectsPage() {
 				<EditorialPageCopyForm
 					action={updateEditorialProjectsPageCopyAction}
 					submitLabel="Salvar textos de /projects"
-					base={{
-						title: page.title,
-						summary: page.summary,
-						order: page.order,
-						published: page.published,
-					}}
+					base={{ published: page.published }}
 					sections={[
 						{
 							title: "Hero",

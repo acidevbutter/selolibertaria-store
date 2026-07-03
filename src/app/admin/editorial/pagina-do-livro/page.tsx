@@ -55,7 +55,7 @@ export default async function AdminEditorialProductPage() {
 			<EditorialPageCopyForm
 				action={updateEditorialProductPageCopyAction}
 				submitLabel="Salvar textos da página do livro"
-				base={{ title: page.title, summary: page.summary, order: page.order, published: page.published }}
+				base={{ published: page.published }}
 				sections={[
 					{
 						title: "Sinopse e trecho",

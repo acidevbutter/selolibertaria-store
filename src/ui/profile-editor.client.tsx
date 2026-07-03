@@ -3,10 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "@/i18n/client";
+import { formatCpf } from "@/lib/checkout-buyer";
 import type { SupportedCurrency } from "@/lib/currency";
 import { normalizePhoneParts } from "@/lib/location/countries";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
-import { CurrencySelect } from "@/ui/auth/currency-select";
 import { PhoneInput, type PhoneValue } from "@/ui/auth/phone-input.client";
 import { Input } from "@/ui/shadcn/input";
 
@@ -17,6 +17,7 @@ interface UserProfileData {
 	name?: string;
 	email: string;
 	phone?: string;
+	cpf?: string;
 	preferredCurrency?: SupportedCurrency;
 	phoneDetails?: {
 		country?: string;
@@ -242,24 +243,21 @@ export function ProfileEditor({
 					/>
 				</div>
 				<div className="space-y-2 md:col-span-2">
-					<Label htmlFor="profile-preferred-currency">{t("fields.preferredCurrency")}</Label>
-					<CurrencySelect
-						id="profile-preferred-currency"
-						value={form.preferredCurrency ?? defaultCurrency}
-						onChange={(value) => updateField("preferredCurrency", value)}
-					/>
-					<p className="text-xs text-muted-foreground">{t("fields.preferredCurrencyHint")}</p>
+					<Label htmlFor="profile-cpf">CPF</Label>
+					<Input id="profile-cpf" value={formatCpf(form.cpf || "")} readOnly disabled />
 				</div>
 			</div>
-			<PhoneInput
-				idPrefix="profile-phone"
-				label={t("fields.phone")}
-				value={phone}
-				onChange={(nextPhone) => {
-					setPhone(nextPhone);
-					setDirty(true);
-				}}
-			/>
+			<div className="max-w-md">
+				<PhoneInput
+					idPrefix="profile-phone"
+					label={t("fields.phone")}
+					value={phone}
+					onChange={(nextPhone) => {
+						setPhone(nextPhone);
+						setDirty(true);
+					}}
+				/>
+			</div>
 			<AddressFields
 				idPrefix="profile-address"
 				value={address}

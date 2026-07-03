@@ -325,7 +325,7 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 						/>
 						{buyerErrors.fullName ? <p className="text-xs text-destructive">{buyerErrors.fullName}</p> : null}
 					</div>
-					<div className="grid gap-2">
+					<div className="grid content-start gap-2">
 						<label className="text-sm font-medium" htmlFor="checkout-email">
 							E-mail
 						</label>
@@ -338,9 +338,11 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							autoComplete="email"
 							required
 						/>
-						{buyerErrors.email ? <p className="text-xs text-destructive">{buyerErrors.email}</p> : null}
+						<p className={cn("min-h-4 text-xs", buyerErrors.email ? "text-destructive" : "text-transparent")}>
+							{buyerErrors.email ?? " "}
+						</p>
 					</div>
-					<div className="grid gap-2">
+					<div className="grid content-start gap-2">
 						<label className="text-sm font-medium" htmlFor="checkout-cpf">
 							CPF
 						</label>
@@ -354,9 +356,11 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							placeholder="000.000.000-00"
 							required
 						/>
-						{buyerErrors.cpf ? <p className="text-xs text-destructive">{buyerErrors.cpf}</p> : null}
+						<p className={cn("min-h-4 text-xs", buyerErrors.cpf ? "text-destructive" : "text-transparent")}>
+							{buyerErrors.cpf ?? " "}
+						</p>
 					</div>
-					<div className="grid gap-2 md:col-span-2">
+					<div className="grid content-start gap-2 md:col-span-2">
 						<label className="text-sm font-medium" htmlFor="checkout-phone">
 							Telefone
 						</label>
@@ -372,7 +376,9 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 							placeholder="(11) 99999-9999"
 							required
 						/>
-						{buyerErrors.phone ? <p className="text-xs text-destructive">{buyerErrors.phone}</p> : null}
+						<p className={cn("min-h-4 text-xs", buyerErrors.phone ? "text-destructive" : "text-transparent")}>
+							{buyerErrors.phone ?? " "}
+						</p>
 					</div>
 				</div>
 			</section>

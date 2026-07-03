@@ -50,12 +50,7 @@ export default async function AdminEditorialGlobalPage() {
 			<EditorialPageCopyForm
 				action={updateEditorialSiteGlobalCopyAction}
 				submitLabel="Salvar conteúdo global público"
-				base={{
-					title: page.title,
-					summary: page.summary,
-					order: page.order,
-					published: page.published,
-				}}
+				base={{ published: page.published }}
 				sections={[
 					{
 						title: "Newsletter",
