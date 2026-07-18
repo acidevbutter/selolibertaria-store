@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { env } from "@/env.mjs";
 import {
 	productCoreSchema,
 	productPricingSchema,
@@ -10,10 +9,9 @@ import {
 	variantSchema,
 } from "@/lib/admin-product-form-schema";
 import {
-	ensureProductPrice,
-	getAdminStripeClient,
-	getAdminStripeProductGroup,
-	listAdminStripeProductGroups,
+	getAdminProductGroup,
+	getCatalogCurrency,
+	listAdminProductGroups,
 	parseBoolean,
 	parseCurrencyCode,
 	parseDisplayOrder,
@@ -21,9 +19,16 @@ import {
 	parseOptionalString,
 	parsePriceAmount,
 	updateProductsCategory,
-} from "@/lib/admin-stripe-products";
+} from "@/lib/admin-products";
 import { requireCapability } from "@/lib/api-auth";
 import { normalizeUserRole } from "@/lib/authz";
+import {
+	type CatalogProductDocument,
+	catalogProductId,
+	catalogVariantId,
+	getCatalogCollection,
+	getCatalogProductBySlug,
+} from "@/lib/catalog";
 import { recordProductAuditEntry } from "@/lib/product-audit";
 import {
 	createSystemCategory,
@@ -31,10 +36,6 @@ import {
 	renameSystemCategory,
 } from "@/lib/product-categories";
 import { slugify } from "@/lib/utils";
-
-type StripeCategoriesCacheGlobal = typeof globalThis & {
-	__stripeCategoriesCache?: unknown;
-};
 
 const requireCatalogManagerSession = async () => {
 	const auth = await requireCapability("catalog.write");
@@ -45,107 +46,30 @@ const requireCatalogManagerSession = async () => {
 	return auth.session;
 };
 
-const getRequiredString = (formData: FormData, key: string) => {
+const required = (formData: FormData, key: string) => {
 	const value = parseOptionalString(formData.get(key));
-	if (!value) {
-		throw new Error(`O campo ${key} é obrigatório.`);
-	}
+	if (!value) throw new Error(`O campo ${key} é obrigatório.`);
 	return value;
 };
 
-const metadataValue = (value: string) => value.trim();
-const adminCurrency = parseCurrencyCode(null, env.STRIPE_CURRENCY);
-
 const parseSchema = <T>(schema: { parse: (input: unknown) => T }, input: unknown) => schema.parse(input);
 
-const resolveCategoryName = async (formData: FormData) => {
-	const selectedCategory = parseOptionalString(formData.get("category"));
-	if (!selectedCategory) return "";
-	const category = await getSystemCategoryBySlugOrName(selectedCategory);
-	if (!category) {
-		throw new Error("A categoria selecionada não existe no sistema.");
-	}
+async function resolveCategoryName(formData: FormData) {
+	const selected = parseOptionalString(formData.get("category"));
+	if (!selected) return "";
+	const category = await getSystemCategoryBySlugOrName(selected);
+	if (!category) throw new Error("A categoria selecionada não existe no sistema.");
 	return category.name;
-};
+}
 
-const resolveVariantAmount = ({
-	group,
-	formData,
-	currency,
-}: {
-	group: NonNullable<Awaited<ReturnType<typeof getAdminStripeProductGroup>>>;
-	formData: FormData;
-	currency: string;
-}) => {
-	const priceMode = parseOptionalString(formData.get("priceMode")) || "inherit";
-	const basePrice = parseOptionalString(formData.get("basePrice"));
-	const groupBasePrice =
-		typeof group.variants[0]?.priceDecimal === "number" ? group.variants[0].priceDecimal : null;
-
-	if (priceMode === "override") {
-		return parsePriceAmount(getRequiredString(formData, "priceOverride"), currency);
-	}
-
-	const inherited = basePrice || (typeof groupBasePrice === "number" ? String(groupBasePrice) : "");
-	if (!inherited) {
-		throw new Error("O preço do produto não está disponível.");
-	}
-	return parsePriceAmount(inherited, currency);
-};
-
-const refreshCatalog = () => {
-	(globalThis as StripeCategoriesCacheGlobal).__stripeCategoriesCache = undefined;
+function refreshCatalog() {
 	revalidatePath("/");
 	revalidatePath("/products");
 	revalidatePath("/search");
 	revalidatePath("/admin/products");
-};
+}
 
-const reorderStripeProductGroups = async ({
-	stripe,
-	targetSlug,
-	targetOrder,
-	excludeSlug,
-}: {
-	stripe: ReturnType<typeof getAdminStripeClient>;
-	targetSlug: string;
-	targetOrder: number;
-	excludeSlug?: string;
-}) => {
-	const groups = await listAdminStripeProductGroups();
-	const remaining = groups.filter((group) => group.slug !== excludeSlug && group.slug !== targetSlug);
-	const boundedOrder = Math.min(Math.max(targetOrder, 1), remaining.length + 1);
-	const ordered = [...remaining];
-	const targetGroup = groups.find((group) => group.slug === targetSlug);
-	if (targetGroup) {
-		ordered.splice(boundedOrder - 1, 0, targetGroup);
-	}
-
-	await Promise.all(
-		ordered.map((group, index) =>
-			Promise.all(
-				group.variants.map((variant) =>
-					stripe.products.update(variant.id, {
-						metadata: {
-							variant: metadataValue(variant.variantLabel),
-							category: metadataValue(group.category),
-							slug: metadataValue(group.slug),
-							stock: metadataValue(variant.stock),
-							order: String(index + 1),
-							variant_order: metadataValue(variant.variantOrder),
-						},
-					}),
-				),
-			),
-		),
-	);
-};
-
-export async function createStripeProductAction(formData: FormData) {
-	const session = await requireCatalogManagerSession();
-	const stripe = getAdminStripeClient();
-
-	const name = getRequiredString(formData, "name");
+function parseProductFields(formData: FormData) {
 	const core = parseSchema(productCoreSchema, {
 		name: formData.get("name"),
 		slug: formData.get("slug"),
@@ -153,325 +77,296 @@ export async function createStripeProductAction(formData: FormData) {
 		description: formData.get("description"),
 		stock: formData.get("stock"),
 		order: formData.get("order"),
+		productType: formData.get("productType"),
+		format: formData.get("format"),
 	});
-	const pricing = parseSchema(productPricingSchema, {
-		price: formData.get("price"),
+	return {
+		...core,
+		slug: slugify(core.slug || core.name),
+		productType: parseOptionalString(formData.get("productType")) || null,
+		format: parseOptionalString(formData.get("format")) || null,
+		images: parseImageList(formData.getAll("images")),
+		published: parseBoolean(formData.get("active")),
+		stock: core.stock ? Number.parseInt(core.stock, 10) : null,
+		order: core.order ? Number.parseFloat(core.order.replace(",", ".")) : null,
+	};
+}
+
+function parseVariantFields(formData: FormData) {
+	const values = parseSchema(variantSchema, {
+		variant: formData.get("variant"),
+		variantOrder: formData.get("variantOrder"),
+		stock: formData.get("stock"),
 	});
-	const slug = slugify(core.slug || name);
+	return {
+		label: values.variant || null,
+		order: values.variantOrder ? Number.parseFloat(values.variantOrder.replace(",", ".")) : null,
+		stock: values.stock ? Number.parseInt(values.stock, 10) : null,
+		published: parseBoolean(formData.get("active")),
+	};
+}
+
+function resolveVariantAmount({
+	group,
+	formData,
+	currency,
+}: {
+	group: NonNullable<Awaited<ReturnType<typeof getAdminProductGroup>>>;
+	formData: FormData;
+	currency: string;
+}) {
+	const priceMode = parseOptionalString(formData.get("priceMode")) || "inherit";
+	if (priceMode === "override") return parsePriceAmount(required(formData, "priceOverride"), currency);
+	const basePrice = parseOptionalString(formData.get("basePrice"));
+	if (basePrice) return parsePriceAmount(basePrice, currency);
+	const inherited = group.variants[0]?.priceDecimal;
+	if (typeof inherited !== "number") throw new Error("O preço do produto não está disponível.");
+	return parsePriceAmount(String(inherited), currency);
+}
+
+async function reorderProductGroups(targetSlug: string, targetOrder: number, excludeSlug?: string) {
+	const groups = await listAdminProductGroups();
+	const remaining = groups.filter((group) => group.slug !== excludeSlug && group.slug !== targetSlug);
+	const boundedOrder = Math.min(Math.max(targetOrder, 1), remaining.length + 1);
+	const ordered = [...remaining];
+	const target = groups.find((group) => group.slug === targetSlug);
+	if (target) ordered.splice(boundedOrder - 1, 0, target);
+	const products = await getCatalogCollection();
+	await Promise.all(
+		ordered.map((group, index) =>
+			products.updateOne({ slug: group.slug }, { $set: { order: index + 1, updatedAt: new Date() } }),
+		),
+	);
+}
+
+export async function createProductAction(formData: FormData) {
+	const session = await requireCatalogManagerSession();
+	const fields = parseProductFields(formData);
 	const category = await resolveCategoryName(formData);
-	const description = core.description;
-	const images = parseImageList(formData.getAll("images"));
-	const amount = parsePriceAmount(pricing.price, adminCurrency);
-	const variant = parseOptionalString(formData.get("variant"));
+	const pricing = parseSchema(productPricingSchema, { price: formData.get("price") });
+	const currency = parseCurrencyCode(null, getCatalogCurrency());
+	const variantLabel = parseOptionalString(formData.get("variant")) || null;
 	const variantOrder = parseOptionalString(formData.get("variantOrder"));
-	const stock = core.stock;
-	const order = core.order;
-	const active = parseBoolean(formData.get("active"));
-
-	const product = await stripe.products.create({
-		name,
-		description,
-		images,
-		active,
-		metadata: {
-			slug,
-			category: metadataValue(category),
-			stock: metadataValue(stock),
-			order: metadataValue(order),
-			variant: metadataValue(variant),
-			variant_order: metadataValue(variantOrder),
-		},
-	});
-
-	const price = await stripe.prices.create({
-		product: product.id,
-		unit_amount: amount,
-		currency: adminCurrency,
-	});
-	await stripe.products.update(product.id, { default_price: price.id });
-	await reorderStripeProductGroups({
-		stripe,
-		targetSlug: slug,
-		targetOrder: parseDisplayOrder(order),
-	});
+	const productId = catalogProductId(fields.slug);
+	const variantId = catalogVariantId(fields.slug, variantLabel);
+	const now = new Date();
+	const product: CatalogProductDocument = {
+		id: productId,
+		slug: fields.slug,
+		name: fields.name,
+		description: fields.description || null,
+		images: fields.images,
+		category: category ? { name: category, slug: slugify(category) } : null,
+		stock: fields.stock,
+		productType: fields.productType,
+		format: fields.format,
+		order: fields.order,
+		published: fields.published,
+		variants: [
+			{
+				id: variantId,
+				label: variantLabel,
+				slug: variantLabel ? slugify(variantLabel) : null,
+				description: fields.description || null,
+				images: fields.images,
+				price: parsePriceAmount(pricing.price, currency),
+				currency,
+				stock: fields.stock,
+				published: fields.published,
+				order: variantOrder ? Number.parseFloat(variantOrder.replace(",", ".")) : null,
+			},
+		],
+		createdAt: now,
+		updatedAt: now,
+	};
+	await getCatalogCollection().then((products) => products.insertOne(product));
+	await reorderProductGroups(fields.slug, parseDisplayOrder(fields.order));
 	await recordProductAuditEntry({
-		slug,
+		slug: fields.slug,
 		action: "product_group_created",
 		actorId: String(session.sub),
 		actorRole: normalizeUserRole(session.role),
 		actorEmail: session.email ?? null,
-		productId: product.id,
-		details: {
-			name,
-			category,
-			order,
-			variant: variant || null,
-			active,
-		},
+		productId,
+		details: { name: fields.name, category, order: fields.order, active: fields.published },
 		createdAt: new Date(),
 	});
-
 	refreshCatalog();
-	redirect(`/admin/products/${encodeURIComponent(slug)}`);
+	redirect(`/admin/products/${encodeURIComponent(fields.slug)}`);
 }
 
-export async function updateStripeProductGroupAction(formData: FormData) {
+export async function updateProductGroupAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
-	const stripe = getAdminStripeClient();
-
-	const currentSlug = getRequiredString(formData, "currentSlug");
-	const group = await getAdminStripeProductGroup(currentSlug);
-	if (!group) {
-		throw new Error("Produto não encontrado no catálogo administrativo.");
-	}
-
-	const name = getRequiredString(formData, "name");
-	const core = parseSchema(productCoreSchema, {
-		name: formData.get("name"),
-		slug: formData.get("slug"),
-		category: formData.get("category"),
-		description: formData.get("description"),
-		stock: formData.get("stock"),
-		order: formData.get("order"),
-	});
-	const nextSlug = slugify(core.slug || name);
+	const currentSlug = required(formData, "currentSlug");
+	const existing = await getCatalogProductBySlug(currentSlug);
+	if (!existing) throw new Error("Produto não encontrado no catálogo administrativo.");
+	const fields = parseProductFields(formData);
 	const category = await resolveCategoryName(formData);
-	const description = core.description;
-	const images = parseImageList(formData.getAll("images"));
-	const stock = core.stock;
-	const order = core.order;
-	const active = parseBoolean(formData.get("active"));
-
-	await Promise.all(
-		group.variants.map((variant) =>
-			stripe.products.update(variant.id, {
-				name,
-				description,
-				images,
-				active,
-				metadata: {
-					slug: nextSlug,
-					category: metadataValue(category),
-					stock: metadataValue(stock),
-					order: metadataValue(order),
-					variant: metadataValue(variant.variantLabel),
-					variant_order: metadataValue(variant.variantOrder),
-				},
-			}),
-		),
+	const products = await getCatalogCollection();
+	const nextVariants = existing.variants.map((variant) => ({
+		...variant,
+		images: fields.images,
+		description: fields.description || null,
+		published: fields.published && variant.published,
+	}));
+	await products.updateOne(
+		{ _id: existing._id },
+		{
+			$set: {
+				id: existing.id,
+				slug: fields.slug,
+				name: fields.name,
+				description: fields.description || null,
+				images: fields.images,
+				category: category ? { name: category, slug: slugify(category) } : null,
+				stock: fields.stock,
+				productType: fields.productType,
+				format: fields.format,
+				order: fields.order,
+				published: fields.published,
+				variants: nextVariants,
+				updatedAt: new Date(),
+			},
+		},
 	);
-	await reorderStripeProductGroups({
-		stripe,
-		targetSlug: nextSlug,
-		targetOrder: parseDisplayOrder(order),
-		excludeSlug: currentSlug !== nextSlug ? currentSlug : undefined,
-	});
+	await reorderProductGroups(
+		fields.slug,
+		parseDisplayOrder(fields.order),
+		currentSlug !== fields.slug ? currentSlug : undefined,
+	);
 	await recordProductAuditEntry({
-		slug: nextSlug,
+		slug: fields.slug,
 		action: "product_group_updated",
 		actorId: String(session.sub),
 		actorRole: normalizeUserRole(session.role),
 		actorEmail: session.email ?? null,
-		details: {
-			previousSlug: currentSlug,
-			name,
-			category,
-			order,
-			active,
-			variantCount: group.variants.length,
-		},
+		productId: existing.id,
+		details: { previousSlug: currentSlug, name: fields.name, category, active: fields.published },
 		createdAt: new Date(),
 	});
-
 	refreshCatalog();
 	revalidatePath(`/product/${currentSlug}`);
-	revalidatePath(`/product/${nextSlug}`);
-	revalidatePath(`/category/${slugify(group.category)}`);
-	revalidatePath(`/category/${slugify(category)}`);
-	redirect(`/admin/products/${encodeURIComponent(nextSlug)}`);
+	revalidatePath(`/product/${fields.slug}`);
+	redirect(`/admin/products/${encodeURIComponent(fields.slug)}`);
 }
 
-export async function createStripeVariantAction(formData: FormData) {
+export async function createVariantAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
-	const stripe = getAdminStripeClient();
-
-	const currentSlug = getRequiredString(formData, "currentSlug");
-	const group = await getAdminStripeProductGroup(currentSlug);
-	if (!group) {
-		throw new Error("Produto não encontrado no catálogo administrativo.");
-	}
-
-	const slug = group.slug;
-	const name = group.name;
-	const category = group.category;
-	const description = group.description;
-	const images = group.images;
-	const variantValues = parseSchema(variantSchema, {
-		variant: formData.get("variant"),
-		variantOrder: formData.get("variantOrder"),
-		stock: formData.get("stock"),
-	});
+	const currentSlug = required(formData, "currentSlug");
+	const group = await getAdminProductGroup(currentSlug);
+	const product = await getCatalogProductBySlug(currentSlug);
+	if (!group || !product) throw new Error("Produto não encontrado no catálogo administrativo.");
+	const values = parseVariantFields(formData);
 	parseSchema(variantPricingSchema, {
 		priceMode: formData.get("priceMode"),
 		priceOverride: formData.get("priceOverride"),
 		basePrice: formData.get("basePrice"),
 	});
-	const amount = resolveVariantAmount({ group, formData, currency: adminCurrency });
-	const variant = variantValues.variant;
-	const variantOrder = variantValues.variantOrder;
-	const stock = variantValues.stock;
-	const order = group.order;
-	const active = parseBoolean(formData.get("active"));
-
-	const product = await stripe.products.create({
-		name,
-		description,
-		images,
-		active,
-		metadata: {
-			slug,
-			category: metadataValue(category),
-			stock: metadataValue(stock),
-			order: metadataValue(order),
-			variant: metadataValue(variant),
-			variant_order: metadataValue(variantOrder),
-		},
-	});
-
-	const price = await stripe.prices.create({
-		product: product.id,
-		unit_amount: amount,
-		currency: adminCurrency,
-	});
-	await stripe.products.update(product.id, { default_price: price.id });
+	const currency = parseCurrencyCode(null, group.variants[0]?.currency || "BRL");
+	const id = catalogVariantId(product.slug, values.label, `variant-${product.variants.length + 1}`);
+	const variant = {
+		id,
+		label: values.label,
+		slug: values.label ? slugify(values.label) : id,
+		description: product.description ?? null,
+		images: product.images,
+		price: resolveVariantAmount({ group, formData, currency }),
+		currency,
+		stock: values.stock,
+		published: values.published,
+		order: values.order,
+	};
+	await getCatalogCollection().then((products) =>
+		products.updateOne(
+			{ _id: product._id },
+			{ $push: { variants: variant }, $set: { updatedAt: new Date() } },
+		),
+	);
 	await recordProductAuditEntry({
-		slug,
+		slug: currentSlug,
 		action: "product_variant_created",
 		actorId: String(session.sub),
 		actorRole: normalizeUserRole(session.role),
 		actorEmail: session.email ?? null,
-		productId: product.id,
-		details: {
-			variant,
-			variantOrder,
-			stock,
-			active,
-			currency: adminCurrency,
-		},
+		productId: id,
+		details: { variant: values.label, stock: values.stock, active: values.published, currency },
 		createdAt: new Date(),
 	});
-
 	refreshCatalog();
-	revalidatePath(`/product/${slug}`);
-	redirect(`/admin/products/${encodeURIComponent(slug)}`);
+	redirect(`/admin/products/${encodeURIComponent(currentSlug)}`);
 }
 
-export async function updateStripeVariantAction(formData: FormData) {
+export async function updateVariantAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
-	const stripe = getAdminStripeClient();
-
-	const productId = getRequiredString(formData, "productId");
-	const currentSlug = getRequiredString(formData, "currentSlug");
-	const group = await getAdminStripeProductGroup(currentSlug);
-	if (!group) {
-		throw new Error("Produto não encontrado no catálogo administrativo.");
-	}
-
-	const name = group.name;
-	const slug = group.slug;
-	const category = group.category;
-	const description = group.description;
-	const images = group.images;
-	const variantValues = parseSchema(variantSchema, {
-		variant: formData.get("variant"),
-		variantOrder: formData.get("variantOrder"),
-		stock: formData.get("stock"),
-	});
+	const variantId = required(formData, "productId");
+	const currentSlug = required(formData, "currentSlug");
+	const group = await getAdminProductGroup(currentSlug);
+	if (!group) throw new Error("Produto não encontrado no catálogo administrativo.");
+	const values = parseVariantFields(formData);
 	parseSchema(variantPricingSchema, {
 		priceMode: formData.get("priceMode"),
 		priceOverride: formData.get("priceOverride"),
 		basePrice: formData.get("basePrice"),
 	});
-	const variant = variantValues.variant;
-	const variantOrder = variantValues.variantOrder;
-	const stock = variantValues.stock;
-	const order = group.order;
-	const active = parseBoolean(formData.get("active"));
-
-	const product = await stripe.products.update(productId, {
-		name,
-		description,
-		images,
-		active,
-		metadata: {
-			slug,
-			category: metadataValue(category),
-			stock: metadataValue(stock),
-			order: metadataValue(order),
-			variant: metadataValue(variant),
-			variant_order: metadataValue(variantOrder),
+	const currency = parseCurrencyCode(null, group.variants[0]?.currency || "BRL");
+	const products = await getCatalogCollection();
+	await products.updateOne(
+		{ slug: currentSlug, "variants.id": variantId },
+		{
+			$set: {
+				"variants.$.label": values.label,
+				"variants.$.slug": values.label ? slugify(values.label) : variantId,
+				"variants.$.stock": values.stock,
+				"variants.$.published": values.published,
+				"variants.$.order": values.order,
+				"variants.$.price": resolveVariantAmount({ group, formData, currency }),
+				"variants.$.currency": currency,
+				updatedAt: new Date(),
+			},
 		},
-		expand: ["default_price"],
-	});
-
-	await ensureProductPrice({
-		product,
-		amount: resolveVariantAmount({ group, formData, currency: adminCurrency }),
-		currency: adminCurrency,
-	});
+	);
 	await recordProductAuditEntry({
-		slug,
+		slug: currentSlug,
 		action: "product_variant_updated",
 		actorId: String(session.sub),
 		actorRole: normalizeUserRole(session.role),
 		actorEmail: session.email ?? null,
-		productId,
-		details: {
-			variant,
-			variantOrder,
-			stock,
-			active,
-			currency: adminCurrency,
-		},
+		productId: variantId,
+		details: { variant: values.label, stock: values.stock, active: values.published, currency },
 		createdAt: new Date(),
 	});
-
 	refreshCatalog();
-	revalidatePath(`/product/${currentSlug}`);
-	revalidatePath(`/product/${slug}`);
-	redirect(`/admin/products/${encodeURIComponent(slug)}`);
+	redirect(`/admin/products/${encodeURIComponent(currentSlug)}`);
 }
 
-export async function archiveStripeVariantAction(formData: FormData) {
+export async function archiveVariantAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
-	const stripe = getAdminStripeClient();
-	const productId = getRequiredString(formData, "productId");
-	const currentSlug = getRequiredString(formData, "currentSlug");
-
-	await stripe.products.update(productId, { active: false });
+	const variantId = required(formData, "productId");
+	const currentSlug = required(formData, "currentSlug");
+	await (await getCatalogCollection()).updateOne(
+		{ slug: currentSlug, "variants.id": variantId },
+		{ $set: { "variants.$.published": false, updatedAt: new Date() } },
+	);
 	await recordProductAuditEntry({
 		slug: currentSlug,
 		action: "product_variant_archived",
 		actorId: String(session.sub),
 		actorRole: normalizeUserRole(session.role),
 		actorEmail: session.email ?? null,
-		productId,
+		productId: variantId,
 		details: null,
 		createdAt: new Date(),
 	});
-
 	refreshCatalog();
-	revalidatePath(`/product/${currentSlug}`);
 	redirect(`/admin/products/${encodeURIComponent(currentSlug)}`);
 }
 
-export async function renameStripeCategoryAction(formData: FormData) {
+export async function renameProductCategoryAction(formData: FormData) {
 	await requireCatalogManagerSession();
-	const oldCategory = getRequiredString(formData, "oldCategory");
-	const newCategory = getRequiredString(formData, "newCategory");
+	const oldCategory = required(formData, "oldCategory");
+	const newCategory = required(formData, "newCategory");
 	await renameSystemCategory(oldCategory, newCategory);
 	await updateProductsCategory(oldCategory, newCategory);
-
 	refreshCatalog();
 	revalidatePath(`/category/${slugify(oldCategory)}`);
 	revalidatePath(`/category/${slugify(newCategory)}`);
@@ -480,17 +375,14 @@ export async function renameStripeCategoryAction(formData: FormData) {
 
 export async function createSystemCategoryAction(formData: FormData) {
 	await requireCatalogManagerSession();
-	await createSystemCategory(getRequiredString(formData, "name"));
+	await createSystemCategory(required(formData, "name"));
 	refreshCatalog();
 	redirect("/admin/products/categories");
 }
 
 export async function renameSystemCategoryAction(formData: FormData) {
 	await requireCatalogManagerSession();
-	await renameSystemCategory(
-		getRequiredString(formData, "oldCategory"),
-		getRequiredString(formData, "newCategory"),
-	);
+	await renameSystemCategory(required(formData, "oldCategory"), required(formData, "newCategory"));
 	refreshCatalog();
 	redirect("/admin/products/categories");
 }

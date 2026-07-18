@@ -3,7 +3,7 @@ import "server-only";
 import { ObjectId } from "mongodb";
 import { isBackofficeRole } from "@/lib/authz";
 import { clearCartId, getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { getDb } from "@/lib/mongodb";
 
 type MinimalItem = { productId: string; variantId: string; quantity: number };

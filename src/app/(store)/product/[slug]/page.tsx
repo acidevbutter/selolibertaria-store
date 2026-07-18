@@ -6,7 +6,7 @@ import { publicUrl } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import type { Product, YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialProductPage } from "@/lib/editorial-content-store";

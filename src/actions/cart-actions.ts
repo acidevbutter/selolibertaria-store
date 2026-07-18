@@ -12,7 +12,7 @@ import {
 	setCartId,
 } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import type { Cart } from "@/lib/commerce-types";
 import { getDb } from "@/lib/mongodb";
 import { normalizeCouponCode } from "@/lib/promotions";

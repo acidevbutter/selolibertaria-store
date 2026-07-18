@@ -28,7 +28,7 @@ vi.mock("@/lib/cart-pricing", () => ({
 	buildPricedCartPayload: (...args: unknown[]) => buildPricedCartPayloadMock(...args),
 }));
 
-vi.mock("@/lib/commerce-stripe", () => ({
+vi.mock("@/lib/commerce", () => ({
 	commerce: {
 		cart: {
 			clear: vi.fn(),

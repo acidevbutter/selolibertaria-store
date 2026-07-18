@@ -3,8 +3,14 @@
 ### Added
 
 - Checkout Mercado Pago configurável para Pix e cartão via Payment Brick, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
+- Catálogo canônico MongoDB em `catalogProducts`, com variantes, preços em menor unidade BRL, estoque, publicação, categorias, `productType`/`format`, seed local e índices de leitura.
+- Migration idempotente de export para MongoDB com `--dry-run` padrão, relatório de inconsistências, snapshot e rollback documentado em `docs/catalog-migration.md`.
 
 ### Fixed
+
+- Removidos os caminhos ativos de Stripe, Checkout Session, PaymentIntent, métodos salvos e webhook legado; pedidos históricos passam a usar `orderId` e `mercadoPagoPaymentId`.
+- Rejeitadas divergências de total, moeda e `external_reference` na criação, reconciliação e webhook Mercado Pago; o upsert inicial do draft agora reutiliza o mesmo `_id`.
+- Retentativas não criam uma nova cobrança quando o draft já tem pagamento Mercado Pago em processamento ou confirmado.
 
 - Removidos metadados técnicos redundantes de rota/aparição dos blocos do formulário de copy do admin editorial.
 

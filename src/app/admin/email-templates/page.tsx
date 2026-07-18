@@ -29,7 +29,7 @@ export default async function EmailTemplatesPage() {
 	const forwardedProto = requestHeaders.get("x-forwarded-proto");
 	const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
 	const baseUrl = host ? `${forwardedProto ?? "http"}://${host}` : publicUrl;
-	const currency = String(env.STRIPE_CURRENCY ?? "BRL")
+	const currency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
 

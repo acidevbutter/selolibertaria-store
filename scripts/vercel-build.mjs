@@ -32,7 +32,6 @@ function runCommand(command, args, options = {}) {
 const isVercelProduction = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
 const shouldRunAdminSeed = isVercelProduction;
 const shouldRunEditorialMigrations = isVercelProduction && process.env.RUN_EDITORIAL_MIGRATIONS === "true";
-const shouldRunImageMigration = isVercelProduction && process.env.RUN_PRODUCT_IMAGE_MIGRATION === "true";
 
 if (shouldRunAdminSeed) {
 	console.log("[build] admin seed: running");
@@ -58,19 +57,6 @@ if (shouldRunEditorialMigrations) {
 	}
 } else {
 	console.log("[build] editorial migrations: skipped");
-}
-
-if (shouldRunImageMigration) {
-	console.log("[build] product image migration: running");
-	const migrated = runCommand("node", ["scripts/migrate-stripe-product-images-to-cloudinary.mjs"], {
-		continueOnError: true,
-	});
-
-	if (!migrated) {
-		console.log("[build] product image migration: failed, continuing build");
-	}
-} else {
-	console.log("[build] product image migration: skipped");
 }
 
 console.log("[build] next build: running");

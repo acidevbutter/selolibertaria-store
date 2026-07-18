@@ -1,6 +1,10 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { mapMercadoPagoStatus, validateMercadoPagoWebhookSignature } from "@/lib/mercado-pago";
+import {
+	mapMercadoPagoStatus,
+	validateMercadoPagoPaymentResponse,
+	validateMercadoPagoWebhookSignature,
+} from "@/lib/mercado-pago";
 
 describe("mapMercadoPagoStatus", () => {
 	it("maps Mercado Pago statuses to local checkout statuses", () => {
@@ -40,5 +44,30 @@ describe("validateMercadoPagoWebhookSignature", () => {
 				secret: "webhook-secret",
 			}),
 		).toBe(false);
+	});
+});
+
+describe("validateMercadoPagoPaymentResponse", () => {
+	const expected = { amountInCents: 4200, currency: "BRL", externalReference: "ord_test" };
+
+	it("accepts the authenticated provider contract", () => {
+		expect(
+			validateMercadoPagoPaymentResponse(
+				{ transaction_amount: 42, currency_id: "BRL", external_reference: "ord_test" },
+				expected,
+			),
+		).toEqual({ ok: true });
+	});
+
+	it.each([
+		["amount", { transaction_amount: 41.99, currency_id: "BRL", external_reference: "ord_test" }],
+		["currency", { transaction_amount: 42, currency_id: "USD", external_reference: "ord_test" }],
+		["reference", { transaction_amount: 42, currency_id: "BRL", external_reference: "ord_other" }],
+	])("rejects a divergent %s", (_field, payment) => {
+		expect(validateMercadoPagoPaymentResponse(payment, expected)).toMatchObject({ ok: false });
+	});
+
+	it("does not accept missing provider fields", () => {
+		expect(validateMercadoPagoPaymentResponse({}, expected)).toMatchObject({ ok: false });
 	});
 });

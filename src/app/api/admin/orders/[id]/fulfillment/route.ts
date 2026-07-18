@@ -49,11 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 			{ $unwind: "$purchases" },
 			{
 				$match: {
-					$or: [
-						{ "purchases.id": id },
-						{ "purchases.relatedIds.paymentIntentId": id },
-						{ "purchases.relatedIds.sessionId": id },
-					],
+					$or: [{ "purchases.id": id }, { "purchases.relatedIds.mercadoPagoPaymentId": id }],
 				},
 			},
 			{ $limit: 1 },
@@ -63,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 		| {
 				purchases: {
 					id: string;
-					relatedIds?: { paymentIntentId?: string; sessionId?: string };
+					relatedIds?: { mercadoPagoPaymentId?: string };
 					fulfillment?: { status?: FulfillmentStatus; trackingNumber?: string | null };
 				};
 		  }

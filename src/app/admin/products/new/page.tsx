@@ -9,8 +9,8 @@ import {
 	SubmitButton,
 	VariantFields,
 } from "@/app/admin/products/_components/product-form-fields";
-import { createStripeProductAction } from "@/app/admin/products/actions";
-import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
+import { createProductAction } from "@/app/admin/products/actions";
+import { listAdminProductGroups } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listSystemCategories } from "@/lib/product-categories";
@@ -29,7 +29,7 @@ export default async function NewAdminProductPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "catalog.write")) redirect("/forbidden");
-	const [categories, groups] = await Promise.all([listSystemCategories(), listAdminStripeProductGroups()]);
+	const [categories, groups] = await Promise.all([listSystemCategories(), listAdminProductGroups()]);
 	const orderOptions = Array.from({ length: groups.length + 1 }, (_, index) => index + 1);
 
 	return (
@@ -71,7 +71,7 @@ export default async function NewAdminProductPage() {
 					<CardTitle>Cadastro</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form action={createStripeProductAction} className="space-y-6">
+					<form action={createProductAction} className="space-y-6">
 						<FormSection title="Informações principais">
 							<ProductCoreFields categories={categories} orderOptions={orderOptions} autoFormatSlug />
 						</FormSection>

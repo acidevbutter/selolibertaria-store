@@ -81,6 +81,8 @@ export const productCoreSchema = z.object({
 	description: descriptionSchema,
 	stock: stockSchema,
 	order: orderSchema,
+	productType: optionalTrimmedString,
+	format: optionalTrimmedString,
 });
 
 export const productPricingSchema = z.object({

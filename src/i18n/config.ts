@@ -10,7 +10,6 @@ export const LOCALE_OPTIONS = [
 		label: "Português (Brasil)",
 		baseLanguage: "pt",
 		defaultCountry: "BR",
-		stripeLocale: "pt-BR",
 	},
 ] as const;
 
@@ -52,8 +51,4 @@ export function getLocaleConfig(_locale: string | null | undefined) {
 
 export function getDefaultCountryForLocale(_locale: string | null | undefined) {
 	return "BR";
-}
-
-export function getStripeLocale(_locale: string | null | undefined): "pt-BR" {
-	return "pt-BR";
 }

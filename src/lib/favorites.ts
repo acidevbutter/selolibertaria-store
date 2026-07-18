@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { ObjectId } from "mongodb";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import type { Product } from "@/lib/commerce-types";
 import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
 import { ensureIndexes, getDb } from "@/lib/mongodb";

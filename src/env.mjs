@@ -5,10 +5,7 @@ import { z } from "zod";
 
 export const env = createEnv({
 	server: {
-		STRIPE_SECRET_KEY: z.string().optional(),
-		STRIPE_CURRENCY: z.string(),
-		STRIPE_WEBHOOK_SECRET: z.string().optional(),
-		CHECKOUT_PAYMENT_PROVIDER: z.enum(["stripe", "mercado_pago"]).optional().default("stripe"),
+		CATALOG_CURRENCY: z.string().optional().default("BRL"),
 		MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
 		MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
 		CLOUDINARY_CLOUD_NAME: z.string().optional(),
@@ -16,10 +13,6 @@ export const env = createEnv({
 		CLOUDINARY_API_SECRET: z.string().optional(),
 		CLOUDINARY_UPLOAD_FOLDER: z.string().optional(),
 
-		ENABLE_STRIPE_TAX: z
-			.string()
-			.optional()
-			.transform((str) => !!str),
 		MONGODB_URI: z
 			.string()
 			.min(1)
@@ -40,7 +33,6 @@ export const env = createEnv({
 		MELHOR_ENVIO_ACCESS_TOKEN: z.string().optional(),
 	},
 	client: {
-		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
 		NEXT_PUBLIC_URL: z.string().url().optional(),
 
@@ -51,10 +43,7 @@ export const env = createEnv({
 		NEXT_PUBLIC_LANGUAGE: z.string().optional().default("pt-BR"),
 	},
 	runtimeEnv: {
-		STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-		STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-		STRIPE_CURRENCY: process.env.STRIPE_CURRENCY,
-		CHECKOUT_PAYMENT_PROVIDER: process.env.CHECKOUT_PAYMENT_PROVIDER,
+		CATALOG_CURRENCY: process.env.CATALOG_CURRENCY,
 		MERCADO_PAGO_ACCESS_TOKEN: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 		MERCADO_PAGO_WEBHOOK_SECRET: process.env.MERCADO_PAGO_WEBHOOK_SECRET,
 		CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
@@ -62,13 +51,10 @@ export const env = createEnv({
 		CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 		CLOUDINARY_UPLOAD_FOLDER: process.env.CLOUDINARY_UPLOAD_FOLDER,
 
-		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
 		NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
 		NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
 		NEXT_PUBLIC_NEWSLETTER_ENDPOINT: process.env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT,
-
-		ENABLE_STRIPE_TAX: process.env.ENABLE_STRIPE_TAX,
 
 		NEXT_PUBLIC_LANGUAGE: process.env.NEXT_PUBLIC_LANGUAGE,
 		MONGODB_URI: process.env.MONGODB_URI,

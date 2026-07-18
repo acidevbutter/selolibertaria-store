@@ -1,8 +1,8 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createSystemCategoryAction, renameStripeCategoryAction } from "@/app/admin/products/actions";
-import { listAdminStripeCategories } from "@/lib/admin-stripe-products";
+import { createSystemCategoryAction, renameProductCategoryAction } from "@/app/admin/products/actions";
+import { listAdminProductCategories } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listSystemCategories } from "@/lib/product-categories";
@@ -20,7 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export const dynamic = "force-dynamic";
 
 function getCategorySourceLabel(source: string) {
-	return source === "stripe" ? "Catálogo integrado" : "Criada no admin";
+	return source === "catalog" ? "Catálogo integrado" : "Criada no admin";
 }
 
 export default async function AdminProductCategoriesPage() {
@@ -29,19 +29,22 @@ export default async function AdminProductCategoriesPage() {
 	if (!hasCapability(session.user.role, "settings.write")) redirect("/forbidden");
 
 	let categories: Awaited<ReturnType<typeof listSystemCategories>> = [];
-	let stripeCategories: Awaited<ReturnType<typeof listAdminStripeCategories>> = [];
+	let catalogCategories: Awaited<ReturnType<typeof listAdminProductCategories>> = [];
 	let error: string | null = null;
 
 	try {
-		[categories, stripeCategories] = await Promise.all([listSystemCategories(), listAdminStripeCategories()]);
+		[categories, catalogCategories] = await Promise.all([
+			listSystemCategories(),
+			listAdminProductCategories(),
+		]);
 	} catch (err) {
-		categories = await listSystemCategories({ syncStripe: false });
+		categories = await listSystemCategories({ syncCatalog: false });
 		error = "Não foi possível carregar todas as categorias agora. A lista local continua disponível.";
 	}
 
-	const stripeStatsBySlug = new Map(stripeCategories.map((category) => [category.slug, category]));
-	const syncedCategories = categories.filter((category) => category.source === "stripe").length;
-	const variantCoverage = stripeCategories.reduce((total, category) => total + category.variants, 0);
+	const catalogStatsBySlug = new Map(catalogCategories.map((category) => [category.slug, category]));
+	const syncedCategories = categories.filter((category) => category.source === "catalog").length;
+	const variantCoverage = catalogCategories.reduce((total, category) => total + category.variants, 0);
 
 	return (
 		<AdminEditorialPage>
@@ -127,11 +130,11 @@ export default async function AdminProductCategoriesPage() {
 										<TableCell className="font-medium">{category.name}</TableCell>
 										<TableCell className="font-mono text-xs">{category.slug}</TableCell>
 										<TableCell>{getCategorySourceLabel(category.source)}</TableCell>
-										<TableCell>{stripeStatsBySlug.get(category.slug)?.products ?? 0}</TableCell>
-										<TableCell>{stripeStatsBySlug.get(category.slug)?.variants ?? 0}</TableCell>
+										<TableCell>{catalogStatsBySlug.get(category.slug)?.products ?? 0}</TableCell>
+										<TableCell>{catalogStatsBySlug.get(category.slug)?.variants ?? 0}</TableCell>
 										<TableCell>
 											<form
-												action={renameStripeCategoryAction}
+												action={renameProductCategoryAction}
 												className="flex min-w-[260px] max-w-md flex-col gap-2 sm:flex-row sm:items-end"
 											>
 												<input type="hidden" name="oldCategory" value={category.name} />

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import type { Cart, CartItem } from "@/lib/commerce-types";
 import type { SupportedCurrency } from "@/lib/currency";
 import { priceCartLines, type ResolvedCartPricingLine, resolveCouponByCode } from "@/lib/promotions";
@@ -60,7 +60,7 @@ export async function buildPricedCartPayload(args: {
 				format?: string | null;
 			}
 		> = [];
-		let currency = "USD";
+		let currency = "BRL";
 
 		for (const minimal of args.minimalItems) {
 			const resolved = await commerce.variant
@@ -120,7 +120,7 @@ export async function buildPricedCartPayload(args: {
 			? await resolveShippingQuotesForUser({
 					userId: args.userId,
 					subtotal: pricing.subtotal,
-					currency: resolvedLines[0]?.currency ?? "USD",
+					currency: resolvedLines[0]?.currency ?? "BRL",
 					items: pricing.items.map((item, index) => ({
 						productId: item.productId,
 						variantId: item.variantId,
@@ -170,7 +170,7 @@ export async function buildPricedCartPayload(args: {
 			id: args.cartId,
 			items: pricing.items,
 			total: pricing.total + shippingAmount,
-			currency: resolvedLines[0]?.currency ?? "USD",
+			currency: resolvedLines[0]?.currency ?? "BRL",
 			subtotal: pricing.subtotal,
 			discountTotal: pricing.discountTotal,
 			couponCode: pricing.couponCode,

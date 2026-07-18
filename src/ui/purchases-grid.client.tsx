@@ -152,7 +152,7 @@ export function PurchasesGrid({
 		setDetails(null);
 		setOpen(true);
 		const res = await getPurchaseDetails(id);
-		if ("error" in res) setError(res.error);
+		if ("error" in res) setError(res.error ?? null);
 		else setDetails(res);
 		setLoading(false);
 	}

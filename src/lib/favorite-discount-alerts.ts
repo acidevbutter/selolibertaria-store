@@ -2,7 +2,7 @@ import "server-only";
 
 import { ObjectId } from "mongodb";
 import { publicUrl } from "@/env.mjs";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { sendEmail } from "@/lib/email";
 import { favoriteDiscountEmailHtml } from "@/lib/email-templates/favorite-discount";
 import type { FavoriteDoc } from "@/lib/favorites";

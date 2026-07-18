@@ -1,6 +1,5 @@
 import { ObjectId } from "mongodb";
-import Stripe from "stripe";
-import { env } from "@/env.mjs";
+import { getCatalogProductById } from "./catalog";
 import { sendEmail } from "./email";
 import { orderStatusEmailHtml } from "./email-templates/order-status";
 import { getDb } from "./mongodb";
@@ -10,6 +9,7 @@ interface NotifyItem {
 	name: string | null;
 	quantity: number;
 	unitAmount?: number | null;
+	image?: string | null;
 }
 interface NotifyPurchase {
 	id: string;
@@ -24,6 +24,8 @@ interface RawPurchaseItem {
 	quantity?: number;
 	unitAmount?: number | null;
 	priceId?: string | null;
+	productId?: string | null;
+	image?: string | null;
 }
 interface RawPurchase {
 	id: string;
@@ -47,55 +49,23 @@ export async function notifyOrderStatusChange(userId: string, purchaseId: string
 	const purchases = (user.purchases || []) as NotifyPurchase[];
 	const purchase = purchases.find((p) => p.id === purchaseId) as NotifyPurchase | undefined;
 
-	// Enrich items with product images when possible (use Stripe if configured)
-	let enrichedItems: Array<{ name: string; qty: number; unitAmount?: number | null; image?: string | null }> =
-		[];
-	if (env.STRIPE_SECRET_KEY) {
-		try {
-			const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
-			for (const it of purchase?.items || []) {
-				const raw = it as RawPurchaseItem;
-				let name = raw.name || null;
-				let image: string | null = null;
-				if (raw.priceId) {
-					try {
-						const price = await stripe.prices.retrieve(raw.priceId);
-						const productId = typeof price.product === "string" ? price.product : price.product?.id;
-						if (productId) {
-							try {
-								const product = await stripe.products.retrieve(productId);
-								name = product.name || name;
-								image = product.images?.[0] || null;
-							} catch (e) {
-								/* ignore */
-							}
-						}
-					} catch (e) {
-						/* ignore */
-					}
-				}
-				enrichedItems.push({
-					name: name || "",
-					qty: raw.quantity || 0,
-					unitAmount: raw.unitAmount ?? null,
-					image,
-				});
-			}
-		} catch (e) {
-			// fallback to raw items
-		}
-	}
-	if (enrichedItems.length === 0) {
-		enrichedItems = (purchase?.items || []).map((it) => ({
-			name: it.name || "",
-			qty: it.quantity || 0,
-			unitAmount: it.unitAmount ?? null,
-			image: null,
-		}));
-	}
+	const enrichedItems = await Promise.all(
+		(purchase?.items || []).map(async (it) => {
+			const raw = it as RawPurchaseItem;
+			const catalogProduct = raw.productId
+				? await getCatalogProductById(raw.productId).catch(() => null)
+				: null;
+			return {
+				name: raw.name || catalogProduct?.name || "",
+				qty: raw.quantity || 0,
+				unitAmount: raw.unitAmount ?? null,
+				image: raw.image || catalogProduct?.images?.[0] || null,
+			};
+		}),
+	);
 
 	const rawPurchase = purchase as RawPurchase | undefined;
-	const currency = (rawPurchase?.currency || "USD") as string;
+	const currency = (rawPurchase?.currency || "BRL") as string;
 	const totalCents = rawPurchase?.amountTotal ?? 0;
 	const emailContent = getCustomerOrderStatusContent({
 		status,

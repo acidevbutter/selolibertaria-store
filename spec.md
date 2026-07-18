@@ -13,7 +13,7 @@ Manter a espinha dorsal de comércio sem quebrar:
 - catálogo por produto e variante;
 - PDP/página de produto;
 - carrinho;
-- checkout com provider configurável entre Stripe e Mercado Pago;
+- checkout transparente Mercado Pago para Pix e cartão;
 - conta de cliente;
 - favoritos;
 - promoções;
@@ -206,7 +206,7 @@ Mitigação:
 Mitigação:
 
 - validar build;
-- preservar Stripe/Mongo/auth;
+- preservar Mercado Pago/Mongo/auth;
 - não quebrar cart/checkout/account.
 
 ### 3. Rotas quebradas por troca apressada
@@ -263,9 +263,12 @@ Mitigação:
 - O pedido confirmado deve ficar vinculado ao usuário resolvido e disparar e-mail transacional com resumo do pedido e magic link seguro para acessar a conta.
 - No primeiro acesso por magic link, a pessoa deve conseguir entrar em `Compras`, localizar o pedido e criar senha sem perder o contexto desse pedido.
 
-## Addendum — DEV-54 Mercado Pago
+## Addendum — DEV-54 + DEV-65 Mercado Pago e catálogo Mongo
 
-- `CHECKOUT_PAYMENT_PROVIDER=mercado_pago` ativa Mercado Pago no checkout transparente; Stripe permanece preservado e volta com `CHECKOUT_PAYMENT_PROVIDER=stripe`.
+- Mercado Pago é o único provider ativo do checkout; não existe fallback de pagamento por configuração.
 - `NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY` só pode ser usada no cliente; `MERCADO_PAGO_ACCESS_TOKEN` e `MERCADO_PAGO_WEBHOOK_SECRET` ficam apenas no servidor.
 - Pagamentos Mercado Pago devem criar cobrança no backend via `/v1/payments`, com `Authorization: Bearer`, `X-Idempotency-Key` por tentativa e webhook em `/api/mercado-pago/webhook`.
 - Antes de atualizar draft/pedido local, o sistema consulta o pagamento no Mercado Pago pelo servidor.
+- `catalogProducts` é a fonte canônica de produtos, variantes, preços BRL, imagens, estoque, publicação e metadados editoriais/comerciais.
+- `yarn migrate:catalog` é dry-run por padrão, preserva ids legados em `legacyProviderIds`, grava inconsistências e aceita snapshot/rollback explícitos.
+- `yarn seed:catalog` cria o produto local `Virus do Beijo` para homologação de vitrine, carrinho e Mercado Pago.

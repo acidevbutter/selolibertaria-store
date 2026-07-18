@@ -1,4 +1,3 @@
-import { listAdminStripeCategories } from "@/lib/admin-stripe-products";
 import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
@@ -6,10 +5,9 @@ export type SystemCategory = {
 	name: string;
 	slug: string;
 	normalizedName: string;
-	source: "stripe" | "system";
+	source: "catalog" | "system";
 	createdAt: Date;
 	updatedAt: Date;
-	lastSyncedAt?: Date;
 };
 
 const normalizeCategoryName = (value: string) => value.trim().replace(/\s+/g, " ");
@@ -24,10 +22,9 @@ const formatCategoryName = (value: string) =>
 
 async function ensureCategoryIndexes() {
 	const db = await getDb();
-	await db.collection<SystemCategory>("productCategories").createIndex({ slug: 1 }, { unique: true });
-	await db
-		.collection<SystemCategory>("productCategories")
-		.createIndex({ normalizedName: 1 }, { unique: true });
+	const categories = db.collection<SystemCategory>("productCategories");
+	await categories.createIndex({ slug: 1 }, { unique: true });
+	await categories.createIndex({ normalizedName: 1 }, { unique: true });
 }
 
 async function upsertCategories(
@@ -36,8 +33,7 @@ async function upsertCategories(
 ) {
 	if (!categories.length) return 0;
 	await ensureCategoryIndexes();
-	const db = await getDb();
-	const collection = db.collection<SystemCategory>("productCategories");
+	const collection = (await getDb()).collection<SystemCategory>("productCategories");
 	let writes = 0;
 
 	for (const category of categories) {
@@ -49,21 +45,13 @@ async function upsertCategories(
 		const existing = await collection.findOne({
 			$or: [{ slug }, { normalizedName: normalizedName.toLowerCase() }],
 		});
-
 		if (existing) {
 			await collection.updateOne(
-				{ slug: existing.slug },
-				{
-					$set: {
-						name: existing.name || name,
-						lastSyncedAt: source === "stripe" ? now : existing.lastSyncedAt,
-						updatedAt: now,
-					},
-				},
+				{ _id: existing._id },
+				{ $set: { name, slug, normalizedName: normalizedName.toLowerCase(), source, updatedAt: now } },
 			);
 			continue;
 		}
-
 		await collection.insertOne({
 			name,
 			slug,
@@ -71,33 +59,31 @@ async function upsertCategories(
 			source,
 			createdAt: now,
 			updatedAt: now,
-			lastSyncedAt: source === "stripe" ? now : undefined,
 		});
 		writes += 1;
 	}
-
 	return writes;
 }
 
-export async function syncSystemCategoriesFromStripe() {
-	try {
-		const stripeCategories = await listAdminStripeCategories();
-		return await upsertCategories(
-			stripeCategories.map((category) => ({ name: category.name, slug: category.slug })),
-			"stripe",
-		);
-	} catch {
-		return 0;
-	}
+export async function syncSystemCategoriesFromCatalog() {
+	const db = await getDb();
+	const products = await db
+		.collection<{ category?: { name?: string; slug?: string } | null }>("catalogProducts")
+		.find({ "category.name": { $exists: true } }, { projection: { category: 1 } })
+		.toArray();
+	return upsertCategories(
+		products.flatMap((product) =>
+			product.category?.name ? [{ name: product.category.name, slug: product.category.slug }] : [],
+		),
+		"catalog",
+	);
 }
 
-export async function listSystemCategories({ syncStripe = true }: { syncStripe?: boolean } = {}) {
-	if (syncStripe) {
-		await syncSystemCategoriesFromStripe();
+export async function listSystemCategories({ syncCatalog = true }: { syncCatalog?: boolean } = {}) {
+	if (syncCatalog) {
+		await syncSystemCategoriesFromCatalog().catch(() => 0);
 	}
-
-	const db = await getDb();
-	return await db
+	return (await getDb())
 		.collection<SystemCategory>("productCategories")
 		.find({}, { projection: { _id: 0 } })
 		.sort({ name: 1 })
@@ -107,38 +93,28 @@ export async function listSystemCategories({ syncStripe = true }: { syncStripe?:
 export async function getSystemCategoryBySlugOrName(value: string) {
 	const normalized = normalizeCategoryName(value);
 	if (!normalized) return null;
-	const db = await getDb();
-	return await db.collection<SystemCategory>("productCategories").findOne({
+	return (await getDb()).collection<SystemCategory>("productCategories").findOne({
 		$or: [{ slug: slugify(normalized) }, { normalizedName: normalized.toLowerCase() }],
 	});
 }
 
 export async function createSystemCategory(name: string) {
 	const normalizedName = normalizeCategoryName(name);
-	if (!normalizedName) {
-		throw new Error("Category name is required.");
-	}
+	if (!normalizedName) throw new Error("O nome da categoria é obrigatório.");
 	await upsertCategories([{ name: normalizedName }], "system");
-	return await getSystemCategoryBySlugOrName(normalizedName);
+	return getSystemCategoryBySlugOrName(normalizedName);
 }
 
 export async function renameSystemCategory(oldValue: string, newName: string) {
 	const oldCategory = await getSystemCategoryBySlugOrName(oldValue);
-	if (!oldCategory) {
-		throw new Error("Category not found.");
-	}
-
+	if (!oldCategory) throw new Error("Categoria não encontrada.");
 	const normalizedName = normalizeCategoryName(newName);
-	if (!normalizedName) {
-		throw new Error("New category name is required.");
-	}
-
+	if (!normalizedName) throw new Error("O novo nome da categoria é obrigatório.");
 	const nextName = formatCategoryName(normalizedName);
 	const nextSlug = slugify(nextName);
-	const db = await getDb();
 	await ensureCategoryIndexes();
-	await db.collection<SystemCategory>("productCategories").updateOne(
-		{ slug: oldCategory.slug },
+	await (await getDb()).collection<SystemCategory>("productCategories").updateOne(
+		{ _id: oldCategory._id },
 		{
 			$set: {
 				name: nextName,
@@ -148,6 +124,5 @@ export async function renameSystemCategory(oldValue: string, newName: string) {
 			},
 		},
 	);
-
 	return { oldCategory, nextCategory: { ...oldCategory, name: nextName, slug: nextSlug } };
 }

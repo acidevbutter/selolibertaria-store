@@ -1,5 +1,4 @@
 import type { ItemList, Product, Thing, WebSite, WithContext } from "schema-dts";
-import type Stripe from "stripe";
 import { publicUrl } from "@/env.mjs";
 import type { Product as CommerceProduct } from "@/lib/commerce-types";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
@@ -42,7 +41,12 @@ export const accountToWebsiteJsonLd = ({
 	account,
 	logoUrl,
 }: {
-	account: Stripe.Account | null | undefined;
+	account:
+		| {
+				business_profile?: { name?: string | null; url?: string | null } | null;
+		  }
+		| null
+		| undefined;
 	logoUrl: string | null | undefined;
 }): WithContext<WebSite> => {
 	const websiteUrl = account?.business_profile?.url ?? publicUrl;

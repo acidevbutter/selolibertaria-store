@@ -18,7 +18,7 @@ import {
 	updatePromotionRecord,
 	updatePromotionStatus,
 } from "@/lib/promotions";
-import { getStripeAmountFromDecimal } from "@/lib/utils";
+import { getMinorAmountFromDecimal } from "@/lib/utils";
 
 function parseStringList(raw: FormDataEntryValue | null) {
 	return String(raw ?? "")
@@ -60,7 +60,7 @@ function parseBenefitValue(args: {
 	if (args.benefitType === "percentage_off") {
 		return Math.round(parsed);
 	}
-	return getStripeAmountFromDecimal({ amount: parsed, currency: args.currency });
+	return getMinorAmountFromDecimal({ amount: parsed, currency: args.currency });
 }
 
 function parsePromotionFormInput(formData: FormData) {
@@ -73,7 +73,7 @@ function parsePromotionFormInput(formData: FormData) {
 			? (rawStackingMode as PromotionStackingMode)
 			: (null as PromotionStackingMode | null);
 	const status = String(formData.get("status") ?? "active") as PromotionStatus;
-	const currency = String(env.STRIPE_CURRENCY ?? "BRL")
+	const currency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
 	if (kind === "coupon" && !String(formData.get("code") ?? "").trim()) {
@@ -108,7 +108,7 @@ function parsePromotionFormInput(formData: FormData) {
 				const raw = String(formData.get("minSubtotal") ?? "").trim();
 				if (!raw) return null;
 				const decimal = Number.parseFloat(raw.replace(",", "."));
-				return Number.isFinite(decimal) ? getStripeAmountFromDecimal({ amount: decimal, currency }) : null;
+				return Number.isFinite(decimal) ? getMinorAmountFromDecimal({ amount: decimal, currency }) : null;
 			})(),
 			firstPurchaseOnly: formData.get("firstPurchaseOnly") === "on",
 			requireVerifiedEmail: formData.get("requireVerifiedEmail") === "on",

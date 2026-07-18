@@ -6,7 +6,11 @@ import { canBuyOnSelolibertaria, normalizeUserRole } from "@/lib/authz";
 import type { CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
 import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
-import { mapMercadoPagoStatus, retrieveMercadoPagoPayment } from "@/lib/mercado-pago";
+import {
+	mapMercadoPagoStatus,
+	retrieveMercadoPagoPayment,
+	validateMercadoPagoPaymentResponse,
+} from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
 import { ensureOrderReceivedEmail } from "@/lib/order-received";
@@ -25,8 +29,8 @@ interface OrderDraftDoc {
 	orderId?: string;
 	checkoutOwnerKey?: string;
 	userId?: string | null;
-	paymentIntentId?: string | null;
-	paymentProvider?: "stripe" | "mercado_pago";
+	paymentReferenceId?: string | null;
+	paymentProvider?: "mercado_pago";
 	mercadoPagoPaymentId?: string | null;
 	status: string;
 	subtotal?: number;
@@ -168,7 +172,15 @@ export async function recordMercadoPagoCheckout(input: {
 			return { error: "Pedido Mercado Pago não encontrado" };
 		}
 		const orderId = draft.orderId;
-		if (paymentOrderId && paymentOrderId !== orderId) {
+		const paymentValidation = validateMercadoPagoPaymentResponse(payment, {
+			amountInCents: draft.amountTotal,
+			currency: draft.currency,
+			externalReference: orderId,
+		});
+		if (!paymentValidation.ok) {
+			return { error: paymentValidation.error };
+		}
+		if (paymentOrderId !== orderId) {
 			return { error: "Pagamento não pertence ao pedido informado" };
 		}
 

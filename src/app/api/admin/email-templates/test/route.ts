@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
 		const context: EmailTemplatePreviewContext = {
 			supportEmail: (await getSupportEmailSetting()) ?? seloSiteMeta.email,
-			currency: String(env.STRIPE_CURRENCY ?? "BRL")
+			currency: String(env.CATALOG_CURRENCY ?? "BRL")
 				.trim()
 				.toUpperCase(),
 			baseUrl: new URL(req.url).origin,
