@@ -43,7 +43,7 @@ function CartHarness() {
 				onClick={() =>
 					void optimisticAdd("price_123", 1, {
 						id: "prod_123",
-						name: "Livro",
+						name: "Produto",
 						images: ["/capa.png"],
 						summary: "Resumo",
 					})
@@ -67,7 +67,7 @@ function createGuestCart(): Cart {
 				price: 4200,
 				product: {
 					id: "prod_123",
-					name: "Livro",
+					name: "Produto",
 					images: ["/capa.png"],
 					summary: "Resumo",
 				},

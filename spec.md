@@ -58,7 +58,7 @@ O site funciona em dois modos complementares:
 
 ### 1. Modo loja
 
-- Comprar livros/produtos.
+- Comprar produtos.
 - Explorar catálogo.
 - Ver detalhes de livros.
 - Favoritar.
@@ -126,7 +126,7 @@ A Home deve seguir, quando o foco for Figma V2:
 1. Header.
 2. Hero preto/papel com capa dominante e CTA de compra.
 3. Manifesto.
-4. Livro em destaque.
+4. Produto em destaque.
 5. Catálogo curto.
 6. Sarau Safado.
 7. Newsletter/footer.

@@ -180,7 +180,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									Ainda não há pedidos neste recorte.
 								</p>
 								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Volte para a loja, confira se os livros estão visíveis e rode um fluxo de compra para
+									Volte para a loja, confira se os produtos estão visíveis e rode um fluxo de compra para
 									validar a operação.
 								</p>
 							</div>
@@ -195,7 +195,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 									href="/admin/products"
 									className="inline-flex h-10 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
 								>
-									Ver livros
+									Ver produtos
 								</Link>
 							</div>
 						</div>

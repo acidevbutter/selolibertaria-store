@@ -35,7 +35,7 @@ export function ProductTeaserActions({
 	addToCartClassName,
 	viewLinkClassName,
 	addToCartLabel = "Adicionar ao carrinho",
-	viewLabel = "Ver livro",
+	viewLabel = "Ver produto",
 }: ProductTeaserActionsProps) {
 	return (
 		<div className={cn("flex flex-wrap items-center gap-3", className)}>

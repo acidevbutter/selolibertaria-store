@@ -208,7 +208,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 								}}
 								className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
 							>
-								Ver livros
+								Ver produtos
 							</button>
 						</div>
 					)}
@@ -299,7 +299,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 									}}
 									className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
 								>
-									Ver livros
+									Ver produtos
 								</button>
 								<button
 									type="button"

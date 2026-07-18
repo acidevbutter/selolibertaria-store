@@ -56,7 +56,7 @@ export default async function AdminProductCategoriesPage() {
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
 						>
 							<ArrowLeft className="h-4 w-4" />
-							Voltar para livros
+							Voltar para produtos
 						</Link>
 					</div>
 				}
@@ -116,7 +116,7 @@ export default async function AdminProductCategoriesPage() {
 									<TableHead>Nome atual</TableHead>
 									<TableHead>Slug</TableHead>
 									<TableHead>Origem</TableHead>
-									<TableHead>Livros</TableHead>
+									<TableHead>Produtos</TableHead>
 									<TableHead>Variantes</TableHead>
 									<TableHead>Renomear</TableHead>
 								</TableRow>

@@ -57,16 +57,16 @@ export default async function AllProductsPage() {
 						label: "Curadoria",
 						body:
 							page.curatorialNote?.body ||
-							"A loja deve preservar a operação comercial enquanto apresenta cada obra como objeto editorial.",
+							"A loja deve preservar a operação comercial enquanto apresenta cada produto como objeto editorial.",
 					},
 					{
 						label: "Continuidade",
-						body: page.finalCta?.body || "Depois do livro, continue pelo Sarau Safado e pelos projetos.",
+						body: page.finalCta?.body || "Depois da compra, continue pelo Sarau Safado e pelos projetos.",
 					},
 				]}
 				featureImage={{
 					src: featuredProduct?.images[0] ?? seloEditorialAssets.bookStandingMock,
-					alt: featuredProduct?.name ?? "Livro em destaque do catálogo do Selo Libertária",
+					alt: featuredProduct?.name ?? "Produto em destaque do catálogo do Selo Libertária",
 				}}
 				featureQuote={page.hero?.quote || "Uma prateleira curta, quente e curada."}
 				primaryCtaLabel={page.hero?.primaryCtaLabel || "Ver catálogo"}
@@ -85,13 +85,13 @@ export default async function AllProductsPage() {
 						title={page.listing?.title || page.curatorialNote?.title || "Catálogo publicado"}
 						description={
 							page.curatorialNote?.body ||
-							"A loja deve preservar a operação comercial enquanto apresenta cada obra como objeto editorial."
+							"A loja deve preservar a operação comercial enquanto apresenta cada produto como objeto editorial."
 						}
 					/>
 				) : (
 					<div className="border border-dashed border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.6)] px-6 py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
 						{page.listing?.emptyText ||
-							"A loja ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros."}
+							"A loja ainda não tem produtos publicados. Volte em breve para acompanhar os próximos lançamentos."}
 					</div>
 				)}
 			</EditorialShell>
@@ -100,7 +100,7 @@ export default async function AllProductsPage() {
 				<EditorialShell className="grid gap-5 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-8">
 					<div>
 						<h2 className="max-w-3xl text-3xl leading-[0.95] font-black sm:text-4xl">
-							{page.finalCta?.title || "Depois do livro, continue pelo Sarau Safado e pelos projetos."}
+							{page.finalCta?.title || "Depois da compra, continue pelo Sarau Safado e pelos projetos."}
 						</h2>
 						<EditorialRichText
 							source={

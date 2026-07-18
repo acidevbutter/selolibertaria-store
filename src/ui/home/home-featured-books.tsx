@@ -45,7 +45,7 @@ export async function HomeFeaturedBooks({
 		content?.featuredBook?.body ??
 		"Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.";
 	const primaryCtaLabel = content?.featuredBook?.primaryCtaLabel || "Comprar agora";
-	const secondaryCtaLabel = content?.featuredBook?.secondaryCtaLabel || "Ver livro";
+	const secondaryCtaLabel = content?.featuredBook?.secondaryCtaLabel || "Ver produto";
 	const catalogTitle = content?.catalog?.title || "Catálogo";
 	const catalogDescription =
 		content?.catalog?.body || "Uma prateleira curta e curada para entrar no universo do selo pela leitura.";
@@ -54,8 +54,8 @@ export async function HomeFeaturedBooks({
 		"Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.";
 	const defaultCardSummary =
 		content?.catalog?.defaultCardFallback ||
-		"Livro em preparação dentro do mesmo universo literário do selo.";
-	const viewBookLabel = content?.catalog?.viewBookLabel || "Ver livro";
+		"Produto em preparação dentro do mesmo universo literário do selo.";
+	const viewBookLabel = content?.catalog?.viewBookLabel || "Ver produto";
 	const launchAlertLabel = content?.catalog?.launchAlertLabel || "Avise-me";
 
 	return (
@@ -81,7 +81,7 @@ export async function HomeFeaturedBooks({
 						<div className="space-y-5">
 							<Reveal delay={0.04}>
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.58)]">
-									{content?.featuredBook?.eyebrow || "Livro em destaque"}
+									{content?.featuredBook?.eyebrow || "Produto em destaque"}
 								</EditorialEyebrow>
 							</Reveal>
 							<Reveal delay={0.08}>

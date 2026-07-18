@@ -207,7 +207,7 @@ function revalidateEditorialPaths() {
 		"/admin/editorial/events",
 		"/admin/editorial/projects",
 		"/admin/editorial/products",
-		"/admin/editorial/pagina-do-livro",
+		"/admin/editorial/pagina-do-produto",
 		"/admin/editorial/global",
 	]) {
 		revalidatePath(path, path.includes("[slug]") ? "page" : undefined);
@@ -425,7 +425,7 @@ function buildProductsPageDoc(
 	return {
 		type: "page_products",
 		slug: "products",
-		title: optionalString(formData.get("title")) ?? current?.title ?? "Página de livros",
+		title: optionalString(formData.get("title")) ?? current?.title ?? "Página de produtos",
 		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
@@ -434,9 +434,13 @@ function buildProductsPageDoc(
 			title: optionalString(formData.get("heroTitle")),
 			body: optionalString(formData.get("heroBody")),
 			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Livros · CTA principal"),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Produtos · CTA principal"),
 			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Livros · CTA secundário"),
+			secondaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"heroSecondaryCtaHref",
+				"Produtos · CTA secundário",
+			),
 			quote: optionalString(formData.get("heroQuote")),
 		},
 		curatorialNote: {
@@ -460,7 +464,7 @@ function buildProductsPageDoc(
 			primaryCtaHref: parseEditorialHrefChoice(
 				formData,
 				"finalPrimaryCtaHref",
-				"Livros · CTA final principal",
+				"Produtos · CTA final principal",
 			),
 		},
 		createdAt: current?.createdAt ?? now,
@@ -480,7 +484,7 @@ function buildProductPageDoc(
 	return {
 		type: "page_product",
 		slug: "product",
-		title: optionalString(formData.get("title")) ?? current?.title ?? "Página do livro",
+		title: optionalString(formData.get("title")) ?? current?.title ?? "Página do produto",
 		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
@@ -512,7 +516,7 @@ function buildProductPageDoc(
 			primaryCtaHref: parseEditorialHrefChoice(
 				formData,
 				"notFoundPrimaryCtaHref",
-				"Livro não encontrado · CTA",
+				"Produto não encontrado · CTA",
 			),
 		},
 		createdAt: current?.createdAt ?? now,

@@ -22,7 +22,7 @@ export async function ProductNotFound({ query }: { query: string | undefined }) 
 							href="/products"
 							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-sm font-bold uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
 						>
-							Ver livros
+							Ver produtos
 						</YnsLink>
 						<YnsLink
 							href="/projects"

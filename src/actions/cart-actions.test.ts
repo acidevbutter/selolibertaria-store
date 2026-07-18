@@ -70,7 +70,7 @@ describe("getCartAction", () => {
 					price: 4200,
 					product: {
 						id: "prod_123",
-						name: "Livro",
+						name: "Produto",
 						images: ["/capa.png"],
 						summary: "Resumo",
 					},

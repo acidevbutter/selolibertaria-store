@@ -66,9 +66,9 @@ Regras:
 A Home Editorial V2 deve ser direta e encadeada:
 
 1. Header.
-2. Hero com livro/capa dominante.
+2. Hero com produto/capa dominante.
 3. Manifesto.
-4. Livro em destaque.
+4. Produto em destaque.
 5. Catálogo curto.
 6. Sarau Safado.
 7. Newsletter/Footer.
@@ -169,7 +169,7 @@ Evitar:
 
 - labels híbridas em inglês;
 - termos técnicos quando não ajudam;
-- CTAs genéricas como `Abrir` quando `Ver pedido`, `Editar livro` ou `Salvar promoção` orientam melhor.
+- CTAs genéricas como `Abrir` quando `Ver pedido`, `Editar produto` ou `Salvar promoção` orientam melhor.
 
 ## Formulários e uploads
 

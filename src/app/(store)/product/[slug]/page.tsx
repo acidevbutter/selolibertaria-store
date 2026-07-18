@@ -37,7 +37,7 @@ export const generateMetadata = async (props: {
 
 	if (!product) {
 		return {
-			title: `${pageContent.notFound?.title || "Livro não encontrado"} · ${publicUrl
+			title: `${pageContent.notFound?.title || "Produto não encontrado"} · ${publicUrl
 				.replace(/^https?:\/\//, "")
 				.replace(/\/$/, "")}`,
 			description:
@@ -47,7 +47,7 @@ export const generateMetadata = async (props: {
 	}
 
 	const productName = product.name;
-	const description = product.summary ?? "Livro do catálogo do Selo Libertária.";
+	const description = product.summary ?? "Produto do catálogo do Selo Libertária.";
 	const canonical = `${publicUrl}/product/${product.slug}`;
 
 	return {
@@ -80,7 +80,7 @@ export default async function SingleProductPage(props: {
 					<div className="space-y-5">
 						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Catálogo</EditorialEyebrow>
 						<h1 className="display-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
-							{pageContent.notFound?.title || "Livro não encontrado"}
+							{pageContent.notFound?.title || "Produto não encontrado"}
 						</h1>
 						<EditorialRichText
 							source={
@@ -215,7 +215,7 @@ export default async function SingleProductPage(props: {
 								<div className="flex items-start justify-between gap-4">
 									<div className="space-y-5">
 										<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-											{category ? deslugify(category) : "Livro"}
+											{category ? deslugify(category) : "Produto"}
 										</EditorialEyebrow>
 										<h1 className="display-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
 											{selectedVariant?.label
@@ -373,7 +373,7 @@ export default async function SingleProductPage(props: {
 					<Reveal delay={0.08}>
 						<div>
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Outros livros
+								Outros produtos
 							</EditorialEyebrow>
 							{pageContent.related?.body ? (
 								<EditorialRichText
@@ -404,7 +404,7 @@ export default async function SingleProductPage(props: {
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
 									{pageContent.continuity?.title ||
-										"Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo."}
+										"Um produto pode levar ao Sarau, aos projetos e de volta ao catálogo."}
 								</h2>
 							</div>
 							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
@@ -493,7 +493,7 @@ function RelatedBookCard({
 					addToCartClassName="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
 					viewLinkClassName="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)]"
 					addToCartLabel="Adicionar ao carrinho"
-					viewLabel="Ver livro"
+					viewLabel="Ver produto"
 				/>
 			</article>
 		</LiftOnHover>

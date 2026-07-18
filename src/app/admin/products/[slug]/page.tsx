@@ -36,9 +36,9 @@ export const dynamic = "force-dynamic";
 function getAuditActionLabel(action: string) {
 	switch (action) {
 		case "product_group_created":
-			return "Livro criado";
+			return "Produto criado";
 		case "product_group_updated":
-			return "Livro atualizado";
+			return "Produto atualizado";
 		case "product_variant_created":
 			return "Variante criada";
 		case "product_variant_updated":
@@ -89,9 +89,9 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Livro"
+				eyebrow="Produto"
 				title={group.name}
-				description="Edite os dados principais do livro, acompanhe variantes e revise o histórico sem sair do catálogo."
+				description="Edite os dados principais do produto, acompanhe variantes e revise o histórico sem sair do catálogo."
 				actions={
 					<div className="flex flex-wrap items-center gap-3">
 						<Link
@@ -99,7 +99,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
 						>
 							<ArrowLeft className="h-4 w-4" />
-							Voltar para livros
+							Voltar para produtos
 						</Link>
 						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
 							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
@@ -118,7 +118,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				<AdminEditorialStat
 					label="Variantes"
 					value={group.variants.length}
-					helper="Itens cadastrados neste livro."
+					helper="Itens cadastrados neste produto."
 				/>
 				<AdminEditorialStat
 					label="Ativas"
@@ -128,13 +128,13 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				<AdminEditorialStat
 					label="Categoria"
 					value={group.category || "Categoria não informada"}
-					helper="Classificação principal do livro."
+					helper="Classificação principal do produto."
 				/>
 			</div>
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Dados do livro</CardTitle>
+					<CardTitle>Dados do produto</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<form action={updateStripeProductGroupAction} className="space-y-6">
@@ -155,7 +155,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							/>
 						</FormSection>
 						<ActiveCheckbox defaultChecked={group.active} />
-						<SubmitButton>Salvar livro</SubmitButton>
+						<SubmitButton>Salvar produto</SubmitButton>
 					</form>
 				</CardContent>
 			</EditorialPanel>
@@ -171,7 +171,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Histórico do livro</CardTitle>
+					<CardTitle>Histórico do produto</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<ul className="divide-y">
@@ -194,7 +194,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 							</li>
 						))}
 						{history.length === 0 ? (
-							<li className="py-6 text-muted-foreground">Nenhum registro recente neste livro.</li>
+							<li className="py-6 text-muted-foreground">Nenhum registro recente neste produto.</li>
 						) : null}
 					</ul>
 				</CardContent>

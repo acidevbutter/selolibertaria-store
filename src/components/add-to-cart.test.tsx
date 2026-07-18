@@ -37,7 +37,7 @@ describe("AddToCart", () => {
 				quantity={2}
 				productInfo={{
 					id: "prod_123",
-					name: "Livro",
+					name: "Produto",
 					images: ["/capa.png"],
 					summary: "Resumo",
 				}}
@@ -51,7 +51,7 @@ describe("AddToCart", () => {
 		await waitFor(() => {
 			expect(optimisticAdd).toHaveBeenCalledWith("price_123", 2, {
 				id: "prod_123",
-				name: "Livro",
+				name: "Produto",
 				images: ["/capa.png"],
 				summary: "Resumo",
 			});

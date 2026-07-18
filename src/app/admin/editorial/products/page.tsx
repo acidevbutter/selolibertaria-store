@@ -23,8 +23,8 @@ export default async function AdminEditorialProductsPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
-				title="Livros e catálogo"
-				description="Textos estruturais da vitrine pública de livros."
+				title="Produtos e catálogo"
+				description="Textos estruturais da vitrine pública de produtos."
 				actions={
 					<Link
 						href="/admin/editorial"
@@ -55,7 +55,7 @@ export default async function AdminEditorialProductsPage() {
 				sections={[
 					{
 						title: "Abertura",
-						description: "Abertura principal da página de livros.",
+						description: "Abertura principal da página de produtos.",
 						route: "/products",
 						defaultOpen: true,
 						fields: [
@@ -72,7 +72,7 @@ export default async function AdminEditorialProductsPage() {
 								name: "heroPrimaryCtaLabel",
 								label: "Texto do botão principal da abertura",
 								defaultValue: page.hero?.primaryCtaLabel,
-								help: "Use um texto curto de ação, como Comprar livros ou Ver catálogo.",
+								help: "Use um texto curto de ação, como Comprar produtos ou Ver catálogo.",
 							},
 							{
 								name: "heroPrimaryCtaHref",
@@ -115,7 +115,7 @@ export default async function AdminEditorialProductsPage() {
 						],
 					},
 					{
-						title: "Listagem de livros",
+						title: "Listagem de produtos",
 						description: "Textos estruturais acima da grade e fallbacks dos cards.",
 						route: "/products",
 						fields: [
@@ -130,7 +130,7 @@ export default async function AdminEditorialProductsPage() {
 							},
 							{
 								name: "listingEmptyText",
-								label: "Texto de fallback sem livros",
+								label: "Texto de fallback sem produtos",
 								type: "textarea",
 								rows: 4,
 								defaultValue: page.listing?.emptyText,
@@ -151,12 +151,12 @@ export default async function AdminEditorialProductsPage() {
 							},
 							{
 								name: "listingViewBookLabel",
-								label: "Texto do botão para livro disponível",
+								label: "Texto do botão para produto disponível",
 								defaultValue: page.listing?.viewBookLabel,
 							},
 							{
 								name: "listingLaunchAlertLabel",
-								label: "Texto do botão para livro futuro",
+								label: "Texto do botão para produto futuro",
 								defaultValue: page.listing?.launchAlertLabel,
 							},
 						],

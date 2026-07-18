@@ -21,7 +21,7 @@ export type NavItem = {
 export const adminNavItems: NavItem[] = [
 	{ href: "/admin", label: "Painel", icon: LayoutDashboard, capability: "admin.access" },
 	{ href: "/admin/orders", label: "Pedidos", icon: ShoppingCart, capability: "orders.read" },
-	{ href: "/admin/products", label: "Livros", icon: Package, capability: "catalog.write" },
+	{ href: "/admin/products", label: "Produtos", icon: Package, capability: "catalog.write" },
 	{ href: "/admin/editorial", label: "Editorial", icon: BookOpen, capability: "editorial.write" },
 	{ href: "/admin/promotions", label: "Promoções", icon: Percent, capability: "promotions.read" },
 	{ href: "/admin/users", label: "Usuários", icon: Users, capability: "customers.read" },
