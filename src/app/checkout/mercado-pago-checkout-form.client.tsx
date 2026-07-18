@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	submitMercadoPagoCheckoutPayment,
 	type TransparentCheckoutIntent,
@@ -58,12 +58,31 @@ declare global {
 	}
 }
 
+const MERCADO_PAGO_SDK_TIMEOUT_MS = 15000;
+const MERCADO_PAGO_BRICK_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+	return new Promise<T>((resolve, reject) => {
+		const timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+		promise.then(
+			(value) => {
+				clearTimeout(timeoutId);
+				resolve(value);
+			},
+			(error) => {
+				clearTimeout(timeoutId);
+				reject(error);
+			},
+		);
+	});
+}
+
 function loadMercadoPagoSdk() {
 	if (typeof window === "undefined") return Promise.reject(new Error("Browser unavailable"));
 	if (window.MercadoPago) return Promise.resolve();
 	if (window.__mercadoPagoSdkPromise) return window.__mercadoPagoSdkPromise;
 
-	window.__mercadoPagoSdkPromise = new Promise<void>((resolve, reject) => {
+	const sdkLoad = new Promise<void>((resolve, reject) => {
 		const existing = document.querySelector<HTMLScriptElement>(
 			'script[src="https://sdk.mercadopago.com/js/v2"]',
 		);
@@ -81,6 +100,15 @@ function loadMercadoPagoSdk() {
 		script.onload = () => resolve();
 		script.onerror = () => reject(new Error("Mercado Pago SDK failed to load"));
 		document.head.appendChild(script);
+	});
+
+	window.__mercadoPagoSdkPromise = withTimeout(
+		sdkLoad,
+		MERCADO_PAGO_SDK_TIMEOUT_MS,
+		"Mercado Pago SDK timed out",
+	).catch((error) => {
+		window.__mercadoPagoSdkPromise = undefined;
+		throw error;
 	});
 
 	return window.__mercadoPagoSdkPromise;
@@ -111,12 +139,15 @@ export function MercadoPagoCheckoutForm({
 }) {
 	const router = useRouter();
 	const t = useTranslations("Checkout.form");
+	const confirmationFailedMessage = t("errors.confirmationFailed");
 	const [buyer, setBuyer] = useState(checkout.buyer);
 	const [buyerErrors, setBuyerErrors] = useState<Partial<Record<keyof typeof buyer, string>>>({});
 	const [message, setMessage] = useState<string | null>(null);
 	const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isLoadingPaymentBrick, setIsLoadingPaymentBrick] = useState(false);
+	const prepareCheckoutBeforePaymentRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
 	const [pixPayment, setPixPayment] = useState<{
 		paymentId: string;
 		qrCode?: string | null;
@@ -290,65 +321,84 @@ export function MercadoPagoCheckoutForm({
 
 		return true;
 	}
+	prepareCheckoutBeforePaymentRef.current = prepareCheckoutBeforePayment;
 
 	useEffect(() => {
-		if (!deliveryReady || pixPayment) return;
+		if (!deliveryReady || pixPayment) {
+			setIsLoadingPaymentBrick(false);
+			return;
+		}
 		let cancelled = false;
 		let controller: MercadoPagoBrickController | null = null;
+		setIsLoadingPaymentBrick(true);
 
 		void loadMercadoPagoSdk()
 			.then(async () => {
-				if (cancelled || !window.MercadoPago) return;
+				if (cancelled) return;
+				if (!window.MercadoPago) throw new Error("Mercado Pago SDK unavailable");
 				const mp = new window.MercadoPago(checkout.publishableKey, { locale: "pt-BR" });
-				controller = await mp.bricks().create("payment", "mercado-pago-payment-brick", {
-					initialization: {
-						amount: Number((amountTotal / 100).toFixed(2)),
-						payer: { email: buyer.email },
-					},
-					customization: {
-						paymentMethods: {
-							creditCard: "all",
-							debitCard: "all",
-							bankTransfer: "all",
-							maxInstallments: 12,
+				controller = await withTimeout(
+					mp.bricks().create("payment", "mercado-pago-payment-brick", {
+						initialization: {
+							amount: Number((amountTotal / 100).toFixed(2)),
+							payer: { email: buyer.email, entityType: "individual" },
 						},
-					},
-					callbacks: {
-						onSubmit: async ({ formData }: { formData: MercadoPagoFormData }) => {
-							const ready = await prepareCheckoutBeforePayment();
-							if (!ready) return Promise.reject();
-							const result = await submitMercadoPagoCheckoutPayment({
-								orderId: checkout.orderId,
-								paymentData: sanitizeMercadoPagoFormData(formData),
-							});
-							setIsSubmitting(false);
-							if ("error" in result) {
-								setMessage(result.error ?? null);
+						customization: {
+							paymentMethods: {
+								creditCard: "all",
+								debitCard: "all",
+								bankTransfer: "all",
+								maxInstallments: 12,
+							},
+						},
+						callbacks: {
+							onReady: () => {
+								if (!cancelled) setIsLoadingPaymentBrick(false);
+							},
+							onSubmit: async ({ formData }: { formData: MercadoPagoFormData }) => {
+								const ready = await prepareCheckoutBeforePaymentRef.current();
+								if (!ready) return Promise.reject();
+								const result = await submitMercadoPagoCheckoutPayment({
+									orderId: checkout.orderId,
+									paymentData: sanitizeMercadoPagoFormData(formData),
+								});
+								setIsSubmitting(false);
+								if ("error" in result) {
+									setMessage(result.error ?? null);
+									return Promise.reject();
+								}
+								if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
+									setPixPayment(result);
+									return Promise.resolve();
+								}
+								if (result.status === "succeeded" || result.status === "processing") {
+									router.replace(
+										`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.paymentId}&guest=${
+											(checkout.isAuthenticated ?? false) ? "0" : "1"
+										}`,
+									);
+									return Promise.resolve();
+								}
+								setMessage(confirmationFailedMessage);
 								return Promise.reject();
-							}
-							if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
-								setPixPayment(result);
-								return Promise.resolve();
-							}
-							if (result.status === "succeeded" || result.status === "processing") {
-								router.replace(
-									`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.paymentId}&guest=${
-										(checkout.isAuthenticated ?? false) ? "0" : "1"
-									}`,
-								);
-								return Promise.resolve();
-							}
-							setMessage(t("errors.confirmationFailed"));
-							return Promise.reject();
+							},
+							onError: (error: unknown) => {
+								console.warn("Mercado Pago Brick error", error);
+								setMessage(confirmationFailedMessage);
+							},
 						},
-						onError: (error: unknown) => {
-							console.warn("Mercado Pago Brick error", error);
-							setMessage(t("errors.confirmationFailed"));
-						},
-					},
-				});
+					}),
+					MERCADO_PAGO_BRICK_TIMEOUT_MS,
+					"Mercado Pago Brick timed out",
+				);
+				if (!cancelled) setIsLoadingPaymentBrick(false);
 			})
-			.catch(() => setMessage("Não foi possível carregar o Mercado Pago."));
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.warn("Mercado Pago checkout load error", error);
+				setIsLoadingPaymentBrick(false);
+				setMessage("Não foi possível carregar o Mercado Pago. Tente novamente em alguns instantes.");
+			});
 
 		return () => {
 			cancelled = true;
@@ -356,13 +406,12 @@ export function MercadoPagoCheckoutForm({
 		};
 	}, [
 		amountTotal,
-		buyer.email,
 		checkout.orderId,
 		checkout.publishableKey,
 		deliveryReady,
 		pixPayment,
 		router,
-		t,
+		confirmationFailedMessage,
 	]);
 
 	return (
@@ -572,7 +621,14 @@ export function MercadoPagoCheckoutForm({
 						</Button>
 					</div>
 				) : deliveryReady ? (
-					<div id="mercado-pago-payment-brick" />
+					<div className="space-y-3">
+						{isLoadingPaymentBrick ? (
+							<p className="text-sm text-muted-foreground" role="status">
+								Carregando pagamento do Mercado Pago…
+							</p>
+						) : null}
+						<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+					</div>
 				) : (
 					<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
 						Calcule a entrega antes de escolher o pagamento.

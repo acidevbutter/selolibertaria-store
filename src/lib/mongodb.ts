@@ -6,6 +6,8 @@ import type { SupportedCurrency } from "@/lib/currency";
 interface GlobalMongoCache {
 	client: MongoClient | null;
 	promise: Promise<MongoClient> | null;
+	indexesEnsured: boolean;
+	indexesPromise: Promise<void> | null;
 }
 
 // @ts-ignore
@@ -14,6 +16,8 @@ const globalForMongo: { _mongo?: GlobalMongoCache } = globalThis;
 const mongoCache: GlobalMongoCache = globalForMongo._mongo ?? {
 	client: null,
 	promise: null,
+	indexesEnsured: false,
+	indexesPromise: null,
 };
 
 if (!globalForMongo._mongo) {
@@ -132,116 +136,100 @@ export async function getDb(): Promise<Db> {
 	return client.db(dbName);
 }
 
-let indexesEnsured = false;
 export async function ensureIndexes() {
-	if (indexesEnsured) return;
-	const db = await getDb();
-	await db.collection("users").createIndex({ email: 1 }, { unique: true });
-	try {
-		await db.collection("users").createIndex({ "verification.token": 1 }, { sparse: true });
-	} catch {}
-	try {
-		await db.collection("users").createIndex({ "accountAccessTokens.tokenHash": 1 }, { sparse: true });
-	} catch {}
-	try {
-		await db
-			.collection("users")
-			.createIndex(
-				{ "identities.provider": 1, "identities.providerAccountId": 1 },
-				{ sparse: true, unique: true },
-			);
-	} catch {}
-	const sessions = db.collection("sessions");
-	try {
-		await sessions.createIndex({ userId: 1, jwt: 1 });
-	} catch {}
-	try {
-		await sessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-	} catch {}
-	try {
-		await db.collection("webhooks").createIndex({ receivedAt: -1 });
-	} catch {}
-	try {
-		await db.collection("webhooks").createIndex({ eventId: 1 });
-	} catch {}
-	try {
-		await db.collection("communication").createIndex({ sentAt: -1 });
-	} catch {}
-	try {
-		await db.collection("communication").createIndex({ status: 1, sentAt: -1 });
-	} catch {}
-	try {
-		await db.collection("communication").createIndex({ kind: 1, sentAt: -1 });
-	} catch {}
-	try {
-		await db.collection("communication").createIndex({ email: 1, sentAt: -1 });
-	} catch {}
-	try {
-		await db.collection("communication").createIndex({ purchaseId: 1, sentAt: -1 });
-	} catch {}
-	try {
-		await db
-			.collection("favorites")
-			.createIndex({ userId: 1, productSlug: 1, variantId: 1 }, { unique: true });
-	} catch {}
-	try {
-		await db.collection("favorites").createIndex({ productSlug: 1, createdAt: -1 });
-	} catch {}
-	try {
-		await db.collection("promotions").createIndex({ status: 1, kind: 1, priority: -1, updatedAt: -1 });
-	} catch {}
-	try {
-		await db.collection("editorialContent").createIndex({ type: 1, slug: 1 }, { unique: true });
-	} catch {}
-	try {
-		await db.collection("editorialContent").createIndex({ type: 1, published: 1, order: 1, updatedAt: -1 });
-	} catch {}
-	try {
-		await db.collection("promotions").createIndex({ "schedule.startsAt": 1, "schedule.endsAt": 1 });
-	} catch {}
-	try {
-		await db.collection("promotionCodes").createIndex({ codeNormalized: 1 }, { unique: true });
-	} catch {}
-	try {
-		await db.collection("promotionCodes").createIndex({ promotionId: 1, status: 1 });
-	} catch {}
-	try {
-		await db
-			.collection("promotionRedemptions")
-			.createIndex({ promotionCodeId: 1, status: 1, consumedAt: -1 });
-	} catch {}
-	try {
-		await db.collection("promotionRedemptions").createIndex({ userId: 1, promotionCodeId: 1, status: 1 });
-	} catch {}
-	try {
-		await db.collection("promotionNotifications").createIndex(
-			{
-				promotionId: 1,
-				userId: 1,
-				productSlug: 1,
-				variantId: 1,
-				effectivePrice: 1,
-			},
-			{ unique: true },
-		);
-	} catch {}
-	try {
-		await db.collection("promotionNotifications").createIndex({ status: 1, createdAt: 1 });
-	} catch {}
-	try {
-		await db.collection("productAuditLogs").createIndex({ slug: 1, createdAt: -1 });
-	} catch {}
-	try {
-		await db.collection("catalogProducts").createIndex({ slug: 1 }, { unique: true });
-		await db.collection("catalogProducts").createIndex({ published: 1, order: 1, name: 1 });
-		await db.collection("catalogProducts").createIndex({ "category.slug": 1, published: 1, order: 1 });
-		await db.collection("catalogProducts").createIndex({ "variants.id": 1 }, { unique: true });
-	} catch {}
+	if (mongoCache.indexesEnsured) return;
+	if (!mongoCache.indexesPromise) {
+		mongoCache.indexesPromise = (async () => {
+			const db = await getDb();
+			const users = db.collection("users");
+			const sessions = db.collection("sessions");
+			const createOptionalIndex = (operation: Promise<unknown>) => operation.catch(() => undefined);
 
-	await sessions.updateMany({ expiresAt: { $exists: false }, expires: { $gt: 0 } }, [
-		{ $set: { expiresAt: { $toDate: "$expires" } } },
-	]);
-	indexesEnsured = true;
+			await Promise.all([
+				users.createIndex({ email: 1 }, { unique: true }),
+				createOptionalIndex(users.createIndex({ "verification.token": 1 }, { sparse: true })),
+				createOptionalIndex(users.createIndex({ "accountAccessTokens.tokenHash": 1 }, { sparse: true })),
+				createOptionalIndex(
+					users.createIndex(
+						{ "identities.provider": 1, "identities.providerAccountId": 1 },
+						{ sparse: true, unique: true },
+					),
+				),
+				createOptionalIndex(sessions.createIndex({ userId: 1, jwt: 1 })),
+				createOptionalIndex(sessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })),
+				createOptionalIndex(db.collection("webhooks").createIndex({ receivedAt: -1 })),
+				createOptionalIndex(db.collection("webhooks").createIndex({ eventId: 1 })),
+				createOptionalIndex(db.collection("communication").createIndex({ sentAt: -1 })),
+				createOptionalIndex(db.collection("communication").createIndex({ status: 1, sentAt: -1 })),
+				createOptionalIndex(db.collection("communication").createIndex({ kind: 1, sentAt: -1 })),
+				createOptionalIndex(db.collection("communication").createIndex({ email: 1, sentAt: -1 })),
+				createOptionalIndex(db.collection("communication").createIndex({ purchaseId: 1, sentAt: -1 })),
+				createOptionalIndex(
+					db
+						.collection("favorites")
+						.createIndex({ userId: 1, productSlug: 1, variantId: 1 }, { unique: true }),
+				),
+				createOptionalIndex(db.collection("favorites").createIndex({ productSlug: 1, createdAt: -1 })),
+				createOptionalIndex(
+					db.collection("promotions").createIndex({ status: 1, kind: 1, priority: -1, updatedAt: -1 }),
+				),
+				createOptionalIndex(
+					db.collection("editorialContent").createIndex({ type: 1, slug: 1 }, { unique: true }),
+				),
+				createOptionalIndex(
+					db.collection("editorialContent").createIndex({ type: 1, published: 1, order: 1, updatedAt: -1 }),
+				),
+				createOptionalIndex(
+					db.collection("promotions").createIndex({ "schedule.startsAt": 1, "schedule.endsAt": 1 }),
+				),
+				createOptionalIndex(
+					db.collection("promotionCodes").createIndex({ codeNormalized: 1 }, { unique: true }),
+				),
+				createOptionalIndex(db.collection("promotionCodes").createIndex({ promotionId: 1, status: 1 })),
+				createOptionalIndex(
+					db
+						.collection("promotionRedemptions")
+						.createIndex({ promotionCodeId: 1, status: 1, consumedAt: -1 }),
+				),
+				createOptionalIndex(
+					db.collection("promotionRedemptions").createIndex({ userId: 1, promotionCodeId: 1, status: 1 }),
+				),
+				createOptionalIndex(
+					db.collection("promotionNotifications").createIndex(
+						{
+							promotionId: 1,
+							userId: 1,
+							productSlug: 1,
+							variantId: 1,
+							effectivePrice: 1,
+						},
+						{ unique: true },
+					),
+				),
+				createOptionalIndex(db.collection("promotionNotifications").createIndex({ status: 1, createdAt: 1 })),
+				createOptionalIndex(db.collection("productAuditLogs").createIndex({ slug: 1, createdAt: -1 })),
+				createOptionalIndex(db.collection("catalogProducts").createIndex({ slug: 1 }, { unique: true })),
+				createOptionalIndex(
+					db.collection("catalogProducts").createIndex({ published: 1, order: 1, name: 1 }),
+				),
+				createOptionalIndex(
+					db.collection("catalogProducts").createIndex({ "category.slug": 1, published: 1, order: 1 }),
+				),
+				createOptionalIndex(
+					db.collection("catalogProducts").createIndex({ "variants.id": 1 }, { unique: true }),
+				),
+			]);
+
+			await sessions.updateMany({ expiresAt: { $exists: false }, expires: { $gt: 0 } }, [
+				{ $set: { expiresAt: { $toDate: "$expires" } } },
+			]);
+			mongoCache.indexesEnsured = true;
+		})().catch((error) => {
+			mongoCache.indexesPromise = null;
+			throw error;
+		});
+	}
+	await mongoCache.indexesPromise;
 }
 
 export type WithId<T> = T & { _id: string };

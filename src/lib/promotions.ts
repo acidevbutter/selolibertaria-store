@@ -321,7 +321,6 @@ async function getPromotionCustomerContext(userId?: string | null): Promise<Prom
 }
 
 export async function listActiveAutomaticPromotions(now = new Date()) {
-	await ensureIndexes();
 	try {
 		const db = await getDb();
 		const promotions = await db
