@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialSarauPage } from "@/lib/editorial-content";
@@ -86,13 +87,11 @@ export function EditorialSarauForm({
 									defaultValue={page.hero?.primaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA principal · link" name="heroPrimaryCtaHref">
-								<Input
-									id="heroPrimaryCtaHref"
-									name="heroPrimaryCtaHref"
-									defaultValue={page.hero?.primaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA principal · link"
+								name="heroPrimaryCtaHref"
+								defaultValue={page.hero?.primaryCtaHref}
+							/>
 							<Field label="CTA secundário · rótulo" name="heroSecondaryCtaLabel">
 								<Input
 									id="heroSecondaryCtaLabel"
@@ -100,13 +99,11 @@ export function EditorialSarauForm({
 									defaultValue={page.hero?.secondaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA secundário · link" name="heroSecondaryCtaHref">
-								<Input
-									id="heroSecondaryCtaHref"
-									name="heroSecondaryCtaHref"
-									defaultValue={page.hero?.secondaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA secundário · link"
+								name="heroSecondaryCtaHref"
+								defaultValue={page.hero?.secondaryCtaHref}
+							/>
 						</div>
 						<Field label="Imagem de fundo do hero" name="heroImageSrc">
 							<AdminImageUrlList

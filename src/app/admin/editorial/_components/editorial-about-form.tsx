@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialAboutPage } from "@/lib/editorial-content";
@@ -89,13 +90,11 @@ export function EditorialAboutForm({
 									defaultValue={page.section?.primaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA principal · link" name="sectionPrimaryCtaHref">
-								<Input
-									id="sectionPrimaryCtaHref"
-									name="sectionPrimaryCtaHref"
-									defaultValue={page.section?.primaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA principal · link"
+								name="sectionPrimaryCtaHref"
+								defaultValue={page.section?.primaryCtaHref}
+							/>
 						</div>
 						<Field label="Imagem do bloco principal" name="sectionImageSrc">
 							<AdminImageUrlList

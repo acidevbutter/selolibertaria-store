@@ -1,6 +1,6 @@
+import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialHomePage } from "@/lib/editorial-content";
-import { EDITORIAL_HOME_LINK_HINT } from "@/lib/editorial-link-policy";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -32,23 +32,6 @@ function Field({ label, name, children }: { label: string; name: string; childre
 			<Label htmlFor={name}>{label}</Label>
 			{children}
 		</div>
-	);
-}
-
-function EditorialHrefField({
-	label,
-	name,
-	defaultValue,
-}: {
-	label: string;
-	name: string;
-	defaultValue?: string | null;
-}) {
-	return (
-		<Field label={label} name={name}>
-			<Input id={name} name={name} defaultValue={defaultValue ?? ""} placeholder="/products" />
-			<p className="text-xs leading-5 text-[color:var(--editorial-muted)]">{EDITORIAL_HOME_LINK_HINT}</p>
-		</Field>
 	);
 }
 

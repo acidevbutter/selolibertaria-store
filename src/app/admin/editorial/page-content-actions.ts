@@ -14,6 +14,7 @@ import type {
 	EditorialSiteGlobal,
 } from "@/lib/editorial-content";
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
+import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
 import { getDb } from "@/lib/mongodb";
 
 const COLLECTION = "editorialContent";
@@ -84,7 +85,7 @@ function parseBoolean(value: FormDataEntryValue | null, defaultValue = false) {
 function readLinks(formData: FormData, prefix: string, count: number) {
 	return Array.from({ length: count }, (_, index) => ({
 		label: optionalString(formData.get(`${prefix}${index + 1}Label`)),
-		href: optionalString(formData.get(`${prefix}${index + 1}Href`)),
+		href: parseEditorialHrefChoice(formData, `${prefix}${index + 1}Href`, `Link ${index + 1}`),
 	})).filter((link): link is { label: string; href: string } => Boolean(link.label && link.href));
 }
 
@@ -145,9 +146,9 @@ function buildHomePageDoc(
 			title: optionalString(formData.get("heroTitle")),
 			description: optionalString(formData.get("heroDescription")),
 			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Home · CTA principal"),
 			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-			secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
+			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Home · CTA secundário"),
 			supportingLine: optionalString(formData.get("heroSupportingLine")),
 			featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
 			featureTitle,
@@ -159,7 +160,7 @@ function buildHomePageDoc(
 			title: optionalString(formData.get("manifestoTitle")),
 			body: optionalString(formData.get("manifestoBody")),
 			linkLabel: optionalString(formData.get("manifestoLinkLabel")),
-			linkHref: optionalString(formData.get("manifestoLinkHref")),
+			linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Home · manifesto"),
 		},
 		featuredBook: {
 			productSlug: optionalString(formData.get("featuredProductSlug")),
@@ -182,7 +183,7 @@ function buildHomePageDoc(
 			title: optionalString(formData.get("programTitle")),
 			body: optionalString(formData.get("programBody")),
 			ctaLabel: optionalString(formData.get("programCtaLabel")),
-			ctaHref: optionalString(formData.get("programCtaHref")),
+			ctaHref: parseEditorialHrefChoice(formData, "programCtaHref", "Home · programação"),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
@@ -210,9 +211,13 @@ function buildEventsPageDoc(
 			title: optionalString(formData.get("heroTitle")),
 			body: optionalString(formData.get("heroBody")),
 			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Eventos · CTA principal"),
 			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-			secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
+			secondaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"heroSecondaryCtaHref",
+				"Eventos · CTA secundário",
+			),
 		},
 		curatorialNote: {
 			title: optionalString(formData.get("curatorialTitle")),
@@ -233,9 +238,17 @@ function buildEventsPageDoc(
 			title: optionalString(formData.get("finalTitle")),
 			body: optionalString(formData.get("finalBody")),
 			primaryCtaLabel: optionalString(formData.get("finalPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("finalPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"finalPrimaryCtaHref",
+				"Eventos · CTA final principal",
+			),
 			secondaryCtaLabel: optionalString(formData.get("finalSecondaryCtaLabel")),
-			secondaryCtaHref: optionalString(formData.get("finalSecondaryCtaHref")),
+			secondaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"finalSecondaryCtaHref",
+				"Eventos · CTA final secundário",
+			),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
@@ -278,9 +291,17 @@ function buildProjectsPageDoc(
 			title: optionalString(formData.get("finalTitle")),
 			body: optionalString(formData.get("finalBody")),
 			primaryCtaLabel: optionalString(formData.get("finalPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("finalPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"finalPrimaryCtaHref",
+				"Projetos · CTA final principal",
+			),
 			secondaryCtaLabel: optionalString(formData.get("finalSecondaryCtaLabel")),
-			secondaryCtaHref: optionalString(formData.get("finalSecondaryCtaHref")),
+			secondaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"finalSecondaryCtaHref",
+				"Projetos · CTA final secundário",
+			),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
@@ -308,9 +329,9 @@ function buildProductsPageDoc(
 			title: optionalString(formData.get("heroTitle")),
 			body: optionalString(formData.get("heroBody")),
 			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Livros · CTA principal"),
 			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-			secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
+			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Livros · CTA secundário"),
 			quote: optionalString(formData.get("heroQuote")),
 		},
 		curatorialNote: {
@@ -331,7 +352,11 @@ function buildProductsPageDoc(
 			title: optionalString(formData.get("finalTitle")),
 			body: optionalString(formData.get("finalBody")),
 			primaryCtaLabel: optionalString(formData.get("finalPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("finalPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"finalPrimaryCtaHref",
+				"Livros · CTA final principal",
+			),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
@@ -379,7 +404,11 @@ function buildProductPageDoc(
 			title: optionalString(formData.get("notFoundTitle")),
 			body: optionalString(formData.get("notFoundBody")),
 			primaryCtaLabel: optionalString(formData.get("notFoundPrimaryCtaLabel")),
-			primaryCtaHref: optionalString(formData.get("notFoundPrimaryCtaHref")),
+			primaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"notFoundPrimaryCtaHref",
+				"Livro não encontrado · CTA",
+			),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { PageCopyActionState } from "@/app/admin/editorial/page-content-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
@@ -68,6 +69,10 @@ function Textarea({
 }
 
 function Field({ field }: { field: FieldConfig }) {
+	if (field.name.endsWith("Href")) {
+		return <EditorialHrefField label={field.label} name={field.name} defaultValue={field.defaultValue} />;
+	}
+
 	return (
 		<label className="grid gap-2">
 			<span className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</span>

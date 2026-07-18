@@ -18,7 +18,7 @@ import {
 	getEditorialRecordForAdmin,
 	listEditorialRecordsForAdmin,
 } from "@/lib/editorial-content-store";
-import { parseEditorialHomeHref } from "@/lib/editorial-link-policy";
+import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
 import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
@@ -504,9 +504,13 @@ export async function updateEditorialSarauAction(formData: FormData) {
 					title: optionalString(formData.get("heroTitle")),
 					body: optionalString(formData.get("heroBody")),
 					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-					primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+					primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
 					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-					secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
+					secondaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"heroSecondaryCtaHref",
+						"Hero · CTA secundário",
+					),
 					image: await parseImageByPrefix(formData, "heroImage"),
 				},
 				why: {
@@ -578,7 +582,11 @@ export async function updateEditorialAboutAction(formData: FormData) {
 					body: optionalString(formData.get("sectionBody")),
 					extended: optionalString(formData.get("sectionExtended")),
 					primaryCtaLabel: optionalString(formData.get("sectionPrimaryCtaLabel")),
-					primaryCtaHref: optionalString(formData.get("sectionPrimaryCtaHref")),
+					primaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"sectionPrimaryCtaHref",
+						"Sobre · CTA principal",
+					),
 					image: await parseImageByPrefix(formData, "sectionImage"),
 				},
 				cards,
@@ -621,7 +629,7 @@ export async function updateEditorialContactAction(formData: FormData) {
 	const directLinks = [1, 2, 3]
 		.map((index) => ({
 			label: optionalString(formData.get(`direct${index}Label`)),
-			href: optionalString(formData.get(`direct${index}Href`)),
+			href: parseEditorialHrefChoice(formData, `direct${index}Href`, `Contato · Canal ${index}`),
 			text: optionalString(formData.get(`direct${index}Text`)),
 		}))
 		.filter((link): link is { label: string; href: string; text: string } =>
@@ -631,7 +639,7 @@ export async function updateEditorialContactAction(formData: FormData) {
 	const pathLinks = [1, 2, 3, 4, 5, 6]
 		.map((index) => ({
 			label: optionalString(formData.get(`path${index}Label`)),
-			href: optionalString(formData.get(`path${index}Href`)),
+			href: parseEditorialHrefChoice(formData, `path${index}Href`, `Contato · Link ${index}`),
 		}))
 		.filter((link): link is { label: string; href: string } =>
 			Boolean(link.label?.trim() && link.href?.trim()),
@@ -700,7 +708,7 @@ export async function updateEditorialHomeAction(formData: FormData) {
 	const communityLinks = [1, 2, 3]
 		.map((index) => ({
 			label: optionalString(formData.get(`communityLink${index}Label`)),
-			href: parseEditorialHomeHref(formData.get(`communityLink${index}Href`), `CTA final · Link ${index}`),
+			href: parseEditorialHrefChoice(formData, `communityLink${index}Href`, `CTA final · Link ${index}`),
 		}))
 		.filter((link): link is { label: string; href: string } =>
 			Boolean(link.label?.trim() && link.href?.trim()),
@@ -721,10 +729,11 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					title: optionalString(formData.get("heroTitle")),
 					description: optionalString(formData.get("heroDescription")),
 					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHomeHref(formData.get("heroPrimaryCtaHref"), "Hero · CTA principal"),
+					primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
 					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-					secondaryCtaHref: parseEditorialHomeHref(
-						formData.get("heroSecondaryCtaHref"),
+					secondaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"heroSecondaryCtaHref",
 						"Hero · CTA secundária",
 					),
 					supportingLine: optionalString(formData.get("heroSupportingLine")),
@@ -738,7 +747,7 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					title: optionalString(formData.get("manifestoTitle")),
 					body: optionalString(formData.get("manifestoBody")),
 					linkLabel: optionalString(formData.get("manifestoLinkLabel")),
-					linkHref: parseEditorialHomeHref(formData.get("manifestoLinkHref"), "Manifesto · Link"),
+					linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Manifesto · Link"),
 				},
 				author: {
 					eyebrow: optionalString(formData.get("authorEyebrow")),
@@ -746,13 +755,15 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					body: optionalString(formData.get("authorBody")),
 					secondaryBody: optionalString(formData.get("authorSecondaryBody")),
 					primaryCtaLabel: optionalString(formData.get("authorPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHomeHref(
-						formData.get("authorPrimaryCtaHref"),
+					primaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"authorPrimaryCtaHref",
 						"Autoria · CTA principal",
 					),
 					secondaryCtaLabel: optionalString(formData.get("authorSecondaryCtaLabel")),
-					secondaryCtaHref: parseEditorialHomeHref(
-						formData.get("authorSecondaryCtaHref"),
+					secondaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"authorSecondaryCtaHref",
 						"Autoria · CTA secundária",
 					),
 					image: await parseImageByPrefix(formData, "authorImage"),
@@ -761,8 +772,9 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					title: optionalString(formData.get("communityTitle")),
 					body: optionalString(formData.get("communityBody")),
 					primaryCtaLabel: optionalString(formData.get("communityPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHomeHref(
-						formData.get("communityPrimaryCtaHref"),
+					primaryCtaHref: parseEditorialHrefChoice(
+						formData,
+						"communityPrimaryCtaHref",
 						"CTA final · CTA principal",
 					),
 					secondaryLinks: communityLinks,
