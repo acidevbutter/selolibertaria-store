@@ -707,16 +707,6 @@ export async function updateEditorialContactAction(formData: FormData) {
 		.map((index) => optionalString(formData.get(`subject${index}`)))
 		.filter((value): value is string => Boolean(value));
 
-	const directLinks = [1, 2, 3]
-		.map((index) => ({
-			label: optionalString(formData.get(`direct${index}Label`)),
-			href: parseEditorialHrefChoice(formData, `direct${index}Href`, `Contato · Canal ${index}`),
-			text: optionalString(formData.get(`direct${index}Text`)),
-		}))
-		.filter((link): link is { label: string; href: string; text: string } =>
-			Boolean(link.label?.trim() && link.href?.trim() && link.text?.trim()),
-		);
-
 	const pathLinks = [1, 2, 3, 4, 5, 6]
 		.map((index) => ({
 			label: optionalString(formData.get(`path${index}Label`)),
@@ -740,8 +730,8 @@ export async function updateEditorialContactAction(formData: FormData) {
 					eyebrow: optionalString(formData.get("heroEyebrow")),
 					title: optionalString(formData.get("heroTitle")),
 					body: optionalString(formData.get("heroBody")),
-					featuredLabel: optionalString(formData.get("heroFeaturedLabel")),
-					featuredValue: optionalString(formData.get("heroFeaturedValue")),
+					featuredLabel: current?.hero?.featuredLabel ?? "Email",
+					featuredValue: current?.hero?.featuredValue ?? null,
 				},
 				form: {
 					title: optionalString(formData.get("formTitle")),
@@ -751,7 +741,7 @@ export async function updateEditorialContactAction(formData: FormData) {
 				direct: {
 					title: optionalString(formData.get("directTitle")),
 					description: optionalString(formData.get("directDescription")),
-					links: directLinks,
+					links: current?.direct?.links ?? [],
 				},
 				paths: {
 					title: optionalString(formData.get("pathsTitle")),

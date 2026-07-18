@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Contato público agora mantém e-mail e redes sociais fora do editor, preservando apenas textos editoriais administráveis.
 - Padronizada a nomenclatura genérica de catálogo para `produtos` no admin e na vitrine `/products`, incluindo a rota editorial `/admin/editorial/pagina-do-produto`, preservando usos literários e a categoria pública `Livros`.
 - Substituídos termos técnicos visíveis no admin por nomes familiares em português, preservando campos internos, contratos e persistência.
 - Padronizadas páginas do admin editorial com seções sanfonadas, mantendo campos existentes, barra flutuante de salvar e abertura automática da seção com validação nativa.
