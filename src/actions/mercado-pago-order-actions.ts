@@ -64,6 +64,7 @@ async function resolveCheckoutBrowserAccess(input: {
 	auth: Awaited<ReturnType<typeof requireAuth>> | { error: string };
 	draft?: OrderDraftDoc | null;
 	paymentUserId?: string | null;
+	createSession?: boolean;
 }): Promise<CheckoutBrowserAccess> {
 	const db = await getDb();
 	let userId: string | null =
@@ -119,7 +120,7 @@ async function resolveCheckoutBrowserAccess(input: {
 	}>({ _id: new ObjectId(userId) }, { projection: { email: 1, name: 1, role: 1, passwordHash: 1 } });
 	if (!user?.email) return { ok: false, error: "Conta da compra não encontrada" };
 
-	if ("error" in input.auth) {
+	if ("error" in input.auth && input.createSession !== false) {
 		await createPersistentSession({
 			id: user._id.toHexString(),
 			email: user.email,
@@ -134,6 +135,7 @@ async function resolveCheckoutBrowserAccess(input: {
 export async function recordMercadoPagoCheckout(input: {
 	paymentId?: string | null;
 	orderId?: string | null;
+	createSession?: boolean;
 }): Promise<
 	| { ok: true; status: string; cartCleared: boolean; setupPasswordRequired: boolean }
 	| { error: string; status?: string }
@@ -203,6 +205,9 @@ export async function recordMercadoPagoCheckout(input: {
 		if (authoritativeStatus !== "succeeded" && authoritativeStatus !== "processing") {
 			return { error: "O pagamento ainda não foi concluído", status: authoritativeStatus };
 		}
+		if (authoritativeStatus !== "succeeded") {
+			return { ok: true, status: authoritativeStatus, cartCleared: false, setupPasswordRequired: false };
+		}
 
 		const auth = await requireAuth();
 		const browserAccess = await resolveCheckoutBrowserAccess({
@@ -210,6 +215,7 @@ export async function recordMercadoPagoCheckout(input: {
 			draft,
 			paymentUserId:
 				draft.userId ?? (typeof payment.metadata?.userId === "string" ? payment.metadata.userId : null),
+			createSession: input.createSession,
 		});
 		if (!browserAccess.ok || !browserAccess.userId)
 			return { error: browserAccess.error ?? "Acesso negado", status: authoritativeStatus };

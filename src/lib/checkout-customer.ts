@@ -15,6 +15,10 @@ function escapeRegex(value: string) {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function documentRegex(document: string) {
+	return `^${document.split("").map(escapeRegex).join("\\D*")}$`;
+}
+
 function toUserAddress(address?: CheckoutAddress | null) {
 	if (!address) return undefined;
 	return {
@@ -37,6 +41,7 @@ async function findUserByEmail(email: string) {
 		email: string;
 		name?: string;
 		cpf?: string;
+		cpfNormalized?: string;
 		phone?: string;
 		address?: CheckoutAddress;
 	}>(
@@ -51,10 +56,27 @@ async function findUserByEmail(email: string) {
 				email: 1,
 				name: 1,
 				cpf: 1,
+				cpfNormalized: 1,
 				phone: 1,
 				address: 1,
 			},
 		},
+	);
+}
+
+async function findUserByDocument(document: string) {
+	const db = await getDb();
+	return db.collection("users").findOne<{
+		_id: ObjectId;
+		email: string;
+		name?: string;
+		cpf?: string;
+		cpfNormalized?: string;
+		phone?: string;
+		address?: CheckoutAddress;
+	}>(
+		{ $or: [{ cpfNormalized: document }, { cpf: { $regex: documentRegex(document) } }] },
+		{ projection: { email: 1, name: 1, cpf: 1, cpfNormalized: 1, phone: 1, address: 1 } },
 	);
 }
 
@@ -84,6 +106,7 @@ export async function resolveCheckoutUserForDraft(draft: CheckoutIdentityDraft) 
 					$set: {
 						verified: true,
 						updatedAt: now,
+						cpfNormalized: buyer.cpf,
 						...(existingById.name ? {} : { name: buyer.fullName }),
 						...(existingById.cpf ? {} : { cpf: buyer.cpf }),
 						...(existingById.phone ? {} : { phone: buyer.phone }),
@@ -96,24 +119,40 @@ export async function resolveCheckoutUserForDraft(draft: CheckoutIdentityDraft) 
 		}
 	}
 
-	const existingByEmail = await findUserByEmail(buyer.email);
-	if (existingByEmail) {
+	const [existingByEmail, existingByDocument] = await Promise.all([
+		findUserByEmail(buyer.email),
+		findUserByDocument(buyer.cpf),
+	]);
+	if (
+		existingByEmail &&
+		existingByDocument &&
+		existingByEmail._id.toHexString() !== existingByDocument._id.toHexString()
+	) {
+		throw new Error("O e-mail e o CPF/CNPJ informados já pertencem a contas diferentes");
+	}
+	if (existingByDocument && existingByDocument.email.trim().toLowerCase() !== buyer.email) {
+		throw new Error("O CPF/CNPJ informado já pertence a outra conta");
+	}
+
+	const existingUser = existingByEmail ?? existingByDocument;
+	if (existingUser) {
 		await users.updateOne(
-			{ _id: existingByEmail._id },
+			{ _id: existingUser._id },
 			{
 				$set: {
 					email: buyer.email,
 					verified: true,
 					updatedAt: now,
-					...(existingByEmail.name ? {} : { name: buyer.fullName }),
-					...(existingByEmail.cpf ? {} : { cpf: buyer.cpf }),
-					...(existingByEmail.phone ? {} : { phone: buyer.phone }),
-					...(existingByEmail.address || !fallbackAddress ? {} : { address: fallbackAddress }),
+					cpfNormalized: buyer.cpf,
+					...(existingUser.name ? {} : { name: buyer.fullName }),
+					...(existingUser.cpf ? {} : { cpf: buyer.cpf }),
+					...(existingUser.phone ? {} : { phone: buyer.phone }),
+					...(existingUser.address || !fallbackAddress ? {} : { address: fallbackAddress }),
 				},
 				$unset: { verification: "" },
 			},
 		);
-		return { userId: existingByEmail._id.toHexString(), created: false };
+		return { userId: existingUser._id.toHexString(), created: false };
 	}
 
 	try {
@@ -121,6 +160,7 @@ export async function resolveCheckoutUserForDraft(draft: CheckoutIdentityDraft) 
 			email: buyer.email,
 			name: buyer.fullName,
 			cpf: buyer.cpf,
+			cpfNormalized: buyer.cpf,
 			phone: buyer.phone,
 			address: fallbackAddress,
 			role: "customer",
@@ -142,6 +182,7 @@ export async function resolveCheckoutUserForDraft(draft: CheckoutIdentityDraft) 
 							email: buyer.email,
 							verified: true,
 							updatedAt: now,
+							cpfNormalized: buyer.cpf,
 							...(resolvedUser.name ? {} : { name: buyer.fullName }),
 							...(resolvedUser.cpf ? {} : { cpf: buyer.cpf }),
 							...(resolvedUser.phone ? {} : { phone: buyer.phone }),
