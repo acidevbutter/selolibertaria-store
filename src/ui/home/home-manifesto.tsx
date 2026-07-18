@@ -1,6 +1,7 @@
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -33,9 +34,10 @@ export async function HomeManifesto({ content }: { content?: EditorialHomePage["
 				</Reveal>
 				<Reveal delay={0.08}>
 					<div className="space-y-5 pt-1">
-						<p className="max-w-[31rem] text-pretty text-base leading-8 text-[color:var(--editorial-muted)]">
-							{body}
-						</p>
+						<EditorialRichText
+							source={body}
+							className="max-w-[31rem] text-pretty text-base leading-8 text-[color:var(--editorial-muted)]"
+						/>
 					</div>
 				</Reveal>
 			</EditorialShell>

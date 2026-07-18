@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { PageCopyActionState } from "@/app/admin/editorial/page-content-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -62,14 +63,7 @@ function Textarea({
 	defaultValue?: string | null;
 	rows?: number;
 }) {
-	return (
-		<textarea
-			name={name}
-			defaultValue={defaultValue ?? ""}
-			rows={rows}
-			className="min-h-24 w-full rounded-none border border-input bg-background px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:outline-hidden"
-		/>
-	);
+	return <EditorialTextEditor name={name} defaultValue={defaultValue} rows={rows} />;
 }
 
 function Field({ field }: { field: FieldConfig }) {

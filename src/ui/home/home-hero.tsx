@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { EditorialHomePage } from "@/lib/editorial-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -35,9 +36,10 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 						</h1>
 					</Reveal>
 					<Reveal delay={0.1}>
-						<p className="max-w-[31rem] text-pretty text-base leading-8 text-[color:rgba(247,244,239,0.76)] sm:text-lg sm:leading-8">
-							{description}
-						</p>
+						<EditorialRichText
+							source={description}
+							className="max-w-[31rem] text-pretty text-base leading-8 text-[color:rgba(247,244,239,0.76)] sm:text-lg sm:leading-8"
+						/>
 					</Reveal>
 					<Reveal delay={0.15}>
 						<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -56,9 +58,10 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 						</div>
 					</Reveal>
 					<Reveal delay={0.2}>
-						<p className="max-w-[28rem] text-sm leading-7 text-[color:rgba(216,208,196,0.84)]">
-							{supportingLine}
-						</p>
+						<EditorialRichText
+							source={supportingLine}
+							className="max-w-[28rem] text-sm leading-7 text-[color:rgba(216,208,196,0.84)]"
+						/>
 					</Reveal>
 				</div>
 

@@ -86,3 +86,22 @@ Preservar:
 - [x] `site_global` adotado para newsletter e rodapé públicos.
 - [x] Migration editorial segura por campos ausentes.
 - [x] Build preparado para migration opcional com `RUN_EDITORIAL_MIGRATIONS=true`.
+
+
+
+[ ] Permitir a alteração da fonte, tamanho, cor, estilo em cada bloco
+[ ] Erros de tipagem
+[ ] Build nao passou
+[ ] Mudar de livros para lojas
+[ ] Reativar sistema de varinates de produtos
+[ ] Preço n esta colocando decimais
+[ ] Validar pix, apple pay, gpay, etc
+[ ] erramentas:
+[ ] Editor de texto 
+[ ] Editor de imagens
+[ ] Editor de fundo/tela de fundo
+[ ] Portfólio 
+[ ] Ajustar “contato” subir pro site online 
+[ ] Sobre: cards
+[ ] Trocar “livros” por “loja”
+[ ] Envio de livros : prazo real envio módico correio

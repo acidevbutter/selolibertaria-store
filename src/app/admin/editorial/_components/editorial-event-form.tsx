@@ -1,7 +1,8 @@
 import type { FocusEvent, FormEvent } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
-import { Field, FormSection, Textarea } from "@/app/admin/products/_components/product-form-fields";
+import { Field, FormSection } from "@/app/admin/products/_components/product-form-fields";
 import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -35,6 +36,18 @@ function handleSlugInput(event: FormEvent<HTMLInputElement>) {
 
 function handleSlugBlur(event: FocusEvent<HTMLInputElement>) {
 	event.currentTarget.value = formatSlugToKebab(event.currentTarget.value);
+}
+
+function Textarea({
+	name,
+	defaultValue,
+	rows = 4,
+}: {
+	name: string;
+	defaultValue?: string | null;
+	rows?: number;
+}) {
+	return <EditorialTextEditor name={name} defaultValue={defaultValue} rows={rows} />;
 }
 
 export function EditorialEventForm({
