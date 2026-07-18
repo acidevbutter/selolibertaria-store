@@ -14,6 +14,7 @@ import {
 	formatCheckoutPhone,
 	formatCpf,
 	getCheckoutBuyerFieldErrors,
+	getCheckoutIdentificationType,
 	normalizeBuyerEmail,
 	normalizeBuyerName,
 } from "@/lib/checkout-buyer";
@@ -147,13 +148,17 @@ export function MercadoPagoCheckoutForm({
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoadingPaymentBrick, setIsLoadingPaymentBrick] = useState(false);
+	const buyerRef = useRef(buyer);
 	const prepareCheckoutBeforePaymentRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
 	const [pixPayment, setPixPayment] = useState<{
 		paymentId: string;
 		qrCode?: string | null;
 		qrCodeBase64?: string | null;
 		ticketUrl?: string | null;
+		expiresAt?: string | null;
 	} | null>(null);
+	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
+	buyerRef.current = buyer;
 	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
 	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
 	const initialDeliveryMethod: TransparentCheckoutIntent["deliveryMethod"] =
@@ -269,6 +274,7 @@ export function MercadoPagoCheckoutForm({
 		setDeliveryMessage(null);
 		setMessage(null);
 		setPixPayment(null);
+		setPixCopyMessage(null);
 		if (nextMethod === "new-address") {
 			setSelectedDeliveryMethod(nextMethod);
 			setDeliveryError(null);
@@ -284,6 +290,7 @@ export function MercadoPagoCheckoutForm({
 		setMessage(null);
 		setDeliveryMessage(null);
 		setPixPayment(null);
+		setPixCopyMessage(null);
 
 		const normalizedBuyer = {
 			fullName: normalizeBuyerName(buyer.fullName),
@@ -341,7 +348,7 @@ export function MercadoPagoCheckoutForm({
 					mp.bricks().create("payment", "mercado-pago-payment-brick", {
 						initialization: {
 							amount: Number((amountTotal / 100).toFixed(2)),
-							payer: { email: buyer.email, entityType: "individual" },
+							payer: toMercadoPagoPayer(buyerRef.current),
 						},
 						customization: {
 							paymentMethods: {
@@ -369,6 +376,7 @@ export function MercadoPagoCheckoutForm({
 								}
 								if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
 									setPixPayment(result);
+									setPixCopyMessage(null);
 									return Promise.resolve();
 								}
 								if (result.status === "succeeded" || result.status === "processing") {
@@ -378,6 +386,10 @@ export function MercadoPagoCheckoutForm({
 										}`,
 									);
 									return Promise.resolve();
+								}
+								if (result.status === "failed") {
+									setMessage("Pagamento recusado. Revise os dados ou escolha outra forma de pagamento.");
+									return Promise.reject();
 								}
 								setMessage(confirmationFailedMessage);
 								return Promise.reject();
@@ -451,15 +463,15 @@ export function MercadoPagoCheckoutForm({
 							required
 						/>
 					</BuyerInput>
-					<BuyerInput id="checkout-cpf-mp" label="CPF" error={buyerErrors.cpf}>
+					<BuyerInput id="checkout-cpf-mp" label="CPF ou CNPJ" error={buyerErrors.cpf}>
 						<Input
 							id="checkout-cpf-mp"
 							value={buyer.cpf}
 							onChange={(event) => setBuyerField("cpf", formatCpf(event.currentTarget.value))}
 							onBlur={() => normalizeBuyerField("cpf")}
 							inputMode="numeric"
-							maxLength={14}
-							placeholder="000.000.000-00"
+							maxLength={18}
+							placeholder="000.000.000-00 ou 00.000.000/0000-00"
 							required
 						/>
 					</BuyerInput>
@@ -584,12 +596,12 @@ export function MercadoPagoCheckoutForm({
 				<div className="space-y-1">
 					<h2 className="text-sm font-semibold">Pagamento</h2>
 					<p className="text-xs leading-5 text-muted-foreground">
-						Pix e cartão processados com segurança pelo Mercado Pago.
+						Escolha Pix ou cartão no formulário seguro do Mercado Pago. Dados do cartão não passam pelo site.
 					</p>
 				</div>
 				{pixPayment ? (
 					<div className="space-y-4 rounded-lg border bg-muted/20 p-4">
-						<p className="text-sm font-medium">Pix gerado. Pague pelo QR Code ou copie o código.</p>
+						<p className="text-sm font-medium">Pix gerado. Pague pelo QR Code ou copie o código abaixo.</p>
 						{pixPayment.qrCodeBase64 ? (
 							<img
 								alt="QR Code Pix"
@@ -598,11 +610,32 @@ export function MercadoPagoCheckoutForm({
 							/>
 						) : null}
 						{pixPayment.qrCode ? (
-							<textarea
-								readOnly
-								className="min-h-24 w-full rounded-md border bg-background p-3 text-xs"
-								value={pixPayment.qrCode}
-							/>
+							<div className="space-y-2">
+								<label className="text-xs font-medium" htmlFor="pix-copy-paste-code">
+									Código Pix copia e cola
+								</label>
+								<textarea
+									id="pix-copy-paste-code"
+									readOnly
+									className="min-h-24 w-full rounded-md border bg-background p-3 text-xs"
+									value={pixPayment.qrCode}
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => void copyPixCode(pixPayment.qrCode!, setPixCopyMessage)}
+								>
+									Copiar código Pix
+								</Button>
+								{pixCopyMessage ? (
+									<p className="text-xs text-muted-foreground" role="status">
+										{pixCopyMessage}
+									</p>
+								) : null}
+							</div>
+						) : null}
+						{pixPayment.expiresAt ? (
+							<p className="text-xs text-muted-foreground">{formatPixExpiration(pixPayment.expiresAt)}</p>
 						) : null}
 						{pixPayment.ticketUrl ? (
 							<a className="text-sm underline" href={pixPayment.ticketUrl} rel="noreferrer" target="_blank">
@@ -783,4 +816,37 @@ function getDeliverySummary(
 	]
 		.filter((part) => part.trim())
 		.join(" · ");
+}
+
+async function copyPixCode(code: string, setMessage: (message: string) => void) {
+	try {
+		if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+		await navigator.clipboard.writeText(code);
+		setMessage("Código Pix copiado.");
+	} catch {
+		setMessage("Não foi possível copiar automaticamente. Selecione o código acima para copiar.");
+	}
+}
+
+function formatPixExpiration(value: string) {
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return "Confira o prazo de pagamento indicado pelo Mercado Pago.";
+	return `Pague até ${new Intl.DateTimeFormat("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+	}).format(date)}.`;
+}
+
+function toMercadoPagoPayer(buyer: TransparentCheckoutIntent["buyer"]) {
+	const nameParts = normalizeBuyerName(buyer.fullName).split(" ").filter(Boolean);
+	return {
+		email: normalizeBuyerEmail(buyer.email),
+		firstName: nameParts[0] ?? "",
+		lastName: nameParts.slice(1).join(" "),
+		entityType: "individual",
+		identification: {
+			type: getCheckoutIdentificationType(buyer.cpf),
+			number: buyer.cpf.replace(/\D/g, ""),
+		},
+	};
 }

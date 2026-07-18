@@ -9,6 +9,7 @@ import type { Cart } from "@/lib/commerce-types";
 import {
 	createMercadoPagoPayment,
 	getMercadoPagoNotificationUrl,
+	isMercadoPagoPixPayment,
 	type MercadoPagoCreatePaymentInput,
 	mapMercadoPagoStatus,
 	validateMercadoPagoPaymentResponse,
@@ -256,6 +257,10 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	}
 	const paymentMethodId = input.paymentData.payment_method_id?.trim();
 	if (!paymentMethodId) return { error: "Meio de pagamento ausente" } as const;
+	const isPix = isMercadoPagoPixPayment(paymentMethodId);
+	const paymentToken = input.paymentData.token?.trim();
+	if (!isPix && !paymentToken)
+		return { error: "Não foi possível tokenizar o cartão. Confira os dados e tente novamente." } as const;
 	let buyer: CheckoutBuyerDraft;
 	try {
 		buyer = normalizeCheckoutBuyer(draft.buyer ?? snapshot.user);
@@ -265,7 +270,6 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	const { firstName, lastName } = splitBuyerName(buyer.fullName);
 	const body: MercadoPagoCreatePaymentInput = {
 		transaction_amount: toMercadoPagoAmount(draft.amountTotal),
-		currency_id: draft.currency.toUpperCase(),
 		description: `Pedido ${draft.orderId} - Selo Libertária`,
 		payment_method_id: paymentMethodId,
 		external_reference: draft.orderId,
@@ -275,13 +279,13 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			first_name: firstName,
 			last_name: lastName,
 			identification: {
-				type: "CPF",
+				type: buyer.cpf.replace(/\D/g, "").length === 14 ? "CNPJ" : "CPF",
 				number: buyer.cpf.replace(/\D/g, ""),
 			},
 		},
 		metadata: { orderId: draft.orderId, checkoutOwnerKey: draft.checkoutOwnerKey, cartHash: draft.cartHash },
 	};
-	if (input.paymentData.token) body.token = input.paymentData.token;
+	if (paymentToken) body.token = paymentToken;
 	if (input.paymentData.installments) body.installments = input.paymentData.installments;
 	if (input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
 	const idempotencyKey = buildMercadoPagoPaymentAttemptIdempotencyKey({
@@ -336,6 +340,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			qrCode: qrData?.qr_code ?? null,
 			qrCodeBase64: qrData?.qr_code_base64 ?? null,
 			ticketUrl: qrData?.ticket_url ?? null,
+			expiresAt: payment.date_of_expiration ?? null,
 		};
 	} catch (error) {
 		await dbUpdateDraft(draft.orderId, {

@@ -30,11 +30,11 @@ export interface MercadoPagoPaymentResponse {
 			ticket_url?: string;
 		};
 	};
+	date_of_expiration?: string;
 }
 
 export interface MercadoPagoCreatePaymentInput {
 	transaction_amount: number;
-	currency_id: string;
 	description: string;
 	payment_method_id: string;
 	payer: {
@@ -101,6 +101,10 @@ export function mapMercadoPagoStatus(status?: string | null) {
 		default:
 			return status || "unknown";
 	}
+}
+
+export function isMercadoPagoPixPayment(paymentMethodId?: string | null) {
+	return paymentMethodId?.trim().toLowerCase() === "pix";
 }
 
 export async function createMercadoPagoPayment(
