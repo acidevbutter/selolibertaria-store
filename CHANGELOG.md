@@ -8,9 +8,11 @@
 
 ### Fixed
 
+- Checkout Mercado Pago agora encerra o carregamento do SDK ou do Payment Brick após timeout, exibe estado visível enquanto inicializa e mostra erro acionável quando a integração não responde.
 - Removidos os caminhos ativos de Stripe, Checkout Session, PaymentIntent, métodos salvos e webhook legado; pedidos históricos passam a usar `orderId` e `mercadoPagoPaymentId`.
 - Rejeitadas divergências de total, moeda e `external_reference` na criação, reconciliação e webhook Mercado Pago; o upsert inicial do draft agora reutiliza o mesmo `_id`.
 - Retentativas não criam uma nova cobrança quando o draft já tem pagamento Mercado Pago em processamento ou confirmado.
+- Leituras públicas de catálogo e checkout não aguardam mais a criação síncrona de todos os índices administrativos; a inicialização de índices ficou compartilhada e concorrente.
 
 - Removidos metadados técnicos redundantes de rota/aparição dos blocos do formulário de copy do admin editorial.
 
