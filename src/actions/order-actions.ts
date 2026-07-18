@@ -50,8 +50,8 @@ export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error:
 			} catch {
 				// Best effort only.
 			}
-			await clearCartId();
 		}
+		await clearCartId();
 		return { ok: true };
 	} catch (error) {
 		console.error("[finalizeCheckoutCleanup]", error);
