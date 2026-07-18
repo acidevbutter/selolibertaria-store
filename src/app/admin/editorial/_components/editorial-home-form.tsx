@@ -1,5 +1,6 @@
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialHomePage } from "@/lib/editorial-content";
+import { EDITORIAL_HOME_LINK_HINT } from "@/lib/editorial-link-policy";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -31,6 +32,23 @@ function Field({ label, name, children }: { label: string; name: string; childre
 			<Label htmlFor={name}>{label}</Label>
 			{children}
 		</div>
+	);
+}
+
+function EditorialHrefField({
+	label,
+	name,
+	defaultValue,
+}: {
+	label: string;
+	name: string;
+	defaultValue?: string | null;
+}) {
+	return (
+		<Field label={label} name={name}>
+			<Input id={name} name={name} defaultValue={defaultValue ?? ""} placeholder="/products" />
+			<p className="text-xs leading-5 text-[color:var(--editorial-muted)]">{EDITORIAL_HOME_LINK_HINT}</p>
+		</Field>
 	);
 }
 
@@ -94,13 +112,11 @@ export function EditorialHomeForm({
 									defaultValue={page.hero?.primaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA principal · link" name="heroPrimaryCtaHref">
-								<Input
-									id="heroPrimaryCtaHref"
-									name="heroPrimaryCtaHref"
-									defaultValue={page.hero?.primaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA principal · link"
+								name="heroPrimaryCtaHref"
+								defaultValue={page.hero?.primaryCtaHref}
+							/>
 							<Field label="CTA secundária · rótulo" name="heroSecondaryCtaLabel">
 								<Input
 									id="heroSecondaryCtaLabel"
@@ -108,13 +124,11 @@ export function EditorialHomeForm({
 									defaultValue={page.hero?.secondaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA secundária · link" name="heroSecondaryCtaHref">
-								<Input
-									id="heroSecondaryCtaHref"
-									name="heroSecondaryCtaHref"
-									defaultValue={page.hero?.secondaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA secundária · link"
+								name="heroSecondaryCtaHref"
+								defaultValue={page.hero?.secondaryCtaHref}
+							/>
 							<div className="md:col-span-2">
 								<Field label="Linha de apoio" name="heroSupportingLine">
 									<Textarea
@@ -197,13 +211,11 @@ export function EditorialHomeForm({
 									defaultValue={page.manifesto?.linkLabel ?? ""}
 								/>
 							</Field>
-							<Field label="Link · href" name="manifestoLinkHref">
-								<Input
-									id="manifestoLinkHref"
-									name="manifestoLinkHref"
-									defaultValue={page.manifesto?.linkHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="Link · href"
+								name="manifestoLinkHref"
+								defaultValue={page.manifesto?.linkHref}
+							/>
 						</div>
 					</section>
 
@@ -237,13 +249,11 @@ export function EditorialHomeForm({
 									defaultValue={page.author?.primaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA principal · href" name="authorPrimaryCtaHref">
-								<Input
-									id="authorPrimaryCtaHref"
-									name="authorPrimaryCtaHref"
-									defaultValue={page.author?.primaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA principal · href"
+								name="authorPrimaryCtaHref"
+								defaultValue={page.author?.primaryCtaHref}
+							/>
 							<Field label="CTA secundária · rótulo" name="authorSecondaryCtaLabel">
 								<Input
 									id="authorSecondaryCtaLabel"
@@ -251,13 +261,11 @@ export function EditorialHomeForm({
 									defaultValue={page.author?.secondaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA secundária · href" name="authorSecondaryCtaHref">
-								<Input
-									id="authorSecondaryCtaHref"
-									name="authorSecondaryCtaHref"
-									defaultValue={page.author?.secondaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA secundária · href"
+								name="authorSecondaryCtaHref"
+								defaultValue={page.author?.secondaryCtaHref}
+							/>
 						</div>
 						<Field label="Imagem do bloco de autoria" name="authorImageSrc">
 							<AdminImageUrlList
@@ -301,13 +309,11 @@ export function EditorialHomeForm({
 									defaultValue={page.community?.primaryCtaLabel ?? ""}
 								/>
 							</Field>
-							<Field label="CTA principal · href" name="communityPrimaryCtaHref">
-								<Input
-									id="communityPrimaryCtaHref"
-									name="communityPrimaryCtaHref"
-									defaultValue={page.community?.primaryCtaHref ?? ""}
-								/>
-							</Field>
+							<EditorialHrefField
+								label="CTA principal · href"
+								name="communityPrimaryCtaHref"
+								defaultValue={page.community?.primaryCtaHref}
+							/>
 						</div>
 						{[1, 2, 3].map((index) => (
 							<div key={index} className="grid gap-4 rounded-lg border p-4 md:grid-cols-2">
@@ -318,13 +324,11 @@ export function EditorialHomeForm({
 										defaultValue={communityLinks[index - 1]?.label ?? ""}
 									/>
 								</Field>
-								<Field label={`Link ${index} · href`} name={`communityLink${index}Href`}>
-									<Input
-										id={`communityLink${index}Href`}
-										name={`communityLink${index}Href`}
-										defaultValue={communityLinks[index - 1]?.href ?? ""}
-									/>
-								</Field>
+								<EditorialHrefField
+									label={`Link ${index} · href`}
+									name={`communityLink${index}Href`}
+									defaultValue={communityLinks[index - 1]?.href}
+								/>
 							</div>
 						))}
 					</section>

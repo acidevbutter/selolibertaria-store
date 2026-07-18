@@ -18,6 +18,7 @@ import {
 	getEditorialRecordForAdmin,
 	listEditorialRecordsForAdmin,
 } from "@/lib/editorial-content-store";
+import { parseEditorialHomeHref } from "@/lib/editorial-link-policy";
 import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
@@ -699,7 +700,7 @@ export async function updateEditorialHomeAction(formData: FormData) {
 	const communityLinks = [1, 2, 3]
 		.map((index) => ({
 			label: optionalString(formData.get(`communityLink${index}Label`)),
-			href: optionalString(formData.get(`communityLink${index}Href`)),
+			href: parseEditorialHomeHref(formData.get(`communityLink${index}Href`), `CTA final · Link ${index}`),
 		}))
 		.filter((link): link is { label: string; href: string } =>
 			Boolean(link.label?.trim() && link.href?.trim()),
@@ -720,9 +721,12 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					title: optionalString(formData.get("heroTitle")),
 					description: optionalString(formData.get("heroDescription")),
 					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-					primaryCtaHref: optionalString(formData.get("heroPrimaryCtaHref")),
+					primaryCtaHref: parseEditorialHomeHref(formData.get("heroPrimaryCtaHref"), "Hero · CTA principal"),
 					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-					secondaryCtaHref: optionalString(formData.get("heroSecondaryCtaHref")),
+					secondaryCtaHref: parseEditorialHomeHref(
+						formData.get("heroSecondaryCtaHref"),
+						"Hero · CTA secundária",
+					),
 					supportingLine: optionalString(formData.get("heroSupportingLine")),
 					featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
 					featureTitle: optionalString(formData.get("heroFeatureTitle")),
@@ -734,7 +738,7 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					title: optionalString(formData.get("manifestoTitle")),
 					body: optionalString(formData.get("manifestoBody")),
 					linkLabel: optionalString(formData.get("manifestoLinkLabel")),
-					linkHref: optionalString(formData.get("manifestoLinkHref")),
+					linkHref: parseEditorialHomeHref(formData.get("manifestoLinkHref"), "Manifesto · Link"),
 				},
 				author: {
 					eyebrow: optionalString(formData.get("authorEyebrow")),
@@ -742,16 +746,25 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					body: optionalString(formData.get("authorBody")),
 					secondaryBody: optionalString(formData.get("authorSecondaryBody")),
 					primaryCtaLabel: optionalString(formData.get("authorPrimaryCtaLabel")),
-					primaryCtaHref: optionalString(formData.get("authorPrimaryCtaHref")),
+					primaryCtaHref: parseEditorialHomeHref(
+						formData.get("authorPrimaryCtaHref"),
+						"Autoria · CTA principal",
+					),
 					secondaryCtaLabel: optionalString(formData.get("authorSecondaryCtaLabel")),
-					secondaryCtaHref: optionalString(formData.get("authorSecondaryCtaHref")),
+					secondaryCtaHref: parseEditorialHomeHref(
+						formData.get("authorSecondaryCtaHref"),
+						"Autoria · CTA secundária",
+					),
 					image: await parseImageByPrefix(formData, "authorImage"),
 				},
 				community: {
 					title: optionalString(formData.get("communityTitle")),
 					body: optionalString(formData.get("communityBody")),
 					primaryCtaLabel: optionalString(formData.get("communityPrimaryCtaLabel")),
-					primaryCtaHref: optionalString(formData.get("communityPrimaryCtaHref")),
+					primaryCtaHref: parseEditorialHomeHref(
+						formData.get("communityPrimaryCtaHref"),
+						"CTA final · CTA principal",
+					),
 					secondaryLinks: communityLinks,
 				},
 				updatedAt: now,
