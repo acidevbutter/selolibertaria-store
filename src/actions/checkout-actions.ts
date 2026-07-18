@@ -9,9 +9,11 @@ import type { Cart } from "@/lib/commerce-types";
 import {
 	createMercadoPagoPayment,
 	getMercadoPagoNotificationUrl,
+	getMercadoPagoPixPaymentData,
 	isMercadoPagoPixPayment,
 	type MercadoPagoCreatePaymentInput,
 	mapMercadoPagoStatus,
+	retrieveMercadoPagoPayment,
 	validateMercadoPagoPaymentResponse,
 } from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
@@ -46,6 +48,11 @@ interface OrderDraftDoc {
 	paymentReferenceId?: string | null;
 	paymentProvider: "mercado_pago";
 	mercadoPagoPaymentId?: string | null;
+	mercadoPago?: {
+		attemptId?: string | null;
+		idempotencyKey?: string | null;
+		paymentMethodId?: string | null;
+	};
 	cartHash: string;
 	status: string;
 	buyer?: CheckoutBuyerDraft | null;
@@ -249,11 +256,25 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	if (!input.orderId.startsWith("ord_")) return { error: "Pedido inválido" } as const;
 	const access = await resolveDraftAccess({ orderId: input.orderId });
 	if ("error" in access) return { error: access.error } as const;
-	const { draft, snapshot } = access;
+	let { draft } = access;
+	const { snapshot } = access;
 	const draftValidationError = validateCheckoutDraft(draft, snapshot);
 	if (draftValidationError) return { error: draftValidationError } as const;
 	if (draft.mercadoPagoPaymentId && (draft.status === "processing" || draft.status === "succeeded")) {
 		return { error: "Já existe um pagamento Mercado Pago em processamento para este pedido" } as const;
+	}
+	if (draft.mercadoPagoPaymentId && draft.status === "failed") {
+		const resetResult = await resetConfirmedFailedMercadoPagoAttempt(draft);
+		if ("error" in resetResult) return { error: resetResult.error } as const;
+		if (resetResult.pending) {
+			return { error: "O Mercado Pago ainda está processando este pagamento" } as const;
+		}
+		draft = {
+			...draft,
+			status: "requires_payment_method",
+			mercadoPagoPaymentId: null,
+			mercadoPago: { ...draft.mercadoPago, attemptId: null, idempotencyKey: null },
+		};
 	}
 	const paymentMethodId = input.paymentData.payment_method_id?.trim();
 	if (!paymentMethodId) return { error: "Meio de pagamento ausente" } as const;
@@ -288,6 +309,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	if (paymentToken) body.token = paymentToken;
 	if (input.paymentData.installments) body.installments = input.paymentData.installments;
 	if (input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
+	const attemptId = await ensureMercadoPagoPaymentAttempt(draft);
 	const idempotencyKey = buildMercadoPagoPaymentAttemptIdempotencyKey({
 		orderId: draft.orderId,
 		checkoutOwnerKey: draft.checkoutOwnerKey,
@@ -299,6 +321,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 		deliveryMethod: draft.deliveryMethod ?? null,
 		deliveryAddress: draft.deliveryAddress ?? null,
 		shippingRate: draft.shippingRate ?? null,
+		attemptId,
 	});
 
 	try {
@@ -331,25 +354,113 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			updatedAt: new Date(),
 			confirmedAt: status === "succeeded" ? new Date() : null,
 		});
-		const qrData = payment.point_of_interaction?.transaction_data;
+		const pixPayment = getMercadoPagoPixPaymentData(payment);
 		return {
 			ok: true as const,
 			orderId: draft.orderId,
 			paymentId,
 			status,
-			qrCode: qrData?.qr_code ?? null,
-			qrCodeBase64: qrData?.qr_code_base64 ?? null,
-			ticketUrl: qrData?.ticket_url ?? null,
-			expiresAt: payment.date_of_expiration ?? null,
+			qrCode: pixPayment?.qrCode ?? null,
+			qrCodeBase64: pixPayment?.qrCodeBase64 ?? null,
+			ticketUrl: pixPayment?.ticketUrl ?? null,
+			expiresAt: pixPayment?.expiresAt ?? null,
 		};
 	} catch (error) {
-		console.error("[submitMercadoPagoCheckoutPayment]", error);
+		console.error(
+			"[submitMercadoPagoCheckoutPayment]",
+			error instanceof Error ? error.message : "unknown error",
+		);
 		await dbUpdateDraft(draft.orderId, {
 			status: "failed",
 			"mercadoPago.lastError": error instanceof Error ? error.message : "Falha no pagamento",
 			updatedAt: new Date(),
 		});
 		return { error: "Não foi possível criar o pagamento no Mercado Pago" } as const;
+	}
+}
+
+async function ensureMercadoPagoPaymentAttempt(draft: OrderDraftDoc) {
+	if (draft.mercadoPago?.attemptId) return draft.mercadoPago.attemptId;
+	const attemptId = new ObjectId().toHexString();
+	const drafts = (await getDb()).collection<OrderDraftDoc>("orderDrafts");
+	const claimed = await drafts.updateOne(
+		{
+			_id: draft._id,
+			$or: [{ "mercadoPago.attemptId": { $exists: false } }, { "mercadoPago.attemptId": null }],
+		},
+		{ $set: { "mercadoPago.attemptId": attemptId, updatedAt: new Date() } },
+	);
+	if (claimed.matchedCount) return attemptId;
+	const current = await drafts.findOne({ _id: draft._id }, { projection: { mercadoPago: 1 } });
+	if (current?.mercadoPago?.attemptId) return current.mercadoPago.attemptId;
+	throw new Error("Não foi possível preparar a tentativa de pagamento");
+}
+
+async function resetConfirmedFailedMercadoPagoAttempt(draft: OrderDraftDoc) {
+	try {
+		const payment = await retrieveMercadoPagoPayment(draft.mercadoPagoPaymentId!);
+		const validation = validateMercadoPagoPaymentResponse(payment, {
+			amountInCents: draft.amountTotal,
+			currency: draft.currency,
+			externalReference: draft.orderId,
+		});
+		if (!validation.ok) return { error: validation.error } as const;
+		const status = mapMercadoPagoStatus(payment.status);
+		if (status === "processing" || status === "succeeded") return { pending: true } as const;
+		if (status !== "failed") return { error: "O estado do pagamento Mercado Pago é inválido" } as const;
+		const reset = await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
+			{ _id: draft._id, mercadoPagoPaymentId: draft.mercadoPagoPaymentId, status: "failed" },
+			{
+				$set: { status: "requires_payment_method", updatedAt: new Date(), confirmedAt: null },
+				$unset: {
+					mercadoPagoPaymentId: "",
+					"mercadoPago.attemptId": "",
+					"mercadoPago.idempotencyKey": "",
+				},
+			},
+		);
+		if (!reset.matchedCount) return { error: "O estado do pagamento mudou; atualize o checkout" } as const;
+		return { pending: false } as const;
+	} catch (error) {
+		console.error(
+			"[resetConfirmedFailedMercadoPagoAttempt]",
+			error instanceof Error ? error.message : "unknown error",
+		);
+		return { error: "Não foi possível confirmar o estado do Pix anterior" } as const;
+	}
+}
+
+export async function getPendingMercadoPagoPixPayment(input: { orderId: string }) {
+	if (!input.orderId.startsWith("ord_")) return { error: "Pedido inválido" } as const;
+	const access = await resolveDraftAccess({ orderId: input.orderId });
+	if ("error" in access) return { error: access.error } as const;
+	const { draft } = access;
+	if (!draft.mercadoPagoPaymentId) return { ok: true as const, payment: null };
+
+	try {
+		const payment = await retrieveMercadoPagoPayment(draft.mercadoPagoPaymentId);
+		const validation = validateMercadoPagoPaymentResponse(payment, {
+			amountInCents: draft.amountTotal,
+			currency: draft.currency,
+			externalReference: draft.orderId,
+		});
+		if (!validation.ok) return { error: validation.error } as const;
+		const pixPayment = getMercadoPagoPixPaymentData(payment);
+		if (!pixPayment) return { ok: true as const, payment: null };
+		await dbUpdateDraft(draft.orderId, {
+			status: pixPayment.status,
+			"mercadoPago.status": payment.status ?? null,
+			"mercadoPago.statusDetail": payment.status_detail ?? null,
+			updatedAt: new Date(),
+			confirmedAt: pixPayment.status === "succeeded" ? new Date() : null,
+		});
+		return { ok: true as const, payment: pixPayment };
+	} catch (error) {
+		console.error(
+			"[getPendingMercadoPagoPixPayment]",
+			error instanceof Error ? error.message : "unknown error",
+		);
+		return { error: "Não foi possível recuperar o pagamento Pix" } as const;
 	}
 }
 

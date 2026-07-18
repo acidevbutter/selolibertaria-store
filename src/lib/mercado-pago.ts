@@ -33,6 +33,15 @@ export interface MercadoPagoPaymentResponse {
 	date_of_expiration?: string;
 }
 
+export interface MercadoPagoPixPaymentData {
+	paymentId: string;
+	status: string;
+	qrCode: string | null;
+	qrCodeBase64: string | null;
+	ticketUrl: string | null;
+	expiresAt: string | null;
+}
+
 export interface MercadoPagoCreatePaymentInput {
 	transaction_amount: number;
 	description: string;
@@ -105,6 +114,21 @@ export function mapMercadoPagoStatus(status?: string | null) {
 
 export function isMercadoPagoPixPayment(paymentMethodId?: string | null) {
 	return paymentMethodId?.trim().toLowerCase() === "pix";
+}
+
+export function getMercadoPagoPixPaymentData(
+	payment: MercadoPagoPaymentResponse,
+): MercadoPagoPixPaymentData | null {
+	if (!payment.id || !isMercadoPagoPixPayment(payment.payment_method_id)) return null;
+	const transactionData = payment.point_of_interaction?.transaction_data;
+	return {
+		paymentId: String(payment.id),
+		status: mapMercadoPagoStatus(payment.status),
+		qrCode: transactionData?.qr_code ?? null,
+		qrCodeBase64: transactionData?.qr_code_base64 ?? null,
+		ticketUrl: transactionData?.ticket_url ?? null,
+		expiresAt: payment.date_of_expiration ?? null,
+	};
 }
 
 export async function createMercadoPagoPayment(
