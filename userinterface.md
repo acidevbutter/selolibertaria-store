@@ -242,5 +242,5 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 ## Atualização 2026-07-18 — Mercado Pago
 
-- Com Mercado Pago ativo, `/checkout` mantém os blocos de dados e entrega existentes e troca apenas o bloco de pagamento para Brick com Pix/cartão.
-- O Pix deve mostrar QR Code, código copiável e ação de acompanhar pedido quando esses dados forem retornados pelo Mercado Pago.
+- Com Mercado Pago ativo, `/checkout` mantém os blocos de dados e entrega existentes e apresenta a escolha explícita entre Pix e cartão; Pix usa o e-mail já informado para gerar QR/copia e cola, enquanto cartão renderiza o Payment Brick.
+- O Pix deve mostrar QR Code, código copiável e a ação `Já paguei — verificar pagamento` quando esses dados forem retornados pelo Mercado Pago; a ação consulta o status sem esconder o QR pendente.

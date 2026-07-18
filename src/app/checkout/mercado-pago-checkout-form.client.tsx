@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+	getPendingMercadoPagoPixPayment,
 	submitMercadoPagoCheckoutPayment,
 	type TransparentCheckoutIntent,
 	updateCheckoutBuyerData,
@@ -147,6 +148,7 @@ export function MercadoPagoCheckoutForm({
 	const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [isLoadingPaymentBrick, setIsLoadingPaymentBrick] = useState(false);
 	const buyerRef = useRef(buyer);
 	const prepareCheckoutBeforePaymentRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
@@ -158,6 +160,9 @@ export function MercadoPagoCheckoutForm({
 		expiresAt?: string | null;
 	} | null>(null);
 	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
+	const [isCheckingPixPayment, setIsCheckingPixPayment] = useState(false);
+	const [pixPaymentMessage, setPixPaymentMessage] = useState<string | null>(null);
+	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card">("pix");
 	buyerRef.current = buyer;
 	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
 	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
@@ -212,6 +217,11 @@ export function MercadoPagoCheckoutForm({
 		const errors = getCheckoutBuyerFieldErrors(nextBuyer);
 		setBuyerErrors(errors);
 		return errors;
+	}
+
+	function stopSubmitting() {
+		isSubmittingRef.current = false;
+		setIsSubmitting(false);
 	}
 
 	function normalizeBuyerField(field: "fullName" | "email" | "cpf" | "phone") {
@@ -285,7 +295,8 @@ export function MercadoPagoCheckoutForm({
 	}
 
 	async function prepareCheckoutBeforePayment() {
-		if (isSubmitting || isUpdatingDelivery) return false;
+		if (isSubmittingRef.current || isUpdatingDelivery) return false;
+		isSubmittingRef.current = true;
 		setIsSubmitting(true);
 		setMessage(null);
 		setDeliveryMessage(null);
@@ -303,7 +314,7 @@ export function MercadoPagoCheckoutForm({
 		const firstBuyerError = Object.values(buyerValidationErrors)[0];
 		if (firstBuyerError) {
 			setMessage(firstBuyerError);
-			setIsSubmitting(false);
+			stopSubmitting();
 			return false;
 		}
 
@@ -314,14 +325,14 @@ export function MercadoPagoCheckoutForm({
 		});
 		if ("error" in buyerResult) {
 			setMessage(buyerResult.error ?? null);
-			setIsSubmitting(false);
+			stopSubmitting();
 			return false;
 		}
 
 		if (!deliveryReady || selectedDeliveryMethod === "new-address") {
 			const applied = await applyDeliverySelection(selectedDeliveryMethod, newAddress);
 			if (!applied) {
-				setIsSubmitting(false);
+				stopSubmitting();
 				return false;
 			}
 		}
@@ -330,8 +341,85 @@ export function MercadoPagoCheckoutForm({
 	}
 	prepareCheckoutBeforePaymentRef.current = prepareCheckoutBeforePayment;
 
+	async function handlePixPayment() {
+		const ready = await prepareCheckoutBeforePayment();
+		if (!ready) return;
+		const result = await submitMercadoPagoCheckoutPayment({
+			orderId: checkout.orderId,
+			paymentData: { payment_method_id: "pix" },
+		});
+		stopSubmitting();
+		if ("error" in result) {
+			setMessage(result.error ?? null);
+			return;
+		}
+		if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
+			setPixPayment(result);
+			setPixCopyMessage(null);
+			return;
+		}
+		if (result.status === "succeeded" || result.status === "processing") {
+			router.replace(
+				`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.paymentId}&guest=${
+					(checkout.isAuthenticated ?? false) ? "0" : "1"
+				}`,
+			);
+			return;
+		}
+		setMessage("Não foi possível gerar o Pix. Tente novamente em alguns instantes.");
+	}
+
+	async function handlePixPaymentCheck() {
+		if (isCheckingPixPayment) return;
+		setIsCheckingPixPayment(true);
+		setPixPaymentMessage(null);
+		const result = await getPendingMercadoPagoPixPayment({ orderId: checkout.orderId });
+		setIsCheckingPixPayment(false);
+		if ("error" in result) {
+			setPixPaymentMessage(result.error ?? "Não foi possível consultar o pagamento Pix.");
+			return;
+		}
+		if (!result.payment) {
+			setPixPaymentMessage("Ainda não identificamos este pagamento Pix. Tente novamente em instantes.");
+			return;
+		}
+		if (result.payment.status === "succeeded") {
+			router.replace(
+				`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.payment.paymentId}&guest=${(checkout.isAuthenticated ?? false) ? "0" : "1"}`,
+			);
+			return;
+		}
+		if (result.payment.status === "failed") {
+			setPixPayment(null);
+			setMessage("Este Pix não está mais disponível. Gere uma nova cobrança para continuar.");
+			return;
+		}
+		setPixPayment(result.payment);
+		setPixPaymentMessage("Pagamento ainda pendente. Assim que for confirmado, você seguirá para o pedido.");
+	}
+
 	useEffect(() => {
-		if (!deliveryReady || pixPayment) {
+		let cancelled = false;
+		void getPendingMercadoPagoPixPayment({ orderId: checkout.orderId }).then((result) => {
+			if (cancelled || "error" in result || !result.payment) return;
+			if (result.payment.status === "processing") {
+				setPixPayment(result.payment);
+				setPixCopyMessage(null);
+			} else if (result.payment.status === "succeeded") {
+				router.replace(
+					`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.payment.paymentId}&guest=${(checkout.isAuthenticated ?? false) ? "0" : "1"}`,
+				);
+			} else if (result.payment.status === "failed") {
+				setMessage("Este Pix não está mais disponível. Gere uma nova cobrança para continuar.");
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [checkout.isAuthenticated, checkout.orderId, router]);
+
+	useEffect(() => {
+		if (!deliveryReady || pixPayment || selectedPaymentMethod !== "card") {
 			setIsLoadingPaymentBrick(false);
 			return;
 		}
@@ -354,7 +442,6 @@ export function MercadoPagoCheckoutForm({
 							paymentMethods: {
 								creditCard: "all",
 								debitCard: "all",
-								bankTransfer: "all",
 								maxInstallments: 12,
 							},
 						},
@@ -369,7 +456,7 @@ export function MercadoPagoCheckoutForm({
 									orderId: checkout.orderId,
 									paymentData: sanitizeMercadoPagoFormData(formData),
 								});
-								setIsSubmitting(false);
+								stopSubmitting();
 								if ("error" in result) {
 									setMessage(result.error ?? null);
 									return Promise.reject();
@@ -422,6 +509,7 @@ export function MercadoPagoCheckoutForm({
 		checkout.publishableKey,
 		deliveryReady,
 		pixPayment,
+		selectedPaymentMethod,
 		router,
 		confirmationFailedMessage,
 	]);
@@ -667,23 +755,68 @@ export function MercadoPagoCheckoutForm({
 						) : null}
 						<Button
 							type="button"
-							onClick={() =>
-								router.replace(
-									`/checkout/processing?order=${checkout.orderId}&mp_payment=${pixPayment.paymentId}&guest=${(checkout.isAuthenticated ?? false) ? "0" : "1"}`,
-								)
-							}
+							disabled={isCheckingPixPayment}
+							onClick={() => void handlePixPaymentCheck()}
 						>
-							Acompanhar pedido
+							{isCheckingPixPayment ? "Verificando pagamento…" : "Já paguei — verificar pagamento"}
 						</Button>
+						{pixPaymentMessage ? (
+							<p className="text-xs text-muted-foreground" role="status">
+								{pixPaymentMessage}
+							</p>
+						) : null}
 					</div>
 				) : deliveryReady ? (
 					<div className="space-y-3">
-						{isLoadingPaymentBrick ? (
-							<p className="text-sm text-muted-foreground" role="status">
-								Carregando pagamento do Mercado Pago…
-							</p>
-						) : null}
-						<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+						<RadioGroup
+							value={selectedPaymentMethod}
+							onValueChange={(value) => setSelectedPaymentMethod(value as "pix" | "card")}
+							className="grid gap-3 sm:grid-cols-2"
+						>
+							<PaymentMethodOption
+								id="checkout-payment-pix"
+								value="pix"
+								selected={selectedPaymentMethod === "pix"}
+								title="Pix"
+								description="QR Code e código copia e cola"
+							/>
+							<PaymentMethodOption
+								id="checkout-payment-card"
+								value="card"
+								selected={selectedPaymentMethod === "card"}
+								title="Cartão"
+								description="Crédito ou débito no formulário seguro"
+							/>
+						</RadioGroup>
+						{selectedPaymentMethod === "pix" ? (
+							<div className="rounded-lg border bg-muted/20 p-3">
+								<p className="text-sm font-medium">Pix</p>
+								<p className="mt-1 text-xs leading-5 text-muted-foreground">
+									Usaremos o e-mail informado acima para gerar seu código Pix.
+								</p>
+								<Button
+									type="button"
+									className="mt-3"
+									disabled={isSubmitting || isUpdatingDelivery}
+									onClick={() => void handlePixPayment()}
+								>
+									Gerar código Pix
+								</Button>
+							</div>
+						) : (
+							<div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+								<p className="text-sm font-medium">Cartão</p>
+								<p className="text-xs leading-5 text-muted-foreground">
+									Informe os dados do cartão no formulário seguro do Mercado Pago.
+								</p>
+								{isLoadingPaymentBrick ? (
+									<p className="text-sm text-muted-foreground" role="status">
+										Carregando pagamento do Mercado Pago…
+									</p>
+								) : null}
+								<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+							</div>
+						)}
 					</div>
 				) : (
 					<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -759,6 +892,36 @@ function DeliveryOptionCard({
 					<span className="block font-medium text-foreground">{radioLabel}</span>
 					<span className="block">{summary}</span>
 				</span>
+			</span>
+		</label>
+	);
+}
+
+function PaymentMethodOption({
+	id,
+	value,
+	selected,
+	title,
+	description,
+}: {
+	id: string;
+	value: "pix" | "card";
+	selected: boolean;
+	title: string;
+	description: string;
+}) {
+	return (
+		<label
+			htmlFor={id}
+			className={cn(
+				"flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors",
+				selected && "border-foreground bg-muted/30",
+			)}
+		>
+			<RadioGroupItem id={id} value={value} className="mt-0.5" />
+			<span>
+				<span className="block font-medium">{title}</span>
+				<span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
 			</span>
 		</label>
 	);

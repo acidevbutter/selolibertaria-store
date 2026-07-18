@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- Pix pendente do Mercado Pago agora é retomado após recarga do checkout a partir da consulta server-side; a mesma tentativa técnica persiste sua chave de idempotência e não cria cobrança duplicada, enquanto uma nova cobrança só é liberada após a falha anterior ser confirmada pelo provedor. O checkout agora permite escolher Pix ou cartão antes de abrir o painel correspondente; Pix usa diretamente o e-mail já informado, sem repeti-lo no Brick, e ignora clique duplicado antes da submissão.
+- O QR Pix agora oferece `Já paguei — verificar pagamento`: a consulta server-side mantém o QR pendente visível e só encaminha ao processamento depois da confirmação pelo Mercado Pago.
 - Payment Brick agora carrega para retirada na loja sem depender de uma cotação de frete.
 - A confirmação Mercado Pago limpa o carrinho convidado e autenticado e reconcilia novamente o mesmo pedido sem falhar no operador posicional do MongoDB.
 - Corrigido o carrinho de clientes autenticados para preservar o ID do produto ao adicionar uma variante, permitindo uma nova compra após o primeiro pedido.
