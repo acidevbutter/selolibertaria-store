@@ -10,6 +10,7 @@ import {
 	updateCheckoutDeliverySelection,
 	updatePaymentMethodSavingPreference,
 } from "@/actions/checkout-actions";
+import { MercadoPagoCheckoutForm } from "@/app/checkout/mercado-pago-checkout-form.client";
 import { useTranslations } from "@/i18n/client";
 import { type AppLocale, getStripeLocale } from "@/i18n/config";
 import {
@@ -43,12 +44,20 @@ export function CheckoutForm({
 	checkout: TransparentCheckoutIntent;
 	locale: AppLocale;
 }) {
+	if (checkout.paymentProvider === "mercado_pago") {
+		return (
+			<div className="rounded-xl border bg-card p-6 shadow-sm">
+				<MercadoPagoCheckoutForm checkout={checkout} locale={locale} />
+			</div>
+		);
+	}
+
 	return (
 		<div className="rounded-xl border bg-card p-6 shadow-sm">
 			<Elements
 				stripe={getStripePromise(checkout.publishableKey)}
 				options={{
-					clientSecret: checkout.clientSecret,
+					clientSecret: checkout.clientSecret!,
 					locale: getStripeLocale(locale),
 					appearance: {
 						theme: "stripe",
@@ -263,7 +272,7 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 
 		const confirmationResult = selectedSavedPaymentMethod
 			? await stripe.confirmPayment({
-					clientSecret: checkout.clientSecret,
+					clientSecret: checkout.clientSecret!,
 					confirmParams: {
 						return_url: returnUrl.toString(),
 						payment_method: selectedSavedPaymentMethod.id,

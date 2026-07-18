@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { recordMercadoPagoCheckout } from "@/actions/mercado-pago-order-actions";
 import {
 	finalizeCheckoutCleanup,
 	recordPaymentIntentCheckout,
@@ -43,6 +44,7 @@ export default function ProcessingPage() {
 	const sessionId = searchParams.get("session_id");
 	const orderId = searchParams.get("order");
 	const paymentIntentId = searchParams.get("payment_intent");
+	const mercadoPagoPaymentId = searchParams.get("mp_payment");
 	const isGuest = searchParams.get("guest") === "1";
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
@@ -131,6 +133,64 @@ export default function ProcessingPage() {
 			return "resolved" as const;
 		}
 
+		async function syncMercadoPagoOnce() {
+			const result = await recordMercadoPagoCheckout({
+				orderId,
+				paymentId: mercadoPagoPaymentId,
+			});
+
+			if ("error" in result) {
+				if (result.status && isWarningCheckoutStatus(result.status)) {
+					setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
+					setPhase("warning");
+					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
+					return "resolved" as const;
+				}
+				if (result.status === "processing") return "retry" as const;
+				setPhase("error");
+				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
+				return "resolved" as const;
+			}
+
+			if (!isResolvedCheckoutStatus(result.status) && !isWarningCheckoutStatus(result.status)) {
+				setPhase("processing");
+				return "retry" as const;
+			}
+
+			if (result.cartCleared) {
+				try {
+					const cleanup = await finalizeCheckoutCleanup();
+					if ("ok" in cleanup) closeCart();
+				} catch {
+					// noop
+				}
+			}
+			safelyRefreshCart(refreshCart);
+			if (result.status && isWarningCheckoutStatus(result.status)) {
+				setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
+				setPhase("warning");
+				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
+				return "resolved" as const;
+			}
+			setPhase("finalized");
+			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
+			return "resolved" as const;
+		}
+
+		async function pollMercadoPago() {
+			const result = await syncMercadoPagoOnce();
+			if (cancelled || result !== "retry") return;
+			if (Date.now() - startedAt >= PROCESSING_TIMEOUT_MS) {
+				setPhase("warning");
+				setWarningReason("timeout");
+				replaceLocation(router, getSuccessPath());
+				return;
+			}
+			pollTimer = setTimeout(() => {
+				void pollMercadoPago();
+			}, PROCESSING_POLL_INTERVAL_MS);
+		}
+
 		async function pollPaymentIntent() {
 			const result = await syncPaymentIntentOnce();
 			if (cancelled || result !== "retry") return;
@@ -158,7 +218,9 @@ export default function ProcessingPage() {
 		}, PROCESSING_TIMEOUT_MS);
 
 		void (async () => {
-			if (orderId?.startsWith("ord_") || paymentIntentId?.startsWith("pi_")) {
+			if (mercadoPagoPaymentId) {
+				await pollMercadoPago();
+			} else if (orderId?.startsWith("ord_") || paymentIntentId?.startsWith("pi_")) {
 				await pollPaymentIntent();
 			} else if (sessionId?.startsWith("cs_")) {
 				try {
@@ -192,7 +254,7 @@ export default function ProcessingPage() {
 			cancelled = true;
 			clearTimers();
 		};
-	}, [router, sessionId, orderId, paymentIntentId, isGuest]);
+	}, [router, sessionId, orderId, paymentIntentId, mercadoPagoPaymentId, isGuest]);
 
 	const done = phase === "finalized";
 	const isWarning = phase === "warning";
