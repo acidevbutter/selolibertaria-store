@@ -181,3 +181,8 @@ Confiança vem de:
 
 - Ao editar imagens editoriais, pessoa operadora precisa ver a prévia local antes do envio, confirmar a troca com intenção clara e descartar a seleção sem perder a imagem já publicada.
 - A troca de imagem só deve virar conteúdo público depois de salvar o formulário editorial, preservando o fluxo de revisar primeiro e publicar depois.
+
+## Atualização 2026-07-18 — validação do fluxo editorial
+
+- A experiência esperada é reversível até o salvamento: selecionar e confirmar uma imagem mostra prévia local; descartar remove a troca pendente; salvar persiste somente a intenção final.
+- Conteúdo antigo deve continuar público e legível após a introdução das ferramentas, sem exigir reedição manual dos blocos legados.

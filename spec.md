@@ -224,6 +224,13 @@ Mitigação:
 - `site_global` concentra newsletter e rodapé públicos.
 - `page_projects`, `page_products` e `page_product` sustentam a copy estrutural dessas rotas.
 - A migration editorial padrão é idempotente e não sobrescreve edições reais; ela só cria documentos ausentes e preenche campos ausentes.
+## Atualização 2026-07-18 — validação editorial
+
+- O fluxo editorial deve ter regressão automatizada para confirmar que a seleção local de imagem não faz upload imediato em `uploadMode="on-submit"`.
+- Descartar uma imagem pendente deve manter a URL pública já persistida no campo `*Src`.
+- Salvar um formulário com arquivo confirmado deve enviar o arquivo no servidor e persistir a URL pública retornada, mantendo `alt` e `caption`.
+- Textos legados sem marcação e Markdown editorial mínimo devem continuar renderizando com segurança no público.
+
 ## Addendum — P0B checkout sem pré-cadastro
 
 - O checkout público deve aceitar compra convidada sem login nem confirmação prévia de e-mail.

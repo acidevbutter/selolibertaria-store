@@ -2,6 +2,7 @@
 
 ### Added
 
+- Cobertura de regressão para o fluxo editorial de texto e imagem, validando prévia/descartar no admin, preservação de imagem existente e persistência de nova imagem ao salvar.
 - Controles editoriais de imagem com prévia local, substituição, descarte antes de salvar e persistência pelos campos públicos já existentes.
 - Registro do contrato de idioma único `pt-BR` em `AGENTS.md`, `spec.md`, `userinterface.md` e `userexperience.md` para evitar retorno de multilíngue público.
 - Biblioteca final de ativos editoriais em `public/images/selolibertaria/`, com mocks do livro `Virus do Beijo` e ilustrações convertidas de `temp_assets` para arquivos `png` com nomes estáveis.
