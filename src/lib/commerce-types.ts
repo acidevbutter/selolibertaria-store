@@ -23,6 +23,7 @@ export interface ProductVariant {
 	id: string;
 	price: number; // minor units (Stripe unit_amount)
 	currency: string;
+	priceId?: string | null;
 	label?: string | null;
 	slug?: string | null;
 	productId?: string;

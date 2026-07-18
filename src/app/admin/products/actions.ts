@@ -254,6 +254,8 @@ export async function updateStripeProductGroupAction(formData: FormData) {
 					category: metadataValue(category),
 					stock: metadataValue(stock),
 					order: metadataValue(order),
+					variant: metadataValue(variant.variantLabel),
+					variant_order: metadataValue(variant.variantOrder),
 				},
 			}),
 		),

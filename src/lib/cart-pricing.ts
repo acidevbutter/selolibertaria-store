@@ -53,6 +53,7 @@ export async function buildPricedCartPayload(args: {
 		const resolvedLines: Array<
 			ResolvedCartPricingLine & {
 				variantLabel?: string | null;
+				priceId?: string | null;
 			}
 		> = [];
 		let currency = "USD";
@@ -88,6 +89,7 @@ export async function buildPricedCartPayload(args: {
 				effectiveUnitAmount,
 				currency,
 				variantLabel: variant.label ?? null,
+				priceId: variant.priceId ?? null,
 			});
 		}
 
@@ -137,7 +139,7 @@ export async function buildPricedCartPayload(args: {
 			productSlug: resolvedLine?.productSlug ?? item.productId,
 			categorySlug: resolvedLine?.categorySlug ?? null,
 			variantId: item.variantId,
-			priceId: item.variantId,
+			priceId: resolvedLine?.priceId ?? item.variantId,
 			name: item.product?.name ?? "Product",
 			image: item.product?.images?.[0] || null,
 			variantLabel: resolvedLine?.variantLabel ?? null,
