@@ -1,6 +1,8 @@
 ## [Unreleased]
 
 ### Added
+
+- Controles editoriais de imagem com prévia local, substituição, descarte antes de salvar e persistência pelos campos públicos já existentes.
 - Registro do contrato de idioma único `pt-BR` em `AGENTS.md`, `spec.md`, `userinterface.md` e `userexperience.md` para evitar retorno de multilíngue público.
 - Biblioteca final de ativos editoriais em `public/images/selolibertaria/`, com mocks do livro `Virus do Beijo` e ilustrações convertidas de `temp_assets` para arquivos `png` com nomes estáveis.
 - Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.

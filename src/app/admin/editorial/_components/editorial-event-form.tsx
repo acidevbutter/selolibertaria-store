@@ -146,6 +146,7 @@ export function EditorialEventForm({
 								name="imageSrc"
 								initialValues={event?.image?.src ? [event.image.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
