@@ -39,8 +39,8 @@ export default async function AllProductsPage() {
 	return (
 		<main className="bg-[color:var(--editorial-paper)]">
 			<CatalogIntro
-				eyebrow={page.hero?.eyebrow || "Livros"}
-				title={page.hero?.title || "Livros para entrar no universo do selo pela leitura."}
+				eyebrow={page.hero?.eyebrow || "Loja"}
+				title={page.hero?.title || "Loja para entrar no universo do selo pela leitura."}
 				description={
 					page.hero?.body ||
 					"Catálogo autoral de literatura erótica, urbana e dissidente, com capas, trechos e caminhos de compra preservados."
@@ -57,7 +57,7 @@ export default async function AllProductsPage() {
 						label: "Curadoria",
 						body:
 							page.curatorialNote?.body ||
-							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial.",
+							"A loja deve preservar a operação comercial enquanto apresenta cada obra como objeto editorial.",
 					},
 					{
 						label: "Continuidade",
@@ -85,13 +85,13 @@ export default async function AllProductsPage() {
 						title={page.listing?.title || page.curatorialNote?.title || "Catálogo publicado"}
 						description={
 							page.curatorialNote?.body ||
-							"A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial."
+							"A loja deve preservar a operação comercial enquanto apresenta cada obra como objeto editorial."
 						}
 					/>
 				) : (
 					<div className="border border-dashed border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.6)] px-6 py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
 						{page.listing?.emptyText ||
-							"O catálogo ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros."}
+							"A loja ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros."}
 					</div>
 				)}
 			</EditorialShell>
@@ -105,7 +105,7 @@ export default async function AllProductsPage() {
 						<EditorialRichText
 							source={
 								page.finalCta?.body ||
-								"A página de livros continua orientada à compra, mas abre caminhos editoriais claros para outros contextos do selo."
+								"A loja continua orientada à compra, mas abre caminhos editoriais claros para outros contextos do selo."
 							}
 							className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
 						/>
@@ -121,7 +121,7 @@ export default async function AllProductsPage() {
 							href={page.finalCta?.primaryCtaHref || "/contact"}
 							className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.18)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.42)]"
 						>
-							{page.finalCta?.primaryCtaLabel || "Falar sobre livros"}
+							{page.finalCta?.primaryCtaLabel || "Falar com a loja"}
 						</YnsLink>
 					</div>
 				</EditorialShell>

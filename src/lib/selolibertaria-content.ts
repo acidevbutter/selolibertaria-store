@@ -13,7 +13,7 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Livros", href: PUBLIC_NAVIGATION.shop },
+	{ label: "Loja", href: PUBLIC_NAVIGATION.shop },
 	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
 	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
 	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },
@@ -58,12 +58,12 @@ export const seloHomeHighlights = [
 
 export const seloHomeEditorialCtas = [
 	{
-		eyebrow: "Ver catálogo",
+		eyebrow: "Ver loja",
 		title: "Os livros permanecem no centro da experiência.",
 		description:
 			"O site atual mantém fluxo de carrinho, checkout e produto enquanto ganha contexto editorial mais forte para cada lançamento.",
 		href: PUBLIC_NAVIGATION.shop,
-		label: "Ver livros",
+		label: "Ver loja",
 	},
 	{
 		eyebrow: "Acompanhar a programação",
@@ -85,7 +85,7 @@ export const seloHomeHero = {
 	description:
 		"O Selo Libertaria reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
 	primaryCta: {
-		label: "Comprar livro",
+		label: "Ver loja",
 		href: PUBLIC_NAVIGATION.shop,
 	},
 	secondaryCta: {
@@ -107,7 +107,7 @@ export const seloHomeHero = {
 export const seloHomeFeaturedBooksIntro = {
 	eyebrow: "Catálogo em destaque",
 	title: "Livros para entrar nesse universo pela leitura.",
-	linkLabel: "Ver catálogo completo",
+	linkLabel: "Ver loja",
 	linkHref: "/products",
 };
 
