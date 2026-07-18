@@ -115,7 +115,7 @@ export async function authenticateAndCreateSession({
 						try {
 							const [{ getCartId, clearCartId }, { commerce }] = await Promise.all([
 								import("@/lib/cart-cookies"),
-								import("@/lib/commerce-stripe"),
+								import("@/lib/commerce"),
 							]);
 							const guestId = await getCartId();
 							if (guestId) {

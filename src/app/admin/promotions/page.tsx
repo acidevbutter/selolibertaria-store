@@ -18,7 +18,7 @@ import {
 	type PromotionStatus,
 } from "@/lib/promotions";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
-import { getDecimalFromStripeAmount } from "@/lib/utils";
+import { getDecimalFromMinorAmount } from "@/lib/utils";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -29,7 +29,7 @@ import {
 export const dynamic = "force-dynamic";
 
 type AdminPromotion = Awaited<ReturnType<typeof listPromotionsForAdmin>>[number];
-const adminCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+const adminCurrency = String(env.CATALOG_CURRENCY ?? "BRL")
 	.trim()
 	.toUpperCase();
 
@@ -101,7 +101,7 @@ function PromotionFormSection(args: {
 
 function formatBenefit(value: number, benefitType: string, currency?: string | null) {
 	if (benefitType === "percentage_off") return `${value}%`;
-	return `${getDecimalFromStripeAmount({ amount: value, currency: currency || adminCurrency })}`;
+	return `${getDecimalFromMinorAmount({ amount: value, currency: currency || adminCurrency })}`;
 }
 
 function formatDateTime(date: Date | string | null | undefined, locale: string) {
@@ -141,7 +141,7 @@ function formatUsageRules(promotion: AdminPromotion) {
 	}
 	if (typeof promotion.eligibility?.minSubtotal === "number" && promotion.eligibility.minSubtotal > 0) {
 		rules.push(
-			`Subtotal mínimo: ${getDecimalFromStripeAmount({
+			`Subtotal mínimo: ${getDecimalFromMinorAmount({
 				amount: promotion.eligibility.minSubtotal,
 				currency: promotion.currency || adminCurrency,
 			})}`,
@@ -158,7 +158,7 @@ function buildPromotionFormDefaults(promotion?: AdminPromotion): PromotionFormDe
 			: promotion.benefitType === "percentage_off"
 				? String(promotion.benefitValue)
 				: String(
-						getDecimalFromStripeAmount({
+						getDecimalFromMinorAmount({
 							amount: promotion.benefitValue,
 							currency: promotion.currency || adminCurrency,
 						}),
@@ -176,7 +176,7 @@ function buildPromotionFormDefaults(promotion?: AdminPromotion): PromotionFormDe
 		minSubtotal:
 			typeof promotion?.eligibility?.minSubtotal === "number"
 				? String(
-						getDecimalFromStripeAmount({
+						getDecimalFromMinorAmount({
 							amount: promotion.eligibility.minSubtotal,
 							currency: promotion.currency || adminCurrency,
 						}),

@@ -1,6 +1,6 @@
 import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialProductsPage } from "@/lib/editorial-content-store";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";

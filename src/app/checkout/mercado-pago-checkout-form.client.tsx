@@ -198,22 +198,37 @@ export function MercadoPagoCheckoutForm({
 		setDeliveryError(null);
 		setDeliveryMessage(t("delivery.actions.updating"));
 		const result = await updateCheckoutDeliverySelection({
-			paymentIntentId: checkout.paymentIntentId,
+			paymentReferenceId: checkout.paymentReferenceId,
 			orderId: checkout.orderId,
 			deliveryMethod: nextMethod,
 			address: nextMethod === "new-address" ? toCheckoutAddress(address) : null,
 		});
 
 		if ("error" in result) {
-			setDeliveryError(result.error);
+			setDeliveryError(result.error ?? null);
 			setIsUpdatingDelivery(false);
 			return false;
 		}
 
 		setSelectedDeliveryMethod(result.deliveryMethod);
 		setSelectedDeliveryAddress(toAddressValue(result.deliveryAddress));
-		setDeliveryRate(result.shippingRate ?? null);
-		setDeliveryError(result.shippingError);
+		setDeliveryRate(
+			result.shippingRate
+				? {
+						providerCode: result.shippingRate.providerCode,
+						providerLabel: result.shippingRate.providerLabel,
+						serviceCode: result.shippingRate.serviceCode,
+						serviceName: result.shippingRate.serviceName,
+						fixed_amount: {
+							amount: result.shippingRate.fixed_amount.amount,
+							currency: result.shippingRate.currency ?? checkout.currency,
+						},
+						estimated_days: result.shippingRate.estimated_days,
+						quotedAt: result.shippingRate.quotedAt ?? undefined,
+					}
+				: null,
+		);
+		setDeliveryError(result.shippingError ?? null);
 		setAmountTotal(result.amountTotal);
 		setIsUpdatingDelivery(false);
 		return true;
@@ -255,12 +270,12 @@ export function MercadoPagoCheckoutForm({
 		}
 
 		const buyerResult = await updateCheckoutBuyerData({
-			paymentIntentId: checkout.paymentIntentId,
+			paymentReferenceId: checkout.paymentReferenceId,
 			orderId: checkout.orderId,
 			buyer: normalizedBuyer,
 		});
 		if ("error" in buyerResult) {
-			setMessage(buyerResult.error);
+			setMessage(buyerResult.error ?? null);
 			setIsSubmitting(false);
 			return false;
 		}
@@ -308,7 +323,7 @@ export function MercadoPagoCheckoutForm({
 							});
 							setIsSubmitting(false);
 							if ("error" in result) {
-								setMessage(result.error);
+								setMessage(result.error ?? null);
 								return Promise.reject();
 							}
 							if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {

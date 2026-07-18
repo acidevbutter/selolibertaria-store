@@ -19,12 +19,12 @@ Já existe:
 - Categorias.
 - Busca.
 - Carrinho.
-- Checkout transparente com Stripe.
+- Checkout transparente Mercado Pago para Pix e cartão.
 - Login e cadastro.
 - Área do usuário.
 - Pedidos do usuário.
 - Favoritos.
-- Métodos de pagamento salvos.
+- Tokenização de cartão somente pelo SDK/Brick do Mercado Pago, sem carteira local.
 
 Observação: a arquitetura principal de loja está funcional e deve ser preservada.
 
@@ -86,8 +86,8 @@ Hub editorial existente:
 Já existe:
 
 - MongoDB para conteúdo, promoções, usuários, pedidos, logs e configurações.
-- Stripe para catálogo, pagamento e métodos salvos.
-- Webhooks Stripe persistidos.
+- MongoDB como fonte canônica do catálogo, pedidos e configurações.
+- Mercado Pago para pagamentos e webhooks persistidos.
 - Sistema de emails com log administrativo.
 - Auth própria com sessão em Mongo/cookie.
 - Configuração regional e de idioma no admin.
@@ -181,7 +181,7 @@ Não forçar mudança de rota sem tarefa específica. Ajustar labels e links de 
 3. Melhorar uso visual das imagens de `events` e `projects`.
 4. Revisar páginas institucionais para reduzir copy fixa e fortalecer ritmo editorial.
 5. Auditar campo a campo o hub editorial: tudo que salva precisa aparecer no site.
-6. Revisar PDP/livro sem quebrar Stripe/catalog/cart.
+6. Revisar PDP/livro sem quebrar Mercado Pago/catalog/cart.
 7. QA mobile, acessibilidade, build e reload direto.
 ## Addendum — P3.75B
 

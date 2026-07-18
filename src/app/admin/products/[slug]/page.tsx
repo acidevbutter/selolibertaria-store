@@ -9,14 +9,13 @@ import {
 	SubmitButton,
 } from "@/app/admin/products/_components/product-form-fields";
 import {
-	archiveStripeVariantAction,
-	createStripeVariantAction,
-	updateStripeProductGroupAction,
-	updateStripeVariantAction,
+	archiveVariantAction,
+	createVariantAction,
+	updateProductGroupAction,
+	updateVariantAction,
 } from "@/app/admin/products/actions";
-import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
-import { getAdminStripeProductGroup, listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
+import { getAdminProductGroup, listAdminProductGroups } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { listProductAuditEntries } from "@/lib/product-audit";
@@ -71,16 +70,14 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	const { slug: rawSlug } = await params;
 	const slug = decodeURIComponent(rawSlug);
 	const [group, categories, groups] = await Promise.all([
-		getAdminStripeProductGroup(slug),
+		getAdminProductGroup(slug),
 		listSystemCategories(),
-		listAdminStripeProductGroups(),
+		listAdminProductGroups(),
 	]);
 	if (!group) redirect("/admin/products");
 	const history = await listProductAuditEntries(group.slug, 15);
 	const displayLocale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
-	const adminCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
-		.trim()
-		.toUpperCase();
+	const adminCurrency = "BRL".trim().toUpperCase();
 	const currentOrder = Number.parseInt(group.order || "", 10);
 	const orderCount = Number.isFinite(currentOrder) ? groups.length : groups.length + 1;
 	const orderOptions = Array.from({ length: orderCount }, (_, index) => index + 1);
@@ -137,7 +134,7 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 					<CardTitle>Dados do produto</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form action={updateStripeProductGroupAction} className="space-y-6">
+					<form action={updateProductGroupAction} className="space-y-6">
 						<input type="hidden" name="currentSlug" value={group.slug} />
 						<FormSection title="Informações principais">
 							<ProductCoreFields
@@ -148,6 +145,8 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 								images={group.images}
 								stock={group.stock}
 								order={group.order}
+								productType={group.productType}
+								format={group.format}
 								categories={categories}
 								orderOptions={orderOptions}
 								autoSubmitImages
@@ -164,9 +163,9 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				group={group}
 				locale={displayLocale}
 				adminCurrency={adminCurrency}
-				createStripeVariantAction={createStripeVariantAction}
-				updateStripeVariantAction={updateStripeVariantAction}
-				archiveStripeVariantAction={archiveStripeVariantAction}
+				createVariantAction={createVariantAction}
+				updateVariantAction={updateVariantAction}
+				archiveVariantAction={archiveVariantAction}
 			/>
 
 			<EditorialPanel>

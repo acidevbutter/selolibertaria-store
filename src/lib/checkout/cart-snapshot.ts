@@ -2,12 +2,11 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { ObjectId } from "mongodb";
-import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import type { AppliedPromotion } from "@/lib/commerce-types";
 import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
 import { getDb } from "@/lib/mongodb";
@@ -60,7 +59,6 @@ export interface CheckoutSnapshot {
 		name?: string;
 		cpf?: string;
 		phone?: string;
-		stripeCustomerId?: string;
 		preferredCurrency?: string;
 		address?: CheckoutUserAddress;
 	};
@@ -195,7 +193,6 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 				name?: string;
 				cpf?: string;
 				phone?: string;
-				stripeCustomerId?: string;
 				address?: CheckoutUserAddress;
 			}>(
 				{ _id: new ObjectId(userId) },
@@ -206,7 +203,6 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 						name: 1,
 						cpf: 1,
 						phone: 1,
-						stripeCustomerId: 1,
 						address: 1,
 					},
 				},
@@ -257,7 +253,6 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 				name: user?.name,
 				cpf: user?.cpf,
 				phone: user?.phone,
-				stripeCustomerId: user?.stripeCustomerId,
 				preferredCurrency: preferredCurrency ?? undefined,
 				address: user?.address,
 			},
@@ -265,7 +260,7 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 			subtotal: cart.subtotal ?? cart.total,
 			discountTotal: cart.discountTotal ?? 0,
 			amountTotal: cart.total,
-			currency: cart.currency || (env.STRIPE_CURRENCY || "USD").toUpperCase(),
+			currency: cart.currency || "BRL",
 			couponCode: cart.couponCode ?? null,
 			couponPromotionId: couponContext?.promotionId ?? null,
 			couponCodeId: couponContext?.promotionCodeId ?? null,
@@ -274,8 +269,7 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 						...cart.shippingRate,
 						fixed_amount: {
 							amount: cart.shippingRate.fixed_amount.amount,
-							currency:
-								cart.shippingRate.currency || cart.currency || (env.STRIPE_CURRENCY || "USD").toUpperCase(),
+							currency: cart.shippingRate.currency || cart.currency || "BRL",
 						},
 					}
 				: null,
@@ -284,7 +278,7 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 				checkoutItems,
 				cart.subtotal ?? cart.total,
 				cart.discountTotal ?? 0,
-				cart.currency || (env.STRIPE_CURRENCY || "USD").toUpperCase(),
+				cart.currency || "BRL",
 			),
 		},
 	};

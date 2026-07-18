@@ -15,7 +15,7 @@ Preservar:
 - conta;
 - favoritos;
 - admin;
-- Stripe;
+- Mercado Pago;
 - Mongo;
 - rotas existentes, salvo tarefa específica.
 
@@ -53,7 +53,7 @@ Preservar:
 - [ ] Reforçar capa/galeria no topo.
 - [ ] Garantir compra clara.
 - [ ] Adicionar/organizar sinopse, trecho, ficha técnica e continuidade editorial quando disponível.
-- [ ] Não quebrar variantes, Stripe, favoritos ou carrinho.
+- [ ] Não quebrar variantes, Mercado Pago, favoritos ou carrinho.
 
 ## P4 — Admin editorial e backoffice
 

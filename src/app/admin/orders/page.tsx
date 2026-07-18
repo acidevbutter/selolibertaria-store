@@ -85,7 +85,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	const items = (await db.collection("users").aggregate(pipeline).toArray()) as unknown as AggOrderItem[];
 	const paidCount = items.filter((item) => item.purchases.status === "paid").length;
 	const processingCount = items.filter((item) => item.purchases.status === "processing").length;
-	const defaultCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+	const defaultCurrency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
 

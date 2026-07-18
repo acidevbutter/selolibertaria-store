@@ -164,7 +164,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
 	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
-	const fallbackCurrency = String(env.STRIPE_CURRENCY ?? "BRL")
+	const fallbackCurrency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
 
@@ -178,11 +178,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		{ $unwind: "$purchases" },
 		{
 			$match: {
-				$or: [
-					{ "purchases.id": purchaseId },
-					{ "purchases.relatedIds.paymentIntentId": purchaseId },
-					{ "purchases.relatedIds.sessionId": purchaseId },
-				],
+				$or: [{ "purchases.id": purchaseId }, { "purchases.relatedIds.mercadoPagoPaymentId": purchaseId }],
 			},
 		},
 		{ $limit: 1 },
@@ -199,7 +195,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		createdAt: string | Date;
 		items?: Array<{ name?: string | null; quantity: number; unitAmount?: number | null }>;
 		fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
-		relatedIds?: { paymentIntentId?: string; sessionId?: string };
+		relatedIds?: { mercadoPagoPaymentId?: string };
 		deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
 		deliveryAddress?: {
 			line1?: string | null;
@@ -298,15 +294,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								ID do pagamento
 							</div>
 							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.paymentIntentId || "Não informado"}
-							</div>
-						</div>
-						<div className="space-y-1">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Sessão de checkout
-							</div>
-							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.sessionId || "Não informada"}
+								{p.relatedIds?.mercadoPagoPaymentId || "Não informado"}
 							</div>
 						</div>
 					</div>

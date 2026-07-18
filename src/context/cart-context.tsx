@@ -214,11 +214,10 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 
 	useEffect(() => {
 		const status = searchParams?.get("checkout");
-		const sessionId = searchParams?.get("session_id");
 		const orderId = searchParams?.get("order");
-		const paymentIntentId = searchParams?.get("payment_intent");
+		const paymentId = searchParams?.get("mp_payment");
 
-		if (!status || (!sessionId && !paymentIntentId && !orderId)) {
+		if (!status || (!paymentId && !orderId)) {
 			return;
 		}
 

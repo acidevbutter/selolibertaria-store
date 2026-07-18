@@ -16,11 +16,7 @@ const nextConfig: NextConfig = {
 		},
 	},
 	images: {
-		remotePatterns: [
-			{ hostname: "files.stripe.com" },
-			{ hostname: "d1wqzb5bdbcre6.cloudfront.net" },
-			{ hostname: "res.cloudinary.com" },
-		],
+		remotePatterns: [{ hostname: "res.cloudinary.com" }],
 		formats: ["image/avif", "image/webp"],
 	},
 	transpilePackages: ["next-mdx-remote"],

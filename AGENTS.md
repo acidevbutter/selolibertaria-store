@@ -15,7 +15,7 @@ Selo Libertária is not a pure brochure site and not a cold generic ecommerce st
 1. **Storefront** — books/products, catalog, PDP, cart, checkout, account, favorites and orders.
 2. **Editorial layer** — home, about, contact, events, projects and Sarau Safado.
 3. **Admin/backoffice** — dashboard, editorial hub, products, categories, orders, users, promotions, settings, emails, email templates and webhooks.
-4. **Infrastructure/support flows** — MongoDB, Stripe, auth/session, shipping providers, email logs and webhooks.
+4. **Infrastructure/support flows** — MongoDB, Mercado Pago, auth/session, shipping providers, email logs and webhooks.
 
 Preserve the working commerce/admin architecture. Do not replace the app with static institutional pages.
 
@@ -40,7 +40,7 @@ Notes:
 
 - Keep the package manager on Yarn Classic.
 - Keep existing Next.js/App Router conventions.
-- Keep Stripe and Mongo integrations server-safe.
+- Keep Mercado Pago and Mongo integrations server-safe.
 - Do not introduce a second lockfile.
 - When build/dev hangs, clear `.next/` before assuming application logic is broken.
 
@@ -265,7 +265,7 @@ Also validate:
 - após um pedido concluído no checkout convidado, o acesso inicial à conta deve acontecer por magic link expirável enviado por e-mail, vinculado ao usuário e ao pedido, com redirecionamento para `Compras` e CTA explícito para criação de senha quando a conta ainda não tiver senha definida.
 - 2026-07-01: no checkout, no cadastro e na edição de endereço da conta, o país deve ficar travado em `Brasil/BR` enquanto a operação do selo for nacional; após um CEP brasileiro válido preencher o endereço no checkout, a cotação de frete deve disparar automaticamente e, no admin, o bloco do Melhor Envio pode expor apenas status seguro do token de ambiente com CTA OAuth marcada como `Em breve`, sem revelar segredos.
 - 2026-07-01: quando o fluxo de endereço estiver em modo `BR-only`, não renderize um campo de país desabilitado; esconda o campo por completo e mantenha apenas uma mensagem curta informando que a entrega atende somente endereços no Brasil.
-- 2026-07-01: no checkout transparente com Stripe, a chave de idempotência da criação do `PaymentIntent` deve refletir os parâmetros reais que podem mudar entre tentativas, como total, frete e destino; não reutilize uma key baseada apenas em `checkoutOwnerKey/cartHash` quando a requisição já não é semanticamente a mesma.
+- 2026-07-18: no checkout transparente Mercado Pago, a chave `X-Idempotency-Key` deve refletir os parâmetros reais da tentativa, como total, frete, destino, método e comprador; não reutilize uma chave quando a requisição já não é semanticamente a mesma.
 - 2026-07-01: no adapter de cotação do Melhor Envio, trate qualquer serviço retornado com preço válido como elegível, mesmo quando o código ou o nome não fizer parte de uma lista conhecida; preserve `serviceCode`, `serviceName`, priorize `custom_price` e `custom_delivery_time` quando existirem e deixe `Registro Módico`, `Impresso`, `Impresso Normal` e equivalentes participarem normalmente da seleção do menor frete.
 - 2026-07-01: no checkout público do Selo Libertária, os campos da pessoa compradora devem validar cedo e formatar enquanto a pessoa digita, especialmente `CPF` e `Telefone`; normalize nome e e-mail no blur, exiba mensagens curtas por campo e não deixe o submit seguir quando os dados básicos da compra estiverem inválidos.
 - 2026-07-01: em projetos com Yarn Classic e hooks Git via Husky, o `prepare` deve falhar com segurança quando `devDependencies` não estiverem instaladas; mantenha a instalação automática dos hooks apenas quando o binário local do `husky` estiver disponível.

@@ -3,11 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { recordMercadoPagoCheckout } from "@/actions/mercado-pago-order-actions";
-import {
-	finalizeCheckoutCleanup,
-	recordPaymentIntentCheckout,
-	recordSuccessfulCheckout,
-} from "@/actions/order-actions";
+import { finalizeCheckoutCleanup } from "@/actions/order-actions";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import { isResolvedCheckoutStatus, isWarningCheckoutStatus } from "@/lib/payment-status";
@@ -34,17 +30,15 @@ function safelyRefreshCart(refreshCart: ReturnType<typeof useCart>["refreshCart"
 			(result as Promise<unknown>).catch(() => {});
 		}
 	} catch {
-		// noop
+		// Best effort only: the order is already reconciled server-side.
 	}
 }
 
 export default function ProcessingPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const sessionId = searchParams.get("session_id");
 	const orderId = searchParams.get("order");
-	const paymentIntentId = searchParams.get("payment_intent");
-	const mercadoPagoPaymentId = searchParams.get("mp_payment");
+	const paymentId = searchParams.get("mp_payment");
 	const isGuest = searchParams.get("guest") === "1";
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
@@ -57,15 +51,12 @@ export default function ProcessingPage() {
 		let pollTimer: ReturnType<typeof setTimeout> | null = null;
 		let hardTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
 		let cancelled = false;
+		const startedAt = Date.now();
 
 		function getSuccessPath(setupPasswordRequired = false) {
 			const params = new URLSearchParams({ section: "purchases" });
-			if (orderId?.startsWith("ord_")) {
-				params.set("order", orderId);
-			}
-			if (setupPasswordRequired) {
-				params.set("setupPassword", "1");
-			}
+			if (orderId?.startsWith("ord_")) params.set("order", orderId);
+			if (setupPasswordRequired) params.set("setupPassword", "1");
 			return `/user?${params.toString()}`;
 		}
 
@@ -76,69 +67,11 @@ export default function ProcessingPage() {
 		}
 
 		function scheduleRedirect(delayMs: number, path = getSuccessPath()) {
-			redirectTimer = setTimeout(() => {
-				replaceLocation(router, path);
-			}, delayMs);
+			redirectTimer = setTimeout(() => replaceLocation(router, path), delayMs);
 		}
 
-		async function syncPaymentIntentOnce() {
-			const result = await recordPaymentIntentCheckout({
-				orderId,
-				paymentIntentId,
-			});
-
-			if ("error" in result) {
-				if (result.status && isWarningCheckoutStatus(result.status)) {
-					setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
-					setPhase("warning");
-					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-					return "resolved" as const;
-				}
-
-				if (result.status && !isResolvedCheckoutStatus(result.status)) {
-					setPhase("processing");
-					return "retry" as const;
-				}
-
-				setPhase("error");
-				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-				return "resolved" as const;
-			}
-
-			if (!isResolvedCheckoutStatus(result.status) && !isWarningCheckoutStatus(result.status)) {
-				setPhase("processing");
-				return "retry" as const;
-			}
-
-			if (result.cartCleared) {
-				try {
-					const cleanup = await finalizeCheckoutCleanup();
-					if ("ok" in cleanup) closeCart();
-				} catch {
-					// noop
-				}
-			}
-
-			safelyRefreshCart(refreshCart);
-
-			if (result.status && isWarningCheckoutStatus(result.status)) {
-				setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
-				setPhase("warning");
-				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-				return "resolved" as const;
-			}
-
-			setPhase("finalized");
-			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
-			return "resolved" as const;
-		}
-
-		async function syncMercadoPagoOnce() {
-			const result = await recordMercadoPagoCheckout({
-				orderId,
-				paymentId: mercadoPagoPaymentId,
-			});
-
+		async function syncOnce() {
+			const result = await recordMercadoPagoCheckout({ orderId, paymentId });
 			if ("error" in result) {
 				if (result.status && isWarningCheckoutStatus(result.status)) {
 					setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
@@ -162,23 +95,25 @@ export default function ProcessingPage() {
 					const cleanup = await finalizeCheckoutCleanup();
 					if ("ok" in cleanup) closeCart();
 				} catch {
-					// noop
+					// The server-side order remains authoritative.
 				}
 			}
 			safelyRefreshCart(refreshCart);
-			if (result.status && isWarningCheckoutStatus(result.status)) {
+
+			if (isWarningCheckoutStatus(result.status)) {
 				setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
 				setPhase("warning");
 				scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
 				return "resolved" as const;
 			}
+
 			setPhase("finalized");
 			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
 			return "resolved" as const;
 		}
 
-		async function pollMercadoPago() {
-			const result = await syncMercadoPagoOnce();
+		async function poll() {
+			const result = await syncOnce();
 			if (cancelled || result !== "retry") return;
 			if (Date.now() - startedAt >= PROCESSING_TIMEOUT_MS) {
 				setPhase("warning");
@@ -186,30 +121,11 @@ export default function ProcessingPage() {
 				replaceLocation(router, getSuccessPath());
 				return;
 			}
-			pollTimer = setTimeout(() => {
-				void pollMercadoPago();
-			}, PROCESSING_POLL_INTERVAL_MS);
-		}
-
-		async function pollPaymentIntent() {
-			const result = await syncPaymentIntentOnce();
-			if (cancelled || result !== "retry") return;
-			if (Date.now() - startedAt >= PROCESSING_TIMEOUT_MS) {
-				setPhase("warning");
-				setWarningReason("timeout");
-				replaceLocation(router, getSuccessPath());
-				return;
-			}
-
-			pollTimer = setTimeout(() => {
-				void pollPaymentIntent();
-			}, PROCESSING_POLL_INTERVAL_MS);
+			pollTimer = setTimeout(() => void poll(), PROCESSING_POLL_INTERVAL_MS);
 		}
 
 		if (ranRef.current) return;
 		ranRef.current = true;
-
-		const startedAt = Date.now();
 		hardTimeoutTimer = setTimeout(() => {
 			if (cancelled) return;
 			setPhase("warning");
@@ -217,44 +133,14 @@ export default function ProcessingPage() {
 			replaceLocation(router, getSuccessPath());
 		}, PROCESSING_TIMEOUT_MS);
 
-		void (async () => {
-			if (mercadoPagoPaymentId) {
-				await pollMercadoPago();
-			} else if (orderId?.startsWith("ord_") || paymentIntentId?.startsWith("pi_")) {
-				await pollPaymentIntent();
-			} else if (sessionId?.startsWith("cs_")) {
-				try {
-					const result = await recordSuccessfulCheckout(sessionId);
-					if ("error" in result) {
-						throw new Error(result.error);
-					}
-
-					const redirectPath = getSuccessPath(result.setupPasswordRequired);
-
-					try {
-						const cleanup = await finalizeCheckoutCleanup();
-						if ("ok" in cleanup) closeCart();
-						safelyRefreshCart(refreshCart);
-						setPhase("finalized");
-						scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, redirectPath);
-					} catch {
-						setPhase("error");
-						scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-					}
-				} catch {
-					setPhase("error");
-					scheduleRedirect(ERROR_REDIRECT_DELAY_MS);
-				}
-			} else {
-				replaceLocation(router, getSuccessPath());
-			}
-		})();
+		if (orderId?.startsWith("ord_") || paymentId) void poll();
+		else replaceLocation(router, "/user?section=purchases");
 
 		return () => {
 			cancelled = true;
 			clearTimers();
 		};
-	}, [router, sessionId, orderId, paymentIntentId, mercadoPagoPaymentId, isGuest]);
+	}, [router, orderId, paymentId, closeCart, refreshCart]);
 
 	const done = phase === "finalized";
 	const isWarning = phase === "warning";

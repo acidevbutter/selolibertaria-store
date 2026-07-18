@@ -1,25 +1,22 @@
 import { getEditorialSiteGlobal } from "@/lib/editorial-content-store";
+import { listSystemCategories } from "@/lib/product-categories";
 import { seloSiteMeta, seloSocialLinks } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
-import { getStripeCategories } from "@/lib/stripe-categories";
 import FooterClient from "@/ui/footer/footer.client";
 
 export async function Footer() {
 	const year = new Date().getFullYear();
 	const [globalContent, dynamicCategories, supportEmail] = await Promise.all([
 		getEditorialSiteGlobal(),
-		getStripeCategories(),
+		listSystemCategories(),
 		getSupportEmailSetting(),
 	]);
 
 	const paymentIcons = [
-		{ label: "Stripe", src: "/images/icons/stripe.svg" },
+		{ label: "Pix", src: "/images/icons/pix.svg" },
 		{ label: "Visa", src: "/images/icons/visa.svg" },
 		{ label: "Mastercard", src: "/images/icons/mastercard.svg" },
-		{ label: "American Express", src: "/images/icons/amex.svg" },
-		{ label: "Apple Pay", src: "/images/icons/apple-pay.svg" },
-		{ label: "Google Pay", src: "/images/icons/google-pay.svg" },
-		{ label: "Amazon Pay", src: "/images/icons/amazon-pay.svg" },
+		{ label: "Mercado Pago", src: "/images/icons/mercado-pago.svg" },
 	];
 
 	const footer = globalContent.footer ?? null;

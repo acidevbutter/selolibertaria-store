@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
 import { DEFAULT_LOCALE } from "@/i18n/config";
-import { listAdminStripeProductGroups } from "@/lib/admin-stripe-products";
+import { listAdminProductGroups } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
@@ -35,11 +35,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 	const sp = (await searchParams) || {};
 	const query = asString(sp.q).toLowerCase();
 	const displayLocale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
-	let groups: Awaited<ReturnType<typeof listAdminStripeProductGroups>> = [];
+	let groups: Awaited<ReturnType<typeof listAdminProductGroups>> = [];
 	let error: string | null = null;
 
 	try {
-		groups = await listAdminStripeProductGroups();
+		groups = await listAdminProductGroups();
 	} catch (err) {
 		error = "Não foi possível carregar o catálogo no momento.";
 	}

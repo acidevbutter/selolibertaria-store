@@ -10,7 +10,7 @@ import {
 	VariantFields,
 	VariantPriceFields,
 } from "@/app/admin/products/_components/product-form-fields";
-import type { AdminStripeProductGroup } from "@/lib/admin-stripe-products";
+import type { AdminProductGroup } from "@/lib/admin-products";
 import { formatMoney } from "@/lib/utils";
 import { Badge } from "@/ui/shadcn/badge";
 import { Button } from "@/ui/shadcn/button";
@@ -30,16 +30,16 @@ export function AdminVariantsPanel({
 	group,
 	locale,
 	adminCurrency,
-	createStripeVariantAction,
-	updateStripeVariantAction,
-	archiveStripeVariantAction,
+	createVariantAction,
+	updateVariantAction,
+	archiveVariantAction,
 }: {
-	group: AdminStripeProductGroup;
+	group: AdminProductGroup;
 	locale: string;
 	adminCurrency: string;
-	createStripeVariantAction: (formData: FormData) => Promise<void>;
-	updateStripeVariantAction: (formData: FormData) => Promise<void>;
-	archiveStripeVariantAction: (formData: FormData) => Promise<void>;
+	createVariantAction: (formData: FormData) => Promise<void>;
+	updateVariantAction: (formData: FormData) => Promise<void>;
+	archiveVariantAction: (formData: FormData) => Promise<void>;
 }) {
 	const groupBasePrice = group.variants[0]?.priceDecimal ?? null;
 	const groupCurrency = group.variants[0]?.currency ?? adminCurrency;
@@ -69,7 +69,7 @@ export function AdminVariantsPanel({
 									operacionais necessários.
 								</DialogDescription>
 							</DialogHeader>
-							<form action={createStripeVariantAction} className="space-y-6">
+							<form action={createVariantAction} className="space-y-6">
 								<input type="hidden" name="currentSlug" value={group.slug} />
 								<InheritedVariantFields
 									name={group.name}
@@ -170,7 +170,7 @@ export function AdminVariantsPanel({
 													compartilhados do produto.
 												</DialogDescription>
 											</DialogHeader>
-											<form action={updateStripeVariantAction} className="space-y-6">
+											<form action={updateVariantAction} className="space-y-6">
 												<input type="hidden" name="productId" value={variant.id} />
 												<input type="hidden" name="currentSlug" value={group.slug} />
 												<InheritedVariantFields
@@ -213,7 +213,7 @@ export function AdminVariantsPanel({
 											</form>
 										</DialogContent>
 									</Dialog>
-									<form action={archiveStripeVariantAction}>
+									<form action={archiveVariantAction}>
 										<input type="hidden" name="productId" value={variant.id} />
 										<input type="hidden" name="currentSlug" value={group.slug} />
 										<Button type="submit" variant="outline" size="sm">

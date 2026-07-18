@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "@/env.mjs";
 import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { CURRENCY_COOKIE_NAME, CURRENCY_OPTIONS } from "@/lib/currency";
 import { sendEmail } from "@/lib/email";
 import { ensureIndexes, getDb } from "@/lib/mongodb";

@@ -231,6 +231,12 @@ export async function ensureIndexes() {
 	try {
 		await db.collection("productAuditLogs").createIndex({ slug: 1, createdAt: -1 });
 	} catch {}
+	try {
+		await db.collection("catalogProducts").createIndex({ slug: 1 }, { unique: true });
+		await db.collection("catalogProducts").createIndex({ published: 1, order: 1, name: 1 });
+		await db.collection("catalogProducts").createIndex({ "category.slug": 1, published: 1, order: 1 });
+		await db.collection("catalogProducts").createIndex({ "variants.id": 1 }, { unique: true });
+	} catch {}
 
 	await sessions.updateMany({ expiresAt: { $exists: false }, expires: { $gt: 0 } }, [
 		{ $set: { expiresAt: { $toDate: "$expires" } } },
@@ -323,15 +329,9 @@ export interface UserDoc {
 			quantity: number;
 			unitAmount?: number | null;
 		}>;
-		invoiceId?: string | null;
-		paymentIntentId?: string | null;
+		paymentReferenceId?: string | null;
 		relatedIds?: {
-			sessionId?: string;
-			paymentIntentId?: string;
-			chargeIds?: string[];
-			invoiceId?: string;
-			subscriptionId?: string;
-			refundIds?: string[];
+			mercadoPagoPaymentId?: string;
 		};
 		cart?: UserCart | null;
 	}>;

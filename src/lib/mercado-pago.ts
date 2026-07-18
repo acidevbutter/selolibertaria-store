@@ -34,6 +34,7 @@ export interface MercadoPagoPaymentResponse {
 
 export interface MercadoPagoCreatePaymentInput {
 	transaction_amount: number;
+	currency_id: string;
 	description: string;
 	payment_method_id: string;
 	payer: {
@@ -51,6 +52,32 @@ export interface MercadoPagoCreatePaymentInput {
 	external_reference: string;
 	notification_url?: string;
 	metadata?: Record<string, string | number | boolean | null>;
+}
+
+export type MercadoPagoPaymentValidation = { ok: true } | { ok: false; error: string };
+
+export function validateMercadoPagoPaymentResponse(
+	payment: MercadoPagoPaymentResponse,
+	expected: { amountInCents: number; currency: string; externalReference: string },
+): MercadoPagoPaymentValidation {
+	const expectedCurrency = expected.currency.trim().toUpperCase();
+	const actualCurrency = payment.currency_id?.trim().toUpperCase();
+	if (!actualCurrency || actualCurrency !== expectedCurrency) {
+		return { ok: false, error: "Moeda do Mercado Pago divergente do pedido" };
+	}
+
+	const actualAmount = payment.transaction_amount;
+	const actualAmountInCents =
+		typeof actualAmount === "number" && Number.isFinite(actualAmount) ? Math.round(actualAmount * 100) : null;
+	if (actualAmountInCents === null || actualAmountInCents !== expected.amountInCents) {
+		return { ok: false, error: "Valor do Mercado Pago divergente do pedido" };
+	}
+
+	if (payment.external_reference !== expected.externalReference) {
+		return { ok: false, error: "Referência do Mercado Pago divergente do pedido" };
+	}
+
+	return { ok: true };
 }
 
 export function getMercadoPagoNotificationUrl() {
@@ -132,7 +159,7 @@ export function validateMercadoPagoWebhookSignature(input: {
 	dataId: string | null;
 	secret?: string | null;
 }) {
-	if (!input.secret) return true;
+	if (!input.secret) return false;
 	if (!input.xSignature || !input.xRequestId || !input.dataId) return false;
 
 	const parts = Object.fromEntries(

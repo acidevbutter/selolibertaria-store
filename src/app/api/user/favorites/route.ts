@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { toggleFavorite } from "@/lib/favorites";
 
 export async function POST(req: NextRequest) {

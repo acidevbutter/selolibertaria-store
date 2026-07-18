@@ -156,37 +156,35 @@ export const assertInteger = (value: number) => {
 	invariant(Number.isInteger(value), "Value must be an integer");
 };
 
-const getDecimalsForStripe = (currency: string) => {
+const getCurrencyDecimals = (currency: string) => {
 	invariant(currency.length === 3, "currency needs to be a 3-letter code");
 
-	const stripeDecimals = stripeCurrencies[currency.toUpperCase()];
-	const decimals = stripeDecimals ?? 2;
+	const decimals = currencyDecimals[currency.toUpperCase()] ?? 2;
 	return decimals;
 };
 
-export const getStripeAmountFromDecimal = ({ amount: major, currency }: Money) => {
-	const decimals = getDecimalsForStripe(currency);
+export const getMinorAmountFromDecimal = ({ amount: major, currency }: Money) => {
+	const decimals = getCurrencyDecimals(currency);
 	const multiplier = 10 ** decimals;
 	return Number.parseInt((major * multiplier).toFixed(0), 10);
 };
 
-export const getDecimalFromStripeAmount = ({ amount: minor, currency }: Money) => {
+export const getDecimalFromMinorAmount = ({ amount: minor, currency }: Money) => {
 	assertInteger(minor);
-	const decimals = getDecimalsForStripe(currency);
+	const decimals = getCurrencyDecimals(currency);
 	const multiplier = 10 ** decimals;
 	return Number.parseFloat((minor / multiplier).toFixed(decimals));
 };
 
 export const formatMoney = ({ amount: minor, currency, locale = "pt-BR" }: Money & { locale?: string }) => {
-	const amount = getDecimalFromStripeAmount({ amount: minor, currency });
+	const amount = getDecimalFromMinorAmount({ amount: minor, currency });
 	return new Intl.NumberFormat(locale, {
 		style: "currency",
 		currency,
 	}).format(amount);
 };
 
-// https://docs.stripe.com/development-resources/currency-codes
-const stripeCurrencies: Record<string, number> = {
+const currencyDecimals: Record<string, number> = {
 	BIF: 0,
 	CLP: 0,
 	DJF: 0,

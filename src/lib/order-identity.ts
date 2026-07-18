@@ -3,8 +3,7 @@ import { ObjectId } from "mongodb";
 export interface OrderIdentifierLike {
 	id: string;
 	relatedIds?: {
-		sessionId?: string;
-		paymentIntentId?: string;
+		mercadoPagoPaymentId?: string;
 	} | null;
 }
 
@@ -13,9 +12,5 @@ export function createInternalOrderId() {
 }
 
 export function matchesOrderIdentifier(order: OrderIdentifierLike, identifier: string) {
-	return (
-		order.id === identifier ||
-		order.relatedIds?.paymentIntentId === identifier ||
-		order.relatedIds?.sessionId === identifier
-	);
+	return order.id === identifier || order.relatedIds?.mercadoPagoPaymentId === identifier;
 }

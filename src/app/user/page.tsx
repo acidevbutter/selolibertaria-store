@@ -11,7 +11,6 @@ import { getDb } from "@/lib/mongodb";
 import { getDefaultCountrySetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
-import { PaymentMethodsManager } from "@/ui/payment-methods-manager.client";
 import { ProfileEditor } from "@/ui/profile-editor.client";
 import { PurchasesGrid } from "@/ui/purchases-grid.client";
 
@@ -33,8 +32,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		| "overview"
 		| "profile"
 		| "favorites"
-		| "purchases"
-		| "payment-methods";
+		| "purchases";
 	const defaultCountry = section === "profile" ? await getDefaultCountrySetting(locale) : "BR";
 	const defaultCurrency = getDefaultCurrencyForLocale(locale);
 
@@ -256,17 +254,6 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 					</div>
 				);
 			}
-			case "payment-methods": {
-				return (
-					<div className="space-y-6">
-						<div className="space-y-2">
-							<h2 className="text-2xl font-semibold tracking-tight">{t("paymentMethods.title")}</h2>
-							<p className="text-sm text-muted-foreground">{t("paymentMethods.description")}</p>
-						</div>
-						<PaymentMethodsManager />
-					</div>
-				);
-			}
 			case "overview":
 			default:
 				return (
@@ -283,7 +270,6 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		{ key: "profile", label: t("nav.profile") },
 		{ key: "favorites", label: t("nav.favorites") },
 		{ key: "purchases", label: t("nav.purchases") },
-		{ key: "payment-methods", label: t("nav.paymentMethods") },
 	];
 
 	return (

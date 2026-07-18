@@ -27,7 +27,7 @@ services:
   #   environment:
   #     MONGODB_URI: mongodb://mongo:27017
   #     MONGODB_DB_NAME: selolibertaria
-  #     STRIPE_CURRENCY: usd
+  #     CATALOG_CURRENCY: BRL
   #     NEXT_PUBLIC_URL: http://localhost:3000
   #     JWT_SECRET: dev_super_secret_change_me_please_123456
   #   ports:

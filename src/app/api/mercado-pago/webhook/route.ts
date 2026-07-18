@@ -1,11 +1,22 @@
+import type { ObjectId } from "mongodb";
 import type { NextRequest } from "next/server";
 import { env } from "@/env.mjs";
 import {
 	mapMercadoPagoStatus,
 	retrieveMercadoPagoPayment,
+	validateMercadoPagoPaymentResponse,
 	validateMercadoPagoWebhookSignature,
 } from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
+
+interface OrderDraftDoc {
+	_id: ObjectId;
+	orderId: string;
+	paymentProvider: "mercado_pago";
+	mercadoPagoPaymentId?: string | null;
+	amountTotal: number;
+	currency: string;
+}
 
 function safeParseJson(bodyText: string) {
 	try {
@@ -79,12 +90,41 @@ export async function POST(req: NextRequest) {
 				: typeof payment.metadata?.orderId === "string"
 					? payment.metadata.orderId
 					: null;
+		const draft = await db.collection<OrderDraftDoc>("orderDrafts").findOne({
+			paymentProvider: "mercado_pago",
+			$or: [{ mercadoPagoPaymentId: paymentId }, ...(orderId ? [{ orderId }] : [])],
+		});
+		if (!draft) {
+			await webhooksCol.updateOne(
+				{ _id: logId },
+				{
+					$set: {
+						verified: true,
+						status: "ignored",
+						error: "Order draft not found",
+						processedAt: new Date(),
+					},
+				},
+			);
+			return new Response("ok", { status: 200 });
+		}
+		const paymentValidation = validateMercadoPagoPaymentResponse(payment, {
+			amountInCents: draft.amountTotal,
+			currency: draft.currency,
+			externalReference: draft.orderId,
+		});
+		if (!paymentValidation.ok) {
+			await webhooksCol.updateOne(
+				{ _id: logId },
+				{
+					$set: { verified: true, status: "failed", error: paymentValidation.error, processedAt: new Date() },
+				},
+			);
+			return new Response("payment mismatch", { status: 422 });
+		}
 		const status = mapMercadoPagoStatus(payment.status);
-		const updateResult = await db.collection("orderDrafts").updateOne(
-			{
-				$or: [{ mercadoPagoPaymentId: paymentId }, ...(orderId ? [{ orderId }] : [])],
-				paymentProvider: "mercado_pago",
-			},
+		const updateResult = await db.collection<OrderDraftDoc>("orderDrafts").updateOne(
+			{ _id: draft._id },
 			{
 				$set: {
 					status,
@@ -104,7 +144,7 @@ export async function POST(req: NextRequest) {
 				$set: {
 					eventId: body?.id ? String(body.id) : paymentId,
 					type: body?.type ? String(body.type) : req.nextUrl.searchParams.get("type"),
-					verified: Boolean(env.MERCADO_PAGO_WEBHOOK_SECRET),
+					verified: true,
 					status: updateResult.matchedCount > 0 ? "processed" : "ignored",
 					error: updateResult.matchedCount > 0 ? null : "Order draft not found",
 					processedAt: new Date(),

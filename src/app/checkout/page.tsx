@@ -14,8 +14,8 @@ interface CheckoutStartPageProps {
 /**
  * Server page that:
  * 1. Redirects guest-cart preparation Route Handler when cookie mutation is needed
- * 2. Creates or reuses Stripe PaymentIntent from server-validated cart
- * 3. Renders Stripe Elements inside site checkout UI
+ * 2. Creates or reuses a Mercado Pago payment draft from the server-validated cart
+ * 3. Renders the Mercado Pago payment form inside the site checkout UI
  * Guests can complete the checkout without creating an account first.
  */
 export default async function CheckoutStartPage({ searchParams }: CheckoutStartPageProps) {

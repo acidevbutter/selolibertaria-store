@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { clearCartId, getCartCookieItems, getCartId } from "@/lib/cart-cookies";
-import { commerce } from "@/lib/commerce-stripe";
+import { commerce } from "@/lib/commerce";
 import { ensureIndexes, getDb } from "@/lib/mongodb";
 
 const createUserSchema = z.object({

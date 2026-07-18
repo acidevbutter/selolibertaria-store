@@ -173,6 +173,8 @@ export function ProductCoreFields({
 	images = [],
 	stock = "",
 	order = "",
+	productType = "",
+	format = "",
 	categories = [],
 	orderOptions = [],
 	autoSubmitImages = false,
@@ -185,6 +187,8 @@ export function ProductCoreFields({
 	images?: string[];
 	stock?: string;
 	order?: string;
+	productType?: string;
+	format?: string;
 	categories?: Array<{ name: string; slug: string }>;
 	orderOptions?: number[];
 	autoSubmitImages?: boolean;
@@ -246,6 +250,18 @@ export function ProductCoreFields({
 					placeholder="25"
 					className="max-w-[9rem]"
 				/>
+			</Field>
+			<Field label="Tipo do produto" name="productType" className="space-y-2 md:col-span-4 xl:col-span-3">
+				<Input
+					id="productType"
+					name="productType"
+					defaultValue={productType}
+					placeholder="book"
+					className="max-w-xs"
+				/>
+			</Field>
+			<Field label="Formato" name="format" className="space-y-2 md:col-span-4 xl:col-span-3">
+				<Input id="format" name="format" defaultValue={format} placeholder="print" className="max-w-xs" />
 			</Field>
 			<div className="md:col-span-12 xl:col-span-8">
 				<Field label="Descrição" name="description">
