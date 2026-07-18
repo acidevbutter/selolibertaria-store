@@ -111,6 +111,12 @@ export default async function AdminEditorialEventsPage() {
 									defaultValue: page.hero?.secondaryCtaHref,
 									help: "Prefira uma rota interna estável do site.",
 								},
+								{
+									name: "heroBackground",
+									label: "Fundo do hero",
+									type: "background",
+									background: page.hero?.background,
+								},
 							],
 						},
 						{

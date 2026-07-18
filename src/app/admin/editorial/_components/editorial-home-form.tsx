@@ -1,6 +1,6 @@
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
-import type { EditorialHomePage } from "@/lib/editorial-content";
+import type { EditorialBackground, EditorialHomePage } from "@/lib/editorial-content";
 import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -31,6 +31,88 @@ function Field({ label, name, children }: { label: string; name: string; childre
 		<div className="space-y-2">
 			<Label htmlFor={name}>{label}</Label>
 			{children}
+		</div>
+	);
+}
+
+function BackgroundFields({
+	name,
+	label,
+	background,
+}: {
+	name: string;
+	label: string;
+	background?: EditorialBackground | null;
+}) {
+	const image = background?.image ?? null;
+
+	return (
+		<div className="grid gap-4 rounded-lg border p-4 md:col-span-2">
+			<Field label={label} name={`${name}Src`}>
+				<AdminImageUrlList
+					name={`${name}Src`}
+					initialValues={image?.src ? [image.src] : []}
+					uploadMode="on-submit"
+					maxItems={1}
+				/>
+			</Field>
+			<div className="grid gap-4 md:grid-cols-2">
+				<Field label="Texto alternativo" name={`${name}Alt`}>
+					<Input id={`${name}Alt`} name={`${name}Alt`} defaultValue={image?.alt ?? ""} />
+				</Field>
+				<Field label="Legenda" name={`${name}Caption`}>
+					<Input id={`${name}Caption`} name={`${name}Caption`} defaultValue={image?.caption ?? ""} />
+				</Field>
+				<Field label="Enquadramento" name={`${name}Fit`}>
+					<select
+						id={`${name}Fit`}
+						name={`${name}Fit`}
+						defaultValue={background?.fit ?? "cover"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="cover">Cover</option>
+						<option value="contain">Contain</option>
+					</select>
+				</Field>
+				<Field label="Posição" name={`${name}Position`}>
+					<select
+						id={`${name}Position`}
+						name={`${name}Position`}
+						defaultValue={background?.position ?? "center"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="center">Centro</option>
+						<option value="top">Topo</option>
+						<option value="bottom">Base</option>
+						<option value="left">Esquerda</option>
+						<option value="right">Direita</option>
+					</select>
+				</Field>
+				<Field label="Overlay" name={`${name}Overlay`}>
+					<select
+						id={`${name}Overlay`}
+						name={`${name}Overlay`}
+						defaultValue={background?.overlay ?? "medium"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="none">Sem overlay</option>
+						<option value="soft">Suave</option>
+						<option value="medium">Médio</option>
+						<option value="strong">Forte</option>
+					</select>
+				</Field>
+				<Field label="Contraste" name={`${name}Contrast`}>
+					<select
+						id={`${name}Contrast`}
+						name={`${name}Contrast`}
+						defaultValue={background?.contrast ?? "light"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="light">Texto claro</option>
+						<option value="dark">Texto escuro</option>
+					</select>
+				</Field>
+			</div>
 		</div>
 	);
 }
@@ -122,6 +204,11 @@ export function EditorialHomeForm({
 								</Field>
 							</div>
 						</div>
+						<BackgroundFields
+							name="heroBackground"
+							label="Fundo do hero"
+							background={page.hero?.background}
+						/>
 					</section>
 
 					<section className="space-y-4 rounded-lg border p-5">
@@ -200,6 +287,11 @@ export function EditorialHomeForm({
 								defaultValue={page.manifesto?.linkHref}
 							/>
 						</div>
+						<BackgroundFields
+							name="manifestoBackground"
+							label="Fundo do manifesto"
+							background={page.manifesto?.background}
+						/>
 					</section>
 
 					<section className="space-y-4 rounded-lg border p-5">

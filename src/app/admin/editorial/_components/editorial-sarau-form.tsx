@@ -124,6 +124,55 @@ export function EditorialSarauForm({
 									defaultValue={page.hero?.image?.caption ?? ""}
 								/>
 							</Field>
+							<Field label="Enquadramento" name="heroImageFit">
+								<select
+									id="heroImageFit"
+									name="heroImageFit"
+									defaultValue={page.hero?.background?.fit ?? "cover"}
+									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+								>
+									<option value="cover">Cover</option>
+									<option value="contain">Contain</option>
+								</select>
+							</Field>
+							<Field label="Posição" name="heroImagePosition">
+								<select
+									id="heroImagePosition"
+									name="heroImagePosition"
+									defaultValue={page.hero?.background?.position ?? "center"}
+									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+								>
+									<option value="center">Centro</option>
+									<option value="top">Topo</option>
+									<option value="bottom">Base</option>
+									<option value="left">Esquerda</option>
+									<option value="right">Direita</option>
+								</select>
+							</Field>
+							<Field label="Overlay" name="heroImageOverlay">
+								<select
+									id="heroImageOverlay"
+									name="heroImageOverlay"
+									defaultValue={page.hero?.background?.overlay ?? "strong"}
+									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+								>
+									<option value="none">Sem overlay</option>
+									<option value="soft">Suave</option>
+									<option value="medium">Médio</option>
+									<option value="strong">Forte</option>
+								</select>
+							</Field>
+							<Field label="Contraste" name="heroImageContrast">
+								<select
+									id="heroImageContrast"
+									name="heroImageContrast"
+									defaultValue={page.hero?.background?.contrast ?? "light"}
+									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+								>
+									<option value="light">Texto claro</option>
+									<option value="dark">Texto escuro</option>
+								</select>
+							</Field>
 						</div>
 					</section>
 

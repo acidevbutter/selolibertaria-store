@@ -4,6 +4,103 @@ export type EditorialImage = {
 	caption?: string | null;
 };
 
+export const EDITORIAL_BACKGROUND_FITS = ["cover", "contain"] as const;
+export const EDITORIAL_BACKGROUND_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
+export const EDITORIAL_BACKGROUND_OVERLAYS = ["none", "soft", "medium", "strong"] as const;
+export const EDITORIAL_BACKGROUND_CONTRASTS = ["light", "dark"] as const;
+
+export type EditorialBackgroundFit = (typeof EDITORIAL_BACKGROUND_FITS)[number];
+export type EditorialBackgroundPosition = (typeof EDITORIAL_BACKGROUND_POSITIONS)[number];
+export type EditorialBackgroundOverlay = (typeof EDITORIAL_BACKGROUND_OVERLAYS)[number];
+export type EditorialBackgroundContrast = (typeof EDITORIAL_BACKGROUND_CONTRASTS)[number];
+
+export type EditorialBackground = {
+	image?: EditorialImage | null;
+	fit?: EditorialBackgroundFit | null;
+	position?: EditorialBackgroundPosition | null;
+	overlay?: EditorialBackgroundOverlay | null;
+	contrast?: EditorialBackgroundContrast | null;
+};
+
+const EDITORIAL_BACKGROUND_POSITION_VALUES: Record<EditorialBackgroundPosition, string> = {
+	center: "center",
+	top: "center top",
+	bottom: "center bottom",
+	left: "left center",
+	right: "right center",
+};
+
+const EDITORIAL_DARK_OVERLAYS: Record<Exclude<EditorialBackgroundOverlay, "none">, string> = {
+	soft: "linear-gradient(120deg, rgba(11,11,11,0.54) 0%, rgba(11,11,11,0.34) 100%)",
+	medium: "linear-gradient(120deg, rgba(11,11,11,0.72) 0%, rgba(11,11,11,0.52) 100%)",
+	strong: "linear-gradient(120deg, rgba(11,11,11,0.9) 0%, rgba(11,11,11,0.74) 100%)",
+};
+
+const EDITORIAL_LIGHT_OVERLAYS: Record<Exclude<EditorialBackgroundOverlay, "none">, string> = {
+	soft: "linear-gradient(120deg, rgba(247,244,239,0.58) 0%, rgba(247,244,239,0.38) 100%)",
+	medium: "linear-gradient(120deg, rgba(247,244,239,0.74) 0%, rgba(247,244,239,0.54) 100%)",
+	strong: "linear-gradient(120deg, rgba(247,244,239,0.88) 0%, rgba(247,244,239,0.7) 100%)",
+};
+
+export function resolveEditorialBackgroundImage(
+	background?: EditorialBackground | null,
+	fallbackImage?: EditorialImage | null,
+) {
+	return background?.image?.src ? background.image : fallbackImage?.src ? fallbackImage : null;
+}
+
+export function getEditorialBackgroundContrast(
+	background?: EditorialBackground | null,
+	fallback: EditorialBackgroundContrast = "light",
+): EditorialBackgroundContrast {
+	return background?.contrast === "dark" || background?.contrast === "light" ? background.contrast : fallback;
+}
+
+export function getEditorialBackgroundStyle(
+	background?: EditorialBackground | null,
+	fallbackImage?: EditorialImage | null,
+	fallbackOverlay: EditorialBackgroundOverlay = "medium",
+) {
+	const image = resolveEditorialBackgroundImage(background, fallbackImage);
+	if (!image?.src) return undefined;
+
+	const contrast = getEditorialBackgroundContrast(background);
+	const fit = background?.fit === "cover" || background?.fit === "contain" ? background.fit : "cover";
+	const position =
+		background?.position === "center" ||
+		background?.position === "top" ||
+		background?.position === "bottom" ||
+		background?.position === "left" ||
+		background?.position === "right"
+			? background.position
+			: "center";
+	const overlay =
+		background?.overlay === "none" ||
+		background?.overlay === "soft" ||
+		background?.overlay === "medium" ||
+		background?.overlay === "strong"
+			? background.overlay
+			: fallbackOverlay;
+	const overlayImage =
+		overlay === "none"
+			? null
+			: contrast === "dark"
+				? EDITORIAL_LIGHT_OVERLAYS[overlay]
+				: EDITORIAL_DARK_OVERLAYS[overlay];
+	const backgroundImage = [`url(${JSON.stringify(image.src)})`];
+
+	if (overlayImage) {
+		backgroundImage.unshift(overlayImage);
+	}
+
+	return {
+		backgroundImage: backgroundImage.join(", "),
+		backgroundPosition: EDITORIAL_BACKGROUND_POSITION_VALUES[position],
+		backgroundRepeat: "no-repeat",
+		backgroundSize: fit,
+	};
+}
+
 export type EditorialSeo = {
 	title?: string | null;
 	description?: string | null;
@@ -82,6 +179,7 @@ export type EditorialSarauPage = EditorialBase & {
 		title?: string | null;
 		body?: string | null;
 		image?: EditorialImage | null;
+		background?: EditorialBackground | null;
 		primaryCtaLabel?: string | null;
 		primaryCtaHref?: string | null;
 		secondaryCtaLabel?: string | null;
@@ -112,6 +210,7 @@ export type EditorialAboutPage = EditorialBase & {
 		eyebrow?: string | null;
 		title?: string | null;
 		body?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	section?: {
 		eyebrow?: string | null;
@@ -140,6 +239,7 @@ export type EditorialContactPage = EditorialBase & {
 		body?: string | null;
 		featuredLabel?: string | null;
 		featuredValue?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	form?: {
 		title?: string | null;
@@ -181,12 +281,14 @@ export type EditorialHomePage = EditorialBase & {
 		featureBody?: string | null;
 		featureQuote?: string | null;
 		featureImage?: EditorialImage | null;
+		background?: EditorialBackground | null;
 	} | null;
 	manifesto?: {
 		title?: string | null;
 		body?: string | null;
 		linkLabel?: string | null;
 		linkHref?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	featuredBook?: {
 		productSlug?: string | null;
@@ -210,6 +312,7 @@ export type EditorialHomePage = EditorialBase & {
 		body?: string | null;
 		ctaLabel?: string | null;
 		ctaHref?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	author?: {
 		eyebrow?: string | null;
@@ -241,6 +344,7 @@ export type EditorialEventsPage = EditorialBase & {
 		primaryCtaHref?: string | null;
 		secondaryCtaLabel?: string | null;
 		secondaryCtaHref?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	curatorialNote?: {
 		title?: string | null;
@@ -274,6 +378,7 @@ export type EditorialProjectsPage = EditorialBase & {
 		title?: string | null;
 		body?: string | null;
 		imageLabel?: string | null;
+		background?: EditorialBackground | null;
 	} | null;
 	curatorialNote?: {
 		title?: string | null;

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const requireCapabilityMock = vi.fn();
 const getDbMock = vi.fn();
+const getEditorialRecordForAdminMock = vi.fn();
 const updateOneMock = vi.fn();
 const uploadImageFileToCloudinaryMock = vi.fn();
 const redirectMock = vi.fn((path: string) => {
@@ -21,6 +22,13 @@ vi.mock("@/lib/cloudinary-upload", () => ({
 
 vi.mock("@/lib/mongodb", () => ({
 	getDb: () => getDbMock(),
+}));
+
+vi.mock("@/lib/editorial-content-store", () => ({
+	getEditorialEventRecordBySlug: vi.fn(),
+	getEditorialProjectRecordBySlug: vi.fn(),
+	getEditorialRecordForAdmin: () => getEditorialRecordForAdminMock(),
+	listEditorialRecordsForAdmin: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -58,10 +66,45 @@ function buildEventFormData(overrides: Record<string, string | File | undefined>
 	return formData;
 }
 
+function buildSarauFormData(overrides: Record<string, string | File | undefined> = {}) {
+	const formData = new FormData();
+
+	for (const [key, value] of Object.entries({
+		title: "Sarau Safado",
+		summary: "Resumo",
+		body: "Corpo",
+		published: "true",
+		order: "1",
+		heroEyebrow: "Poesia",
+		heroTitle: "Sarau",
+		heroBody: "Texto",
+		heroImageSrc: "https://cdn.example.com/sarau.jpg",
+		heroImageAlt: "Hero",
+		heroImageCaption: "Legenda",
+		heroImageFit: "cover",
+		heroImagePosition: "center",
+		heroImageOverlay: "medium",
+		heroImageContrast: "light",
+		...overrides,
+	})) {
+		if (value !== undefined) formData.set(key, value);
+	}
+
+	return formData;
+}
+
 describe("editorial item image persistence", () => {
 	beforeEach(() => {
 		vi.resetModules();
 		requireCapabilityMock.mockResolvedValue({ session: { sub: "admin-1", email: "admin@selo.test" } });
+		getEditorialRecordForAdminMock.mockResolvedValue({
+			type: "page_sarau",
+			slug: "sarau-safado",
+			title: "Sarau Safado",
+			published: true,
+			order: 1,
+			hero: null,
+		});
 		updateOneMock.mockReset();
 		updateOneMock.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
 		getDbMock.mockResolvedValue({
@@ -110,6 +153,34 @@ describe("editorial item image persistence", () => {
 			src: "https://res.cloudinary.com/selo/evento-novo.jpg",
 			alt: "Foto legada",
 			caption: "Legenda legada",
+		});
+	});
+
+	it("persists only allowed background options for Sarau hero", async () => {
+		const { updateEditorialSarauAction } = await import("./actions");
+
+		await expect(
+			updateEditorialSarauAction(
+				buildSarauFormData({
+					heroImageFit: "url(javascript:alert(1))",
+					heroImagePosition: "left top; color:red",
+					heroImageOverlay: "linear-gradient(red, blue)",
+					heroImageContrast: "expression(alert(1))",
+				}),
+			),
+		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/sarau-safado");
+
+		const update = updateOneMock.mock.calls[0]?.[1] as { $set: { hero: { background: unknown } } };
+		expect(update.$set.hero.background).toEqual({
+			image: {
+				src: "https://cdn.example.com/sarau.jpg",
+				alt: "Hero",
+				caption: "Legenda",
+			},
+			fit: "cover",
+			position: "center",
+			overlay: "medium",
+			contrast: "light",
 		});
 	});
 });

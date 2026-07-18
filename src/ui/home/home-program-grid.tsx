@@ -1,7 +1,13 @@
 import Image from "next/image";
-import type { EditorialEvent, EditorialHomePage, EditorialSarauPage } from "@/lib/editorial-content";
+import {
+	type EditorialEvent,
+	type EditorialHomePage,
+	type EditorialSarauPage,
+	getEditorialBackgroundContrast,
+	getEditorialBackgroundStyle,
+} from "@/lib/editorial-content";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
-import { EditorialEyebrow, EditorialSection, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
@@ -23,9 +29,20 @@ export async function HomeProgramGrid({
 		"Agenda, memória e presença pública em torno das literaturas eróticas.";
 	const ctaHref = content?.ctaHref || (sarau ? "/sarau-safado" : "/events");
 	const ctaLabel = content?.ctaLabel || (sarau ? "Conhecer o Sarau Safado" : "Ver agenda");
+	const backgroundStyle = getEditorialBackgroundStyle(content?.background, event?.image ?? null, "medium");
+	const useLightText =
+		Boolean(backgroundStyle) && getEditorialBackgroundContrast(content?.background, "dark") === "light";
 
 	return (
-		<EditorialSection className="bg-[color:var(--editorial-beige)] py-12 sm:py-16">
+		<section
+			className={[
+				"py-12 sm:py-16",
+				useLightText
+					? "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
+					: "bg-[color:var(--editorial-beige)] text-[color:var(--editorial-ink)]",
+			].join(" ")}
+			style={backgroundStyle}
+		>
 			<EditorialShell className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
 				<div className="space-y-5">
 					<Reveal>
@@ -39,13 +56,21 @@ export async function HomeProgramGrid({
 					<Reveal delay={0.08}>
 						<EditorialRichText
 							source={featuredSummary}
-							className="max-w-[32rem] text-base leading-8 text-[color:var(--editorial-muted)]"
+							className={[
+								"max-w-[32rem] text-base leading-8",
+								useLightText ? "text-[color:rgba(247,244,239,0.78)]" : "text-[color:var(--editorial-muted)]",
+							].join(" ")}
 						/>
 					</Reveal>
 					<Reveal delay={0.12}>
 						<YnsLink
 							href={ctaHref}
-							className="inline-flex h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
+							className={[
+								"inline-flex h-11 items-center justify-center px-5 text-[10px] font-black uppercase tracking-[0.24em] transition-colors duration-300",
+								useLightText
+									? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]"
+									: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]",
+							].join(" ")}
 						>
 							{ctaLabel}
 						</YnsLink>
@@ -76,6 +101,6 @@ export async function HomeProgramGrid({
 					</div>
 				</Reveal>
 			</EditorialShell>
-		</EditorialSection>
+		</section>
 	);
 }

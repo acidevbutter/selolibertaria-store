@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import { getEditorialProjectsPage, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
@@ -23,16 +24,32 @@ export default async function ProjectsPage() {
 
 	const publishedProjects = projects.filter((project) => project.published);
 	const featuredProject = publishedProjects[0] ?? null;
+	const heroBackgroundStyle = getEditorialBackgroundStyle(page.hero?.background, null, "strong");
+	const useDarkHeroText =
+		Boolean(heroBackgroundStyle) && getEditorialBackgroundContrast(page.hero?.background) === "dark";
 
 	return (
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
 			<div className="flex flex-1 flex-col">
 				<Reveal>
-					<header className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+					<header
+						className={[
+							useDarkHeroText
+								? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
+								: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]",
+						].join(" ")}
+						style={heroBackgroundStyle}
+					>
 						<EditorialShell className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
 							<div className="space-y-4">
-								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
+								<EditorialEyebrow
+									className={
+										useDarkHeroText
+											? "text-[color:var(--editorial-accent)] sm:text-sm"
+											: "text-[color:rgba(247,244,239,0.72)] sm:text-sm"
+									}
+								>
 									{page.hero?.eyebrow || "Projetos"}
 								</EditorialEyebrow>
 								<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
@@ -42,10 +59,22 @@ export default async function ProjectsPage() {
 									source={
 										page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita."
 									}
-									className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base"
+									className={[
+										"max-w-2xl text-sm leading-8 sm:text-base",
+										useDarkHeroText
+											? "text-[color:var(--editorial-ink)]"
+											: "text-[color:rgba(247,244,239,0.8)]",
+									].join(" ")}
 								/>
 							</div>
-							<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
+							<div
+								className={[
+									"border p-5",
+									useDarkHeroText
+										? "border-[color:rgba(11,11,11,0.18)] bg-[color:rgba(247,244,239,0.54)]"
+										: "border-white/30 bg-[color:rgba(247,244,239,0.12)]",
+								].join(" ")}
+							>
 								{featuredProject?.image?.src ? (
 									<Image
 										src={featuredProject.image.src}
@@ -56,7 +85,14 @@ export default async function ProjectsPage() {
 										sizes="(max-width: 1024px) 100vw, 460px"
 									/>
 								) : (
-									<div className="flex aspect-[1.05] items-center justify-center border border-white/20 px-6 text-center text-xs uppercase tracking-[0.28em] text-[color:rgba(247,244,239,0.72)]">
+									<div
+										className={[
+											"flex aspect-[1.05] items-center justify-center border px-6 text-center text-xs uppercase tracking-[0.28em]",
+											useDarkHeroText
+												? "border-[color:rgba(11,11,11,0.2)] text-[color:var(--editorial-muted)]"
+												: "border-white/20 text-[color:rgba(247,244,239,0.72)]",
+										].join(" ")}
+									>
 										{page.hero?.imageLabel || "Foto / performance / oficina"}
 									</div>
 								)}
