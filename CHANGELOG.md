@@ -9,6 +9,8 @@
 
 ### Fixed
 
+- Payment Brick agora carrega para retirada na loja sem depender de uma cotação de frete.
+- A confirmação Mercado Pago limpa o carrinho convidado e autenticado e reconcilia novamente o mesmo pedido sem falhar no operador posicional do MongoDB.
 - Corrigido o carrinho de clientes autenticados para preservar o ID do produto ao adicionar uma variante, permitindo uma nova compra após o primeiro pedido.
 - Checkout Mercado Pago agora mostra o serviço, o prazo e o valor do frete cotado antes do total e do Payment Brick.
 - Payment Brick Mercado Pago agora recebe o e-mail e a identificação já informados no formulário de compra.
