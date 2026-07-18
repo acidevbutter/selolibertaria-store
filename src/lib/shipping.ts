@@ -26,7 +26,14 @@ import { fetchMelhorEnvioQuotes } from "@/lib/shipping-melhor-envio";
 
 const REQUEST_TIMEOUT_MS = 8_000;
 
-type QuoteItem = { productId: string; variantId: string; quantity: number; price: number };
+type QuoteItem = {
+	productId: string;
+	variantId: string;
+	quantity: number;
+	price: number;
+	productType?: string | null;
+	format?: string | null;
+};
 type RuntimePackageSummary = {
 	weightGrams: number;
 	lengthCm: number;
@@ -208,6 +215,28 @@ function buildPackageSummary(provider: ShippingProviderSettings, items: QuoteIte
 		widthCm: Math.max(1, provider.defaultWidthCm ?? 20),
 		heightCm: Math.max(1, provider.defaultHeightCm ?? 10),
 	};
+}
+
+function normalizeStructuredProductValue(value?: string | null) {
+	return (
+		value
+			?.trim()
+			.toLowerCase()
+			.replace(/[_\s]+/g, "-") ?? ""
+	);
+}
+
+function isPrintedBookEligibleForModico(item: QuoteItem) {
+	const productType = normalizeStructuredProductValue(item.productType);
+	const format = normalizeStructuredProductValue(item.format);
+	return (
+		productType === "book" &&
+		["print", "printed", "physical", "paperback", "hardcover", "impresso", "livro-impresso"].includes(format)
+	);
+}
+
+function areItemsEligibleForModicoShipping(items: QuoteItem[]) {
+	return items.length > 0 && items.every(isPrintedBookEligibleForModico);
 }
 
 function isMelhorEnvioProvider(provider: ShippingProviderSettings) {
@@ -703,6 +732,7 @@ async function buildHttpQuotes(
 			baseUrl: provider.baseUrl ?? null,
 			environment: provider.environment ?? "production",
 			currency,
+			modicoShippingEligible: areItemsEligibleForModicoShipping(items),
 		});
 	}
 

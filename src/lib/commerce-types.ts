@@ -30,6 +30,8 @@ export interface ProductVariant {
 	description?: string | null;
 	images?: string[];
 	stock?: number | null;
+	productType?: string | null;
+	format?: string | null;
 	pricing?: PricePresentation;
 	appliedPromotions?: AppliedPromotion[];
 }
@@ -53,6 +55,8 @@ export interface Product extends ProductInfo {
 	stock?: number | null; // from metadata or default
 	variants?: ProductVariant[]; // optional convenience
 	category?: CategoryRef | null; // from metadata.category maybe
+	productType?: string | null;
+	format?: string | null;
 	pricing?: PricePresentation;
 	appliedPromotions?: AppliedPromotion[];
 }

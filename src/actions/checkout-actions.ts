@@ -569,6 +569,8 @@ export async function updateCheckoutDeliverySelection(input: {
 			variantId: item.variantId,
 			quantity: item.quantity,
 			price: item.unitAmount,
+			productType: item.productType ?? null,
+			format: item.format ?? null,
 		})),
 		deliveryMethod: input.deliveryMethod,
 	});

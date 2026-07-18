@@ -25,6 +25,7 @@ export type MelhorEnvioQuoteAdapterInput = {
 	environment?: ShippingProviderEnvironment | null;
 	currency?: string;
 	quotedAt?: string;
+	modicoShippingEligible?: boolean;
 };
 
 export class MelhorEnvioQuoteAdapterError extends Error {
@@ -171,6 +172,25 @@ function extractServiceName(record: Record<string, unknown>) {
 	);
 }
 
+function normalizeServiceText(...values: Array<string | null>) {
+	return values
+		.filter((value): value is string => Boolean(value))
+		.join(" ")
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase();
+}
+
+function isImpressoService(serviceCode: string, serviceName: string) {
+	const normalized = normalizeServiceText(serviceCode, serviceName);
+	return normalized.includes("impresso") && !normalized.includes("registro");
+}
+
+function isRegistroModicoService(serviceCode: string, serviceName: string) {
+	const normalized = normalizeServiceText(serviceCode, serviceName);
+	return normalized.includes("registro") && normalized.includes("modico");
+}
+
 export function buildMelhorEnvioQuoteRequest(input: MelhorEnvioQuoteAdapterInput) {
 	const originPostalCode = normalizeDigits(input.originPostalCode);
 	const destinationPostalCode = normalizeDigits(input.destinationPostalCode);
@@ -230,8 +250,16 @@ export function normalizeMelhorEnvioQuoteResponse(args: {
 	providerCode: string;
 	providerLabel: string;
 	quotedAt: string;
+	modicoShippingEligible?: boolean;
 }) {
-	const quotes = extractQuotedServices(args.payload).reduce<ShippingQuote[]>((accumulator, service) => {
+	const parsedServices = extractQuotedServices(args.payload).reduce<
+		Array<{
+			record: Record<string, unknown>;
+			amount: number;
+			serviceId: string;
+			serviceName: string;
+		}>
+	>((accumulator, service) => {
 		if (!service || typeof service !== "object") return accumulator;
 
 		const record = service as Record<string, unknown>;
@@ -246,6 +274,22 @@ export function normalizeMelhorEnvioQuoteResponse(args: {
 		const serviceName = extractServiceName(record);
 		if (!serviceId || !serviceName) return accumulator;
 
+		accumulator.push({ record, amount, serviceId, serviceName });
+		return accumulator;
+	}, []);
+
+	const impressoAmount = args.modicoShippingEligible
+		? parsedServices.find((service) => isImpressoService(service.serviceId, service.serviceName))?.amount
+		: undefined;
+
+	const quotes = parsedServices.reduce<ShippingQuote[]>((accumulator, service) => {
+		const { record, serviceId, serviceName } = service;
+		const amount =
+			args.modicoShippingEligible &&
+			impressoAmount !== undefined &&
+			isRegistroModicoService(serviceId, serviceName)
+				? impressoAmount + service.amount
+				: service.amount;
 		const company =
 			record.company && typeof record.company === "object"
 				? (record.company as Record<string, unknown>)
@@ -301,6 +345,7 @@ export async function fetchMelhorEnvioQuotes(input: MelhorEnvioQuoteAdapterInput
 			providerCode: input.providerCode,
 			providerLabel: input.providerLabel,
 			quotedAt: request.quotedAt,
+			modicoShippingEligible: input.modicoShippingEligible,
 		});
 	} catch (error) {
 		if (error instanceof MelhorEnvioQuoteAdapterError) throw error;
