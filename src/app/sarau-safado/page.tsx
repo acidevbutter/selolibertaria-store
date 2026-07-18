@@ -3,6 +3,7 @@ import { getTranslations } from "@/i18n/server";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
@@ -77,9 +78,10 @@ export default async function SarauSafadoPage() {
 								<h1 className="display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] text-[color:var(--editorial-paper)] sm:text-6xl">
 									{sarau.hero?.title || t("sarau.heroTitle")}
 								</h1>
-								<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg">
-									{sarau.hero?.body || t("sarau.heroBody")}
-								</p>
+								<EditorialRichText
+									source={sarau.hero?.body || t("sarau.heroBody")}
+									className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg"
+								/>
 								<div className="flex flex-wrap gap-3 pt-2">
 									<YnsLink
 										href={sarau.hero?.primaryCtaHref || "/events"}
@@ -132,9 +134,10 @@ export default async function SarauSafadoPage() {
 									</div>
 									<div>
 										<h3 className="text-2xl font-semibold">{event.title}</h3>
-										<p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
-											{event.location} · {event.summary}
-										</p>
+										<div className="mt-1 text-sm text-[color:var(--editorial-muted)]">
+											<p>{event.location}</p>
+											<EditorialRichText source={event.summary} />
+										</div>
 									</div>
 								</div>
 							))}
@@ -152,9 +155,10 @@ export default async function SarauSafadoPage() {
 								<h2 className="max-w-2xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
 									Fotos grandes, vídeos, textos e registros.
 								</h2>
-								<p className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
-									{sarau.why?.body || t("sarau.whyBody")}
-								</p>
+								<EditorialRichText
+									source={sarau.why?.body || t("sarau.whyBody")}
+									className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+								/>
 							</div>
 						</Reveal>
 						<div className="grid gap-4 sm:grid-cols-3">
@@ -177,15 +181,14 @@ export default async function SarauSafadoPage() {
 											>
 												{note.title}
 											</p>
-											<p
+											<EditorialRichText
+												source={note.body}
 												className={
 													index === 1
 														? "mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
 														: "mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
 												}
-											>
-												{note.body}
-											</p>
+											/>
 										</div>
 									</LiftOnHover>
 								</Reveal>

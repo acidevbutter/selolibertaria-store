@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Newsletter } from "@/ui/footer/newsletter.client";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -69,7 +70,10 @@ export default function FooterClient({
 					<div className="space-y-2">
 						<p className="text-xs uppercase tracking-[0.28em] text-primary-foreground/45">{brandEyebrow}</p>
 						<h3 className="editorial-serif text-2xl font-semibold">{brandName}</h3>
-						<p className="text-sm leading-relaxed text-primary-foreground/68">{brandDescription}</p>
+						<EditorialRichText
+							source={brandDescription}
+							className="text-sm leading-relaxed text-primary-foreground/68"
+						/>
 						<p className="text-sm text-primary-foreground/58">
 							<YnsLink href={`mailto:${brandEmail}`} className="underline-offset-4 hover:underline">
 								{brandEmail}
@@ -103,7 +107,10 @@ export default function FooterClient({
 
 					<div id="newsletter" className="flex w-full max-w-sm flex-col gap-2">
 						<h3 className="font-semibold text-primary-foreground">{newsletterTitle}</h3>
-						<p className="text-sm leading-relaxed text-primary-foreground/68">{newsletterDescription}</p>
+						<EditorialRichText
+							source={newsletterDescription}
+							className="text-sm leading-relaxed text-primary-foreground/68"
+						/>
 						<Newsletter placeholder={newsletterPlaceholder} buttonLabel={newsletterButtonLabel} />
 					</div>
 				</div>

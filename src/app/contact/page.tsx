@@ -4,6 +4,7 @@ import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 import { ContactForm } from "@/ui/contact/contact-form.client";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
@@ -68,10 +69,13 @@ export default async function ContactPage() {
 								<h1 className="display-font max-w-5xl text-balance text-5xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">
 									{contact.hero?.title || "Convites, parcerias, imprensa, livros e Sarau Safado."}
 								</h1>
-								<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg">
-									{contact.hero?.body ||
-										"Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação."}
-								</p>
+								<EditorialRichText
+									source={
+										contact.hero?.body ||
+										"Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação."
+									}
+									className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg"
+								/>
 							</div>
 							<div className="ml-auto w-full max-w-sm bg-[color:var(--editorial-paper)] p-6 text-[color:var(--editorial-ink)]">
 								<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-accent)]">
@@ -92,10 +96,13 @@ export default async function ContactPage() {
 								<h2 className="text-3xl font-black uppercase">
 									{contact.form?.title || "Escreva para o selo"}
 								</h2>
-								<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{contact.form?.description ||
-										"Use o formulário para convites, imprensa, projetos, livros e assuntos editoriais."}
-								</p>
+								<EditorialRichText
+									source={
+										contact.form?.description ||
+										"Use o formulário para convites, imprensa, projetos, livros e assuntos editoriais."
+									}
+									className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]"
+								/>
 							</div>
 							<div className="pt-2">
 								<ContactForm subjectSuggestions={subjects} />
@@ -133,10 +140,13 @@ export default async function ContactPage() {
 										<h2 className="text-3xl font-black uppercase">
 											{contact.direct?.title || "Canais diretos"}
 										</h2>
-										<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
-											{contact.direct?.description ||
-												"Fale com o selo pelos principais pontos de contato editoriais e sociais."}
-										</p>
+										<EditorialRichText
+											source={
+												contact.direct?.description ||
+												"Fale com o selo pelos principais pontos de contato editoriais e sociais."
+											}
+											className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]"
+										/>
 									</div>
 									<div className="pt-2 text-sm">
 										<ul className="space-y-2">
@@ -179,10 +189,13 @@ export default async function ContactPage() {
 								<h2 className="max-w-3xl text-3xl leading-[1.02] font-black sm:text-4xl">
 									{contact.closing?.title || "Continue pelo Instagram, newsletter ou agenda do Sarau."}
 								</h2>
-								<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{contact.paths?.description ||
-										"Navegue rapidamente entre catálogo, programação e páginas institucionais."}
-								</p>
+								<EditorialRichText
+									source={
+										contact.paths?.description ||
+										"Navegue rapidamente entre catálogo, programação e páginas institucionais."
+									}
+									className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+								/>
 							</div>
 							<div className="flex flex-wrap gap-3 lg:justify-end">
 								{closingLinks.map((link, index) => (

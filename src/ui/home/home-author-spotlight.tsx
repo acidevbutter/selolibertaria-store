@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
 import { EditorialEyebrow, EditorialPanel } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { YnsLink } from "@/ui/yns-link";
 
 export async function HomeAuthorSpotlight({ content }: { content?: EditorialHomePage["author"] | null }) {
@@ -34,12 +35,14 @@ export async function HomeAuthorSpotlight({ content }: { content?: EditorialHome
 					<h2 className="editorial-serif text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
 						{author?.title || t("home.author.title")}
 					</h2>
-					<p className="text-base leading-8 text-[color:var(--editorial-muted)]">
-						{author?.body || t("home.author.body")}
-					</p>
-					<p className="text-base leading-8 text-[color:var(--editorial-muted)]">
-						{author?.secondaryBody || t("home.author.secondaryBody")}
-					</p>
+					<EditorialRichText
+						source={author?.body || t("home.author.body")}
+						className="text-base leading-8 text-[color:var(--editorial-muted)]"
+					/>
+					<EditorialRichText
+						source={author?.secondaryBody || t("home.author.secondaryBody")}
+						className="text-base leading-8 text-[color:var(--editorial-muted)]"
+					/>
 					<div className="flex flex-col gap-3 sm:flex-row">
 						<YnsLink
 							href={author?.primaryCtaHref || "/about"}

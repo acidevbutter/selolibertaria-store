@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 
 describe("EditorialRichText", () => {
-	it("renders legacy plain text as a paragraph", () => {
+	it("renders legacy plain text paragraph", () => {
 		render(<EditorialRichText source="Texto legado sem marcação." />);
 
 		expect(screen.getByText("Texto legado sem marcação.").closest("p")).toBeTruthy();
 	});
 
-	it("renders the minimal editorial text marks", () => {
+	it("renders minimal editorial text marks", () => {
 		render(
 			<EditorialRichText source={"### Intertítulo\n\nTexto com **força** e _ênfase_.\n\n> Uma citação"} />,
 		);
@@ -18,6 +18,14 @@ describe("EditorialRichText", () => {
 		expect(screen.getByText("força").tagName).toBe("STRONG");
 		expect(screen.getByText("ênfase").tagName).toBe("EM");
 		expect(screen.getByText("Uma citação").closest("blockquote")).toBeTruthy();
+	});
+
+	it("normalizes inline block markers saved in the same line", () => {
+		render(<EditorialRichText source="Livro, presença e linguagem. > Trecho em citação ### EU QUERO" />);
+
+		expect(screen.getByText("Livro, presença e linguagem.").closest("p")).toBeTruthy();
+		expect(screen.getByText("Trecho em citação").closest("blockquote")).toBeTruthy();
+		expect(screen.getByRole("heading", { name: "EU QUERO", level: 3 })).toBeTruthy();
 	});
 
 	it("keeps html-like legacy content escaped", () => {

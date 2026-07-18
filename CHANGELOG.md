@@ -2,6 +2,7 @@
 
 ### Fixed
 
+- Renderização pública de Markdown editorial mínimo em campos longos de Home, Sobre, Contato, Eventos, Projetos, Sarau Safado, Livros, PDP e footer global.
 - Substituídos campos livres de links editoriais por seletor de destinos públicos com opção `Personalizado`, preservando links externos/rotas customizadas quando escolhidos explicitamente.
 
 ### Changed

@@ -7,6 +7,7 @@ import {
 } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 import { YnsLink } from "@/ui/yns-link";
@@ -94,11 +95,14 @@ export default async function EventsPage() {
 							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
 								{page.hero?.title || featuredEvent?.title || "Agenda pública"}
 							</h1>
-							<p className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]">
-								{page.hero?.body ||
+							<EditorialRichText
+								source={
+									page.hero?.body ||
 									featuredEvent?.summary ||
-									"Eventos, leituras e memória editorial em circulação pública."}
-							</p>
+									"Eventos, leituras e memória editorial em circulação pública."
+								}
+								className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]"
+							/>
 							<div className="flex flex-wrap gap-3 pt-2">
 								<YnsLink
 									href={page.hero?.primaryCtaHref || "/sarau-safado"}
@@ -152,14 +156,18 @@ export default async function EventsPage() {
 							</h2>
 						</div>
 						<div className="space-y-5 text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
-							<p>
-								{page.curatorialNote?.body ||
-									"Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que programação não pareça um apêndice separado do catálogo."}
-							</p>
-							<p>
-								{page.agenda?.body ||
-									"A agenda mistura próxima edição, programação e memória sem perder clareza operacional."}
-							</p>
+							<EditorialRichText
+								source={
+									page.curatorialNote?.body ||
+									"Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que programação não pareça um apêndice separado do catálogo."
+								}
+							/>
+							<EditorialRichText
+								source={
+									page.agenda?.body ||
+									"A agenda mistura próxima edição, programação e memória sem perder clareza operacional."
+								}
+							/>
 						</div>
 					</section>
 				</EditorialShell>
@@ -190,7 +198,11 @@ export default async function EventsPage() {
 											</div>
 											<div className="text-sm leading-7 text-[color:var(--editorial-muted)]">
 												<p>{event.location || "São Paulo"}</p>
-												<p>{event.summary || event.description || "Programação editorial em circulação."}</p>
+												<EditorialRichText
+													source={
+														event.summary || event.description || "Programação editorial em circulação."
+													}
+												/>
 											</div>
 											<div className="flex lg:justify-end">
 												<YnsLink
@@ -220,10 +232,13 @@ export default async function EventsPage() {
 							<h2 className="display-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
 								{page.archive?.title || "A programação também deixa rastro, repertório e retorno aos livros."}
 							</h2>
-							<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{page.archive?.body ||
-									"A agenda não termina na data. Ela também organiza memória, fotos, textos e retornos para o catálogo."}
-							</p>
+							<EditorialRichText
+								source={
+									page.archive?.body ||
+									"A agenda não termina na data. Ela também organiza memória, fotos, textos e retornos para o catálogo."
+								}
+								className="text-sm leading-7 text-[color:var(--editorial-muted)]"
+							/>
 						</div>
 						<div className="grid gap-6 lg:grid-cols-2">
 							{archiveCards.map((card) => (
@@ -246,7 +261,10 @@ export default async function EventsPage() {
 									<h3 className="mt-5 editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
 										{card.title}
 									</h3>
-									<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">{card.meta}</p>
+									<EditorialRichText
+										source={card.meta}
+										className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+									/>
 								</YnsLink>
 							))}
 						</div>
@@ -259,10 +277,13 @@ export default async function EventsPage() {
 							<h2 className="display-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
 								{page.finalCta?.title || "A agenda abre caminho para encontros, livros e projetos do selo."}
 							</h2>
-							<p className="mt-3 max-w-3xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">
-								{page.finalCta?.body ||
-									"O caminho público segue para o programa central do selo e para o portfólio cultural."}
-							</p>
+							<EditorialRichText
+								source={
+									page.finalCta?.body ||
+									"O caminho público segue para o programa central do selo e para o portfólio cultural."
+								}
+								className="mt-3 max-w-3xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+							/>
 						</div>
 						<div className="flex flex-wrap gap-3">
 							<YnsLink

@@ -1,5 +1,6 @@
 import { getTranslations } from "@/i18n/server";
 import type { EditorialHomePage } from "@/lib/editorial-content";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Newsletter } from "@/ui/footer/newsletter.client";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -16,7 +17,10 @@ export async function HomeCommunityCta({ content }: { content?: EditorialHomePag
 						{community?.title || t("home.community.title")}
 					</h2>
 					{community?.body ? (
-						<p className="max-w-xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]">{community.body}</p>
+						<EditorialRichText
+							source={community.body}
+							className="max-w-xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
+						/>
 					) : null}
 					{community?.primaryCtaLabel || community?.primaryCtaHref ? (
 						<YnsLink
