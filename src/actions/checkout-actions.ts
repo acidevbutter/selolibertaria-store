@@ -343,6 +343,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			expiresAt: payment.date_of_expiration ?? null,
 		};
 	} catch (error) {
+		console.error("[submitMercadoPagoCheckoutPayment]", error);
 		await dbUpdateDraft(draft.orderId, {
 			status: "failed",
 			"mercadoPago.lastError": error instanceof Error ? error.message : "Falha no pagamento",
