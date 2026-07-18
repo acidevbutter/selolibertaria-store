@@ -168,9 +168,10 @@ function mapStripeProduct(
 	const variantSlug = getVariantSlug(variantLabel ?? undefined);
 
 	const variant: ProductVariant = {
-		id: price?.id || p.id,
+		id: p.id,
 		price: unitAmount,
 		currency,
+		priceId: price?.id ?? null,
 		label: variantLabel ?? null,
 		slug: variantSlug,
 		productId: p.id,
@@ -495,7 +496,7 @@ export class StripeCommerce {
 		preferredCurrency?: SupportedCurrency | null,
 	): Promise<{ product: Product; variant: ProductVariant }> {
 		const stripe = getStripeClient();
-		// We treat variant id as either a Price id or Product id; attempt price first.
+		// Compatibility: carts may still carry older Stripe Price ids as variant ids.
 		try {
 			const price = await stripe.prices.retrieve(variantOrProductId, { expand: ["currency_options"] });
 			if (price && typeof price.product === "string") {
