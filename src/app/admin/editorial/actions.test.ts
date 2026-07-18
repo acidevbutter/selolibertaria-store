@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ADMIN_IMAGE_UPLOAD_MAX_BYTES } from "@/lib/admin-image-upload";
 
 const requireCapabilityMock = vi.fn();
 const getDbMock = vi.fn();
@@ -154,6 +155,20 @@ describe("editorial item image persistence", () => {
 			alt: "Foto legada",
 			caption: "Legenda legada",
 		});
+	});
+
+	it("rejects images above the editorial upload limit before calling Cloudinary", async () => {
+		const oversizedFile = new File([new Uint8Array(ADMIN_IMAGE_UPLOAD_MAX_BYTES + 1)], "evento-grande.jpg", {
+			type: "image/jpeg",
+		});
+		const { updateEditorialEventAction } = await import("./actions");
+
+		await expect(
+			updateEditorialEventAction(buildEventFormData({ imageSrcFile: oversizedFile })),
+		).rejects.toThrow("A imagem deve ter no máximo 5 MB.");
+
+		expect(uploadImageFileToCloudinaryMock).not.toHaveBeenCalled();
+		expect(updateOneMock).not.toHaveBeenCalled();
 	});
 
 	it("persists only allowed background options for Sarau hero", async () => {

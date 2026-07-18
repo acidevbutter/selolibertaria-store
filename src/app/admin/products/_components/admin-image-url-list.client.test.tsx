@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ImgHTMLAttributes, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ADMIN_IMAGE_UPLOAD_MAX_BYTES } from "@/lib/admin-image-upload";
 import { AdminImageUrlList } from "./admin-image-url-list.client";
 
 vi.mock("next/image", () => ({
@@ -60,6 +61,27 @@ describe("AdminImageUrlList editorial on-submit flow", () => {
 
 		expect(screen.queryByRole("button", { name: "Enviar agora" })).not.toBeInTheDocument();
 		await waitFor(() => expect(screen.getByText("Prévia local.")).toBeInTheDocument());
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("blocks images above the editorial upload limit before preview", async () => {
+		render(
+			<form>
+				<AdminImageUrlList name="sectionImageSrc" uploadMode="on-submit" maxItems={1} />
+			</form>,
+		);
+
+		const file = new File([new Uint8Array(ADMIN_IMAGE_UPLOAD_MAX_BYTES + 1)], "capa-grande.jpg", {
+			type: "image/jpeg",
+		});
+
+		fireEvent.change(screen.getByLabelText("Selecionar imagem"), {
+			target: { files: [file] },
+		});
+
+		expect(await screen.findByText("A imagem deve ter no máximo 5 MB.")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "Confirmar troca" })).not.toBeInTheDocument();
+		expect(createObjectURL).not.toHaveBeenCalled();
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
