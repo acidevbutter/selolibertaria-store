@@ -320,7 +320,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		fireEvent.click(card);
 		await waitFor(() =>
 			expect(
-				screen.getByText("Informe os dados do cartão no formulário seguro do Mercado Pago."),
+				screen.getByText("O formulário seguro do Mercado Pago não envia dados brutos do cartão ao site."),
 			).toBeVisible(),
 		);
 	});

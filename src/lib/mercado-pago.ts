@@ -33,6 +33,39 @@ export interface MercadoPagoPaymentResponse {
 	date_of_expiration?: string;
 }
 
+export type MercadoPagoPaymentOutcomeKind =
+	| "approved"
+	| "processing"
+	| "rejected"
+	| "validation_error"
+	| "unavailable"
+	| "unknown";
+
+export interface MercadoPagoPaymentOutcome {
+	kind: MercadoPagoPaymentOutcomeKind;
+	message: string;
+	retryable: boolean;
+}
+
+export interface MercadoPagoCustomerCard {
+	id?: string | number;
+	token?: string;
+	first_six_digits?: string;
+	last_four_digits?: string;
+	expiration_month?: number;
+	expiration_year?: number;
+	payment_method?: { id?: string; name?: string };
+	issuer?: { id?: string | number; name?: string };
+}
+
+export interface MercadoPagoSavedCard {
+	id: string;
+	brand: string | null;
+	lastFourDigits: string | null;
+	expirationMonth: number | null;
+	expirationYear: number | null;
+}
+
 export interface MercadoPagoPixPaymentData {
 	paymentId: string;
 	status: string;
@@ -61,6 +94,80 @@ export interface MercadoPagoCreatePaymentInput {
 	external_reference: string;
 	notification_url?: string;
 	metadata?: Record<string, string | number | boolean | null>;
+}
+
+function mercadoPagoError(payload: { message?: string; error?: string } | null, fallback: string) {
+	return payload?.message || payload?.error || fallback;
+}
+
+async function mercadoPagoRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+	if (!env.MERCADO_PAGO_ACCESS_TOKEN) throw new Error("Mercado Pago não configurado");
+	const response = await fetch(`${MERCADO_PAGO_API_BASE_URL}${path}`, {
+		...init,
+		headers: {
+			Authorization: `Bearer ${env.MERCADO_PAGO_ACCESS_TOKEN}`,
+			...(init.body ? { "Content-Type": "application/json" } : {}),
+			...init.headers,
+		},
+		cache: "no-store",
+	});
+	const payload = (await response.json().catch(() => null)) as
+		| (T & { message?: string; error?: string })
+		| null;
+	if (!response.ok) throw new Error(mercadoPagoError(payload, "Falha na comunicação com o Mercado Pago"));
+	return payload as T;
+}
+
+export function mapMercadoPagoSavedCard(card: MercadoPagoCustomerCard): MercadoPagoSavedCard | null {
+	if (!card.id) return null;
+	return {
+		id: String(card.id),
+		brand: card.payment_method?.name ?? card.payment_method?.id ?? null,
+		lastFourDigits: card.last_four_digits ?? null,
+		expirationMonth: Number.isInteger(card.expiration_month) ? card.expiration_month! : null,
+		expirationYear: Number.isInteger(card.expiration_year) ? card.expiration_year! : null,
+	};
+}
+
+export async function createMercadoPagoCustomer(input: {
+	email: string;
+	firstName?: string;
+	lastName?: string;
+	identification?: { type: string; number: string };
+}) {
+	return mercadoPagoRequest<{ id?: string | number }>("/v1/customers", {
+		method: "POST",
+		body: JSON.stringify({
+			email: input.email,
+			first_name: input.firstName,
+			last_name: input.lastName,
+			identification: input.identification,
+		}),
+	});
+}
+
+export async function listMercadoPagoCustomerCards(customerId: string) {
+	const cards = await mercadoPagoRequest<MercadoPagoCustomerCard[] | { cards?: MercadoPagoCustomerCard[] }>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards`,
+	);
+	return Array.isArray(cards) ? cards : (cards.cards ?? []);
+}
+
+export async function addMercadoPagoCustomerCard(customerId: string, token: string) {
+	return mercadoPagoRequest<MercadoPagoCustomerCard>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards`,
+		{
+			method: "POST",
+			body: JSON.stringify({ token }),
+		},
+	);
+}
+
+export async function removeMercadoPagoCustomerCard(customerId: string, cardId: string) {
+	await mercadoPagoRequest<unknown>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards/${encodeURIComponent(cardId)}`,
+		{ method: "DELETE" },
+	);
 }
 
 export type MercadoPagoPaymentValidation = { ok: true } | { ok: false; error: string };
@@ -112,6 +219,66 @@ export function mapMercadoPagoStatus(status?: string | null) {
 	}
 }
 
+const MERCADO_PAGO_STATUS_DETAIL_MESSAGES: Record<string, string> = {
+	cc_rejected_bad_filled_card_number: "Confira o número do cartão.",
+	cc_rejected_bad_filled_date: "Confira a validade do cartão.",
+	cc_rejected_bad_filled_security_code: "Confira o código de segurança do cartão.",
+	cc_rejected_bad_filled_other: "Confira os dados do cartão.",
+	cc_rejected_insufficient_amount: "O cartão não tem limite disponível para esta compra.",
+	cc_rejected_call_for_authorize: "Autorize a compra com o banco emissor e tente novamente.",
+	cc_rejected_card_disabled: "Este cartão está bloqueado. Tente outro cartão.",
+	cc_rejected_max_attempts: "O limite de tentativas foi atingido. Tente outro cartão.",
+	cc_rejected_high_risk: "Não foi possível aprovar este pagamento. Tente outro cartão.",
+	cc_rejected_duplicated_payment:
+		"Esta tentativa foi identificada como duplicada. Confira o pedido e tente novamente.",
+	cc_rejected_invalid_installments: "Escolha uma quantidade de parcelas válida para este cartão.",
+	cc_rejected_card_type_not_allowed: "Este tipo de cartão não é aceito. Tente outro cartão.",
+	cc_rejected_other_reason: "O banco emissor recusou o pagamento. Tente outro cartão.",
+	cc_rejected_blacklist: "Não foi possível aprovar este pagamento. Tente outro cartão.",
+	pending_contingency: "Pagamento em análise. Aguarde a confirmação do Mercado Pago.",
+	pending_review_manual: "Pagamento em análise. Aguarde a confirmação do Mercado Pago.",
+};
+
+export function normalizeMercadoPagoPaymentOutcome(
+	payment: Pick<MercadoPagoPaymentResponse, "status" | "status_detail">,
+): MercadoPagoPaymentOutcome {
+	const status = mapMercadoPagoStatus(payment.status);
+	const detail = payment.status_detail?.trim().toLowerCase() ?? "";
+
+	if (status === "succeeded") return { kind: "approved", message: "Pagamento aprovado.", retryable: false };
+	if (status === "processing") {
+		return {
+			kind: "processing",
+			message: "Pagamento em análise. Aguarde a confirmação do Mercado Pago.",
+			retryable: false,
+		};
+	}
+	if (status === "failed") {
+		if (detail === "cc_rejected_invalid_installments") {
+			return {
+				kind: "validation_error",
+				message: MERCADO_PAGO_STATUS_DETAIL_MESSAGES[detail]!,
+				retryable: true,
+			};
+		}
+		return {
+			kind: "rejected",
+			message:
+				MERCADO_PAGO_STATUS_DETAIL_MESSAGES[detail] ??
+				"Pagamento recusado. Revise os dados ou tente outro cartão.",
+			retryable: true,
+		};
+	}
+	if (status === "unknown") {
+		return {
+			kind: "unavailable",
+			message: "Não foi possível confirmar o pagamento. Tente novamente em alguns instantes.",
+			retryable: true,
+		};
+	}
+	return { kind: "unknown", message: "Não foi possível confirmar o pagamento.", retryable: true };
+}
+
 export function isMercadoPagoPixPayment(paymentMethodId?: string | null) {
 	return paymentMethodId?.trim().toLowerCase() === "pix";
 }
@@ -136,7 +303,6 @@ export async function createMercadoPagoPayment(
 	idempotencyKey: string,
 ): Promise<MercadoPagoPaymentResponse> {
 	if (!env.MERCADO_PAGO_ACCESS_TOKEN) throw new Error("Mercado Pago não configurado");
-
 	const response = await fetch(`${MERCADO_PAGO_API_BASE_URL}/v1/payments`, {
 		method: "POST",
 		headers: {
@@ -153,7 +319,7 @@ export async function createMercadoPagoPayment(
 		| null;
 
 	if (!response.ok) {
-		const message = payload?.message || payload?.error || "Falha ao criar pagamento no Mercado Pago";
+		const message = mercadoPagoError(payload, "Falha ao criar pagamento no Mercado Pago");
 		throw new Error(message);
 	}
 

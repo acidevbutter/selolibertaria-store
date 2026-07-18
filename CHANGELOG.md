@@ -2,6 +2,7 @@
 
 ### Added
 
+- Cartões salvos do Mercado Pago para clientes autenticados, com consentimento explícito, vínculo por `mercadoPagoCustomerId`, listagem mascarada e remoção no checkout, sem persistir dados PCI ou tokens.
 - Cobertura de regressão para a verificação manual do Pix, incluindo consulta indisponível e cobrança expirada sem criação automática de nova cobrança.
 - Após pagamento Mercado Pago confirmado, o webhook agora cria ou vincula a conta do comprador, associa o pedido, envia o acesso seguro e impede duplicidade por e-mail ou CPF/CNPJ normalizado.
 - Checkout Mercado Pago agora aceita CPF ou CNPJ, exige tokenização para cartão e exibe Pix com QR Code, código copia e cola, cópia acessível e expiração quando informada pelo provedor.

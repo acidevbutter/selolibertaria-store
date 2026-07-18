@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
 	getPendingMercadoPagoPixPayment,
+	removeSavedMercadoPagoCard,
 	submitMercadoPagoCheckoutPayment,
 	type TransparentCheckoutIntent,
 	updateCheckoutBuyerData,
@@ -42,6 +43,8 @@ type MercadoPagoFormData = {
 type MercadoPagoBrickController = {
 	unmount?: () => void;
 };
+
+type SavedMercadoPagoCard = NonNullable<TransparentCheckoutIntent["savedCards"]>[number];
 
 type MercadoPagoInstance = {
 	bricks: () => {
@@ -163,6 +166,9 @@ export function MercadoPagoCheckoutForm({
 	const [isCheckingPixPayment, setIsCheckingPixPayment] = useState(false);
 	const [pixPaymentMessage, setPixPaymentMessage] = useState<string | null>(null);
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card">("pix");
+	const [savedCards, setSavedCards] = useState<SavedMercadoPagoCard[]>(checkout.savedCards ?? []);
+	const [showSavedCards, setShowSavedCards] = useState((checkout.savedCards ?? []).length > 0);
+	const [savePaymentMethod, setSavePaymentMethod] = useState(false);
 	buyerRef.current = buyer;
 	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
 	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
@@ -369,6 +375,19 @@ export function MercadoPagoCheckoutForm({
 		setMessage("Não foi possível gerar o Pix. Tente novamente em alguns instantes.");
 	}
 
+	async function handleRemoveSavedCard(cardId: string) {
+		const result = await removeSavedMercadoPagoCard(cardId);
+		if ("error" in result) {
+			setMessage(result.error ?? null);
+			return;
+		}
+		setSavedCards((cards) => {
+			const next = cards.filter((card) => card.id !== cardId);
+			if (next.length === 0) setShowSavedCards(false);
+			return next;
+		});
+	}
+
 	async function handlePixPaymentCheck() {
 		if (isCheckingPixPayment) return;
 		setIsCheckingPixPayment(true);
@@ -436,7 +455,15 @@ export function MercadoPagoCheckoutForm({
 					mp.bricks().create("payment", "mercado-pago-payment-brick", {
 						initialization: {
 							amount: Number((amountTotal / 100).toFixed(2)),
-							payer: toMercadoPagoPayer(buyerRef.current),
+							payer: {
+								...toMercadoPagoPayer(buyerRef.current),
+								...(checkout.mercadoPagoCustomerId
+									? {
+											customerId: checkout.mercadoPagoCustomerId,
+											cardsIds: showSavedCards ? savedCards.map((card) => card.id) : [],
+										}
+									: {}),
+							},
 						},
 						customization: {
 							paymentMethods: {
@@ -454,7 +481,10 @@ export function MercadoPagoCheckoutForm({
 								if (!ready) return Promise.reject();
 								const result = await submitMercadoPagoCheckoutPayment({
 									orderId: checkout.orderId,
-									paymentData: sanitizeMercadoPagoFormData(formData),
+									paymentData: {
+										...sanitizeMercadoPagoFormData(formData),
+										...(savePaymentMethod ? { savePaymentMethod: true } : {}),
+									},
 								});
 								stopSubmitting();
 								if ("error" in result) {
@@ -475,14 +505,14 @@ export function MercadoPagoCheckoutForm({
 									return Promise.resolve();
 								}
 								if (result.status === "failed") {
-									setMessage("Pagamento recusado. Revise os dados ou escolha outra forma de pagamento.");
+									setMessage(result.message ?? "Pagamento recusado. Revise os dados ou tente outro cartão.");
 									return Promise.reject();
 								}
 								setMessage(confirmationFailedMessage);
 								return Promise.reject();
 							},
-							onError: (error: unknown) => {
-								console.warn("Mercado Pago Brick error", error);
+							onError: () => {
+								console.warn("Mercado Pago Brick reported an error");
 								setMessage(confirmationFailedMessage);
 							},
 						},
@@ -505,11 +535,16 @@ export function MercadoPagoCheckoutForm({
 		};
 	}, [
 		amountTotal,
+		checkout.mercadoPagoCustomerId,
 		checkout.orderId,
 		checkout.publishableKey,
+		checkout.savedCards,
+		showSavedCards,
+		savedCards,
 		deliveryReady,
 		pixPayment,
 		selectedPaymentMethod,
+		savePaymentMethod,
 		router,
 		confirmationFailedMessage,
 	]);
@@ -806,8 +841,41 @@ export function MercadoPagoCheckoutForm({
 						) : (
 							<div className="space-y-3 rounded-lg border bg-muted/20 p-3">
 								<p className="text-sm font-medium">Cartão</p>
+								{checkout.isAuthenticated && savedCards.length > 0 ? (
+									<div className="space-y-2 rounded-md border bg-background p-3 text-xs">
+										<div className="flex items-center justify-between gap-3">
+											<p className="font-medium">Cartões salvos no Mercado Pago</p>
+											<button
+												type="button"
+												className="underline"
+												onClick={() => setShowSavedCards((visible) => !visible)}
+											>
+												{showSavedCards ? "Cadastrar outro cartão" : "Usar cartão salvo"}
+											</button>
+										</div>
+										{savedCards.map((card) => (
+											<div key={card.id} className="flex items-center justify-between gap-2">
+												<span>
+													{card.brand ?? "Cartão"} · final {card.lastFourDigits ?? "****"}
+												</span>
+												<button
+													type="button"
+													className="underline"
+													onClick={() => void handleRemoveSavedCard(card.id)}
+												>
+													Remover
+												</button>
+											</div>
+										))}
+										{showSavedCards ? (
+											<p className="text-muted-foreground">
+												Escolha o cartão no formulário seguro; o Mercado Pago solicitará o CVV.
+											</p>
+										) : null}
+									</div>
+								) : null}
 								<p className="text-xs leading-5 text-muted-foreground">
-									Informe os dados do cartão no formulário seguro do Mercado Pago.
+									O formulário seguro do Mercado Pago não envia dados brutos do cartão ao site.
 								</p>
 								{isLoadingPaymentBrick ? (
 									<p className="text-sm text-muted-foreground" role="status">
@@ -815,6 +883,16 @@ export function MercadoPagoCheckoutForm({
 									</p>
 								) : null}
 								<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+								{checkout.isAuthenticated && !showSavedCards ? (
+									<label className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
+										<input
+											type="checkbox"
+											checked={savePaymentMethod}
+											onChange={(event) => setSavePaymentMethod(event.currentTarget.checked)}
+										/>
+										<span>Salvar este cartão no Mercado Pago para compras futuras (opcional).</span>
+									</label>
+								) : null}
 							</div>
 						)}
 					</div>

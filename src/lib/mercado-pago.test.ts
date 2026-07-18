@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
 	getMercadoPagoPixPaymentData,
 	isMercadoPagoPixPayment,
+	mapMercadoPagoSavedCard,
 	mapMercadoPagoStatus,
+	normalizeMercadoPagoPaymentOutcome,
 	validateMercadoPagoPaymentResponse,
 	validateMercadoPagoWebhookSignature,
 } from "@/lib/mercado-pago";
@@ -16,6 +18,56 @@ describe("mapMercadoPagoStatus", () => {
 		expect(mapMercadoPagoStatus("charged_back")).toBe("disputed");
 		expect(mapMercadoPagoStatus("cancelled")).toBe("failed");
 		expect(mapMercadoPagoStatus("rejected")).toBe("failed");
+	});
+});
+
+describe("normalizeMercadoPagoPaymentOutcome", () => {
+	it("translates the main card rejection details without exposing provider text", () => {
+		expect(
+			normalizeMercadoPagoPaymentOutcome({
+				status: "rejected",
+				status_detail: "cc_rejected_insufficient_amount",
+			}),
+		).toEqual({
+			kind: "rejected",
+			message: "O cartão não tem limite disponível para esta compra.",
+			retryable: true,
+		});
+	});
+
+	it("distinguishes analysis from a retryable rejection", () => {
+		expect(normalizeMercadoPagoPaymentOutcome({ status: "in_process" })).toMatchObject({
+			kind: "processing",
+			retryable: false,
+		});
+		expect(
+			normalizeMercadoPagoPaymentOutcome({ status: "rejected", status_detail: "unknown_detail" }),
+		).toMatchObject({
+			kind: "rejected",
+			retryable: true,
+		});
+	});
+});
+
+describe("mapMercadoPagoSavedCard", () => {
+	it("returns only masked provider data and never exposes the provider token", () => {
+		const result = mapMercadoPagoSavedCard({
+			id: "card-1",
+			token: "sensitive-provider-token",
+			last_four_digits: "4242",
+			expiration_month: 12,
+			expiration_year: 2030,
+			payment_method: { id: "visa", name: "Visa" },
+		});
+
+		expect(result).toEqual({
+			id: "card-1",
+			brand: "Visa",
+			lastFourDigits: "4242",
+			expirationMonth: 12,
+			expirationYear: 2030,
+		});
+		expect(JSON.stringify(result)).not.toContain("sensitive-provider-token");
 	});
 });
 

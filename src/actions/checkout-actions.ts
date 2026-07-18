@@ -7,17 +7,25 @@ import { buildMercadoPagoPaymentAttemptIdempotencyKey } from "@/lib/checkout/mer
 import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import type { Cart } from "@/lib/commerce-types";
 import {
+	addMercadoPagoCustomerCard,
+	createMercadoPagoCustomer,
 	createMercadoPagoPayment,
 	getMercadoPagoNotificationUrl,
 	getMercadoPagoPixPaymentData,
 	isMercadoPagoPixPayment,
+	listMercadoPagoCustomerCards,
 	type MercadoPagoCreatePaymentInput,
+	type MercadoPagoSavedCard,
+	mapMercadoPagoSavedCard,
 	mapMercadoPagoStatus,
+	normalizeMercadoPagoPaymentOutcome,
+	removeMercadoPagoCustomerCard,
 	retrieveMercadoPagoPayment,
 	validateMercadoPagoPaymentResponse,
 } from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
 import { createInternalOrderId } from "@/lib/order-identity";
+import { auth } from "@/lib/session";
 import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipping";
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
@@ -38,6 +46,8 @@ export interface TransparentCheckoutIntent {
 	shippingError?: string | null;
 	deliveryMethod: CheckoutDeliveryMethod;
 	deliveryAddress?: CheckoutAddress | null;
+	mercadoPagoCustomerId?: string | null;
+	savedCards?: MercadoPagoSavedCard[];
 }
 
 interface OrderDraftDoc {
@@ -118,6 +128,60 @@ function toShippingQuoteItems(items: CheckoutSnapshot["items"]) {
 		productType: item.productType ?? null,
 		format: item.format ?? null,
 	}));
+}
+
+async function ensureMercadoPagoCustomer(input: {
+	userId?: string | null;
+	email?: string;
+	fullName?: string;
+	cpf?: string;
+}) {
+	if (!input.userId || !input.email) return null;
+	const db = await getDb();
+	const users = db.collection("users");
+	const user = await users.findOne<{ mercadoPagoCustomerId?: string | null }>({
+		_id: new ObjectId(input.userId),
+	});
+	if (user?.mercadoPagoCustomerId) return user.mercadoPagoCustomerId;
+	const { firstName, lastName } = splitBuyerName(input.fullName ?? "");
+	const customer = await createMercadoPagoCustomer({
+		email: input.email,
+		firstName,
+		lastName,
+		identification: input.cpf
+			? {
+					type: input.cpf.replace(/\D/g, "").length === 14 ? "CNPJ" : "CPF",
+					number: input.cpf.replace(/\D/g, ""),
+				}
+			: undefined,
+	});
+	if (!customer.id) throw new Error("Mercado Pago não retornou o cliente");
+	const customerId = String(customer.id);
+	await users.updateOne(
+		{
+			_id: new ObjectId(input.userId),
+			$or: [{ mercadoPagoCustomerId: { $exists: false } }, { mercadoPagoCustomerId: null }],
+		},
+		{ $set: { mercadoPagoCustomerId: customerId, updatedAt: new Date() } },
+	);
+	const current = await users.findOne<{ mercadoPagoCustomerId?: string | null }>({
+		_id: new ObjectId(input.userId),
+	});
+	return current?.mercadoPagoCustomerId ?? customerId;
+}
+
+async function getSavedCardsForUser(userId: string | null | undefined) {
+	if (!userId) return [];
+	const db = await getDb();
+	const user = await db
+		.collection("users")
+		.findOne<{ mercadoPagoCustomerId?: string | null }>(
+			{ _id: new ObjectId(userId) },
+			{ projection: { mercadoPagoCustomerId: 1 } },
+		);
+	if (!user?.mercadoPagoCustomerId) return [];
+	const cards = await listMercadoPagoCustomerCards(user.mercadoPagoCustomerId);
+	return cards.map(mapMercadoPagoSavedCard).filter((card): card is MercadoPagoSavedCard => Boolean(card));
 }
 
 async function resolveDraftAccess(input: {
@@ -218,6 +282,26 @@ async function createMercadoPagoCheckoutIntent(): Promise<TransparentCheckoutInt
 		{ upsert: true },
 	);
 
+	let mercadoPagoCustomerId: string | null = null;
+	let savedCards: MercadoPagoSavedCard[] = [];
+	if (snapshot.isAuthenticated && snapshot.userId) {
+		try {
+			const buyer = getDefaultBuyer(snapshot, existing);
+			mercadoPagoCustomerId = await ensureMercadoPagoCustomer({
+				userId: snapshot.userId,
+				email: buyer.email,
+				fullName: buyer.fullName,
+				cpf: buyer.cpf,
+			});
+			savedCards = await getSavedCardsForUser(snapshot.userId);
+		} catch (error) {
+			console.warn(
+				"[mercado-pago] saved cards unavailable",
+				error instanceof Error ? error.message : "unknown error",
+			);
+		}
+	}
+
 	return {
 		paymentProvider: "mercado_pago",
 		publishableKey: env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
@@ -235,6 +319,8 @@ async function createMercadoPagoCheckoutIntent(): Promise<TransparentCheckoutInt
 		shippingError: existing?.shippingError ?? snapshot.shippingError ?? null,
 		deliveryMethod,
 		deliveryAddress,
+		mercadoPagoCustomerId,
+		savedCards,
 	};
 }
 
@@ -250,6 +336,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 		installments?: number;
 		issuer_id?: string;
 		payer?: { email?: string; identification?: { type?: string; number?: string } };
+		savePaymentMethod?: boolean;
 	};
 }) {
 	if (!env.MERCADO_PAGO_ACCESS_TOKEN) return { error: "Mercado Pago não configurado" } as const;
@@ -276,12 +363,21 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			mercadoPago: { ...draft.mercadoPago, attemptId: null, idempotencyKey: null },
 		};
 	}
-	const paymentMethodId = input.paymentData.payment_method_id?.trim();
+	let paymentMethodId = input.paymentData.payment_method_id?.trim();
 	if (!paymentMethodId) return { error: "Meio de pagamento ausente" } as const;
 	const isPix = isMercadoPagoPixPayment(paymentMethodId);
-	const paymentToken = input.paymentData.token?.trim();
-	if (!isPix && !paymentToken)
+	let paymentToken = input.paymentData.token?.trim();
+	const savePaymentMethod = input.paymentData.savePaymentMethod === true;
+	if (savePaymentMethod && !snapshot.isAuthenticated)
+		return { error: "Entre na sua conta para salvar um cartão" } as const;
+	if (!isPix && (!paymentToken || !paymentMethodId))
 		return { error: "Não foi possível tokenizar o cartão. Confira os dados e tente novamente." } as const;
+	if (
+		!isPix &&
+		(!Number.isSafeInteger(input.paymentData.installments) || input.paymentData.installments! < 1)
+	) {
+		return { error: "Escolha uma quantidade de parcelas válida para este cartão." } as const;
+	}
 	let buyer: CheckoutBuyerDraft;
 	try {
 		buyer = normalizeCheckoutBuyer(draft.buyer ?? snapshot.user);
@@ -306,9 +402,25 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 		},
 		metadata: { orderId: draft.orderId, checkoutOwnerKey: draft.checkoutOwnerKey, cartHash: draft.cartHash },
 	};
+	if (savePaymentMethod && paymentToken && snapshot.userId) {
+		const customerId = await ensureMercadoPagoCustomer({
+			userId: snapshot.userId,
+			email: buyer.email,
+			fullName: buyer.fullName,
+			cpf: buyer.cpf,
+		});
+		if (!customerId) return { error: "Não foi possível preparar o cartão salvo" } as const;
+		try {
+			const savedCard = await addMercadoPagoCustomerCard(customerId, paymentToken);
+			paymentToken = savedCard.token?.trim();
+			if (!paymentToken) return { error: "Mercado Pago não confirmou o cartão salvo" } as const;
+		} catch {
+			return { error: "Não foi possível salvar o cartão no Mercado Pago" } as const;
+		}
+	}
 	if (paymentToken) body.token = paymentToken;
-	if (input.paymentData.installments) body.installments = input.paymentData.installments;
-	if (input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
+	if (!isPix && input.paymentData.installments) body.installments = input.paymentData.installments;
+	if (!isPix && input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
 	const attemptId = await ensureMercadoPagoPaymentAttempt(draft);
 	const idempotencyKey = buildMercadoPagoPaymentAttemptIdempotencyKey({
 		orderId: draft.orderId,
@@ -342,6 +454,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			return { error: paymentValidation.error } as const;
 		}
 		const status = mapMercadoPagoStatus(payment.status);
+		const outcome = normalizeMercadoPagoPaymentOutcome(payment);
 		await dbUpdateDraft(draft.orderId, {
 			userId: snapshot.userId ?? draft.userId ?? null,
 			buyer,
@@ -349,6 +462,8 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			mercadoPagoPaymentId: paymentId,
 			"mercadoPago.status": payment.status ?? null,
 			"mercadoPago.statusDetail": payment.status_detail ?? null,
+			"mercadoPago.outcomeKind": outcome.kind,
+			"mercadoPago.lastError": status === "failed" ? outcome.message : null,
 			"mercadoPago.paymentMethodId": payment.payment_method_id ?? paymentMethodId,
 			"mercadoPago.idempotencyKey": idempotencyKey,
 			updatedAt: new Date(),
@@ -360,19 +475,18 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			orderId: draft.orderId,
 			paymentId,
 			status,
+			message: status === "failed" || status === "processing" ? outcome.message : null,
 			qrCode: pixPayment?.qrCode ?? null,
 			qrCodeBase64: pixPayment?.qrCodeBase64 ?? null,
 			ticketUrl: pixPayment?.ticketUrl ?? null,
 			expiresAt: pixPayment?.expiresAt ?? null,
 		};
 	} catch (error) {
-		console.error(
-			"[submitMercadoPagoCheckoutPayment]",
-			error instanceof Error ? error.message : "unknown error",
-		);
+		console.error("[submitMercadoPagoCheckoutPayment] Mercado Pago request failed");
 		await dbUpdateDraft(draft.orderId, {
 			status: "failed",
-			"mercadoPago.lastError": error instanceof Error ? error.message : "Falha no pagamento",
+			"mercadoPago.lastError": "Não foi possível confirmar o pagamento. Tente novamente em alguns instantes.",
+			"mercadoPago.outcomeKind": "unavailable",
 			updatedAt: new Date(),
 		});
 		return { error: "Não foi possível criar o pagamento no Mercado Pago" } as const;
@@ -560,6 +674,26 @@ export async function updateCheckoutDeliverySelection(input: {
 		amountTotal,
 		currency: draft.currency,
 	};
+}
+
+export async function removeSavedMercadoPagoCard(cardId: string) {
+	const session = await auth();
+	if (!session?.user.id) return { error: "Entre na sua conta para remover um cartão" } as const;
+	if (!/^[a-zA-Z0-9_-]+$/.test(cardId.trim())) return { error: "Cartão inválido" } as const;
+	const db = await getDb();
+	const user = await db
+		.collection("users")
+		.findOne<{ mercadoPagoCustomerId?: string | null }>(
+			{ _id: new ObjectId(session.user.id) },
+			{ projection: { mercadoPagoCustomerId: 1 } },
+		);
+	if (!user?.mercadoPagoCustomerId) return { error: "Cartão não encontrado" } as const;
+	try {
+		await removeMercadoPagoCustomerCard(user.mercadoPagoCustomerId, cardId.trim());
+		return { ok: true as const };
+	} catch {
+		return { error: "Não foi possível remover este cartão" } as const;
+	}
 }
 
 export type { Cart };

@@ -249,6 +249,7 @@ export interface UserCart {
 export interface UserDoc {
 	_id?: string;
 	email: string;
+	mercadoPagoCustomerId?: string | null;
 	name?: string;
 	cpf?: string;
 	role?: "admin" | "vendor" | "customer";
