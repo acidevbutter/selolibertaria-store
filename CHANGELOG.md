@@ -2,6 +2,7 @@
 
 ### Added
 
+- Após pagamento Mercado Pago confirmado, o webhook agora cria ou vincula a conta do comprador, associa o pedido, envia o acesso seguro e impede duplicidade por e-mail ou CPF/CNPJ normalizado.
 - Checkout Mercado Pago agora aceita CPF ou CNPJ, exige tokenização para cartão e exibe Pix com QR Code, código copia e cola, cópia acessível e expiração quando informada pelo provedor.
 - Checkout Mercado Pago configurável para Pix e cartão via Payment Brick, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
 - Catálogo canônico MongoDB em `catalogProducts`, com variantes, preços em menor unidade BRL, estoque, publicação, categorias, `productType`/`format`, seed local e índices de leitura.

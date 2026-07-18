@@ -1,5 +1,6 @@
 import type { ObjectId } from "mongodb";
 import type { NextRequest } from "next/server";
+import { recordMercadoPagoCheckout } from "@/actions/mercado-pago-order-actions";
 import { env } from "@/env.mjs";
 import {
 	mapMercadoPagoStatus,
@@ -137,6 +138,15 @@ export async function POST(req: NextRequest) {
 				},
 			},
 		);
+
+		if (status === "succeeded") {
+			const finalized = await recordMercadoPagoCheckout({
+				paymentId,
+				orderId: draft.orderId,
+				createSession: false,
+			});
+			if ("error" in finalized) throw new Error(finalized.error);
+		}
 
 		await webhooksCol.updateOne(
 			{ _id: logId },

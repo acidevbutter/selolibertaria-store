@@ -147,6 +147,7 @@ export async function ensureIndexes() {
 
 			await Promise.all([
 				users.createIndex({ email: 1 }, { unique: true }),
+				createOptionalIndex(users.createIndex({ cpfNormalized: 1 }, { sparse: true, unique: true })),
 				createOptionalIndex(users.createIndex({ "verification.token": 1 }, { sparse: true })),
 				createOptionalIndex(users.createIndex({ "accountAccessTokens.tokenHash": 1 }, { sparse: true })),
 				createOptionalIndex(
