@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	submitMercadoPagoCheckoutPayment,
 	type TransparentCheckoutIntent,
@@ -139,6 +139,7 @@ export function MercadoPagoCheckoutForm({
 }) {
 	const router = useRouter();
 	const t = useTranslations("Checkout.form");
+	const confirmationFailedMessage = t("errors.confirmationFailed");
 	const [buyer, setBuyer] = useState(checkout.buyer);
 	const [buyerErrors, setBuyerErrors] = useState<Partial<Record<keyof typeof buyer, string>>>({});
 	const [message, setMessage] = useState<string | null>(null);
@@ -146,6 +147,7 @@ export function MercadoPagoCheckoutForm({
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoadingPaymentBrick, setIsLoadingPaymentBrick] = useState(false);
+	const prepareCheckoutBeforePaymentRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
 	const [pixPayment, setPixPayment] = useState<{
 		paymentId: string;
 		qrCode?: string | null;
@@ -319,6 +321,7 @@ export function MercadoPagoCheckoutForm({
 
 		return true;
 	}
+	prepareCheckoutBeforePaymentRef.current = prepareCheckoutBeforePayment;
 
 	useEffect(() => {
 		if (!deliveryReady || pixPayment) {
@@ -338,7 +341,7 @@ export function MercadoPagoCheckoutForm({
 					mp.bricks().create("payment", "mercado-pago-payment-brick", {
 						initialization: {
 							amount: Number((amountTotal / 100).toFixed(2)),
-							payer: { email: buyer.email },
+							payer: { email: buyer.email, entityType: "individual" },
 						},
 						customization: {
 							paymentMethods: {
@@ -353,7 +356,7 @@ export function MercadoPagoCheckoutForm({
 								if (!cancelled) setIsLoadingPaymentBrick(false);
 							},
 							onSubmit: async ({ formData }: { formData: MercadoPagoFormData }) => {
-								const ready = await prepareCheckoutBeforePayment();
+								const ready = await prepareCheckoutBeforePaymentRef.current();
 								if (!ready) return Promise.reject();
 								const result = await submitMercadoPagoCheckoutPayment({
 									orderId: checkout.orderId,
@@ -376,12 +379,12 @@ export function MercadoPagoCheckoutForm({
 									);
 									return Promise.resolve();
 								}
-								setMessage(t("errors.confirmationFailed"));
+								setMessage(confirmationFailedMessage);
 								return Promise.reject();
 							},
 							onError: (error: unknown) => {
 								console.warn("Mercado Pago Brick error", error);
-								setMessage(t("errors.confirmationFailed"));
+								setMessage(confirmationFailedMessage);
 							},
 						},
 					}),
@@ -403,13 +406,12 @@ export function MercadoPagoCheckoutForm({
 		};
 	}, [
 		amountTotal,
-		buyer.email,
 		checkout.orderId,
 		checkout.publishableKey,
 		deliveryReady,
 		pixPayment,
 		router,
-		t,
+		confirmationFailedMessage,
 	]);
 
 	return (
