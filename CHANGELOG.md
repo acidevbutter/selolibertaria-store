@@ -3,6 +3,7 @@
 ### Added
 
 - Checkout Mercado Pago com seleção própria de Pix/cartão, resolução da bandeira pelo BIN, tokenização de cartão no navegador e sem Payment Brick, iframe ou UI hospedada.
+- Parcelas do cartão calculadas pelo SDK do Mercado Pago conforme BIN, tipo de cartão e total do pedido.
 - Checkout Mercado Pago agora aceita CPF ou CNPJ, exige tokenização para cartão e exibe Pix com QR Code, código copia e cola, cópia acessível e expiração quando informada pelo provedor.
 - Checkout Mercado Pago para Pix e cartão, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
 - Catálogo canônico MongoDB em `catalogProducts`, com variantes, preços em menor unidade BRL, estoque, publicação, categorias, `productType`/`format`, seed local e índices de leitura.

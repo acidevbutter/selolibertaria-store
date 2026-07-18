@@ -12,7 +12,10 @@ import { useTranslations } from "@/i18n/client";
 import type { AppLocale } from "@/i18n/config";
 import {
 	type MercadoPagoCardPaymentMethod,
+	type MercadoPagoInstallment,
+	normalizeMercadoPagoInstallments,
 	resolveMercadoPagoCardPaymentMethod,
+	resolveMercadoPagoCardPaymentMethodDetails,
 } from "@/lib/checkout/mercado-pago-card";
 import {
 	formatCheckoutPhone,
@@ -30,6 +33,11 @@ import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
 
 type MercadoPagoInstance = {
 	getPaymentMethods: (input: { bin: string }) => Promise<{ results?: MercadoPagoCardPaymentMethod[] }>;
+	getInstallments: (input: {
+		amount: string;
+		bin: string;
+		paymentTypeId: string;
+	}) => Promise<Array<{ payer_costs?: MercadoPagoInstallment[] }>>;
 	createCardToken: (input: {
 		cardNumber: string;
 		cardholderName: string;
@@ -127,6 +135,8 @@ export function MercadoPagoCheckoutForm({
 		securityCode: "",
 		installments: "1",
 	});
+	const [installmentOptions, setInstallmentOptions] = useState<Array<{ value: string; label: string }>>([]);
+	const [isLoadingInstallments, setIsLoadingInstallments] = useState(false);
 	const [pixPayment, setPixPayment] = useState<{
 		paymentId: string;
 		qrCode?: string | null;
@@ -304,6 +314,40 @@ export function MercadoPagoCheckoutForm({
 
 		return true;
 	}
+
+	async function refreshInstallments(cardNumber: string) {
+		if (cardNumber.length < 6) {
+			setInstallmentOptions([]);
+			return;
+		}
+		setIsLoadingInstallments(true);
+		try {
+			await loadMercadoPagoSdk();
+			if (!window.MercadoPago) throw new Error("SDK do Mercado Pago indisponível");
+			const mercadoPago = new window.MercadoPago(checkout.publishableKey, { locale: "pt-BR" });
+			const paymentMethods = await mercadoPago.getPaymentMethods({ bin: cardNumber.slice(0, 6) });
+			const cardPaymentMethod = resolveMercadoPagoCardPaymentMethodDetails(paymentMethods.results);
+			if (!cardPaymentMethod?.payment_type_id) throw new Error("Bandeira do cartão não identificada");
+			const installments = await mercadoPago.getInstallments({
+				amount: (amountTotal / 100).toFixed(2),
+				bin: cardNumber.slice(0, 6),
+				paymentTypeId: cardPaymentMethod.payment_type_id,
+			});
+			const options = normalizeMercadoPagoInstallments(installments[0]?.payer_costs);
+			setInstallmentOptions(options);
+			setCard((current) => ({
+				...current,
+				installments: options.some((option) => option.value === current.installments)
+					? current.installments
+					: (options[0]?.value ?? "1"),
+			}));
+		} catch {
+			setInstallmentOptions([]);
+		} finally {
+			setIsLoadingInstallments(false);
+		}
+	}
+
 	async function submitPayment() {
 		const ready = await prepareCheckoutBeforePayment();
 		if (!ready) return;
@@ -641,9 +685,10 @@ export function MercadoPagoCheckoutForm({
 									<Input
 										id="cardholder-name"
 										value={card.cardholderName}
-										onChange={(event) =>
-											setCard((current) => ({ ...current, cardholderName: event.currentTarget.value }))
-										}
+										onChange={(event) => {
+											const cardholderName = event.currentTarget.value;
+											setCard((current) => ({ ...current, cardholderName }));
+										}}
 										autoComplete="cc-name"
 										required
 									/>
@@ -652,12 +697,11 @@ export function MercadoPagoCheckoutForm({
 									<Input
 										id="card-number"
 										value={formatCardNumber(card.cardNumber)}
-										onChange={(event) =>
-											setCard((current) => ({
-												...current,
-												cardNumber: event.currentTarget.value.replace(/\D/g, "").slice(0, 19),
-											}))
-										}
+										onChange={(event) => {
+											const cardNumber = event.currentTarget.value.replace(/\D/g, "").slice(0, 19);
+											setCard((current) => ({ ...current, cardNumber }));
+											void refreshInstallments(cardNumber);
+										}}
 										inputMode="numeric"
 										autoComplete="cc-number"
 										required
@@ -667,12 +711,10 @@ export function MercadoPagoCheckoutForm({
 									<Input
 										id="card-expiration"
 										value={card.expiresAt}
-										onChange={(event) =>
-											setCard((current) => ({
-												...current,
-												expiresAt: formatCardExpiration(event.currentTarget.value),
-											}))
-										}
+										onChange={(event) => {
+											const expiresAt = formatCardExpiration(event.currentTarget.value);
+											setCard((current) => ({ ...current, expiresAt }));
+										}}
 										placeholder="MM/AA"
 										inputMode="numeric"
 										autoComplete="cc-exp"
@@ -684,33 +726,40 @@ export function MercadoPagoCheckoutForm({
 										id="card-cvv"
 										type="password"
 										value={card.securityCode}
-										onChange={(event) =>
-											setCard((current) => ({
-												...current,
-												securityCode: event.currentTarget.value.replace(/\D/g, "").slice(0, 4),
-											}))
-										}
+										onChange={(event) => {
+											const securityCode = event.currentTarget.value.replace(/\D/g, "").slice(0, 4);
+											setCard((current) => ({ ...current, securityCode }));
+										}}
 										inputMode="numeric"
 										autoComplete="cc-csc"
 										required
 									/>
 								</BuyerInput>
-								<label className="grid gap-2 text-sm font-medium">
-									Parcelas
-									<select
-										className="h-10 rounded-md border bg-background px-3 text-sm"
-										value={card.installments}
-										onChange={(event) =>
-											setCard((current) => ({ ...current, installments: event.currentTarget.value }))
-										}
-									>
-										{Array.from({ length: 12 }, (_, index) => (
-											<option key={index + 1} value={index + 1}>
-												{index + 1}x
-											</option>
-										))}
-									</select>
-								</label>
+								{installmentOptions.length > 0 ? (
+									<label className="grid gap-2 text-sm font-medium">
+										Parcelas
+										<select
+											className="h-10 rounded-md border bg-background px-3 text-sm"
+											value={card.installments}
+											onChange={(event) => {
+												const installments = event.currentTarget.value;
+												setCard((current) => ({ ...current, installments }));
+											}}
+										>
+											{installmentOptions.map((option) => (
+												<option key={option.value} value={option.value}>
+													{option.label}
+												</option>
+											))}
+										</select>
+									</label>
+								) : (
+									<p className="self-end text-xs leading-5 text-muted-foreground">
+										{isLoadingInstallments
+											? "Calculando parcelas disponíveis…"
+											: "Informe o número do cartão para ver as parcelas disponíveis."}
+									</p>
+								)}
 								<p className="self-end text-xs leading-5 text-muted-foreground">
 									Os dados deste cartão não são enviados ao nosso servidor nem salvos.
 								</p>
