@@ -7,6 +7,7 @@ import ptBrMessages from "../../../../messages/pt-BR.json";
 const {
 	closeCartMock,
 	finalizeCheckoutCleanupMock,
+	recordMercadoPagoCheckoutMock,
 	recordPaymentIntentCheckoutMock,
 	recordSuccessfulCheckoutMock,
 	refreshCartMock,
@@ -16,6 +17,7 @@ const {
 } = vi.hoisted(() => ({
 	closeCartMock: vi.fn(),
 	finalizeCheckoutCleanupMock: vi.fn(),
+	recordMercadoPagoCheckoutMock: vi.fn(),
 	recordPaymentIntentCheckoutMock: vi.fn(),
 	recordSuccessfulCheckoutMock: vi.fn(),
 	refreshCartMock: vi.fn(),
@@ -25,6 +27,7 @@ const {
 		session_id: null as string | null,
 		order: "ord_123" as string | null,
 		payment_intent: "pi_123" as string | null,
+		mp_payment: null as string | null,
 		checkout: "success" as string | null,
 		guest: null as string | null,
 	},
@@ -45,6 +48,10 @@ vi.mock("@/actions/order-actions", () => ({
 	recordSuccessfulCheckout: recordSuccessfulCheckoutMock,
 }));
 
+vi.mock("@/actions/mercado-pago-order-actions", () => ({
+	recordMercadoPagoCheckout: recordMercadoPagoCheckoutMock,
+}));
+
 vi.mock("@/context/cart-context", () => ({
 	useCart: () => ({
 		refreshCart: refreshCartMock,
@@ -57,6 +64,7 @@ describe("Checkout processing page", () => {
 		vi.useFakeTimers();
 		closeCartMock.mockReset();
 		finalizeCheckoutCleanupMock.mockReset();
+		recordMercadoPagoCheckoutMock.mockReset();
 		recordPaymentIntentCheckoutMock.mockReset();
 		recordSuccessfulCheckoutMock.mockReset();
 		refreshCartMock.mockReset();
@@ -65,6 +73,7 @@ describe("Checkout processing page", () => {
 		searchParamsState.session_id = null;
 		searchParamsState.order = "ord_123";
 		searchParamsState.payment_intent = "pi_123";
+		searchParamsState.mp_payment = null;
 		searchParamsState.checkout = "success";
 		searchParamsState.guest = null;
 	});

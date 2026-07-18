@@ -6,11 +6,18 @@ import { env, publicUrl } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
+import { buildMercadoPagoPaymentAttemptIdempotencyKey } from "@/lib/checkout/mercado-pago-idempotency";
 import { buildTransparentCheckoutIdempotencyKey } from "@/lib/checkout/transparent-checkout-idempotency";
 import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { commerce } from "@/lib/commerce-stripe";
 import type { Cart } from "@/lib/commerce-types";
 import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
+import {
+	createMercadoPagoPayment,
+	getMercadoPagoNotificationUrl,
+	type MercadoPagoCreatePaymentInput,
+	mapMercadoPagoStatus,
+} from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
 import { createInternalOrderId } from "@/lib/order-identity";
 import { listSavedCardPaymentMethods, type SavedPaymentMethodSummary } from "@/lib/saved-payment-methods";
@@ -18,8 +25,9 @@ import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipp
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
 export interface TransparentCheckoutIntent {
+	paymentProvider?: "stripe" | "mercado_pago";
 	publishableKey: string;
-	clientSecret: string;
+	clientSecret?: string;
 	orderId: string;
 	paymentIntentId: string;
 	isAuthenticated: boolean;
@@ -49,7 +57,9 @@ interface OrderDraftDoc {
 	orderId: string;
 	checkoutOwnerKey: string;
 	userId?: string | null;
-	paymentIntentId: string;
+	paymentIntentId?: string | null;
+	paymentProvider?: "stripe" | "mercado_pago";
+	mercadoPagoPaymentId?: string | null;
 	stripeCustomerId?: string | null;
 	cartHash: string;
 	status: string;
@@ -70,6 +80,7 @@ interface OrderDraftDoc {
 	updatedAt: Date;
 	confirmedAt?: Date | null;
 	lastStripeEventId?: string | null;
+	lastMercadoPagoEventId?: string | null;
 	savePaymentMethod?: boolean;
 	paymentMethodSetupUsage?: "on_session" | "off_session" | null;
 }
@@ -119,7 +130,7 @@ function getDefaultBuyer(snapshot: CheckoutSnapshot, draft?: OrderDraftDoc | nul
 }
 
 async function resolveDraftAccess(input: {
-	paymentIntentId: string;
+	paymentIntentId?: string | null;
 	orderId?: string | null;
 }): Promise<{ draft: OrderDraftDoc; snapshot: CheckoutSnapshot } | { error: string }> {
 	const snapshotResult = await getCheckoutSnapshot();
@@ -131,7 +142,9 @@ async function resolveDraftAccess(input: {
 	const db = await getDb();
 	const draft = input.orderId?.startsWith("ord_")
 		? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: input.orderId })
-		: await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId: input.paymentIntentId });
+		: input.paymentIntentId
+			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ paymentIntentId: input.paymentIntentId })
+			: null;
 
 	if (!draft) {
 		return { error: "Payment intent not found" };
@@ -172,9 +185,300 @@ function normalizeBrazilOnlyCheckoutAddress(address?: CheckoutAddress | null): C
 	};
 }
 
+function splitBuyerName(fullName: string) {
+	const parts = fullName.trim().split(/\s+/).filter(Boolean);
+	if (parts.length <= 1) return { firstName: parts[0] ?? fullName.trim(), lastName: "" };
+	return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
+}
+
+function toMercadoPagoAmount(amountInCents: number) {
+	return Number((Math.max(0, amountInCents) / 100).toFixed(2));
+}
+
+function toShippingQuoteItems(items: CheckoutSnapshot["items"]) {
+	return items.map((item) => ({
+		productId: item.productId,
+		variantId: item.variantId,
+		quantity: item.quantity,
+		price: item.unitAmount,
+		productType: item.productType ?? null,
+		format: item.format ?? null,
+	}));
+}
+
+async function createMercadoPagoTransparentCheckoutIntent(): Promise<
+	TransparentCheckoutIntent | { error: string }
+> {
+	if (!env.MERCADO_PAGO_ACCESS_TOKEN) return { error: "Mercado Pago não configurado" };
+	if (!env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY) return { error: "Public Key do Mercado Pago ausente" };
+
+	const snapshotResult = await getCheckoutSnapshot();
+	if (!snapshotResult.ok) {
+		return { error: snapshotResult.error };
+	}
+
+	const snapshot = snapshotResult.snapshot;
+	if (snapshot.currency.toUpperCase() !== "BRL") {
+		return { error: "Mercado Pago está disponível apenas para pagamentos em BRL" };
+	}
+
+	const db = await getDb();
+	const drafts = db.collection<OrderDraftDoc>("orderDrafts");
+	const existingDraft = await drafts.findOne(
+		{
+			checkoutOwnerKey: snapshot.checkoutOwnerKey,
+			cartHash: snapshot.cartHash,
+			paymentProvider: "mercado_pago",
+		},
+		{ sort: { createdAt: -1 } },
+	);
+
+	const savedDeliveryAddress = normalizeCheckoutAddress(snapshot.user.address ?? null);
+	const existingDraftAddress = normalizeBrazilOnlyCheckoutAddress(existingDraft?.deliveryAddress ?? null);
+	const draftDeliveryMethod =
+		existingDraft?.deliveryMethod === "pickup"
+			? "pickup"
+			: existingDraft?.deliveryMethod === "saved-address"
+				? savedDeliveryAddress?.country === "BR"
+					? "saved-address"
+					: "new-address"
+				: existingDraft?.deliveryMethod === "new-address"
+					? "new-address"
+					: savedDeliveryAddress?.country === "BR"
+						? "saved-address"
+						: "new-address";
+	const draftDeliveryAddress =
+		draftDeliveryMethod === "pickup"
+			? null
+			: draftDeliveryMethod === "saved-address"
+				? savedDeliveryAddress
+				: existingDraftAddress;
+	const draftShippingRate =
+		draftDeliveryMethod === "pickup" || draftDeliveryAddress
+			? (existingDraft?.shippingRate ?? snapshot.shippingRate ?? null)
+			: null;
+	const draftShippingError =
+		draftDeliveryMethod === "pickup" || draftDeliveryAddress
+			? (existingDraft?.shippingError ?? snapshot.shippingError ?? null)
+			: null;
+	const draftAmountTotal = existingDraft?.amountTotal ?? snapshot.amountTotal;
+	const buyer = getDefaultBuyer(snapshot, existingDraft);
+	const orderDraftId = existingDraft?._id ?? new ObjectId();
+	const internalOrderId = existingDraft?.orderId || createInternalOrderId();
+	const paymentReferenceId = existingDraft?.paymentIntentId || `mp_draft_${internalOrderId}`;
+
+	await drafts.updateOne(
+		{ _id: orderDraftId },
+		{
+			$setOnInsert: {
+				_id: orderDraftId,
+				createdAt: new Date(),
+			},
+			$set: {
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				userId: snapshot.userId ?? null,
+				orderId: internalOrderId,
+				paymentIntentId: paymentReferenceId,
+				paymentProvider: "mercado_pago",
+				mercadoPagoPaymentId: existingDraft?.mercadoPagoPaymentId ?? null,
+				buyer,
+				cartHash: existingDraft?.cartHash ?? snapshot.cartHash,
+				status: existingDraft?.status ?? "requires_payment_method",
+				subtotal: existingDraft?.subtotal ?? snapshot.subtotal,
+				discountTotal: existingDraft?.discountTotal ?? snapshot.discountTotal,
+				amountTotal: draftAmountTotal,
+				currency: existingDraft?.currency ?? snapshot.currency,
+				items: snapshot.items,
+				shippingRate: draftShippingRate,
+				shippingError: draftShippingError,
+				deliveryMethod: draftDeliveryMethod,
+				deliveryAddress: draftDeliveryAddress,
+				couponCode: snapshot.couponCode ?? null,
+				couponPromotionId: snapshot.couponPromotionId ?? null,
+				couponCodeId: snapshot.couponCodeId ?? null,
+				updatedAt: new Date(),
+				confirmedAt: null,
+				savePaymentMethod: false,
+				paymentMethodSetupUsage: null,
+			},
+		},
+		{ upsert: true },
+	);
+
+	return {
+		paymentProvider: "mercado_pago",
+		publishableKey: env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
+		orderId: internalOrderId,
+		paymentIntentId: paymentReferenceId,
+		isAuthenticated: snapshot.isAuthenticated,
+		buyer,
+		subtotal: existingDraft?.subtotal ?? snapshot.subtotal,
+		discountTotal: existingDraft?.discountTotal ?? snapshot.discountTotal,
+		amountTotal: draftAmountTotal,
+		currency: existingDraft?.currency ?? snapshot.currency,
+		items: snapshot.items,
+		couponCode: snapshot.couponCode ?? null,
+		shippingRate: draftShippingRate,
+		shippingError: draftShippingError,
+		deliveryMethod: draftDeliveryMethod,
+		deliveryAddress: draftDeliveryAddress,
+		canSavePaymentMethod: false,
+		savePaymentMethod: false,
+		savedPaymentMethods: [],
+	};
+}
+
+export async function submitMercadoPagoCheckoutPayment(input: {
+	orderId: string;
+	paymentData: {
+		payment_method_id?: string;
+		token?: string;
+		installments?: number;
+		issuer_id?: string;
+		payer?: {
+			email?: string;
+			identification?: {
+				type?: string;
+				number?: string;
+			};
+		};
+	};
+}): Promise<
+	| {
+			ok: true;
+			orderId: string;
+			paymentId: string;
+			status: string;
+			qrCode?: string | null;
+			qrCodeBase64?: string | null;
+			ticketUrl?: string | null;
+	  }
+	| { error: string }
+> {
+	if (env.CHECKOUT_PAYMENT_PROVIDER !== "mercado_pago") return { error: "Mercado Pago não está ativo" };
+	if (!env.MERCADO_PAGO_ACCESS_TOKEN) return { error: "Mercado Pago não configurado" };
+	if (!input.orderId.startsWith("ord_")) return { error: "Pedido inválido" };
+
+	const access = await resolveDraftAccess({ orderId: input.orderId, paymentIntentId: null });
+	if ("error" in access) return { error: access.error };
+
+	const { draft, snapshot } = access;
+	if (draft.paymentProvider !== "mercado_pago") return { error: "Pedido não pertence ao Mercado Pago" };
+	if (draft.status === "succeeded" || draft.status === "paid") return { error: "Pagamento já confirmado" };
+	if (draft.status === "processing") return { error: "Pagamento em processamento" };
+
+	let buyer: CheckoutBuyerDraft;
+	try {
+		buyer = normalizeCheckoutBuyer(draft.buyer ?? snapshot.user);
+	} catch (error) {
+		return { error: error instanceof Error ? error.message : "Dados da compra inválidos" };
+	}
+
+	const paymentMethodId = input.paymentData.payment_method_id?.trim();
+	if (!paymentMethodId) return { error: "Meio de pagamento ausente" };
+
+	const { firstName, lastName } = splitBuyerName(buyer.fullName);
+	const cpf = buyer.cpf.replace(/\D/g, "");
+	const body: MercadoPagoCreatePaymentInput = {
+		transaction_amount: toMercadoPagoAmount(draft.amountTotal),
+		description: `Pedido ${draft.orderId} - Selo Libertária`,
+		payment_method_id: paymentMethodId,
+		external_reference: draft.orderId,
+		notification_url: getMercadoPagoNotificationUrl(),
+		payer: {
+			email: buyer.email,
+			first_name: firstName,
+			last_name: lastName,
+			identification: {
+				type: input.paymentData.payer?.identification?.type || "CPF",
+				number: input.paymentData.payer?.identification?.number?.replace(/\D/g, "") || cpf,
+			},
+		},
+		metadata: {
+			orderId: draft.orderId,
+			checkoutOwnerKey: draft.checkoutOwnerKey,
+			cartHash: draft.cartHash,
+			integration: "transparent_checkout_mercado_pago",
+			...(draft.userId ? { userId: draft.userId } : {}),
+			...(draft.couponCode ? { couponCode: draft.couponCode } : {}),
+			...(draft.couponPromotionId ? { couponPromotionId: draft.couponPromotionId } : {}),
+			...(draft.couponCodeId ? { couponCodeId: draft.couponCodeId } : {}),
+		},
+	};
+
+	if (input.paymentData.token) body.token = input.paymentData.token;
+	if (input.paymentData.installments) body.installments = input.paymentData.installments;
+	if (input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
+
+	const idempotencyKey = buildMercadoPagoPaymentAttemptIdempotencyKey({
+		orderId: draft.orderId,
+		checkoutOwnerKey: draft.checkoutOwnerKey,
+		cartHash: draft.cartHash,
+		amountTotal: draft.amountTotal,
+		currency: draft.currency,
+		paymentMethodId,
+		buyerEmail: buyer.email,
+		deliveryMethod: draft.deliveryMethod ?? null,
+		deliveryAddress: draft.deliveryAddress ?? null,
+		shippingRate: draft.shippingRate ?? null,
+	});
+
+	try {
+		const payment = await createMercadoPagoPayment(body, idempotencyKey);
+		const paymentId = payment.id ? String(payment.id) : "";
+		if (!paymentId) return { error: "Mercado Pago não retornou ID do pagamento" };
+		const status = mapMercadoPagoStatus(payment.status);
+		const qrData = payment.point_of_interaction?.transaction_data;
+
+		await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
+			{ orderId: draft.orderId },
+			{
+				$set: {
+					userId: snapshot.userId ?? draft.userId ?? null,
+					buyer,
+					status,
+					mercadoPagoPaymentId: paymentId,
+					"mercadoPago.status": payment.status ?? null,
+					"mercadoPago.statusDetail": payment.status_detail ?? null,
+					"mercadoPago.paymentMethodId": payment.payment_method_id ?? paymentMethodId,
+					"mercadoPago.idempotencyKey": idempotencyKey,
+					updatedAt: new Date(),
+					confirmedAt: status === "succeeded" ? new Date() : null,
+				},
+			},
+		);
+
+		return {
+			ok: true,
+			orderId: draft.orderId,
+			paymentId,
+			status,
+			qrCode: qrData?.qr_code ?? null,
+			qrCodeBase64: qrData?.qr_code_base64 ?? null,
+			ticketUrl: qrData?.ticket_url ?? null,
+		};
+	} catch (error) {
+		await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
+			{ orderId: draft.orderId },
+			{
+				$set: {
+					status: "failed",
+					"mercadoPago.lastError": error instanceof Error ? error.message : "Falha no pagamento",
+					updatedAt: new Date(),
+				},
+			},
+		);
+		return { error: "Não foi possível criar o pagamento no Mercado Pago" };
+	}
+}
+
 export async function createTransparentCheckoutIntent(): Promise<
 	TransparentCheckoutIntent | { error: string }
 > {
+	if (env.CHECKOUT_PAYMENT_PROVIDER === "mercado_pago") {
+		return createMercadoPagoTransparentCheckoutIntent();
+	}
+
 	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
 	if (!env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) return { error: "Missing Stripe publishable key" };
 
@@ -294,6 +598,7 @@ export async function createTransparentCheckoutIntent(): Promise<
 				}
 
 				return {
+					paymentProvider: "stripe",
 					publishableKey: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 					clientSecret: existingIntent.client_secret,
 					orderId: existingDraft.orderId,
@@ -415,6 +720,7 @@ export async function createTransparentCheckoutIntent(): Promise<
 	);
 
 	return {
+		paymentProvider: "stripe",
 		publishableKey: env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 		clientSecret: intent.client_secret,
 		orderId: existingDraft?.orderId || internalOrderId,
@@ -442,8 +748,9 @@ export async function updateCheckoutBuyerData(input: {
 	orderId?: string | null;
 	buyer: CheckoutBuyerDraft;
 }): Promise<{ ok: true; buyer: CheckoutBuyerDraft } | { error: string }> {
-	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
-	if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
+	if (!input.paymentIntentId.startsWith("pi_") && !input.orderId?.startsWith("ord_")) {
+		return { error: "Invalid payment intent" };
+	}
 
 	let buyer: CheckoutBuyerDraft;
 	try {
@@ -471,34 +778,42 @@ export async function updateCheckoutBuyerData(input: {
 	}
 
 	const { draft, snapshot } = access;
-	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
-	const intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
-	if (!reusablePaymentIntentStatuses.has(intent.status)) {
-		return { error: "Buyer data can no longer be changed" };
+	if (draft.paymentProvider !== "mercado_pago") {
+		if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
+		if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
+		const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
+		const intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
+		if (!reusablePaymentIntentStatuses.has(intent.status)) {
+			return { error: "Buyer data can no longer be changed" };
+		}
+
+		await stripe.paymentIntents.update(input.paymentIntentId, {
+			receipt_email: buyer.email,
+			metadata: {
+				...intent.metadata,
+				...(snapshot.userId ? { userId: snapshot.userId } : {}),
+				checkoutOwnerKey: snapshot.checkoutOwnerKey,
+				buyerEmail: buyer.email,
+				buyerName: buyer.fullName,
+			},
+		});
 	}
 
-	await stripe.paymentIntents.update(input.paymentIntentId, {
-		receipt_email: buyer.email,
-		metadata: {
-			...intent.metadata,
-			...(snapshot.userId ? { userId: snapshot.userId } : {}),
-			checkoutOwnerKey: snapshot.checkoutOwnerKey,
-			buyerEmail: buyer.email,
-			buyerName: buyer.fullName,
-		},
-	});
-
-	await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
-		{ paymentIntentId: input.paymentIntentId },
-		{
-			$set: {
-				checkoutOwnerKey: snapshot.checkoutOwnerKey,
-				userId: snapshot.userId ?? draft.userId ?? null,
-				buyer,
-				updatedAt: new Date(),
+	await (await getDb())
+		.collection<OrderDraftDoc>("orderDrafts")
+		.updateOne(
+			input.orderId?.startsWith("ord_")
+				? { orderId: input.orderId }
+				: { paymentIntentId: input.paymentIntentId },
+			{
+				$set: {
+					checkoutOwnerKey: snapshot.checkoutOwnerKey,
+					userId: snapshot.userId ?? draft.userId ?? null,
+					buyer,
+					updatedAt: new Date(),
+				},
 			},
-		},
-	);
+		);
 
 	return { ok: true, buyer };
 }
@@ -524,8 +839,9 @@ export async function updateCheckoutDeliverySelection(input: {
 	  }
 	| { error: string }
 > {
-	if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
-	if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
+	if (!input.paymentIntentId.startsWith("pi_") && !input.orderId?.startsWith("ord_")) {
+		return { error: "Invalid payment intent" };
+	}
 
 	const access = await resolveDraftAccess({
 		orderId: input.orderId,
@@ -536,10 +852,16 @@ export async function updateCheckoutDeliverySelection(input: {
 	}
 
 	const { draft, snapshot } = access;
-	const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
-	const intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
-	if (!reusablePaymentIntentStatuses.has(intent.status)) {
-		return { error: "Delivery selection can no longer be changed" };
+	let stripe: Stripe | null = null;
+	let intent: Stripe.PaymentIntent | null = null;
+	if (draft.paymentProvider !== "mercado_pago") {
+		if (!env.STRIPE_SECRET_KEY) return { error: "Missing Stripe secret key" };
+		if (!input.paymentIntentId.startsWith("pi_")) return { error: "Invalid payment intent" };
+		stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: undefined });
+		intent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
+		if (!reusablePaymentIntentStatuses.has(intent.status)) {
+			return { error: "Delivery selection can no longer be changed" };
+		}
 	}
 
 	const savedAddress = normalizeCheckoutAddress(snapshot.user.address ?? null);
@@ -560,72 +882,78 @@ export async function updateCheckoutDeliverySelection(input: {
 	}
 
 	const baseTotal = Math.max(0, (draft.subtotal ?? draft.amountTotal) - (draft.discountTotal ?? 0));
-	const shippingResolution = await resolveShippingQuotesForDestination({
-		destination: selectedAddress,
-		subtotal: baseTotal,
-		currency: draft.currency,
-		items: (draft.items ?? []).map((item) => ({
-			productId: item.productId,
-			variantId: item.variantId,
-			quantity: item.quantity,
-			price: item.unitAmount,
-			productType: item.productType ?? null,
-			format: item.format ?? null,
-		})),
-		deliveryMethod: input.deliveryMethod,
-	});
-	const shippingRate = toShippingRate(shippingResolution.selected);
-	const quotedShippingRate = shippingRate
-		? {
-				...shippingRate,
-				fixed_amount: {
-					amount: shippingRate.fixed_amount.amount,
-					currency: shippingRate.currency ?? snapshot.currency,
-				},
-				quotedAt: new Date().toISOString(),
-			}
-		: null;
+	const shippingResolution =
+		input.deliveryMethod === "pickup"
+			? { selected: null, error: null }
+			: selectedAddress
+				? await resolveShippingQuotesForDestination({
+						items: toShippingQuoteItems(draft.items),
+						destination: selectedAddress,
+						currency: draft.currency,
+						subtotal: baseTotal,
+						deliveryMethod: input.deliveryMethod,
+					})
+				: { selected: null, error: null };
+	const quotedShippingRate = (() => {
+		if (!shippingResolution.selected) return null;
+		const rate = toShippingRate(shippingResolution.selected);
+		if (!rate) return null;
+		return {
+			...rate,
+			quotedAt: rate.quotedAt ?? undefined,
+			fixed_amount: {
+				amount: rate.fixed_amount.amount,
+				currency: draft.currency,
+			},
+		};
+	})();
 	const shippingAmount = quotedShippingRate?.fixed_amount.amount ?? 0;
 	const nextAmountTotal = baseTotal + shippingAmount;
 	const shippingError = shippingResolution.error ?? null;
 
-	await stripe.paymentIntents.update(input.paymentIntentId, {
-		amount: nextAmountTotal,
-		metadata: {
-			...intent.metadata,
-			...(snapshot.userId ? { userId: snapshot.userId } : {}),
-			checkoutOwnerKey: snapshot.checkoutOwnerKey,
-			deliveryMethod: input.deliveryMethod,
-			...(selectedAddress
-				? {
-						deliveryCountry: selectedAddress.country ?? "",
-						deliveryPostalCode: selectedAddress.postalCode ?? "",
-					}
-				: {}),
-			...(quotedShippingRate
-				? {
-						shippingProviderCode: quotedShippingRate.providerCode,
-						shippingServiceCode: quotedShippingRate.serviceCode,
-					}
-				: {}),
-		},
-	});
-
-	await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
-		{ paymentIntentId: input.paymentIntentId },
-		{
-			$set: {
+	if (stripe && intent) {
+		await stripe.paymentIntents.update(input.paymentIntentId, {
+			amount: nextAmountTotal,
+			metadata: {
+				...intent.metadata,
+				...(snapshot.userId ? { userId: snapshot.userId } : {}),
 				checkoutOwnerKey: snapshot.checkoutOwnerKey,
-				userId: snapshot.userId ?? draft.userId ?? null,
 				deliveryMethod: input.deliveryMethod,
-				deliveryAddress: selectedAddress,
-				shippingRate: quotedShippingRate,
-				shippingError,
-				amountTotal: nextAmountTotal,
-				updatedAt: new Date(),
+				...(selectedAddress
+					? {
+							deliveryCountry: selectedAddress.country ?? "",
+							deliveryPostalCode: selectedAddress.postalCode ?? "",
+						}
+					: {}),
+				...(quotedShippingRate
+					? {
+							shippingProviderCode: quotedShippingRate.providerCode,
+							shippingServiceCode: quotedShippingRate.serviceCode,
+						}
+					: {}),
 			},
-		},
-	);
+		});
+	}
+
+	await (await getDb())
+		.collection<OrderDraftDoc>("orderDrafts")
+		.updateOne(
+			input.orderId?.startsWith("ord_")
+				? { orderId: input.orderId }
+				: { paymentIntentId: input.paymentIntentId },
+			{
+				$set: {
+					checkoutOwnerKey: snapshot.checkoutOwnerKey,
+					userId: snapshot.userId ?? draft.userId ?? null,
+					deliveryMethod: input.deliveryMethod,
+					deliveryAddress: selectedAddress,
+					shippingRate: quotedShippingRate,
+					shippingError,
+					amountTotal: nextAmountTotal,
+					updatedAt: new Date(),
+				},
+			},
+		);
 
 	return {
 		ok: true,

@@ -13,7 +13,7 @@ Manter a espinha dorsal de comércio sem quebrar:
 - catálogo por produto e variante;
 - PDP/página de produto;
 - carrinho;
-- checkout Stripe;
+- checkout com provider configurável entre Stripe e Mercado Pago;
 - conta de cliente;
 - favoritos;
 - promoções;
@@ -262,3 +262,10 @@ Mitigação:
 - Após a confirmação do pagamento, o sistema deve reaproveitar o usuário existente por e-mail ou criar a conta automaticamente sem duplicidade.
 - O pedido confirmado deve ficar vinculado ao usuário resolvido e disparar e-mail transacional com resumo do pedido e magic link seguro para acessar a conta.
 - No primeiro acesso por magic link, a pessoa deve conseguir entrar em `Compras`, localizar o pedido e criar senha sem perder o contexto desse pedido.
+
+## Addendum — DEV-54 Mercado Pago
+
+- `CHECKOUT_PAYMENT_PROVIDER=mercado_pago` ativa Mercado Pago no checkout transparente; Stripe permanece preservado e volta com `CHECKOUT_PAYMENT_PROVIDER=stripe`.
+- `NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY` só pode ser usada no cliente; `MERCADO_PAGO_ACCESS_TOKEN` e `MERCADO_PAGO_WEBHOOK_SECRET` ficam apenas no servidor.
+- Pagamentos Mercado Pago devem criar cobrança no backend via `/v1/payments`, com `Authorization: Bearer`, `X-Idempotency-Key` por tentativa e webhook em `/api/mercado-pago/webhook`.
+- Antes de atualizar draft/pedido local, o sistema consulta o pagamento no Mercado Pago pelo servidor.

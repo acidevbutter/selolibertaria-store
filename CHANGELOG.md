@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Checkout Mercado Pago configurável para Pix e cartão via Payment Brick, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
+
 ### Fixed
 
 - Removidos metadados técnicos redundantes de rota/aparição dos blocos do formulário de copy do admin editorial.
