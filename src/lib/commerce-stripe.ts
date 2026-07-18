@@ -122,6 +122,16 @@ const parseStock = (value: string | null | undefined): number | undefined => {
 	return Number.isFinite(parsed) ? parsed : undefined;
 };
 
+const getStructuredMetadata = (metadata: Stripe.Metadata, keys: string[]): string | null => {
+	for (const key of keys) {
+		const value = metadata[key];
+		if (typeof value !== "string") continue;
+		const trimmed = value.trim();
+		if (trimmed) return trimmed.toLowerCase();
+	}
+	return null;
+};
+
 const getVariantLabel = (product: Stripe.Product): string | undefined => {
 	const raw = product.metadata.variant;
 	if (!raw || typeof raw !== "string") return undefined;
@@ -164,6 +174,8 @@ function mapStripeProduct(
 	const slug = (p.metadata.slug as string) || slugify(p.name) || p.id;
 	const stock = parseStock(p.metadata.stock);
 	const categorySlug = p.metadata.category ? slugify(p.metadata.category) : undefined;
+	const productType = getStructuredMetadata(p.metadata, ["productType", "product_type", "type"]);
+	const format = getStructuredMetadata(p.metadata, ["format", "productFormat", "product_format"]);
 	const variantLabel = getVariantLabel(p);
 	const variantSlug = getVariantSlug(variantLabel ?? undefined);
 
@@ -178,6 +190,8 @@ function mapStripeProduct(
 		description: (p.description || null) as string | null,
 		images,
 		stock: stock ?? null,
+		productType,
+		format,
 	};
 
 	const product: YnsProduct = {
@@ -191,6 +205,8 @@ function mapStripeProduct(
 		stock,
 		variants: [variant],
 		category: categorySlug ? { slug: categorySlug, name: p.metadata.category } : null,
+		productType,
+		format,
 	};
 	return product;
 }

@@ -41,6 +41,8 @@ export interface CheckoutSnapshotItem {
 	productSlug: string;
 	categorySlug?: string | null;
 	variantLabel?: string | null;
+	productType?: string | null;
+	format?: string | null;
 	baseUnitAmount: number;
 	unitAmount: number;
 	lineBaseTotal: number;

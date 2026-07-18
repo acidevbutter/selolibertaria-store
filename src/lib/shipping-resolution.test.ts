@@ -147,12 +147,100 @@ describe("shipping resolution", () => {
 				baseUrl: "https://sandbox.melhorenvio.com.br/api/v2",
 				environment: "sandbox",
 				userAgent: "Selo Libertária (tech@selolibertaria.com)",
+				modicoShippingEligible: false,
 			}),
 		);
 		expect(result.provider?.code).toBe("melhorenvio");
 		expect(result.selected?.serviceCode).toBe("1");
 		expect(result.selected?.amount).toBe(1290);
 		expect(result.error ?? null).toBeNull();
+	});
+
+	it("marks Melhor Envio quote as modico eligible only for structured printed books", async () => {
+		fetchMelhorEnvioQuotesMock.mockResolvedValue([
+			{
+				providerCode: "melhorenvio",
+				providerLabel: "Melhor Envio",
+				serviceCode: "99",
+				serviceName: "Impresso Normal",
+				amount: 810,
+				currency: "BRL",
+				estimatedDays: 7,
+				quotedAt: "2026-07-18T10:00:00.000Z",
+				method: "http",
+			},
+		]);
+
+		const result = await resolveShippingQuotesForDestination({
+			destination: { country: "BR", postalCode: "20040-020" },
+			subtotal: 4990,
+			currency: "BRL",
+			items: [
+				{
+					productId: "prod_book",
+					variantId: "var_print",
+					quantity: 1,
+					price: 4990,
+					productType: "book",
+					format: "print",
+				},
+			],
+			deliveryMethod: "saved-address",
+		});
+
+		expect(fetchMelhorEnvioQuotesMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				modicoShippingEligible: true,
+			}),
+		);
+		expect(result.selected?.serviceCode).toBe("99");
+	});
+
+	it("does not mark mixed carts as modico eligible", async () => {
+		fetchMelhorEnvioQuotesMock.mockResolvedValue([
+			{
+				providerCode: "melhorenvio",
+				providerLabel: "Melhor Envio",
+				serviceCode: "11",
+				serviceName: "SEDEX",
+				amount: 2250,
+				currency: "BRL",
+				estimatedDays: 2,
+				quotedAt: "2026-07-18T10:00:00.000Z",
+				method: "http",
+			},
+		]);
+
+		await resolveShippingQuotesForDestination({
+			destination: { country: "BR", postalCode: "20040-020" },
+			subtotal: 6990,
+			currency: "BRL",
+			items: [
+				{
+					productId: "prod_book",
+					variantId: "var_print",
+					quantity: 1,
+					price: 4990,
+					productType: "book",
+					format: "print",
+				},
+				{
+					productId: "prod_other",
+					variantId: "var_other",
+					quantity: 1,
+					price: 2000,
+					productType: "poster",
+					format: "print",
+				},
+			],
+			deliveryMethod: "saved-address",
+		});
+
+		expect(fetchMelhorEnvioQuotesMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				modicoShippingEligible: false,
+			}),
+		);
 	});
 
 	it("returns no shipping quote when the admin toggle is off", async () => {

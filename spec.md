@@ -27,6 +27,19 @@ Sobre essa base, aplicar:
 - eventos, projetos e Sarau Safado como camada viva;
 - identidade Editorial V2.
 
+## Frete — Melhor Envio
+
+O cálculo de frete usa o Melhor Envio no servidor e preserva o fluxo atual de cotação.
+
+Para o serviço `Impresso`, produtos elegíveis ao Envio Módico devem ser reconhecidos por metadados estruturados do produto, como `productType=book` e `format=print`, nunca por título, descrição, slug ou categoria textual livre.
+
+Quando todos os itens cotados forem livros impressos elegíveis:
+
+- `Impresso` sem registro usa o valor retornado para `Impresso`;
+- `Registro Módico` soma `valor_impresso + valor_registro_modico`.
+
+Itens sem classificação estruturada, produtos mistos ou produtos não livros usam os valores normais retornados pelo Melhor Envio.
+
 ## Idioma do produto
 
 O Selo Libertária opera somente em `pt-BR` neste momento.

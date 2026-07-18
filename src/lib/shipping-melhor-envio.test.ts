@@ -108,7 +108,7 @@ describe("shipping-melhor-envio", () => {
 			estimatedDays: 2,
 			quotedAt: "2026-06-28T12:30:00.000Z",
 		});
-		expect(toShippingRate(quotes[0])?.quotedAt).toBe("2026-06-28T12:30:00.000Z");
+		expect(toShippingRate(quotes[0] ?? null)?.quotedAt).toBe("2026-06-28T12:30:00.000Z");
 	});
 
 	it("accepts Registro Modico and Impresso-style services with unknown codes as valid quotes", () => {
@@ -156,7 +156,7 @@ describe("shipping-melhor-envio", () => {
 		]);
 	});
 
-	it("selects Registro Modico automatically when it is the cheapest valid quote", () => {
+	it("keeps Registro Modico standalone when item is not eligible for modico shipping", () => {
 		const quotes = normalizeMelhorEnvioQuoteResponse({
 			payload: {
 				services: [
@@ -194,6 +194,62 @@ describe("shipping-melhor-envio", () => {
 			estimatedDays: 9,
 		});
 		expect(toShippingRate(selected)?.serviceName).toBe("Registro Modico");
+	});
+
+	it("adds Impresso amount to Registro Modico for eligible printed books", () => {
+		const quotes = normalizeMelhorEnvioQuoteResponse({
+			payload: {
+				services: [
+					{
+						id: 11,
+						name: "SEDEX",
+						price: "22.50",
+						delivery_time: 2,
+					},
+					{
+						id: 77,
+						name: "Registro Módico",
+						custom_price: "6.40",
+						custom_delivery_time: 9,
+					},
+					{
+						id: 99,
+						name: "Impresso Normal",
+						price: "8.10",
+						delivery_time: 7,
+					},
+				],
+			},
+			providerCode: "melhor-envio",
+			providerLabel: "Melhor Envio",
+			quotedAt: "2026-07-01T10:30:00.000Z",
+			modicoShippingEligible: true,
+		});
+
+		expect(quotes).toEqual([
+			expect.objectContaining({
+				serviceCode: "11",
+				serviceName: "SEDEX",
+				amount: 2250,
+			}),
+			expect.objectContaining({
+				serviceCode: "77",
+				serviceName: "Registro Módico",
+				amount: 1450,
+				estimatedDays: 9,
+			}),
+			expect.objectContaining({
+				serviceCode: "99",
+				serviceName: "Impresso Normal",
+				amount: 810,
+				estimatedDays: 7,
+			}),
+		]);
+		expect(selectBestShippingQuote(quotes)).toMatchObject({
+			serviceCode: "99",
+			serviceName: "Impresso Normal",
+			amount: 810,
+		});
 	});
 
 	it("fails safely with the normalized timeout error", async () => {

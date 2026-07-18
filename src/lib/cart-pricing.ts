@@ -22,6 +22,8 @@ export interface ResolvedCheckoutPricingItem {
 	name: string;
 	image: string | null;
 	variantLabel?: string | null;
+	productType?: string | null;
+	format?: string | null;
 	quantity: number;
 	baseUnitAmount: number;
 	unitAmount: number;
@@ -54,6 +56,8 @@ export async function buildPricedCartPayload(args: {
 			ResolvedCartPricingLine & {
 				variantLabel?: string | null;
 				priceId?: string | null;
+				productType?: string | null;
+				format?: string | null;
 			}
 		> = [];
 		let currency = "USD";
@@ -90,6 +94,8 @@ export async function buildPricedCartPayload(args: {
 				currency,
 				variantLabel: variant.label ?? null,
 				priceId: variant.priceId ?? null,
+				productType: variant.productType ?? product.productType ?? null,
+				format: variant.format ?? product.format ?? null,
 			});
 		}
 
@@ -115,11 +121,13 @@ export async function buildPricedCartPayload(args: {
 					userId: args.userId,
 					subtotal: pricing.subtotal,
 					currency: resolvedLines[0]?.currency ?? "USD",
-					items: pricing.items.map((item) => ({
+					items: pricing.items.map((item, index) => ({
 						productId: item.productId,
 						variantId: item.variantId,
 						quantity: item.quantity,
 						price: item.price,
+						productType: resolvedLines[index]?.productType ?? null,
+						format: resolvedLines[index]?.format ?? null,
 					})),
 				}).catch((error) => ({
 					quotes: [],
@@ -143,6 +151,8 @@ export async function buildPricedCartPayload(args: {
 			name: item.product?.name ?? "Product",
 			image: item.product?.images?.[0] || null,
 			variantLabel: resolvedLine?.variantLabel ?? null,
+			productType: resolvedLine?.productType ?? null,
+			format: resolvedLine?.format ?? null,
 			quantity: item.quantity,
 			baseUnitAmount: item.basePrice ?? item.price,
 			unitAmount: item.finalPrice ?? item.price,
