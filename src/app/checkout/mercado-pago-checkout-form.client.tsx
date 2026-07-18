@@ -840,7 +840,6 @@ function formatPixExpiration(value: string) {
 function toMercadoPagoPayer(buyer: TransparentCheckoutIntent["buyer"]) {
 	const nameParts = normalizeBuyerName(buyer.fullName).split(" ").filter(Boolean);
 	return {
-		email: normalizeBuyerEmail(buyer.email),
 		firstName: nameParts[0] ?? "",
 		lastName: nameParts.slice(1).join(" "),
 		entityType: "individual",

@@ -183,7 +183,7 @@ Evitar:
 ## Checkout Mercado Pago
 
 - Nome, e-mail, CPF/CNPJ e telefone são preenchidos uma única vez no formulário do site.
-- O Payment Brick recebe esses dados como `payer` e fica restrito à escolha e aos dados do método de pagamento.
+- O e-mail permanece no formulário local; o Payment Brick recebe somente os dados de identificação permitidos e fica restrito à escolha e aos dados do método de pagamento.
 - Alterar dados do comprador não deve recriar ou piscar o Brick; o submit sempre persiste e valida o draft atualizado no servidor.
 
 ## Idioma
