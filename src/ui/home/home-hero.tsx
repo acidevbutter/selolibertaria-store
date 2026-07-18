@@ -12,7 +12,7 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 	const description =
 		hero?.description ||
 		"Um romance breve, noturno e urbano em que desejo, cidade e memória atravessam a leitura como presença.";
-	const primaryCtaLabel = hero?.primaryCtaLabel || "Comprar livro";
+	const primaryCtaLabel = hero?.primaryCtaLabel || "Ver loja";
 	const secondaryCtaLabel = hero?.secondaryCtaLabel || "Conhecer o Sarau Safado";
 	const supportingLine =
 		hero?.supportingLine || "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.";
