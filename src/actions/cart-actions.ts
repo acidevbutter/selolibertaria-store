@@ -349,6 +349,7 @@ export async function clearCartAction(): Promise<void> {
 		await db
 			.collection("users")
 			.updateOne({ _id: new ObjectId(userId) }, { $unset: { cart: "" }, $set: { updatedAt: new Date() } });
+		await clearCartId();
 		return;
 	}
 	const cartId = await getCartId();
