@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -73,14 +74,24 @@ export function CatalogIntro({
 							>
 								{title}
 							</h1>
-							<p
-								className={cn(
-									"max-w-[34rem] text-base leading-8 sm:text-lg",
-									isDark ? "text-[color:rgba(247,244,239,0.8)]" : "text-[color:var(--editorial-ink)]",
-								)}
-							>
-								{description}
-							</p>
+							{typeof description === "string" ? (
+								<EditorialRichText
+									source={description}
+									className={cn(
+										"max-w-[34rem] text-base leading-8 sm:text-lg",
+										isDark ? "text-[color:rgba(247,244,239,0.8)]" : "text-[color:var(--editorial-ink)]",
+									)}
+								/>
+							) : (
+								<p
+									className={cn(
+										"max-w-[34rem] text-base leading-8 sm:text-lg",
+										isDark ? "text-[color:rgba(247,244,239,0.8)]" : "text-[color:var(--editorial-ink)]",
+									)}
+								>
+									{description}
+								</p>
+							)}
 							{(primaryCtaHref && primaryCtaLabel) || (secondaryCtaHref && secondaryCtaLabel) ? (
 								<div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
 									{primaryCtaHref && primaryCtaLabel ? (
@@ -175,7 +186,10 @@ export function CatalogIntro({
 										<p className="text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-accent)]">
 											{card.label}
 										</p>
-										<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">{card.body}</p>
+										<EditorialRichText
+											source={card.body}
+											className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+										/>
 									</EditorialPanel>
 								</LiftOnHover>
 							</Reveal>

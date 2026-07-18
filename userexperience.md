@@ -171,3 +171,8 @@ Confiança vem de:
 - 2026-07-02: no admin, a pessoa operadora deve reconhecer a marca já no topo da sidebar e do menu móvel; o logo oficial precisa ocupar esse ponto de orientação sem competir com a navegação nem parecer avatar vazio.
 - 2026-07-02: no admin editorial de páginas singleton, a experiência deve evitar burocracia sem efeito prático; a pessoa operadora precisa editar só o que aparece no site e decidir apenas se a versão está em rascunho ou publicada.
 - 2026-07-02: ao editar conteúdo no admin editorial, a pessoa operadora não deve precisar voltar ao fim da página para concluir a ação; o `Salvar` precisa permanecer acessível durante a rolagem como continuidade natural do formulário inteiro.
+## Atualização 2026-07-18
+
+- Ao editar textos editoriais, a pessoa operadora deve ter ferramentas suficientes para ênfase e ritmo de leitura sem precisar aprender um editor completo.
+- As ações de texto não devem mudar a persistência dos blocos: salvar continua sendo o mesmo fluxo do formulário editorial.
+- Conteúdo antigo deve continuar legível e previsível no site público, mesmo que não use nenhuma marcação.

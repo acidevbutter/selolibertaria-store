@@ -216,3 +216,8 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - 2026-07-02: no shell do admin, a marca no topo da sidebar e do menu móvel deve usar o asset oficial `selolibertaria.png` em moldura papel, substituindo placeholders vazios e mantendo o contraste preto/papel do backoffice.
 - 2026-07-02: nos formulários singleton do admin editorial, mostre apenas campos que tenham reflexo direto na página pública; publicação continua visível, mas metadados internos sem efeito visual devem sair do fluxo principal.
 - 2026-07-02: nos formulários do admin editorial, o CTA principal de `Salvar` deve permanecer visível como barra flutuante discreta no rodapé da viewport, com fundo preto editorial e botão em papel, evitando duplicação de ação em cada bloco.
+## Atualização 2026-07-18
+
+- Campos editoriais longos no admin podem exibir uma barra mínima de ferramentas com ícones para negrito, itálico, intertítulo, citação e parágrafo.
+- A barra deve usar superfície de papel, contorno reto e acento vinho no foco, sem transformar os blocos editoriais em um editor genérico amplo.
+- O público deve renderizar a marcação mínima com hierarquia discreta e preservar texto legado sem marcação como parágrafos seguros.

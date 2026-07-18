@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialSarauPage } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
@@ -15,15 +16,7 @@ function Textarea({
 	defaultValue?: string | null;
 	rows?: number;
 }) {
-	return (
-		<textarea
-			id={name}
-			name={name}
-			defaultValue={defaultValue ?? ""}
-			rows={rows}
-			className="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
-		/>
-	);
+	return <EditorialTextEditor name={name} defaultValue={defaultValue} rows={rows} />;
 }
 
 function Field({ label, name, children }: { label: string; name: string; children: ReactNode }) {

@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { EditorialEvent, EditorialHomePage, EditorialSarauPage } from "@/lib/editorial-content";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialSection, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
@@ -36,9 +37,10 @@ export async function HomeProgramGrid({
 						</h2>
 					</Reveal>
 					<Reveal delay={0.08}>
-						<p className="max-w-[32rem] text-base leading-8 text-[color:var(--editorial-muted)]">
-							{featuredSummary}
-						</p>
+						<EditorialRichText
+							source={featuredSummary}
+							className="max-w-[32rem] text-base leading-8 text-[color:var(--editorial-muted)]"
+						/>
 					</Reveal>
 					<Reveal delay={0.12}>
 						<YnsLink
