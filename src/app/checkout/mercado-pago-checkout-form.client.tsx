@@ -196,7 +196,7 @@ export function MercadoPagoCheckoutForm({
 			pending: t("delivery.pendingSummary"),
 		},
 	);
-	const deliveryReady = Boolean(deliveryRate);
+	const deliveryReady = selectedDeliveryMethod === "pickup" || Boolean(deliveryRate);
 
 	function setBuyerField<K extends keyof typeof buyer>(field: K, value: (typeof buyer)[K]) {
 		setBuyer((current) => ({ ...current, [field]: value }));

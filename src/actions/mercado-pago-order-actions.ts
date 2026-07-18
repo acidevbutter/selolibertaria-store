@@ -3,6 +3,7 @@
 import { ObjectId } from "mongodb";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria, normalizeUserRole } from "@/lib/authz";
+import { clearCartId } from "@/lib/cart-cookies";
 import type { CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
 import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
@@ -249,10 +250,11 @@ export async function recordMercadoPagoCheckout(input: {
 		const updateExisting = await userUpdateCol.updateOne(
 			{
 				_id: new ObjectId(userId),
-				$or: [
-					{ "purchases.id": orderId },
-					{ "purchases.relatedIds.mercadoPagoPaymentId": resolvedPaymentId },
-				],
+				purchases: {
+					$elemMatch: {
+						$or: [{ id: orderId }, { "relatedIds.mercadoPagoPaymentId": resolvedPaymentId }],
+					},
+				},
 			},
 			{
 				$set: {
@@ -355,6 +357,9 @@ export async function recordMercadoPagoCheckout(input: {
 
 		if (isOrderReceivedEligibleStatus(finalStatus)) {
 			await ensureOrderReceivedEmail(userId, orderId);
+		}
+		if (isFinalizedPaymentStatus(finalStatus)) {
+			await clearCartId();
 		}
 
 		return {
