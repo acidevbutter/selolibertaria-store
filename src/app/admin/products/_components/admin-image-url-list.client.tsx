@@ -3,6 +3,7 @@
 import { ImagePlus, RefreshCw, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { ADMIN_IMAGE_UPLOAD_MAX_LABEL, getAdminImageUploadError } from "@/lib/admin-image-upload";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { Button } from "@/ui/shadcn/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
@@ -75,6 +76,13 @@ export function AdminImageUrlList({
 		const nextFiles = isSingleImage ? toFileArray(files).slice(0, 1) : toFileArray(files);
 		if (nextFiles.length === 0) {
 			clearPendingSelection();
+			return;
+		}
+
+		const invalidFileMessage = nextFiles.map(getAdminImageUploadError).find(Boolean);
+		if (invalidFileMessage) {
+			clearPendingSelection();
+			setUploadError(invalidFileMessage);
 			return;
 		}
 
@@ -213,10 +221,10 @@ export function AdminImageUrlList({
 					<p className="text-sm font-medium">Imagem</p>
 					<p className="text-xs text-muted-foreground">
 						{uploadMode === "on-submit"
-							? "Escolha, revise a prévia local e salve o formulário para publicar a troca."
+							? `Escolha, revise a prévia local e salve o formulário para publicar a troca. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`
 							: isSingleImage
-								? "Escolha uma imagem do computador."
-								: "Escolha uma ou mais imagens do computador."}
+								? `Escolha uma imagem do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`
+								: `Escolha uma ou mais imagens do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">

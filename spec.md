@@ -248,6 +248,7 @@ Mitigação:
 - O fluxo editorial deve ter regressão automatizada para confirmar que a seleção local de imagem não faz upload imediato em `uploadMode="on-submit"`.
 - Descartar uma imagem pendente deve manter a URL pública já persistida no campo `*Src`.
 - Salvar um formulário com arquivo confirmado deve enviar o arquivo no servidor e persistir a URL pública retornada, mantendo `alt` e `caption`.
+- Uploads editoriais por Server Actions aceitam somente imagem até `5 MB`, com validação no cliente e no servidor antes do envio ao Cloudinary.
 - Textos legados sem marcação e Markdown editorial mínimo devem continuar renderizando com segurança no público.
 
 ## Addendum — P0B checkout sem pré-cadastro

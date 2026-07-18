@@ -231,6 +231,7 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 - Testes de interface devem focar os sinais visíveis do contrato: botão de selecionar/substituir, prévia local, ausência de envio imediato e ação de descartar troca.
 - A interface não deve depender de upload automático para comunicar persistência; a publicação continua acontecendo no botão de salvar do formulário inteiro.
+- O seletor de imagem editorial deve informar limite de `5 MB` e bloquear seleção acima desse limite antes da prévia.
 
 ## Atualização 2026-07-18 — organização do admin editorial
 

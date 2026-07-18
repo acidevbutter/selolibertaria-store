@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 import type {
@@ -119,10 +120,11 @@ async function resolveImageField({
 }) {
 	const fileEntry = formData.get(`${srcField}File`);
 	const existingSrc = firstNonEmptyString(formData.getAll(srcField));
-	const uploadedSrc =
-		fileEntry instanceof File && fileEntry.size > 0
-			? (await uploadImageFileToCloudinary(fileEntry)).secure_url
-			: null;
+	let uploadedSrc: string | null = null;
+	if (fileEntry instanceof File && fileEntry.size > 0) {
+		assertAdminImageUploadFile(fileEntry);
+		uploadedSrc = (await uploadImageFileToCloudinary(fileEntry)).secure_url;
+	}
 	const src = uploadedSrc ?? existingSrc;
 	if (process.env.NODE_ENV !== "production") {
 		console.info("[editorial image field]", {

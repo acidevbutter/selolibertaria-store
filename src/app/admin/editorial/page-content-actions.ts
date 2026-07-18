@@ -3,6 +3,7 @@
 import type { Filter } from "mongodb";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 import type {
@@ -135,6 +136,7 @@ async function resolveImageField(
 	let src = existingSrc;
 
 	if (fileEntry instanceof File && fileEntry.size > 0) {
+		assertAdminImageUploadFile(fileEntry);
 		const upload = await uploadImageFileToCloudinary(fileEntry);
 		src = upload.secure_url;
 	}

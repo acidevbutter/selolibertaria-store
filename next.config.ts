@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
 	experimental: {
 		esmExternals: true,
 		scrollRestoration: true,
+		serverActions: {
+			bodySizeLimit: "5mb",
+		},
 		ppr: false,
 		cpus: 1,
 		mdxRs: isProductionBuild,

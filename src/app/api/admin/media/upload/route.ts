@@ -1,8 +1,8 @@
+import { ADMIN_IMAGE_UPLOAD_TOO_LARGE_MESSAGE, assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
 import { isCloudinaryConfigured } from "@/lib/cloudinary";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 
-const MAX_UPLOAD_SIZE = 8 * 1024 * 1024;
 export async function POST(request: Request) {
 	const auth = await requireCapability("admin.access");
 	if ("error" in auth) return auth.error;
@@ -28,16 +28,17 @@ export async function POST(request: Request) {
 		);
 	}
 
-	if (!file.type.startsWith("image/")) {
+	try {
+		assertAdminImageUploadFile(file);
+	} catch (error) {
 		return Response.json(
-			{ error: "Envie apenas arquivos de imagem.", code: "ADMIN_MEDIA_UPLOAD_INVALID_TYPE" },
-			{ status: 400 },
-		);
-	}
-
-	if (file.size > MAX_UPLOAD_SIZE) {
-		return Response.json(
-			{ error: "A imagem deve ter no máximo 8 MB.", code: "ADMIN_MEDIA_UPLOAD_FILE_TOO_LARGE" },
+			{
+				error: error instanceof Error ? error.message : "Não foi possível validar a imagem.",
+				code:
+					error instanceof Error && error.message === ADMIN_IMAGE_UPLOAD_TOO_LARGE_MESSAGE
+						? "ADMIN_MEDIA_UPLOAD_FILE_TOO_LARGE"
+						: "ADMIN_MEDIA_UPLOAD_INVALID_TYPE",
+			},
 			{ status: 400 },
 		);
 	}

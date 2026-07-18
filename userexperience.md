@@ -99,6 +99,7 @@ O admin editorial deve reduzir ansiedade operacional:
 - metadados simples;
 - formulários em blocos;
 - upload com prévia;
+- limite de imagem visível antes de salvar;
 - botões específicos.
 
 ## Fork cleanup como UX
