@@ -47,6 +47,7 @@ const AUDITED_ORDER_STATUS_WEBHOOK_TYPES = new Set([
 	"checkout.session.async_payment_failed",
 	"payment_intent.succeeded",
 	"payment_intent.processing",
+	"payment_intent.requires_action",
 	"payment_intent.payment_failed",
 	"payment_intent.canceled",
 	"charge.succeeded",

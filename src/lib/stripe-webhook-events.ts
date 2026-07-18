@@ -56,6 +56,7 @@ export function mapStripeEventTypeToStatus(eventType: string): string {
 		"payment_intent.payment_failed": "failed",
 		"payment_intent.canceled": "canceled",
 		"payment_intent.processing": "processing",
+		"payment_intent.requires_action": "requires_action",
 		"invoice.paid": "paid",
 		"invoice.payment_failed": "failed",
 		"invoice.finalized": "finalized",

@@ -26,6 +26,13 @@ import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
 
 const NEW_PAYMENT_METHOD_VALUE = "new-payment-method";
+const PAYMENT_METHOD_UNAVAILABLE_CODES = new Set([
+	"payment_method_unavailable",
+	"payment_method_not_available",
+	"payment_method_provider_decline",
+	"payment_method_provider_timeout",
+	"payment_method_unsupported",
+]);
 const stripePromises = new Map<string, Promise<Stripe | null>>();
 
 function getStripePromise(publishableKey: string) {
@@ -34,6 +41,22 @@ function getStripePromise(publishableKey: string) {
 	const promise = loadStripe(publishableKey);
 	stripePromises.set(publishableKey, promise);
 	return promise;
+}
+
+function getPaymentConfirmationErrorMessage(error: {
+	code?: string;
+	decline_code?: string;
+	message?: string;
+	type?: string;
+}) {
+	const code = error.code || error.decline_code;
+	if (code && PAYMENT_METHOD_UNAVAILABLE_CODES.has(code)) {
+		return "Este método de pagamento não está disponível para esta compra. Escolha outro método e tente novamente.";
+	}
+	if (error.type === "validation_error") {
+		return "Revise os dados do pagamento e tente novamente.";
+	}
+	return error.message || "Não foi possível confirmar o pagamento. Escolha outro método ou tente novamente.";
 }
 
 export function CheckoutForm({
@@ -281,7 +304,7 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 				: { error: { message: t("errors.formLoading") } };
 
 		if (confirmationResult.error) {
-			setMessage(confirmationResult.error.message || t("errors.confirmationFailed"));
+			setMessage(getPaymentConfirmationErrorMessage(confirmationResult.error));
 			setIsSubmitting(false);
 			return;
 		}
@@ -572,6 +595,10 @@ function CheckoutFormInner({ checkout, locale }: { checkout: TransparentCheckout
 				<PaymentElement
 					options={{
 						layout: "tabs",
+						wallets: {
+							applePay: "auto",
+							googlePay: "auto",
+						},
 					}}
 				/>
 			) : null}

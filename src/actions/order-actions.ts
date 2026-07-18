@@ -18,7 +18,10 @@ import {
 	buildPersistedOrderShippingSnapshot,
 	type PersistedOrderDeliveryAddress,
 } from "@/lib/order-shipping-snapshot";
-import { getClientVisiblePaymentIntentStatus } from "@/lib/payment-intent-status";
+import {
+	getClientVisiblePaymentIntentStatus,
+	getIncompletePaymentIntentMessage,
+} from "@/lib/payment-intent-status";
 import {
 	isFinalizedPaymentStatus,
 	isOrderReceivedEligibleStatus,
@@ -391,7 +394,7 @@ export async function recordPaymentIntentCheckout(input: {
 		);
 
 		if (status !== "succeeded" && status !== "processing") {
-			return { error: "O pagamento ainda não foi concluído", status };
+			return { error: getIncompletePaymentIntentMessage(clientVisibleStatus), status: authoritativeStatus };
 		}
 
 		const auth = await requireAuth();
