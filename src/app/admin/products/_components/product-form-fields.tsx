@@ -204,9 +204,9 @@ export function ProductCoreFields({
 					id="slug"
 					name="slug"
 					defaultValue={slug}
-					placeholder="livro-exemplo"
+					placeholder="produto-exemplo"
 					pattern={fieldPatterns.kebabCase}
-					title="Use letras minúsculas, números e hífens, por exemplo livro-exemplo."
+					title="Use letras minúsculas, números e hífens, por exemplo produto-exemplo."
 					className="max-w-sm"
 					onChange={autoFormatSlug ? applySlugAutoFormat : undefined}
 					onInput={autoFormatSlug ? applySlugAutoFormat : undefined}
@@ -256,7 +256,7 @@ export function ProductCoreFields({
 				<Field
 					label="Imagens"
 					name="images"
-					hint="Selecione imagens do computador para enviar e organizar a galeria do livro."
+					hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 				>
 					<AdminImageUrlList name="images" initialValues={images} autoSubmitOnUpload={autoSubmitImages} />
 				</Field>
@@ -278,7 +278,7 @@ export function ImageUrlsField({ name = "images", images }: { name?: string; ima
 		<Field
 			label="Imagens"
 			name={name}
-			hint="Selecione imagens do computador para enviar e organizar a galeria do livro."
+			hint="Selecione imagens do computador para enviar e organizar a galeria do produto."
 		>
 			<AdminImageUrlList name={name} initialValues={images} />
 		</Field>
@@ -329,7 +329,7 @@ export function InheritedVariantFields({
 	return (
 		<div className="space-y-4 rounded-md border p-4">
 			<div className="space-y-1">
-				<h3 className="text-sm font-medium">Herdado do livro</h3>
+				<h3 className="text-sm font-medium">Herdado do produto</h3>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
@@ -349,11 +349,11 @@ export function InheritedVariantFields({
 				<div className="space-y-2">
 					<Label>Descrição</Label>
 					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
-						{description || "Usa o resumo do livro."}
+						{description || "Usa o resumo do produto."}
 					</div>
 				</div>
 			</div>
-			<ImagePreviewField images={images} alt={name || slug || "Imagem do livro"} />
+			<ImagePreviewField images={images} alt={name || slug || "Imagem do produto"} />
 		</div>
 	);
 }

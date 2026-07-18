@@ -73,7 +73,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 		type: "page_home",
 		slug: "home",
 		title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-		summary: "Home editorial com livro em destaque, catálogo curado e saídas para Sarau Safado.",
+		summary: "Home editorial com produto em destaque, catálogo curado e saídas para Sarau Safado.",
 		...baseMeta,
 		hero: {
 			eyebrow: "Lançamento",
@@ -85,7 +85,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 			secondaryCtaLabel: "Ler trecho",
 			secondaryCtaHref: "/products",
 			supportingLine: "poemas, corpos e margens",
-			featureEyebrow: "Livro em destaque",
+			featureEyebrow: "Produto em destaque",
 			featureTitle: "Ninfas do Tietê",
 			featureBody: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",
 			featureQuote: "O livro como objeto, presença e faísca.",
@@ -98,18 +98,18 @@ export function buildSeedHomePage(): EditorialHomePage {
 		},
 		featuredBook: {
 			productSlug: "ninfas-do-tiete",
-			eyebrow: "Livro em destaque",
+			eyebrow: "Produto em destaque",
 			title: "Ninfas do Tietê",
 			body: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",
 			primaryCtaLabel: "Comprar agora",
-			secondaryCtaLabel: "Ver livro",
+			secondaryCtaLabel: "Ver produto",
 		},
 		catalog: {
 			title: "Catálogo",
 			body: "Uma prateleira curta e curada para entrar no universo do selo pela leitura.",
 			primaryCardFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
-			defaultCardFallback: "Livro em preparação dentro do mesmo universo literário do selo.",
-			viewBookLabel: "Ver livro",
+			defaultCardFallback: "Produto em preparação dentro do mesmo universo literário do selo.",
+			viewBookLabel: "Ver produto",
 			launchAlertLabel: "Avise-me",
 		},
 		program: {
@@ -226,12 +226,12 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 	return {
 		type: "page_products",
 		slug: "products",
-		title: "Livros para entrar no universo do selo pela leitura.",
+		title: "Produtos para entrar no universo do selo pela leitura.",
 		summary: "Catálogo autoral com capas, trechos e caminhos de compra preservados.",
 		...baseMeta,
 		hero: {
-			eyebrow: "Livros",
-			title: "Livros para entrar no universo do selo pela leitura.",
+			eyebrow: "Produtos",
+			title: "Produtos para entrar no universo do selo pela leitura.",
 			body: "Catálogo autoral de literatura erótica, urbana e dissidente, com capas, trechos e caminhos de compra preservados.",
 			primaryCtaLabel: "Ver catálogo",
 			primaryCtaHref: "/products",
@@ -241,23 +241,23 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 		},
 		curatorialNote: {
 			title: "Catálogo como mesa de curadoria, não como vitrine genérica.",
-			body: "A página de livros deve preservar a operação de loja — preço, variações, favorito e compra — enquanto apresenta cada obra como objeto editorial.",
+			body: "A página de produtos deve preservar a operação de loja — preço, variações, favorito e compra — enquanto apresenta cada item como objeto editorial.",
 		},
 		listing: {
 			label: "Catálogo",
 			title: "Catálogo",
 			body: "Cada capa abre uma rota: compra, trecho e contexto editorial.",
 			emptyText:
-				"O catálogo ainda não tem títulos publicados. Volte em breve para acompanhar os próximos livros.",
+				"O catálogo ainda não tem produtos publicados. Volte em breve para acompanhar os próximos lançamentos.",
 			cardPrimaryFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
-			cardSecondaryFallback: "Livro em preparação dentro do mesmo universo literário do selo.",
-			viewBookLabel: "Ver livro",
+			cardSecondaryFallback: "Produto em preparação dentro do mesmo universo literário do selo.",
+			viewBookLabel: "Ver produto",
 			launchAlertLabel: "Avise-me",
 		},
 		finalCta: {
-			title: "Depois do livro, continue pelo Sarau Safado e pelos projetos.",
+			title: "Depois da compra, continue pelo Sarau Safado e pelos projetos.",
 			body: "O catálogo não termina na compra: ele abre caminhos para agenda, performance, encontros e portfólio cultural.",
-			primaryCtaLabel: "Falar sobre livros",
+			primaryCtaLabel: "Falar sobre produtos",
 			primaryCtaHref: "/contact",
 		},
 	};
@@ -267,7 +267,7 @@ export function buildSeedProductPage(): EditorialProductPage {
 	return {
 		type: "page_product",
 		slug: "product",
-		title: "Página do livro",
+		title: "Página do produto",
 		summary: "Estrutura editorial da PDP do Selo Libertária.",
 		...baseMeta,
 		synopsis: {
@@ -282,13 +282,13 @@ export function buildSeedProductPage(): EditorialProductPage {
 			title: "Ficha técnica",
 		},
 		related: {
-			title: "Outros livros",
+			title: "Outros produtos",
 			body: "Leituras que continuam o mesmo campo editorial.",
-			viewBookLabel: "Ver livro",
+			viewBookLabel: "Ver produto",
 			fallbackSummary: "Novo título em breve",
 		},
 		continuity: {
-			title: "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo.",
+			title: "Um produto pode levar ao Sarau, aos projetos e de volta ao catálogo.",
 			body: "A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural.",
 			links: [
 				{ label: "Ver Sarau Safado", href: "/sarau-safado" },
@@ -297,8 +297,8 @@ export function buildSeedProductPage(): EditorialProductPage {
 			],
 		},
 		notFound: {
-			title: "Livro não encontrado",
-			body: "Este título não está disponível agora. Continue pelo catálogo ou fale com o selo.",
+			title: "Produto não encontrado",
+			body: "Este item não está disponível agora. Continue pelo catálogo ou fale com o selo.",
 			primaryCtaLabel: "Ver catálogo",
 			primaryCtaHref: "/products",
 		},
@@ -462,7 +462,7 @@ export function buildSeedContactPage(): EditorialContactPage {
 			title: "Continue pelo Instagram, newsletter ou agenda do Sarau.",
 			primaryCtaLabel: "Ver Sarau Safado",
 			primaryCtaHref: "/sarau-safado",
-			secondaryCtaLabel: "Ver livros",
+			secondaryCtaLabel: "Ver produtos",
 			secondaryCtaHref: "/products",
 		},
 	};

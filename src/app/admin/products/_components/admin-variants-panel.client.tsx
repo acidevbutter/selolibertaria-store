@@ -65,7 +65,7 @@ export function AdminVariantsPanel({
 							<DialogHeader>
 								<DialogTitle>Adicionar variante</DialogTitle>
 								<DialogDescription>
-									Crie uma nova variante herdando os dados principais do livro e ajuste apenas os campos
+									Crie uma nova variante herdando os dados principais do produto e ajuste apenas os campos
 									operacionais necessários.
 								</DialogDescription>
 							</DialogHeader>
@@ -127,7 +127,9 @@ export function AdminVariantsPanel({
 											<Badge variant={variant.active ? "secondary" : "outline"}>
 												{variant.active ? "Ativa" : "Inativa"}
 											</Badge>
-											<Badge variant="outline">{usesCustomPrice ? "Preço próprio" : "Preço do livro"}</Badge>
+											<Badge variant="outline">
+												{usesCustomPrice ? "Preço próprio" : "Preço do produto"}
+											</Badge>
 										</div>
 									</div>
 									<div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
@@ -150,7 +152,7 @@ export function AdminVariantsPanel({
 							</CardHeader>
 							<CardContent className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
 								<div className="space-y-1 text-sm text-muted-foreground">
-									<div>{variant.description || "Usa a descrição do livro."}</div>
+									<div>{variant.description || "Usa a descrição do produto."}</div>
 								</div>
 								<div className="flex flex-wrap gap-2">
 									<Dialog>
@@ -165,7 +167,7 @@ export function AdminVariantsPanel({
 												<DialogTitle>Editar variante</DialogTitle>
 												<DialogDescription>
 													Revise estoque, ordem, preço e disponibilidade desta variante sem alterar os dados
-													compartilhados do livro.
+													compartilhados do produto.
 												</DialogDescription>
 											</DialogHeader>
 											<form action={updateStripeVariantAction} className="space-y-6">

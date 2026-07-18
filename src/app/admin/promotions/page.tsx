@@ -492,13 +492,13 @@ function PromotionForm(args: {
 			>
 				<div className="grid gap-4 lg:grid-cols-2">
 					<label className="grid gap-2 lg:col-span-2">
-						<span className="text-sm font-medium">Slugs de livros</span>
+						<span className="text-sm font-medium">Slugs de produtos</span>
 						<textarea
 							name="productSlugs"
 							rows={2}
 							defaultValue={defaults.productSlugs}
 							className="max-w-2xl rounded-lg border px-3 py-2"
-							placeholder="livro-1, livro-2"
+							placeholder="produto-1, produto-2"
 							autoCapitalize="none"
 							autoCorrect="off"
 							spellCheck={false}

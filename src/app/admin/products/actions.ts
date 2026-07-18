@@ -88,7 +88,7 @@ const resolveVariantAmount = ({
 
 	const inherited = basePrice || (typeof groupBasePrice === "number" ? String(groupBasePrice) : "");
 	if (!inherited) {
-		throw new Error("O preço do livro não está disponível.");
+		throw new Error("O preço do produto não está disponível.");
 	}
 	return parsePriceAmount(inherited, currency);
 };
@@ -222,7 +222,7 @@ export async function updateStripeProductGroupAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Livro não encontrado no catálogo administrativo.");
+		throw new Error("Produto não encontrado no catálogo administrativo.");
 	}
 
 	const name = getRequiredString(formData, "name");
@@ -298,7 +298,7 @@ export async function createStripeVariantAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Livro não encontrado no catálogo administrativo.");
+		throw new Error("Produto não encontrado no catálogo administrativo.");
 	}
 
 	const slug = group.slug;
@@ -374,7 +374,7 @@ export async function updateStripeVariantAction(formData: FormData) {
 	const currentSlug = getRequiredString(formData, "currentSlug");
 	const group = await getAdminStripeProductGroup(currentSlug);
 	if (!group) {
-		throw new Error("Livro não encontrado no catálogo administrativo.");
+		throw new Error("Produto não encontrado no catálogo administrativo.");
 	}
 
 	const name = group.name;

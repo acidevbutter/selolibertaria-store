@@ -62,7 +62,7 @@ Ordem visual recomendada para Figma Editorial V2:
 1. Header.
 2. Hero escuro/papel com capa dominante.
 3. Manifesto claro e respirado.
-4. Livro em destaque.
+4. Produto em destaque.
 5. Catálogo curto com três capas/cards.
 6. Sarau Safado em painel forte.
 7. Newsletter/Footer.
@@ -71,7 +71,7 @@ Ordem visual recomendada para Figma Editorial V2:
 
 Primários:
 
-- `Comprar livro`
+- `Comprar produto`
 - `Comprar agora`
 - `Adicionar ao carrinho`
 - `Assinar`
@@ -80,7 +80,7 @@ Secundários:
 
 - `Ler trecho`
 - `Conhecer o selo`
-- `Ver livro`
+- `Ver produto`
 - `Ver projetos`
 - `Ver agenda`
 
@@ -155,7 +155,7 @@ Copy:
 - `Configurações`, não `Settings`.
 - `Modelos de email`, não `Email Templates`.
 - `Ver pedido`, não `Abrir`.
-- `Salvar livro`, não `Salvar` genérico quando houver ambiguidade.
+- `Salvar produto`, não `Salvar` genérico quando houver ambiguidade.
 
 ## Responsivo
 
@@ -186,7 +186,7 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Qualquer fallback visual ou textual novo precisa nascer em português do Brasil.
 ## Addendum — Copy administrável
 
-- Home, Eventos, Projetos, Livros, Página do livro, Sobre, Contato, newsletter e footer agora seguem a fonte editorial do admin quando aplicável.
+- Home, Eventos, Projetos, Livros, Página do produto, Sobre, Contato, newsletter e footer agora seguem a fonte editorial do admin quando aplicável.
 - Labels técnicos recorrentes permanecem fixos para não transformar a interface em um formulário de configuração excessivo.
 
 ## Atualização 2026-06-29

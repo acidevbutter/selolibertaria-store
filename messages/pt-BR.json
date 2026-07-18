@@ -234,7 +234,7 @@
 	"/product.page.outOfStock": "Fora de estoque",
 	"/product.page.addToCart": "Adicionar ao carrinho",
 	"/product.page.buyNow": "Comprar",
-	"/product.page.viewBook": "Ver livro",
+	"/product.page.viewBook": "Ver produto",
 	"/category.metadata.title": "Categoria {categoryName} · Selo Libertaria",
 	"/category.page.title": "Categoria",
 	"/cart.modal.title": "Carrinho",

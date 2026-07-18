@@ -23,8 +23,8 @@ export default async function AdminEditorialProductPage() {
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Editorial"
-				title="Página do livro"
-				description="Textos estruturais globais da PDP pública."
+				title="Página do produto"
+				description="Textos estruturais globais da página pública de produto."
 				actions={
 					<Link
 						href="/admin/editorial"
@@ -49,12 +49,12 @@ export default async function AdminEditorialProductPage() {
 				<AdminEditorialStat
 					label="Escopo"
 					value="Estrutural"
-					helper="Os dados do livro continuam vindo do catálogo."
+					helper="Os dados do produto continuam vindo do catálogo."
 				/>
 			</div>
 			<EditorialPageCopyForm
 				action={updateEditorialProductPageCopyAction}
-				submitLabel="Salvar textos da página do livro"
+				submitLabel="Salvar textos da página do produto"
 				base={{ published: page.published }}
 				sections={[
 					{
@@ -77,7 +77,7 @@ export default async function AdminEditorialProductPage() {
 					},
 					{
 						title: "Ficha técnica",
-						description: "Cabeçalho do bloco factual do livro.",
+						description: "Cabeçalho do bloco factual do produto.",
 						route: "/product/[slug]",
 						tools: ["Texto"],
 						fields: [
@@ -86,7 +86,7 @@ export default async function AdminEditorialProductPage() {
 					},
 					{
 						title: "Relacionados",
-						description: "Bloco de continuidade entre livros.",
+						description: "Bloco de continuidade entre produtos.",
 						route: "/product/[slug]",
 						tools: ["Texto", "botão", "Texto padrão"],
 						fields: [
@@ -104,7 +104,7 @@ export default async function AdminEditorialProductPage() {
 							},
 							{
 								name: "relatedViewBookLabel",
-								label: "Texto do botão de livro relacionado",
+								label: "Texto do botão de produto relacionado",
 								defaultValue: page.related?.viewBookLabel,
 							},
 							{
@@ -168,7 +168,7 @@ export default async function AdminEditorialProductPage() {
 						],
 					},
 					{
-						title: "Fallback de livro não encontrado",
+						title: "Fallback de produto não encontrado",
 						description: "Mensagem editorial de segurança quando o slug não existir.",
 						route: "/product/[slug]",
 						tools: ["Texto", "botão", "Texto padrão"],

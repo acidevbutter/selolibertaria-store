@@ -31,7 +31,7 @@ Preservar:
 
 ## P1 — Home Figma Editorial V2
 
-- [ ] Ajustar estrutura da Home: Header, Hero, Manifesto, Livro em destaque, Catálogo curto, Sarau Safado, Newsletter/Footer.
+- [ ] Ajustar estrutura da Home: Header, Hero, Manifesto, Produto em destaque, Catálogo curto, Sarau Safado, Newsletter/Footer.
 - [ ] Reforçar capa/livro como protagonista.
 - [ ] Garantir CTA principal de compra na primeira dobra.
 - [ ] Reduzir blocos extras que enfraquecem fidelidade ao Figma.

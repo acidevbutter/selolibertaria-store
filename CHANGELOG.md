@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Padronizada a nomenclatura genérica de catálogo para `produtos` no admin e na vitrine `/products`, incluindo a rota editorial `/admin/editorial/pagina-do-produto`, preservando usos literários e a categoria pública `Livros`.
 - Substituídos termos técnicos visíveis no admin por nomes familiares em português, preservando campos internos, contratos e persistência.
 - Padronizadas páginas do admin editorial com seções sanfonadas, mantendo campos existentes, barra flutuante de salvar e abertura automática da seção com validação nativa.
 - Reorganizado o hub do admin editorial em páginas estruturais, coleções vivas e blocos globais, com badges de texto, imagem, fundo, CTAs, links, fallback e publicação.

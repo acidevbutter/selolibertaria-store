@@ -53,7 +53,7 @@ export default async function AdminEditorialHomePage() {
 				<AdminEditorialStat
 					label="Blocos"
 					value="5"
-					helper="Abertura, manifesto, livro, catálogo e programação."
+					helper="Abertura, manifesto, produto, catálogo e programação."
 				/>
 				<AdminEditorialStat label="Rota" value="/" helper="Onde esta copy aparece." />
 			</div>
@@ -146,16 +146,16 @@ export default async function AdminEditorialHomePage() {
 						],
 					},
 					{
-						title: "Livro em destaque",
-						description: "Texto estrutural do bloco principal de livro.",
+						title: "Produto em destaque",
+						description: "Texto estrutural do bloco principal de produto.",
 						route: "/",
 						tools: ["Texto", "botão", "Fundo"],
 						fields: [
 							{
 								name: "featuredProductSlug",
-								label: "Endereço do livro em destaque",
+								label: "Endereço do produto em destaque",
 								defaultValue: page.featuredBook?.productSlug,
-								help: "Use o endereço publicado em /product/nome-do-livro para controlar qual obra aparece nesse bloco.",
+								help: "Use o endereço publicado em /product/nome-do-produto para controlar qual item aparece nesse bloco.",
 							},
 							{ name: "featuredEyebrow", label: "Linha curta", defaultValue: page.featuredBook?.eyebrow },
 							{
@@ -207,12 +207,12 @@ export default async function AdminEditorialHomePage() {
 							},
 							{
 								name: "catalogViewBookLabel",
-								label: "Botão para livro disponível",
+								label: "Botão para produto disponível",
 								defaultValue: page.catalog?.viewBookLabel,
 							},
 							{
 								name: "catalogLaunchAlertLabel",
-								label: "Botão para livro futuro",
+								label: "Botão para produto futuro",
 								defaultValue: page.catalog?.launchAlertLabel,
 							},
 						],

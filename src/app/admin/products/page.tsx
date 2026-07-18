@@ -55,16 +55,16 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Livros"
+				eyebrow="Produtos"
 				title="Catálogo"
-				description="Gerencie livros, variantes e preços."
+				description="Gerencie produtos, variantes e preços."
 				actions={
 					<>
 						<form className="min-w-[280px] max-w-md flex-1">
 							<Input
 								name="q"
 								defaultValue={query}
-								placeholder="Buscar livros, slugs ou categorias"
+								placeholder="Buscar produtos, slugs ou categorias"
 								className="rounded-none border-[color:var(--editorial-border)] bg-[#fbf7f1]"
 							/>
 						</form>
@@ -82,19 +82,19 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 						>
 							<Link href="/admin/products/new">
 								<PackagePlus className="h-4 w-4" />
-								Novo livro
+								Novo produto
 							</Link>
 						</Button>
 					</>
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Livros" value={filtered.length} helper="Resultados do filtro atual." />
+				<AdminEditorialStat label="Produtos" value={filtered.length} helper="Resultados do filtro atual." />
 				<AdminEditorialStat label="Ativos" value={activeCount} helper="Disponíveis para venda." />
 				<AdminEditorialStat
 					label="Variantes"
 					value={variantCount}
-					helper="Somadas entre os livros listados."
+					helper="Somadas entre os produtos listados."
 				/>
 			</div>
 
@@ -108,13 +108,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 			) : (
 				<EditorialPanel className="overflow-hidden p-0">
 					<CardHeader>
-						<CardTitle>Livros</CardTitle>
+						<CardTitle>Produtos</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<Table className="min-w-[760px]">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Livro</TableHead>
+									<TableHead>Produto</TableHead>
 									<TableHead>Categoria</TableHead>
 									<TableHead>Variantes</TableHead>
 									<TableHead>Preço</TableHead>
@@ -165,7 +165,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
 													href={`/admin/products/${group.slug}`}
 												>
-													Editar livro
+													Editar produto
 												</Link>
 											</TableCell>
 										</TableRow>
@@ -174,7 +174,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 								{filtered.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											Nenhum livro encontrado.
+											Nenhum produto encontrado.
 										</TableCell>
 									</TableRow>
 								) : null}

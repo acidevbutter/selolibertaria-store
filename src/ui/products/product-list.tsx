@@ -23,7 +23,7 @@ export const ProductList = async ({
 	anchorId,
 	eyebrow = "Catálogo",
 	title = "Poucos ruídos, capas em destaque e saída clara para compra.",
-	description = "A página de livros deve preservar a operação de loja enquanto apresenta cada obra como objeto editorial.",
+	description = "A página de produtos deve preservar a operação de loja enquanto apresenta cada item como objeto editorial.",
 }: ProductListProps) => {
 	const [locale, t, session] = await Promise.all([getLocale(), getTranslations("Global.products"), auth()]);
 	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();

@@ -40,7 +40,7 @@ export function VariantPriceFields({
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium">Preço</h3>
 				<p className="text-xs text-muted-foreground">
-					As variantes podem herdar o preço do livro ou usar um valor específico.
+					As variantes podem herdar o preço do produto ou usar um valor específico.
 				</p>
 			</div>
 			<input type="hidden" name="basePrice" value={typeof basePrice === "number" ? String(basePrice) : ""} />
@@ -55,9 +55,9 @@ export function VariantPriceFields({
 						className="mt-0.5"
 					/>
 					<span className="space-y-1">
-						<span className="block font-medium">Usar preço do livro</span>
+						<span className="block font-medium">Usar preço do produto</span>
 						<span className="block text-xs text-muted-foreground">
-							{inheritedPriceLabel ? inheritedPriceLabel : "Usa o preço padrão do livro."}
+							{inheritedPriceLabel ? inheritedPriceLabel : "Usa o preço padrão do produto."}
 						</span>
 					</span>
 				</label>
