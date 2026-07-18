@@ -48,9 +48,13 @@ export function EditorialContactForm({
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
-					<EditorialAccordionSection title="Hero" defaultOpen contentClassName="grid gap-4 px-5 py-5">
+					<EditorialAccordionSection
+						title="Abertura da página"
+						defaultOpen
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="heroEyebrow">
+							<Field label="Chamada curta acima do título" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
 							</Field>
 							<Field label="Título" name="heroTitle">
@@ -120,7 +124,7 @@ export function EditorialContactForm({
 									/>
 								</Field>
 								<EditorialHrefField
-									label={`Canal ${index} · link`}
+									label={`Canal ${index} · destino`}
 									name={`direct${index}Href`}
 									defaultValue={directLinks[index - 1]?.href}
 								/>
@@ -148,7 +152,7 @@ export function EditorialContactForm({
 									/>
 								</Field>
 								<EditorialHrefField
-									label={`Link ${index} · href`}
+									label={`Link ${index} · destino`}
 									name={`path${index}Href`}
 									defaultValue={pathLinks[index - 1]?.href}
 								/>
@@ -181,7 +185,7 @@ export function EditorialContactForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina de contato.">
+					<EditorialFloatingSaveBar hint="Salvar alterações da página de contato.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

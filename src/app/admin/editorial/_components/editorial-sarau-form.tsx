@@ -63,24 +63,24 @@ export function EditorialSarauForm({
 			<CardContent>
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
 					<EditorialAccordionSection
-						title="Hero"
+						title="Abertura da página"
 						description="Controla a abertura principal da página pública do Sarau Safado."
 						defaultOpen
 						contentClassName="grid gap-4 px-5 py-5"
 					>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="heroEyebrow">
+							<Field label="Chamada curta acima do título" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
 							</Field>
-							<Field label="Título do hero" name="heroTitle">
+							<Field label="Título da abertura" name="heroTitle">
 								<Input id="heroTitle" name="heroTitle" defaultValue={page.hero?.title ?? ""} />
 							</Field>
 							<div className="md:col-span-2">
-								<Field label="Texto do hero" name="heroBody">
+								<Field label="Texto da abertura" name="heroBody">
 									<Textarea name="heroBody" defaultValue={page.hero?.body ?? ""} rows={4} />
 								</Field>
 							</div>
-							<Field label="CTA principal · rótulo" name="heroPrimaryCtaLabel">
+							<Field label="Botão principal · texto" name="heroPrimaryCtaLabel">
 								<Input
 									id="heroPrimaryCtaLabel"
 									name="heroPrimaryCtaLabel"
@@ -88,11 +88,11 @@ export function EditorialSarauForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA principal · link"
+								label="Botão principal · destino"
 								name="heroPrimaryCtaHref"
 								defaultValue={page.hero?.primaryCtaHref}
 							/>
-							<Field label="CTA secundário · rótulo" name="heroSecondaryCtaLabel">
+							<Field label="Botão secundario · texto" name="heroSecondaryCtaLabel">
 								<Input
 									id="heroSecondaryCtaLabel"
 									name="heroSecondaryCtaLabel"
@@ -100,12 +100,12 @@ export function EditorialSarauForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA secundário · link"
+								label="Botão secundario · destino"
 								name="heroSecondaryCtaHref"
 								defaultValue={page.hero?.secondaryCtaHref}
 							/>
 						</div>
-						<Field label="Imagem de fundo do hero" name="heroImageSrc">
+						<Field label="Imagem de fundo da abertura" name="heroImageSrc">
 							<AdminImageUrlList
 								name="heroImageSrc"
 								initialValues={page.hero?.image?.src ? [page.hero.image.src] : []}
@@ -114,7 +114,7 @@ export function EditorialSarauForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Texto alternativo da imagem de fundo" name="heroImageAlt">
+							<Field label="Texto alternativo da imagem" name="heroImageAlt">
 								<Input id="heroImageAlt" name="heroImageAlt" defaultValue={page.hero?.image?.alt ?? ""} />
 							</Field>
 							<Field label="Legenda pública da imagem" name="heroImageCaption">
@@ -131,8 +131,8 @@ export function EditorialSarauForm({
 									defaultValue={page.hero?.background?.fit ?? "cover"}
 									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 								>
-									<option value="cover">Cover</option>
-									<option value="contain">Contain</option>
+									<option value="cover">Preencher todo o fundo</option>
+									<option value="contain">Mostrar a imagem inteira</option>
 								</select>
 							</Field>
 							<Field label="Posição" name="heroImagePosition">
@@ -149,14 +149,14 @@ export function EditorialSarauForm({
 									<option value="right">Direita</option>
 								</select>
 							</Field>
-							<Field label="Overlay" name="heroImageOverlay">
+							<Field label="Escurecimento sobre a imagem" name="heroImageEscurecimento sobre a imagem">
 								<select
-									id="heroImageOverlay"
-									name="heroImageOverlay"
+									id="heroImageEscurecimento sobre a imagem"
+									name="heroImageEscurecimento sobre a imagem"
 									defaultValue={page.hero?.background?.overlay ?? "strong"}
 									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 								>
-									<option value="none">Sem overlay</option>
+									<option value="none">Sem escurecimento</option>
 									<option value="soft">Suave</option>
 									<option value="medium">Médio</option>
 									<option value="strong">Forte</option>
@@ -178,7 +178,7 @@ export function EditorialSarauForm({
 
 					<EditorialAccordionSection
 						title="Bloco principal"
-						description="Esse conteúdo alimenta a leitura institucional logo abaixo do hero."
+						description="Esse conteúdo alimenta a leitura institucional logo abaixo da abertura."
 						contentClassName="grid gap-4 px-5 py-5"
 					>
 						<Field label="Título do bloco" name="whyTitle">
@@ -240,7 +240,7 @@ export function EditorialSarauForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina do Sarau Safado.">
+					<EditorialFloatingSaveBar hint="Salvar alterações da página do Sarau Safado.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

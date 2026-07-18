@@ -199,14 +199,14 @@ export function ProductCoreFields({
 			<Field label="Nome" name="name" className="space-y-2 md:col-span-7 xl:col-span-6">
 				<Input id="name" name="name" defaultValue={name} minLength={2} required className="max-w-xl" />
 			</Field>
-			<Field label="Slug" name="slug" className="space-y-2 md:col-span-5 xl:col-span-4">
+			<Field label="Endereço público" name="slug" className="space-y-2 md:col-span-5 xl:col-span-4">
 				<Input
 					id="slug"
 					name="slug"
 					defaultValue={slug}
 					placeholder="livro-exemplo"
 					pattern={fieldPatterns.kebabCase}
-					title="Use kebab-case, por exemplo livro-exemplo."
+					title="Use letras minúsculas, números e hífens, por exemplo livro-exemplo."
 					className="max-w-sm"
 					onChange={autoFormatSlug ? applySlugAutoFormat : undefined}
 					onInput={autoFormatSlug ? applySlugAutoFormat : undefined}

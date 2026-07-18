@@ -56,7 +56,7 @@ export default async function AdminEditorialGlobalPage() {
 						title: "Newsletter",
 						description: "Chamada curta acima do campo de email.",
 						route: "todas páginas públicas",
-						tools: ["Texto", "CTA"],
+						tools: ["Texto", "botão"],
 						defaultOpen: true,
 						fields: [
 							{
@@ -78,7 +78,7 @@ export default async function AdminEditorialGlobalPage() {
 							},
 							{
 								name: "newsletterButtonLabel",
-								label: "Rótulo do CTA da newsletter",
+								label: "Texto do botão da newsletter",
 								defaultValue: page.newsletter?.buttonLabel,
 							},
 						],

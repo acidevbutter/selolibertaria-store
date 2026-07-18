@@ -81,7 +81,7 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 			<div className="space-y-1">
 				<p className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</p>
 				<p className="text-xs leading-5 text-[color:var(--editorial-muted)]">
-					Use uma imagem por bloco, com opções fechadas de capa, posição, overlay e contraste.
+					Use uma imagem por bloco, com opções fechadas de preenchimento, posição, escurecimento e contraste.
 				</p>
 			</div>
 			<AdminImageUrlList
@@ -106,8 +106,8 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 						defaultValue={background?.fit ?? "cover"}
 						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 					>
-						<option value="cover">Cover</option>
-						<option value="contain">Contain</option>
+						<option value="cover">Preencher todo o fundo</option>
+						<option value="contain">Mostrar a imagem inteira</option>
 					</select>
 				</label>
 				<label className="grid gap-2">
@@ -125,13 +125,15 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 					</select>
 				</label>
 				<label className="grid gap-2">
-					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Overlay</span>
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+						Escurecimento sobre a imagem
+					</span>
 					<select
-						name={`${field.name}Overlay`}
+						name={`${field.name}Escurecimento sobre a imagem`}
 						defaultValue={background?.overlay ?? "medium"}
 						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 					>
-						<option value="none">Sem overlay</option>
+						<option value="none">Sem escurecimento</option>
 						<option value="soft">Suave</option>
 						<option value="medium">Médio</option>
 						<option value="strong">Forte</option>
@@ -204,8 +206,8 @@ export function EditorialPageCopyForm({
 				</CardHeader>
 				<CardContent className="grid gap-4">
 					<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-						Este bloco só controla se a versão salva já deve aparecer na rota pública. Os textos e CTAs abaixo
-						continuam sendo a fonte principal da página.
+						Este bloco só controla se a versão salva já deve aparecer na rota pública. Os textos e botoes
+						abaixo continuam sendo a fonte principal da página.
 					</p>
 					<div>
 						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Status da página</span>
@@ -290,7 +292,7 @@ export function EditorialPageCopyForm({
 				</div>
 			) : null}
 
-			<EditorialFloatingSaveBar hint="Salvar alteracoes desta pagina.">
+			<EditorialFloatingSaveBar hint="Salvar alterações desta página.">
 				{submitLabel}
 			</EditorialFloatingSaveBar>
 		</form>
