@@ -27,7 +27,7 @@ export default async function AdminEditorialContactPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Contato"
-				description="Edite hero, canais diretos e caminhos públicos da página de contato."
+				description="Edite abertura, canais diretos e caminhos públicos da página de contato."
 				actions={
 					<div className="flex flex-wrap gap-3">
 						<Link
@@ -51,7 +51,7 @@ export default async function AdminEditorialContactPage() {
 				<AdminEditorialStat
 					label="Blocos"
 					value="Canais"
-					helper="Hero, formulário, caminhos diretos e links públicos."
+					helper="Abertura, formulário, caminhos diretos e links públicos."
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

@@ -51,7 +51,7 @@ export default async function AdminEditorialSarauPage() {
 				<AdminEditorialStat
 					label="Blocos"
 					value="Programa"
-					helper="Hero, manifesto, destaques e continuidade institucional."
+					helper="Abertura, manifesto, destaques e continuidade institucional."
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

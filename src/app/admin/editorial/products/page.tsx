@@ -41,7 +41,7 @@ export default async function AdminEditorialProductsPage() {
 					value={page.published ? "Publicado" : "Rascunho"}
 					helper="Rota: /products"
 				/>
-				<AdminEditorialStat label="Blocos" value="4" helper="Hero, nota, catálogo e continuidade." />
+				<AdminEditorialStat label="Blocos" value="4" helper="Abertura, nota, catálogo e continuidade." />
 				<AdminEditorialStat
 					label="Fonte"
 					value="Admin editorial"
@@ -54,45 +54,45 @@ export default async function AdminEditorialProductsPage() {
 				base={{ published: page.published }}
 				sections={[
 					{
-						title: "Hero",
+						title: "Abertura",
 						description: "Abertura principal da página de livros.",
 						route: "/products",
 						defaultOpen: true,
 						fields: [
-							{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
-							{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },
+							{ name: "heroEyebrow", label: "Linha curta da abertura", defaultValue: page.hero?.eyebrow },
+							{ name: "heroTitle", label: "Título da abertura", defaultValue: page.hero?.title },
 							{
 								name: "heroBody",
-								label: "Texto do hero",
+								label: "Texto da abertura",
 								type: "textarea",
 								rows: 4,
 								defaultValue: page.hero?.body,
 							},
 							{
 								name: "heroPrimaryCtaLabel",
-								label: "Rótulo do CTA principal do hero",
+								label: "Texto do botão principal da abertura",
 								defaultValue: page.hero?.primaryCtaLabel,
 								help: "Use um texto curto de ação, como Comprar livros ou Ver catálogo.",
 							},
 							{
 								name: "heroPrimaryCtaHref",
-								label: "Link do CTA principal do hero",
+								label: "Destino do botão principal da abertura",
 								defaultValue: page.hero?.primaryCtaHref,
 								help: "Prefira rotas internas, como /products, /projects ou /contact.",
 							},
 							{
 								name: "heroSecondaryCtaLabel",
-								label: "Rótulo do CTA secundário do hero",
+								label: "Texto do botão secundário da abertura",
 								defaultValue: page.hero?.secondaryCtaLabel,
 								help: "Use um texto de apoio para a segunda saída editorial.",
 							},
 							{
 								name: "heroSecondaryCtaHref",
-								label: "Link do CTA secundário do hero",
+								label: "Destino do botão secundário da abertura",
 								defaultValue: page.hero?.secondaryCtaHref,
 								help: "Prefira rotas internas do site para manter a navegação consistente.",
 							},
-							{ name: "heroQuote", label: "Frase de apoio do hero", defaultValue: page.hero?.quote },
+							{ name: "heroQuote", label: "Frase de apoio da abertura", defaultValue: page.hero?.quote },
 						],
 					},
 					{
@@ -151,12 +151,12 @@ export default async function AdminEditorialProductsPage() {
 							},
 							{
 								name: "listingViewBookLabel",
-								label: "Rótulo do CTA para livro disponível",
+								label: "Texto do botão para livro disponível",
 								defaultValue: page.listing?.viewBookLabel,
 							},
 							{
 								name: "listingLaunchAlertLabel",
-								label: "Rótulo do CTA para livro futuro",
+								label: "Texto do botão para livro futuro",
 								defaultValue: page.listing?.launchAlertLabel,
 							},
 						],
@@ -176,13 +176,13 @@ export default async function AdminEditorialProductsPage() {
 							},
 							{
 								name: "finalPrimaryCtaLabel",
-								label: "Rótulo do CTA da faixa final",
+								label: "Texto do botão da faixa final",
 								defaultValue: page.finalCta?.primaryCtaLabel,
-								help: "Use um CTA curto para a saída editorial desta seção.",
+								help: "Use um botão curto para a saída editorial desta seção.",
 							},
 							{
 								name: "finalPrimaryCtaHref",
-								label: "Link do CTA da faixa final",
+								label: "Destino do botão da faixa final",
 								defaultValue: page.finalCta?.primaryCtaHref,
 								help: "Prefira rotas internas, como /projects, /contact ou /sarau-safado.",
 							},

@@ -53,7 +53,7 @@ export default async function AdminEditorialHomePage() {
 				<AdminEditorialStat
 					label="Blocos"
 					value="5"
-					helper="Hero, manifesto, livro, catálogo e programação."
+					helper="Abertura, manifesto, livro, catálogo e programação."
 				/>
 				<AdminEditorialStat label="Rota" value="/" helper="Onde esta copy aparece." />
 			</div>
@@ -67,7 +67,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Chamada principal",
 						description: "Bloco de abertura da Home.",
 						route: "/",
-						tools: ["Texto", "CTA", "Fundo"],
+						tools: ["Texto", "botão", "Fundo"],
 						fields: [
 							{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
 							{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
@@ -85,7 +85,7 @@ export default async function AdminEditorialHomePage() {
 							},
 							{
 								name: "heroPrimaryCtaHref",
-								label: "Link do botão principal",
+								label: "Destino do botão principal",
 								defaultValue: page.hero?.primaryCtaHref,
 							},
 							{
@@ -95,7 +95,7 @@ export default async function AdminEditorialHomePage() {
 							},
 							{
 								name: "heroSecondaryCtaHref",
-								label: "Link do botão secundário",
+								label: "Destino do botão secundário",
 								defaultValue: page.hero?.secondaryCtaHref,
 							},
 							{
@@ -111,7 +111,7 @@ export default async function AdminEditorialHomePage() {
 							{ name: "heroFeatureQuote", label: "Frase de apoio", defaultValue: page.hero?.featureQuote },
 							{
 								name: "heroBackground",
-								label: "Fundo do hero",
+								label: "Imagem de fundo da abertura",
 								type: "background",
 								background: page.hero?.background,
 							},
@@ -119,9 +119,9 @@ export default async function AdminEditorialHomePage() {
 					},
 					{
 						title: "Manifesto",
-						description: "Bloco curto entre hero e catálogo.",
+						description: "Bloco curto entre abertura e catálogo.",
 						route: "/",
-						tools: ["Texto", "CTA", "Fundo"],
+						tools: ["Texto", "botão", "Fundo"],
 						fields: [
 							{ name: "manifestoTitle", label: "Título", defaultValue: page.manifesto?.title },
 							{
@@ -132,7 +132,11 @@ export default async function AdminEditorialHomePage() {
 								defaultValue: page.manifesto?.body,
 							},
 							{ name: "manifestoLinkLabel", label: "Botão", defaultValue: page.manifesto?.linkLabel },
-							{ name: "manifestoLinkHref", label: "Link do botão", defaultValue: page.manifesto?.linkHref },
+							{
+								name: "manifestoLinkHref",
+								label: "Destino do botão",
+								defaultValue: page.manifesto?.linkHref,
+							},
 							{
 								name: "manifestoBackground",
 								label: "Fundo do manifesto",
@@ -145,13 +149,13 @@ export default async function AdminEditorialHomePage() {
 						title: "Livro em destaque",
 						description: "Texto estrutural do bloco principal de livro.",
 						route: "/",
-						tools: ["Texto", "CTA", "Fundo"],
+						tools: ["Texto", "botão", "Fundo"],
 						fields: [
 							{
 								name: "featuredProductSlug",
-								label: "Slug do livro em destaque",
+								label: "Endereço do livro em destaque",
 								defaultValue: page.featuredBook?.productSlug,
-								help: "Use o slug publicado em /product/nome-do-livro para controlar qual obra aparece nesse bloco.",
+								help: "Use o endereço publicado em /product/nome-do-livro para controlar qual obra aparece nesse bloco.",
 							},
 							{ name: "featuredEyebrow", label: "Linha curta", defaultValue: page.featuredBook?.eyebrow },
 							{
@@ -177,7 +181,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Catálogo",
 						description: "Copy estrutural do bloco curto de catálogo.",
 						route: "/",
-						tools: ["Texto", "Fallback"],
+						tools: ["Texto", "Texto padrão"],
 						fields: [
 							{ name: "catalogTitle", label: "Título", defaultValue: page.catalog?.title },
 							{
@@ -217,7 +221,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Programação",
 						description: "Bloco de continuidade para Sarau Safado.",
 						route: "/",
-						tools: ["Texto", "CTA"],
+						tools: ["Texto", "botão"],
 						fields: [
 							{ name: "programEyebrow", label: "Linha curta", defaultValue: page.program?.eyebrow },
 							{ name: "programTitle", label: "Título", defaultValue: page.program?.title },
@@ -229,7 +233,7 @@ export default async function AdminEditorialHomePage() {
 								defaultValue: page.program?.body,
 							},
 							{ name: "programCtaLabel", label: "Botão", defaultValue: page.program?.ctaLabel },
-							{ name: "programCtaHref", label: "Link do botão", defaultValue: page.program?.ctaHref },
+							{ name: "programCtaHref", label: "Destino do botão", defaultValue: page.program?.ctaHref },
 							{
 								name: "programBackground",
 								label: "Fundo da programação",

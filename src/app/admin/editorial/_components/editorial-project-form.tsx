@@ -99,9 +99,9 @@ export function EditorialProjectForm({
 							<Input id="title" name="title" defaultValue={project?.title ?? ""} required />
 						</Field>
 						<Field
-							label="Slug do projeto"
+							label="Endereço público do projeto"
 							name="slug"
-							hint="Use uma versão curta da URL. Se vazio, será gerado a partir do título."
+							hint="Use uma versão curta do endereço público. Se vazio, será gerado a partir do título."
 						>
 							<Input
 								id="slug"
@@ -214,7 +214,7 @@ export function EditorialProjectForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes do projeto.">
+					<EditorialFloatingSaveBar hint="Salvar alterações do projeto.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

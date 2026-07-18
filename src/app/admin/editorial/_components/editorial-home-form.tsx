@@ -64,15 +64,15 @@ function BackgroundFields({
 				<Field label="Legenda" name={`${name}Caption`}>
 					<Input id={`${name}Caption`} name={`${name}Caption`} defaultValue={image?.caption ?? ""} />
 				</Field>
-				<Field label="Enquadramento" name={`${name}Fit`}>
+				<Field label="Como a imagem ocupa o espaço" name={`${name}Fit`}>
 					<select
 						id={`${name}Fit`}
 						name={`${name}Fit`}
 						defaultValue={background?.fit ?? "cover"}
 						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 					>
-						<option value="cover">Cover</option>
-						<option value="contain">Contain</option>
+						<option value="cover">Preencher todo o fundo</option>
+						<option value="contain">Mostrar a imagem inteira</option>
 					</select>
 				</Field>
 				<Field label="Posição" name={`${name}Position`}>
@@ -89,14 +89,14 @@ function BackgroundFields({
 						<option value="right">Direita</option>
 					</select>
 				</Field>
-				<Field label="Overlay" name={`${name}Overlay`}>
+				<Field label="Escurecimento sobre a imagem" name={`${name}Overlay`}>
 					<select
 						id={`${name}Overlay`}
 						name={`${name}Overlay`}
 						defaultValue={background?.overlay ?? "medium"}
 						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 					>
-						<option value="none">Sem overlay</option>
+						<option value="none">Sem escurecimento</option>
 						<option value="soft">Suave</option>
 						<option value="medium">Médio</option>
 						<option value="strong">Forte</option>
@@ -161,9 +161,9 @@ export function EditorialHomeForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialAccordionSection title="Hero" contentClassName="grid gap-4 px-5 py-5">
+					<EditorialAccordionSection title="Abertura da página" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="heroEyebrow">
+							<Field label="Chamada curta acima do título" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
 							</Field>
 							<Field label="Título" name="heroTitle">
@@ -174,7 +174,7 @@ export function EditorialHomeForm({
 									<Textarea name="heroDescription" defaultValue={page.hero?.description ?? ""} rows={4} />
 								</Field>
 							</div>
-							<Field label="CTA principal · rótulo" name="heroPrimaryCtaLabel">
+							<Field label="Botão principal · texto" name="heroPrimaryCtaLabel">
 								<Input
 									id="heroPrimaryCtaLabel"
 									name="heroPrimaryCtaLabel"
@@ -182,11 +182,11 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA principal · link"
+								label="Botão principal · destino"
 								name="heroPrimaryCtaHref"
 								defaultValue={page.hero?.primaryCtaHref}
 							/>
-							<Field label="CTA secundária · rótulo" name="heroSecondaryCtaLabel">
+							<Field label="Botão secundario · texto" name="heroSecondaryCtaLabel">
 								<Input
 									id="heroSecondaryCtaLabel"
 									name="heroSecondaryCtaLabel"
@@ -194,7 +194,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA secundária · link"
+								label="Botão secundario · destino"
 								name="heroSecondaryCtaHref"
 								defaultValue={page.hero?.secondaryCtaHref}
 							/>
@@ -210,14 +210,14 @@ export function EditorialHomeForm({
 						</div>
 						<BackgroundFields
 							name="heroBackground"
-							label="Fundo do hero"
+							label="Imagem de fundo da abertura"
 							background={page.hero?.background}
 						/>
 					</EditorialAccordionSection>
 
-					<EditorialAccordionSection title="Bloco visual do hero" contentClassName="grid gap-4 px-5 py-5">
+					<EditorialAccordionSection title="Bloco visual da abertura" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="heroFeatureEyebrow">
+							<Field label="Chamada curta acima do título" name="heroFeatureEyebrow">
 								<Input
 									id="heroFeatureEyebrow"
 									name="heroFeatureEyebrow"
@@ -242,7 +242,7 @@ export function EditorialHomeForm({
 								</Field>
 							</div>
 						</div>
-						<Field label="Imagem de apoio do hero" name="heroFeatureImageSrc">
+						<Field label="Imagem de apoio da abertura" name="heroFeatureImageSrc">
 							<AdminImageUrlList
 								name="heroFeatureImageSrc"
 								initialValues={page.hero?.featureImage?.src ? [page.hero.featureImage.src] : []}
@@ -284,7 +284,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="Link · href"
+								label="Link · destino"
 								name="manifestoLinkHref"
 								defaultValue={page.manifesto?.linkHref}
 							/>
@@ -298,7 +298,7 @@ export function EditorialHomeForm({
 
 					<EditorialAccordionSection title="Autora e curadoria" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="authorEyebrow">
+							<Field label="Chamada curta acima do título" name="authorEyebrow">
 								<Input id="authorEyebrow" name="authorEyebrow" defaultValue={page.author?.eyebrow ?? ""} />
 							</Field>
 							<Field label="Título" name="authorTitle">
@@ -318,7 +318,7 @@ export function EditorialHomeForm({
 									/>
 								</Field>
 							</div>
-							<Field label="CTA principal · rótulo" name="authorPrimaryCtaLabel">
+							<Field label="Botão principal · texto" name="authorPrimaryCtaLabel">
 								<Input
 									id="authorPrimaryCtaLabel"
 									name="authorPrimaryCtaLabel"
@@ -326,11 +326,11 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA principal · href"
+								label="Botão principal · destino"
 								name="authorPrimaryCtaHref"
 								defaultValue={page.author?.primaryCtaHref}
 							/>
-							<Field label="CTA secundária · rótulo" name="authorSecondaryCtaLabel">
+							<Field label="Botão secundario · texto" name="authorSecondaryCtaLabel">
 								<Input
 									id="authorSecondaryCtaLabel"
 									name="authorSecondaryCtaLabel"
@@ -338,7 +338,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA secundária · href"
+								label="Botão secundario · destino"
 								name="authorSecondaryCtaHref"
 								defaultValue={page.author?.secondaryCtaHref}
 							/>
@@ -369,7 +369,7 @@ export function EditorialHomeForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialAccordionSection title="CTA final" contentClassName="grid gap-4 px-5 py-5">
+					<EditorialAccordionSection title="Chamada final" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título" name="communityTitle">
 							<Input id="communityTitle" name="communityTitle" defaultValue={page.community?.title ?? ""} />
 						</Field>
@@ -377,7 +377,7 @@ export function EditorialHomeForm({
 							<Textarea name="communityBody" defaultValue={page.community?.body ?? ""} rows={4} />
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="CTA principal · rótulo" name="communityPrimaryCtaLabel">
+							<Field label="Botão principal · texto" name="communityPrimaryCtaLabel">
 								<Input
 									id="communityPrimaryCtaLabel"
 									name="communityPrimaryCtaLabel"
@@ -385,7 +385,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA principal · href"
+								label="Botão principal · destino"
 								name="communityPrimaryCtaHref"
 								defaultValue={page.community?.primaryCtaHref}
 							/>
@@ -400,7 +400,7 @@ export function EditorialHomeForm({
 									/>
 								</Field>
 								<EditorialHrefField
-									label={`Link ${index} · href`}
+									label={`Link ${index} · destino`}
 									name={`communityLink${index}Href`}
 									defaultValue={communityLinks[index - 1]?.href}
 								/>
@@ -433,7 +433,7 @@ export function EditorialHomeForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina inicial.">
+					<EditorialFloatingSaveBar hint="Salvar alterações da página inicial.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

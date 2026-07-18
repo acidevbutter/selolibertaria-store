@@ -61,7 +61,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Sinopse e trecho",
 						description: "Rótulos fixos da leitura principal.",
 						route: "/product/[slug]",
-						tools: ["Texto", "Fallback"],
+						tools: ["Texto", "Texto padrão"],
 						defaultOpen: true,
 						fields: [
 							{ name: "synopsisLabel", label: "Rótulo da sinopse", defaultValue: page.synopsis?.label },
@@ -88,7 +88,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Relacionados",
 						description: "Bloco de continuidade entre livros.",
 						route: "/product/[slug]",
-						tools: ["Texto", "CTA", "Fallback"],
+						tools: ["Texto", "botão", "Texto padrão"],
 						fields: [
 							{
 								name: "relatedTitle",
@@ -104,7 +104,7 @@ export default async function AdminEditorialProductPage() {
 							},
 							{
 								name: "relatedViewBookLabel",
-								label: "Rótulo do CTA de livro relacionado",
+								label: "Texto do botão de livro relacionado",
 								defaultValue: page.related?.viewBookLabel,
 							},
 							{
@@ -134,34 +134,34 @@ export default async function AdminEditorialProductPage() {
 							},
 							{
 								name: "continuityLink1Label",
-								label: "Rótulo do CTA 1 da continuidade",
+								label: "Texto do botão 1 da continuidade",
 								defaultValue: page.continuity?.links?.[0]?.label,
 							},
 							{
 								name: "continuityLink1Href",
-								label: "Link do CTA 1 da continuidade",
+								label: "Destino do botão 1 da continuidade",
 								defaultValue: page.continuity?.links?.[0]?.href,
 								help: "Prefira rotas internas do site, como /projects ou /contact.",
 							},
 							{
 								name: "continuityLink2Label",
-								label: "Rótulo do CTA 2 da continuidade",
+								label: "Texto do botão 2 da continuidade",
 								defaultValue: page.continuity?.links?.[1]?.label,
 							},
 							{
 								name: "continuityLink2Href",
-								label: "Link do CTA 2 da continuidade",
+								label: "Destino do botão 2 da continuidade",
 								defaultValue: page.continuity?.links?.[1]?.href,
 								help: "Prefira rotas internas do site para manter a leitura editorial coesa.",
 							},
 							{
 								name: "continuityLink3Label",
-								label: "Rótulo do CTA 3 da continuidade",
+								label: "Texto do botão 3 da continuidade",
 								defaultValue: page.continuity?.links?.[2]?.label,
 							},
 							{
 								name: "continuityLink3Href",
-								label: "Link do CTA 3 da continuidade",
+								label: "Destino do botão 3 da continuidade",
 								defaultValue: page.continuity?.links?.[2]?.href,
 								help: "Use uma rota interna curta, como /sarau-safado ou /about.",
 							},
@@ -171,7 +171,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Fallback de livro não encontrado",
 						description: "Mensagem editorial de segurança quando o slug não existir.",
 						route: "/product/[slug]",
-						tools: ["Texto", "CTA", "Fallback"],
+						tools: ["Texto", "botão", "Texto padrão"],
 						fields: [
 							{ name: "notFoundTitle", label: "Título do fallback", defaultValue: page.notFound?.title },
 							{
@@ -183,12 +183,12 @@ export default async function AdminEditorialProductPage() {
 							},
 							{
 								name: "notFoundPrimaryCtaLabel",
-								label: "Rótulo do CTA do fallback",
+								label: "Texto do botão do fallback",
 								defaultValue: page.notFound?.primaryCtaLabel,
 							},
 							{
 								name: "notFoundPrimaryCtaHref",
-								label: "Link do CTA do fallback",
+								label: "Destino do botão do fallback",
 								defaultValue: page.notFound?.primaryCtaHref,
 								help: "Prefira uma rota interna de continuidade, como /products ou /projects.",
 							},

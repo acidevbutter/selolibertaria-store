@@ -51,7 +51,7 @@ export default async function AdminEditorialAboutPage() {
 				<AdminEditorialStat
 					label="Blocos"
 					value="Contexto"
-					helper="Hero, seção principal, cards e fechamento."
+					helper="Abertura, seção principal, cards e fechamento."
 				/>
 			</div>
 			<div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

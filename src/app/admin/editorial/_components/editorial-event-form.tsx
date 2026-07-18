@@ -80,9 +80,9 @@ export function EditorialEventForm({
 								<Input id="title" name="title" defaultValue={event?.title ?? ""} required />
 							</Field>
 							<Field
-								label="Slug do evento"
+								label="Endereço público do evento"
 								name="slug"
-								hint="Use uma versão curta da URL. Se vazio, será gerado a partir do título."
+								hint="Use uma versão curta do endereço público. Se vazio, será gerado a partir do título."
 							>
 								<Input
 									id="slug"
@@ -217,7 +217,7 @@ export function EditorialEventForm({
 						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes do evento.">
+					<EditorialFloatingSaveBar hint="Salvar alterações do evento.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

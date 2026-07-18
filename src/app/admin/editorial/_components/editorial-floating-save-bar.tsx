@@ -6,7 +6,7 @@ import { Button } from "@/ui/shadcn/button";
 
 export function EditorialFloatingSaveBar({
 	children,
-	hint = "Salvar alteracoes desta pagina.",
+	hint = "Salvar alterações desta página.",
 }: {
 	children: ReactNode;
 	hint?: string;

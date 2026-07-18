@@ -48,9 +48,13 @@ export function EditorialAboutForm({
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
-					<EditorialAccordionSection title="Hero" defaultOpen contentClassName="grid gap-4 px-5 py-5">
+					<EditorialAccordionSection
+						title="Abertura da página"
+						defaultOpen
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="heroEyebrow">
+							<Field label="Chamada curta acima do título" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
 							</Field>
 							<Field label="Título" name="heroTitle">
@@ -66,7 +70,7 @@ export function EditorialAboutForm({
 
 					<EditorialAccordionSection title="Bloco principal" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Eyebrow" name="sectionEyebrow">
+							<Field label="Chamada curta acima do título" name="sectionEyebrow">
 								<Input id="sectionEyebrow" name="sectionEyebrow" defaultValue={page.section?.eyebrow ?? ""} />
 							</Field>
 							<Field label="Título" name="sectionTitle">
@@ -82,7 +86,7 @@ export function EditorialAboutForm({
 									<Textarea name="sectionExtended" defaultValue={page.section?.extended ?? ""} rows={4} />
 								</Field>
 							</div>
-							<Field label="CTA principal · rótulo" name="sectionPrimaryCtaLabel">
+							<Field label="Botão principal · texto" name="sectionPrimaryCtaLabel">
 								<Input
 									id="sectionPrimaryCtaLabel"
 									name="sectionPrimaryCtaLabel"
@@ -90,7 +94,7 @@ export function EditorialAboutForm({
 								/>
 							</Field>
 							<EditorialHrefField
-								label="CTA principal · link"
+								label="Botão principal · destino"
 								name="sectionPrimaryCtaHref"
 								defaultValue={page.section?.primaryCtaHref}
 							/>
@@ -124,7 +128,7 @@ export function EditorialAboutForm({
 					<EditorialAccordionSection title="Cards centrais" contentClassName="grid gap-4 px-5 py-5">
 						{[1, 2, 3].map((index) => (
 							<div key={index} className="grid gap-4 rounded-lg border p-4">
-								<Field label={`Card ${index} · eyebrow`} name={`card${index}Eyebrow`}>
+								<Field label={`Card ${index} · chamada curta`} name={`card${index}Eyebrow`}>
 									<Input
 										id={`card${index}Eyebrow`}
 										name={`card${index}Eyebrow`}
@@ -146,7 +150,7 @@ export function EditorialAboutForm({
 					</EditorialAccordionSection>
 
 					<EditorialAccordionSection title="Fechamento" contentClassName="grid gap-4 px-5 py-5">
-						<Field label="Eyebrow" name="closingEyebrow">
+						<Field label="Chamada curta acima do título" name="closingEyebrow">
 							<Input id="closingEyebrow" name="closingEyebrow" defaultValue={page.closing?.eyebrow ?? ""} />
 						</Field>
 						<Field label="Título" name="closingTitle">
@@ -155,7 +159,7 @@ export function EditorialAboutForm({
 						<Field label="Texto" name="closingBody">
 							<Textarea name="closingBody" defaultValue={page.closing?.body ?? ""} rows={4} />
 						</Field>
-						<Field label="Princípio · eyebrow" name="coreEyebrow">
+						<Field label="Princípio · chamada curta" name="coreEyebrow">
 							<Input id="coreEyebrow" name="coreEyebrow" defaultValue={page.closing?.coreEyebrow ?? ""} />
 						</Field>
 						<Field label="Princípio · título" name="coreTitle">
@@ -188,7 +192,7 @@ export function EditorialAboutForm({
 						</div>
 					</EditorialAccordionSection>
 
-					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina sobre.">
+					<EditorialFloatingSaveBar hint="Salvar alterações da página sobre.">
 						{submitLabel}
 					</EditorialFloatingSaveBar>
 				</form>

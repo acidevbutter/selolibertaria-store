@@ -77,28 +77,28 @@ export default async function AdminEditorialProjectsPage() {
 					base={{ published: page.published }}
 					sections={[
 						{
-							title: "Hero",
+							title: "Abertura",
 							description: "Introdução principal da página de projetos.",
 							route: "/projects",
 							defaultOpen: true,
 							fields: [
-								{ name: "heroEyebrow", label: "Linha curta do hero", defaultValue: page.hero?.eyebrow },
-								{ name: "heroTitle", label: "Título do hero", defaultValue: page.hero?.title },
+								{ name: "heroEyebrow", label: "Linha curta da abertura", defaultValue: page.hero?.eyebrow },
+								{ name: "heroTitle", label: "Título da abertura", defaultValue: page.hero?.title },
 								{
 									name: "heroBody",
-									label: "Texto do hero",
+									label: "Texto da abertura",
 									type: "textarea",
 									rows: 4,
 									defaultValue: page.hero?.body,
 								},
 								{
 									name: "heroImageLabel",
-									label: "Legenda da imagem do hero",
+									label: "Legenda da imagem de abertura",
 									defaultValue: page.hero?.imageLabel,
 								},
 								{
 									name: "heroBackground",
-									label: "Fundo do hero",
+									label: "Imagem de fundo da abertura",
 									type: "background",
 									background: page.hero?.background,
 								},
@@ -165,25 +165,25 @@ export default async function AdminEditorialProjectsPage() {
 								},
 								{
 									name: "finalPrimaryCtaLabel",
-									label: "Rótulo do CTA principal da faixa final",
+									label: "Texto do botão principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaLabel,
 									help: "Use um texto curto para a saída principal desta seção.",
 								},
 								{
 									name: "finalPrimaryCtaHref",
-									label: "Link do CTA principal da faixa final",
+									label: "Destino do botão principal da faixa final",
 									defaultValue: page.finalCta?.primaryCtaHref,
 									help: "Prefira rotas internas, como /contact ou /sarau-safado.",
 								},
 								{
 									name: "finalSecondaryCtaLabel",
-									label: "Rótulo do CTA secundário da faixa final",
+									label: "Texto do botão secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaLabel,
-									help: "Use um CTA complementar para a segunda saída editorial.",
+									help: "Use um botão complementar para a segunda saída editorial.",
 								},
 								{
 									name: "finalSecondaryCtaHref",
-									label: "Link do CTA secundário da faixa final",
+									label: "Destino do botão secundário da faixa final",
 									defaultValue: page.finalCta?.secondaryCtaHref,
 									help: "Prefira rotas internas estáveis do site.",
 								},
