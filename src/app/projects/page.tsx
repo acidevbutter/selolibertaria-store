@@ -106,7 +106,7 @@ export default async function ProjectsPage() {
 						<div className="space-y-5">
 							<EditorialEyebrow>{page.listing?.label || "Portfólio cultural"}</EditorialEyebrow>
 							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
-								{page.curatorialNote?.title || "Projetos como extensão viva do catálogo."}
+								{page.curatorialNote?.title || "Projetos como atuação cultural do selo."}
 							</h2>
 						</div>
 					</Reveal>
@@ -187,7 +187,7 @@ export default async function ProjectsPage() {
 						<EditorialShell className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
 							<div className="max-w-3xl">
 								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									{page.finalCta?.title || "Projetos conectam programação, livro e comunidade."}
+									{page.finalCta?.title || "Projetos conectam criação, formação e comunidade."}
 								</h2>
 							</div>
 							<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">

@@ -73,7 +73,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 		type: "page_home",
 		slug: "home",
 		title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-		summary: "Home editorial com produto em destaque, catálogo curado e saídas para Sarau Safado.",
+		summary: "Home do selo com manifesto, publicações em destaque e programação cultural.",
 		...baseMeta,
 		hero: {
 			eyebrow: "Lançamento",
@@ -174,7 +174,7 @@ export function buildSeedEventsPage(): EditorialEventsPage {
 		archive: {
 			label: "Arquivo / memória",
 			title: "Registros de encontros, leituras e aparições.",
-			body: "A agenda não termina na data. Ela também organiza memória, fotos, textos e retornos para o catálogo.",
+			body: "A agenda não termina na data. Ela também organiza memória, fotos, textos e continuidade para a atuação cultural do selo.",
 		},
 		finalCta: {
 			title: "A agenda continua no Sarau Safado e nos projetos.",
@@ -201,18 +201,18 @@ export function buildSeedProjectsPage(): EditorialProjectsPage {
 			imageLabel: "Foto / performance / oficina",
 		},
 		curatorialNote: {
-			title: "Projetos como extensão viva do catálogo.",
-			body: "Esta página deve apresentar portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara.",
+			title: "Projetos como atuação cultural do selo.",
+			body: "Esta página apresenta o portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara.",
 		},
 		listing: {
 			label: "Portfólio cultural",
 			title: "Projetos",
-			body: "Cada projeto amplia a leitura, a programação e a circulação do selo fora da prateleira.",
+			body: "Cada projeto registra uma frente de criação, formação ou articulação cultural do selo.",
 			emptyText:
 				"Os projetos culturais serão publicados em breve. Enquanto isso, acompanhe o Sarau Safado e fale com o selo.",
 		},
 		finalCta: {
-			title: "Projetos conectam programação, livro e comunidade.",
+			title: "Projetos conectam criação, formação e comunidade.",
 			body: "A página de projetos deve abrir saídas diretas para contato e Sarau Safado.",
 			primaryCtaLabel: "Falar sobre projeto",
 			primaryCtaHref: "/contact",
@@ -330,7 +330,7 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 		},
 		why: {
 			title: "Por que esse programa existe",
-			body: "O sarau transforma leitura em acontecimento público e ajuda a dar corpo ao imaginário do selo fora da prateleira.",
+			body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
 		},
 		gallery: {
 			eyebrow: "Galeria / memória",
@@ -349,11 +349,11 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 			},
 			{
 				title: "Continuidade",
-				body: "Cada edição reforça a circulação entre livros, artistas convidadas, bibliotecas, instituições e leitoras recorrentes.",
+				body: "Cada edição articula artistas convidadas, bibliotecas, instituições e pessoas que acompanham o programa.",
 			},
 			{
 				title: "Presença",
-				body: "O sarau transforma leitura em acontecimento público e ajuda a dar corpo ao imaginário do selo fora da prateleira.",
+				body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
 			},
 		],
 		continueLinks: [
@@ -380,8 +380,8 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 		section: {
 			eyebrow: "Autoria e curadoria",
 			title: "Natália Nolli Sasso e o universo do Selo Libertária.",
-			body: "A página Sobre deve apresentar história, linha editorial, autoria e manifesto sem parecer uma bio protocolar ou institucional fria.",
-			extended: "Livro, performance e presença urbana aparecem aqui como uma mesma linha curatorial.",
+			body: "A página Sobre apresenta história, linha editorial, autoria e manifesto sem parecer uma bio protocolar ou institucional fria.",
+			extended: "Literatura, performance e presença urbana aparecem aqui como uma mesma linha curatorial.",
 			primaryCtaLabel: "Conhecer Sarau Safado",
 			primaryCtaHref: "/sarau-safado",
 		},
@@ -394,18 +394,18 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 			{
 				eyebrow: "Cidade e corpo",
 				title: "Texto, performance e presença urbana como matéria.",
-				body: "Livro, cidade e encontro precisam aparecer como partes do mesmo ecossistema editorial.",
+				body: "Cidade, encontro e linguagem aparecem como partes do mesmo ecossistema cultural.",
 			},
 			{
 				eyebrow: "Publicação autoral",
 				title: "Livro como objeto editorial, cultural e afetivo.",
-				body: "A interface deve sustentar compra, leitura e contexto sem dividir artificialmente o projeto.",
+				body: "A interface deve sustentar leitura e contexto sem reduzir o projeto a uma vitrine comercial.",
 			},
 		],
 		closing: {
 			eyebrow: "Manifesto",
-			title: "O catálogo, a programação e a autoria se reforçam mutuamente.",
-			body: "Ler um livro, descobrir uma programação, entrar num arquivo e voltar ao catálogo. A experiência deve parecer um único ecossistema, não páginas paralelas.",
+			title: "A programação e a autoria se reforçam mutuamente.",
+			body: "Conhecer uma autora, descobrir uma programação e entrar num arquivo. A experiência deve formar um ecossistema cultural, não páginas paralelas.",
 			coreEyebrow: "Princípio central",
 			coreTitle:
 				"Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia.",

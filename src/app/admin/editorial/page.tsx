@@ -34,7 +34,11 @@ import {
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
 
-type EditorialSectionGroup = "Páginas estruturais" | "Coleções vivas" | "Blocos globais";
+type EditorialSectionGroup =
+	| "Conteúdo institucional"
+	| "Programação e projetos"
+	| "Conteúdo global"
+	| "Operação comercial";
 
 type EditorialSection = {
 	title: string;
@@ -50,7 +54,7 @@ const sections: EditorialSection[] = [
 		title: "Página inicial",
 		href: "/admin/editorial/home",
 		description: "Hero, manifesto, imagem de apoio, produto, catálogo e programação.",
-		group: "Páginas estruturais",
+		group: "Conteúdo institucional",
 		tools: ["Texto", "Imagem", "Fundo"],
 		icon: House,
 	},
@@ -58,7 +62,7 @@ const sections: EditorialSection[] = [
 		title: "Vitrine de produtos",
 		href: "/admin/editorial/products",
 		description: "Texto de abertura, nota curatorial e continuidade da página de produtos.",
-		group: "Páginas estruturais",
+		group: "Operação comercial",
 		tools: ["Texto", "Publicação"],
 		icon: BookOpen,
 	},
@@ -66,7 +70,7 @@ const sections: EditorialSection[] = [
 		title: "Página do produto",
 		href: "/admin/editorial/pagina-do-produto",
 		description: "Textos estruturais globais da página pública de produto.",
-		group: "Páginas estruturais",
+		group: "Operação comercial",
 		tools: ["Texto", "CTAs"],
 		icon: Info,
 	},
@@ -74,7 +78,7 @@ const sections: EditorialSection[] = [
 		title: "Sobre",
 		href: "/admin/editorial/about",
 		description: "Manifesto, autoria, imagem e pilares editoriais.",
-		group: "Páginas estruturais",
+		group: "Conteúdo institucional",
 		tools: ["Texto", "Imagem"],
 		icon: Info,
 	},
@@ -82,7 +86,7 @@ const sections: EditorialSection[] = [
 		title: "Contato",
 		href: "/admin/editorial/contact",
 		description: "Hero, formulário, canais e caminhos comuns.",
-		group: "Páginas estruturais",
+		group: "Conteúdo institucional",
 		tools: ["Texto", "CTAs"],
 		icon: Mail,
 	},
@@ -90,7 +94,7 @@ const sections: EditorialSection[] = [
 		title: "Sarau Safado",
 		href: "/admin/editorial/sarau-safado",
 		description: "Texto, imagem de fundo do hero, agenda e memória do programa.",
-		group: "Páginas estruturais",
+		group: "Conteúdo institucional",
 		tools: ["Texto", "Imagem", "Fundo"],
 		icon: CalendarDays,
 	},
@@ -98,7 +102,7 @@ const sections: EditorialSection[] = [
 		title: "Eventos",
 		href: "/admin/editorial/events",
 		description: "Textos da rota /events e itens da agenda publicada.",
-		group: "Coleções vivas",
+		group: "Programação e projetos",
 		tools: ["Texto", "Imagem"],
 		icon: CalendarDays,
 	},
@@ -106,7 +110,7 @@ const sections: EditorialSection[] = [
 		title: "Projetos",
 		href: "/admin/editorial/projects",
 		description: "Textos da rota /projects e itens do portfólio cultural.",
-		group: "Coleções vivas",
+		group: "Programação e projetos",
 		tools: ["Texto", "Imagem"],
 		icon: NotebookText,
 	},
@@ -114,24 +118,33 @@ const sections: EditorialSection[] = [
 		title: "Newsletter e rodapé",
 		href: "/admin/editorial/global",
 		description: "Conteúdo global público editável em todas as páginas.",
-		group: "Blocos globais",
+		group: "Conteúdo global",
 		tools: ["Texto", "Links"],
 		icon: Globe2,
 	},
 ];
 
-const sectionGroups: EditorialSectionGroup[] = ["Páginas estruturais", "Coleções vivas", "Blocos globais"];
+const sectionGroups: EditorialSectionGroup[] = [
+	"Conteúdo institucional",
+	"Programação e projetos",
+	"Conteúdo global",
+	"Operação comercial",
+];
 
 function getGroupDescription(group: EditorialSectionGroup) {
-	if (group === "Páginas estruturais") {
-		return "Entradas para páginas públicas com blocos de texto, imagem ou fundo.";
+	if (group === "Conteúdo institucional") {
+		return "Páginas que apresentam o selo, seus canais e seus programas públicos.";
 	}
 
-	if (group === "Coleções vivas") {
-		return "Entradas com listagem e itens individuais publicados no site.";
+	if (group === "Programação e projetos") {
+		return "Agenda, memória e iniciativas culturais com itens publicados no site.";
 	}
 
-	return "Conteúdos reutilizados em várias páginas públicas.";
+	if (group === "Conteúdo global") {
+		return "Newsletter e rodapé compartilhados pelas páginas públicas.";
+	}
+
+	return "Copy que apoia a vitrine e a página de produto; a operação comercial fica no catálogo.";
 }
 
 export default async function AdminEditorialIndexPage() {
@@ -181,7 +194,7 @@ export default async function AdminEditorialIndexPage() {
 			<AdminEditorialHero
 				eyebrow="Editorial"
 				title="Centro editorial público"
-				description="Escolha a superfície pública e edite texto, imagem, fundo e publicação no fluxo correspondente."
+				description="Escolha o domínio que deseja editar: conteúdo institucional, programação cultural, blocos globais ou operação comercial."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
 				<AdminEditorialStat label="Eventos" value={events.length} helper="Itens da agenda pública." />
@@ -189,7 +202,7 @@ export default async function AdminEditorialIndexPage() {
 				<AdminEditorialStat
 					label="Páginas editáveis"
 					value={publishedStaticPages}
-					helper="Páginas públicas estruturais publicadas."
+					helper="Páginas institucionais e culturais publicadas."
 				/>
 			</div>
 

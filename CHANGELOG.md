@@ -39,6 +39,7 @@
 
 ### Changed
 
+- Reorganizado o hub do admin editorial para separar conteúdo institucional, programação e projetos, conteúdo global e operação comercial; reescritas cópias públicas que tratavam eventos, projetos e Sarau Safado como extensões do catálogo.
 - Contato público agora mantém e-mail e redes sociais fora do editor, preservando apenas textos editoriais administráveis.
 - Padronizada a nomenclatura genérica de catálogo para `produtos` no admin e na vitrine `/products`, incluindo a rota editorial `/admin/editorial/pagina-do-produto`, preservando usos literários e a categoria pública `Livros`.
 - Substituídos termos técnicos visíveis no admin por nomes familiares em português, preservando campos internos, contratos e persistência.
