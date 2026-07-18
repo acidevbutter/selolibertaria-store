@@ -242,7 +242,6 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 		token?: string;
 		installments?: number;
 		issuer_id?: string;
-		payer?: { email?: string; identification?: { type?: string; number?: string } };
 	};
 }) {
 	if (!env.MERCADO_PAGO_ACCESS_TOKEN) return { error: "Mercado Pago não configurado" } as const;

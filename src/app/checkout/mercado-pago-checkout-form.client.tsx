@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
 	submitMercadoPagoCheckoutPayment,
 	type TransparentCheckoutIntent,
@@ -10,6 +10,10 @@ import {
 } from "@/actions/checkout-actions";
 import { useTranslations } from "@/i18n/client";
 import type { AppLocale } from "@/i18n/config";
+import {
+	type MercadoPagoCardPaymentMethod,
+	resolveMercadoPagoCardPaymentMethod,
+} from "@/lib/checkout/mercado-pago-card";
 import {
 	formatCheckoutPhone,
 	formatCpf,
@@ -24,32 +28,17 @@ import { Button } from "@/ui/shadcn/button";
 import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
 
-type MercadoPagoFormData = {
-	payment_method_id?: string;
-	token?: string;
-	installments?: number | string;
-	issuer_id?: string | number;
-	payer?: {
-		email?: string;
-		identification?: {
-			type?: string;
-			number?: string;
-		};
-	};
-};
-
-type MercadoPagoBrickController = {
-	unmount?: () => void;
-};
-
 type MercadoPagoInstance = {
-	bricks: () => {
-		create: (
-			type: "payment",
-			containerId: string,
-			settings: Record<string, unknown>,
-		) => Promise<MercadoPagoBrickController>;
-	};
+	getPaymentMethods: (input: { bin: string }) => Promise<{ results?: MercadoPagoCardPaymentMethod[] }>;
+	createCardToken: (input: {
+		cardNumber: string;
+		cardholderName: string;
+		cardExpirationMonth: string;
+		cardExpirationYear: string;
+		securityCode: string;
+		identificationType: "CPF" | "CNPJ";
+		identificationNumber: string;
+	}) => Promise<{ id?: string }>;
 };
 
 declare global {
@@ -60,7 +49,6 @@ declare global {
 }
 
 const MERCADO_PAGO_SDK_TIMEOUT_MS = 15000;
-const MERCADO_PAGO_BRICK_TIMEOUT_MS = 15000;
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
 	return new Promise<T>((resolve, reject) => {
@@ -115,22 +103,6 @@ function loadMercadoPagoSdk() {
 	return window.__mercadoPagoSdkPromise;
 }
 
-function sanitizeMercadoPagoFormData(formData: MercadoPagoFormData) {
-	return {
-		payment_method_id: formData.payment_method_id,
-		token: formData.token,
-		installments: formData.installments ? Number(formData.installments) : undefined,
-		issuer_id: formData.issuer_id ? String(formData.issuer_id) : undefined,
-		payer: {
-			email: formData.payer?.email,
-			identification: {
-				type: formData.payer?.identification?.type,
-				number: formData.payer?.identification?.number,
-			},
-		},
-	};
-}
-
 export function MercadoPagoCheckoutForm({
 	checkout,
 	locale,
@@ -147,9 +119,14 @@ export function MercadoPagoCheckoutForm({
 	const [deliveryMessage, setDeliveryMessage] = useState<string | null>(null);
 	const [isUpdatingDelivery, setIsUpdatingDelivery] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [isLoadingPaymentBrick, setIsLoadingPaymentBrick] = useState(false);
-	const buyerRef = useRef(buyer);
-	const prepareCheckoutBeforePaymentRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
+	const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("pix");
+	const [card, setCard] = useState({
+		cardholderName: "",
+		cardNumber: "",
+		expiresAt: "",
+		securityCode: "",
+		installments: "1",
+	});
 	const [pixPayment, setPixPayment] = useState<{
 		paymentId: string;
 		qrCode?: string | null;
@@ -158,7 +135,6 @@ export function MercadoPagoCheckoutForm({
 		expiresAt?: string | null;
 	} | null>(null);
 	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
-	buyerRef.current = buyer;
 	const initialDeliveryAddress = toAddressValue(checkout.deliveryAddress ?? null);
 	const hasBrazilianCheckoutAddress = initialDeliveryAddress.country === "BR";
 	const initialDeliveryMethod: TransparentCheckoutIntent["deliveryMethod"] =
@@ -328,103 +304,85 @@ export function MercadoPagoCheckoutForm({
 
 		return true;
 	}
-	prepareCheckoutBeforePaymentRef.current = prepareCheckoutBeforePayment;
+	async function submitPayment() {
+		const ready = await prepareCheckoutBeforePayment();
+		if (!ready) return;
 
-	useEffect(() => {
-		if (!deliveryReady || pixPayment) {
-			setIsLoadingPaymentBrick(false);
-			return;
-		}
-		let cancelled = false;
-		let controller: MercadoPagoBrickController | null = null;
-		setIsLoadingPaymentBrick(true);
+		try {
+			let paymentData: {
+				payment_method_id: string;
+				token?: string;
+				installments?: number;
+				issuer_id?: string;
+			};
+			if (paymentMethod === "pix") {
+				paymentData = { payment_method_id: "pix" };
+			} else {
+				const cardNumber = card.cardNumber.replace(/\D/g, "");
+				const expiration = card.expiresAt.match(/^(0[1-9]|1[0-2])\/?(\d{2})$/);
+				if (
+					!card.cardholderName.trim() ||
+					cardNumber.length < 13 ||
+					!expiration ||
+					card.securityCode.length < 3
+				) {
+					setMessage("Confira os dados do cartão antes de continuar.");
+					setIsSubmitting(false);
+					return;
+				}
+				await loadMercadoPagoSdk();
+				if (!window.MercadoPago) throw new Error("SDK do Mercado Pago indisponível");
+				const mercadoPago = new window.MercadoPago(checkout.publishableKey, {
+					locale: "pt-BR",
+				});
+				const paymentMethods = await mercadoPago.getPaymentMethods({ bin: cardNumber.slice(0, 6) });
+				const paymentMethodId = resolveMercadoPagoCardPaymentMethod(paymentMethods.results);
+				if (!paymentMethodId) throw new Error("Bandeira do cartão não identificada");
+				const token = await mercadoPago.createCardToken({
+					cardNumber,
+					cardholderName: card.cardholderName.trim(),
+					cardExpirationMonth: expiration[1]!,
+					cardExpirationYear: `20${expiration[2]!}`,
+					securityCode: card.securityCode,
+					identificationType: getCheckoutIdentificationType(buyer.cpf),
+					identificationNumber: buyer.cpf.replace(/\D/g, ""),
+				});
+				if (!token.id) throw new Error("Não foi possível tokenizar o cartão");
+				paymentData = {
+					payment_method_id: paymentMethodId,
+					token: token.id,
+					installments: Number(card.installments) || 1,
+				};
+			}
 
-		void loadMercadoPagoSdk()
-			.then(async () => {
-				if (cancelled) return;
-				if (!window.MercadoPago) throw new Error("Mercado Pago SDK unavailable");
-				const mp = new window.MercadoPago(checkout.publishableKey, { locale: "pt-BR" });
-				controller = await withTimeout(
-					mp.bricks().create("payment", "mercado-pago-payment-brick", {
-						initialization: {
-							amount: Number((amountTotal / 100).toFixed(2)),
-							payer: toMercadoPagoPayer(buyerRef.current),
-						},
-						customization: {
-							paymentMethods: {
-								creditCard: "all",
-								debitCard: "all",
-								bankTransfer: "all",
-								maxInstallments: 12,
-							},
-						},
-						callbacks: {
-							onReady: () => {
-								if (!cancelled) setIsLoadingPaymentBrick(false);
-							},
-							onSubmit: async ({ formData }: { formData: MercadoPagoFormData }) => {
-								const ready = await prepareCheckoutBeforePaymentRef.current();
-								if (!ready) return Promise.reject();
-								const result = await submitMercadoPagoCheckoutPayment({
-									orderId: checkout.orderId,
-									paymentData: sanitizeMercadoPagoFormData(formData),
-								});
-								setIsSubmitting(false);
-								if ("error" in result) {
-									setMessage(result.error ?? null);
-									return Promise.reject();
-								}
-								if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
-									setPixPayment(result);
-									setPixCopyMessage(null);
-									return Promise.resolve();
-								}
-								if (result.status === "succeeded" || result.status === "processing") {
-									router.replace(
-										`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.paymentId}&guest=${
-											(checkout.isAuthenticated ?? false) ? "0" : "1"
-										}`,
-									);
-									return Promise.resolve();
-								}
-								if (result.status === "failed") {
-									setMessage("Pagamento recusado. Revise os dados ou escolha outra forma de pagamento.");
-									return Promise.reject();
-								}
-								setMessage(confirmationFailedMessage);
-								return Promise.reject();
-							},
-							onError: (error: unknown) => {
-								console.warn("Mercado Pago Brick error", error);
-								setMessage(confirmationFailedMessage);
-							},
-						},
-					}),
-					MERCADO_PAGO_BRICK_TIMEOUT_MS,
-					"Mercado Pago Brick timed out",
+			const result = await submitMercadoPagoCheckoutPayment({ orderId: checkout.orderId, paymentData });
+			if ("error" in result) {
+				setMessage(result.error ?? null);
+				return;
+			}
+			if (result.qrCode || result.qrCodeBase64 || result.ticketUrl) {
+				setPixPayment(result);
+				setPixCopyMessage(null);
+				return;
+			}
+			if (result.status === "succeeded" || result.status === "processing") {
+				router.replace(
+					`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.paymentId}&guest=${checkout.isAuthenticated ? "0" : "1"}`,
 				);
-				if (!cancelled) setIsLoadingPaymentBrick(false);
-			})
-			.catch((error: unknown) => {
-				if (cancelled) return;
-				console.warn("Mercado Pago checkout load error", error);
-				setIsLoadingPaymentBrick(false);
-				setMessage("Não foi possível carregar o Mercado Pago. Tente novamente em alguns instantes.");
-			});
-
-		return () => {
-			cancelled = true;
-			controller?.unmount?.();
-		};
-	}, [
-		amountTotal,
-		checkout.orderId,
-		checkout.publishableKey,
-		deliveryReady,
-		pixPayment,
-		router,
-		confirmationFailedMessage,
-	]);
+				return;
+			}
+			setMessage(
+				result.status === "failed"
+					? "Pagamento recusado. Revise os dados ou escolha outra forma de pagamento."
+					: confirmationFailedMessage,
+			);
+		} catch (error) {
+			console.warn("Mercado Pago tokenization error", error);
+			setMessage("Não foi possível tokenizar o cartão. Confira os dados e tente novamente.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	}
 
 	return (
 		<div className="space-y-6">
@@ -596,7 +554,8 @@ export function MercadoPagoCheckoutForm({
 				<div className="space-y-1">
 					<h2 className="text-sm font-semibold">Pagamento</h2>
 					<p className="text-xs leading-5 text-muted-foreground">
-						Escolha Pix ou cartão no formulário seguro do Mercado Pago. Dados do cartão não passam pelo site.
+						Escolha Pix ou cartão. Os dados do cartão seguem direto para o Mercado Pago para gerar um token
+						seguro.
 					</p>
 				</div>
 				{pixPayment ? (
@@ -654,13 +613,121 @@ export function MercadoPagoCheckoutForm({
 						</Button>
 					</div>
 				) : deliveryReady ? (
-					<div className="space-y-3">
-						{isLoadingPaymentBrick ? (
-							<p className="text-sm text-muted-foreground" role="status">
-								Carregando pagamento do Mercado Pago…
-							</p>
+					<div className="space-y-4">
+						<RadioGroup
+							value={paymentMethod}
+							onValueChange={(value) => setPaymentMethod(value as "pix" | "card")}
+						>
+							<div className="grid gap-3 sm:grid-cols-2">
+								<PaymentMethodOption
+									id="payment-pix"
+									value="pix"
+									selected={paymentMethod === "pix"}
+									title="Pix"
+									description="Pagamento à vista com QR Code e código copia e cola."
+								/>
+								<PaymentMethodOption
+									id="payment-card"
+									value="card"
+									selected={paymentMethod === "card"}
+									title="Cartão"
+									description="Crédito ou débito, com tokenização segura."
+								/>
+							</div>
+						</RadioGroup>
+						{paymentMethod === "card" ? (
+							<div className="grid gap-4 rounded-lg border bg-muted/20 p-4 md:grid-cols-2">
+								<BuyerInput id="cardholder-name" label="Nome no cartão" className="md:col-span-2">
+									<Input
+										id="cardholder-name"
+										value={card.cardholderName}
+										onChange={(event) =>
+											setCard((current) => ({ ...current, cardholderName: event.currentTarget.value }))
+										}
+										autoComplete="cc-name"
+										required
+									/>
+								</BuyerInput>
+								<BuyerInput id="card-number" label="Número do cartão" className="md:col-span-2">
+									<Input
+										id="card-number"
+										value={formatCardNumber(card.cardNumber)}
+										onChange={(event) =>
+											setCard((current) => ({
+												...current,
+												cardNumber: event.currentTarget.value.replace(/\D/g, "").slice(0, 19),
+											}))
+										}
+										inputMode="numeric"
+										autoComplete="cc-number"
+										required
+									/>
+								</BuyerInput>
+								<BuyerInput id="card-expiration" label="Validade">
+									<Input
+										id="card-expiration"
+										value={card.expiresAt}
+										onChange={(event) =>
+											setCard((current) => ({
+												...current,
+												expiresAt: formatCardExpiration(event.currentTarget.value),
+											}))
+										}
+										placeholder="MM/AA"
+										inputMode="numeric"
+										autoComplete="cc-exp"
+										required
+									/>
+								</BuyerInput>
+								<BuyerInput id="card-cvv" label="Código de segurança">
+									<Input
+										id="card-cvv"
+										type="password"
+										value={card.securityCode}
+										onChange={(event) =>
+											setCard((current) => ({
+												...current,
+												securityCode: event.currentTarget.value.replace(/\D/g, "").slice(0, 4),
+											}))
+										}
+										inputMode="numeric"
+										autoComplete="cc-csc"
+										required
+									/>
+								</BuyerInput>
+								<label className="grid gap-2 text-sm font-medium">
+									Parcelas
+									<select
+										className="h-10 rounded-md border bg-background px-3 text-sm"
+										value={card.installments}
+										onChange={(event) =>
+											setCard((current) => ({ ...current, installments: event.currentTarget.value }))
+										}
+									>
+										{Array.from({ length: 12 }, (_, index) => (
+											<option key={index + 1} value={index + 1}>
+												{index + 1}x
+											</option>
+										))}
+									</select>
+								</label>
+								<p className="self-end text-xs leading-5 text-muted-foreground">
+									Os dados deste cartão não são enviados ao nosso servidor nem salvos.
+								</p>
+							</div>
 						) : null}
-						<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+						<Button
+							type="button"
+							className="w-full"
+							disabled={isSubmitting || isUpdatingDelivery}
+							onClick={() => void submitPayment()}
+						>
+							{isSubmitting
+								? "Processando pagamento…"
+								: paymentMethod === "pix"
+									? "Gerar Pix"
+									: "Pagar com cartão"}
+						</Button>
 					</div>
 				) : (
 					<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -736,6 +803,36 @@ function DeliveryOptionCard({
 					<span className="block font-medium text-foreground">{radioLabel}</span>
 					<span className="block">{summary}</span>
 				</span>
+			</span>
+		</label>
+	);
+}
+
+function PaymentMethodOption({
+	id,
+	value,
+	selected,
+	title,
+	description,
+}: {
+	id: string;
+	value: "pix" | "card";
+	selected: boolean;
+	title: string;
+	description: string;
+}) {
+	return (
+		<label
+			htmlFor={id}
+			className={cn(
+				"flex cursor-pointer gap-3 rounded-lg border p-4 text-sm",
+				selected && "border-foreground bg-muted/30",
+			)}
+		>
+			<RadioGroupItem id={id} value={value} className="mt-0.5" />
+			<span>
+				<span className="block font-medium">{title}</span>
+				<span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
 			</span>
 		</label>
 	);
@@ -837,15 +934,11 @@ function formatPixExpiration(value: string) {
 	}).format(date)}.`;
 }
 
-function toMercadoPagoPayer(buyer: TransparentCheckoutIntent["buyer"]) {
-	const nameParts = normalizeBuyerName(buyer.fullName).split(" ").filter(Boolean);
-	return {
-		firstName: nameParts[0] ?? "",
-		lastName: nameParts.slice(1).join(" "),
-		entityType: "individual",
-		identification: {
-			type: getCheckoutIdentificationType(buyer.cpf),
-			number: buyer.cpf.replace(/\D/g, ""),
-		},
-	};
+function formatCardNumber(value: string) {
+	return value.replace(/\D/g, "").replace(/(\d{4})(?=\d)/g, "$1 ");
+}
+
+function formatCardExpiration(value: string) {
+	const digits = value.replace(/\D/g, "").slice(0, 4);
+	return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
 }

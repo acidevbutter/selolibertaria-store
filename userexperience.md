@@ -200,5 +200,5 @@ Confiança vem de:
 
 ## Atualização 2026-07-18 — Mercado Pago
 
-- Com Mercado Pago ativo, a experiência de pagamento continua dentro do site: cartão confirma e segue para processamento; Pix mostra QR Code/código antes de acompanhar o pedido.
+- Com Mercado Pago ativo, a experiência de pagamento continua integralmente no site: cartão é tokenizado no navegador e segue para processamento; Pix mostra QR Code/código antes de acompanhar o pedido.
 - A pessoa compradora não deve perceber mudança no fluxo de dados pessoais, entrega, conta automática ou carrinho durante a confirmação pelo Mercado Pago.
