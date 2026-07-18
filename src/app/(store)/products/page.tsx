@@ -5,6 +5,7 @@ import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialProductsPage } from "@/lib/editorial-content-store";
 import { seloEditorialAssets } from "@/lib/selolibertaria-content";
 import { EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { CatalogIntro } from "@/ui/products/catalog-intro";
 import { ProductList } from "@/ui/products/product-list";
 import { YnsLink } from "@/ui/yns-link";
@@ -101,10 +102,13 @@ export default async function AllProductsPage() {
 						<h2 className="max-w-3xl text-3xl leading-[0.95] font-black sm:text-4xl">
 							{page.finalCta?.title || "Depois do livro, continue pelo Sarau Safado e pelos projetos."}
 						</h2>
-						<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-							{page.finalCta?.body ||
-								"A página de livros continua orientada à compra, mas abre caminhos editoriais claros para outros contextos do selo."}
-						</p>
+						<EditorialRichText
+							source={
+								page.finalCta?.body ||
+								"A página de livros continua orientada à compra, mas abre caminhos editoriais claros para outros contextos do selo."
+							}
+							className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+						/>
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
 						<YnsLink

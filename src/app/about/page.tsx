@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
@@ -37,10 +38,13 @@ export default async function AboutPage() {
 										"O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens."}
 								</h1>
 							</div>
-							<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-ink)] sm:text-lg">
-								{about.hero?.body ||
-									"Editora e produtora cultural dedicada à literatura erótica, performance, encontros e projetos autorais."}
-							</p>
+							<EditorialRichText
+								source={
+									about.hero?.body ||
+									"Editora e produtora cultural dedicada à literatura erótica, performance, encontros e projetos autorais."
+								}
+								className="max-w-2xl text-base leading-8 text-[color:var(--editorial-ink)] sm:text-lg"
+							/>
 						</EditorialShell>
 					</section>
 				</Reveal>
@@ -70,14 +74,20 @@ export default async function AboutPage() {
 								<h2 className="text-4xl leading-[0.95] font-black tracking-[-0.05em] sm:text-5xl">
 									{about.section?.title || "Natália Nolli Sasso e o universo do Selo Libertária."}
 								</h2>
-								<p className="text-base leading-8 text-[color:rgba(247,244,239,0.82)]">
-									{about.section?.body ||
-										"A página Sobre deve apresentar história, linha editorial, autoria e manifesto sem parecer uma bio protocolar ou institucional fria."}
-								</p>
-								<p className="text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
-									{about.section?.extended ||
-										"Livro, performance e presença urbana aparecem aqui como uma mesma linha curatorial."}
-								</p>
+								<EditorialRichText
+									source={
+										about.section?.body ||
+										"A página Sobre deve apresentar história, linha editorial, autoria e manifesto sem parecer uma bio protocolar ou institucional fria."
+									}
+									className="text-base leading-8 text-[color:rgba(247,244,239,0.82)]"
+								/>
+								<EditorialRichText
+									source={
+										about.section?.extended ||
+										"Livro, performance e presença urbana aparecem aqui como uma mesma linha curatorial."
+									}
+									className="text-base leading-8 text-[color:rgba(247,244,239,0.72)]"
+								/>
 								<YnsLink
 									href={about.section?.primaryCtaHref || "/sarau-safado"}
 									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
@@ -98,7 +108,10 @@ export default async function AboutPage() {
 										{card.eyebrow}
 									</p>
 									<h2 className="mt-3 text-3xl leading-[1] font-black tracking-[-0.04em]">{card.title}</h2>
-									<p className="mt-3 text-sm leading-7 text-muted-foreground">{card.body}</p>
+									<EditorialRichText
+										source={card.body}
+										className="mt-3 text-sm leading-7 text-muted-foreground"
+									/>
 								</EditorialPanel>
 							</LiftOnHover>
 						</Reveal>
@@ -114,10 +127,13 @@ export default async function AboutPage() {
 							<h2 className="mt-3 text-3xl font-black uppercase tracking-tight">
 								{about.closing?.title || "O catálogo, a programação e a autoria se reforçam mutuamente."}
 							</h2>
-							<p className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)]">
-								{about.closing?.body ||
-									"Ler um livro, descobrir uma programação, entrar num arquivo e voltar ao catálogo. A experiência deve parecer um único ecossistema, não páginas paralelas."}
-							</p>
+							<EditorialRichText
+								source={
+									about.closing?.body ||
+									"Ler um livro, descobrir uma programação, entrar num arquivo e voltar ao catálogo. A experiência deve parecer um único ecossistema, não páginas paralelas."
+								}
+								className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)]"
+							/>
 						</article>
 					</Reveal>
 					<Reveal delay={0.08}>

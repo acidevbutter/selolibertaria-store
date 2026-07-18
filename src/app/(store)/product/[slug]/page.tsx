@@ -15,6 +15,7 @@ import { getProductCardActionState } from "@/lib/product-card-action-state";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
@@ -81,10 +82,13 @@ export default async function SingleProductPage(props: {
 						<h1 className="display-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
 							{pageContent.notFound?.title || "Livro não encontrado"}
 						</h1>
-						<p className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)]">
-							{pageContent.notFound?.body ||
-								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."}
-						</p>
+						<EditorialRichText
+							source={
+								pageContent.notFound?.body ||
+								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."
+							}
+							className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)]"
+						/>
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
 						<YnsLink
@@ -330,10 +334,13 @@ export default async function SingleProductPage(props: {
 										{excerpt}
 									</h2>
 								</div>
-								<p className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]">
-									{pageContent.excerpt?.bodyFallback ||
-										"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."}
-								</p>
+								<EditorialRichText
+									source={
+										pageContent.excerpt?.bodyFallback ||
+										"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."
+									}
+									className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]"
+								/>
 							</EditorialShell>
 						</section>
 					</Reveal>
@@ -369,9 +376,10 @@ export default async function SingleProductPage(props: {
 								Outros livros
 							</EditorialEyebrow>
 							{pageContent.related?.body ? (
-								<p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{pageContent.related.body}
-								</p>
+								<EditorialRichText
+									source={pageContent.related.body}
+									className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--editorial-muted)]"
+								/>
 							) : null}
 							<div className="mt-10 grid gap-8 sm:grid-cols-2">
 								{relatedProducts.map((related) => (
@@ -400,10 +408,12 @@ export default async function SingleProductPage(props: {
 								</h2>
 							</div>
 							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
-								<p>
-									{pageContent.continuity?.body ||
-										"A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."}
-								</p>
+								<EditorialRichText
+									source={
+										pageContent.continuity?.body ||
+										"A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."
+									}
+								/>
 								<div className="flex flex-wrap gap-3">
 									{continuityLinks.map((link, index) => (
 										<YnsLink
@@ -466,9 +476,10 @@ function RelatedBookCard({
 						{product.name}
 					</h3>
 				</YnsLink>
-				<p className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]">
-					{product.summary ?? fallbackSummary}
-				</p>
+				<EditorialRichText
+					source={product.summary ?? fallbackSummary}
+					className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]"
+				/>
 				<ProductTeaserActions
 					href={`/product/${product.slug}`}
 					productSlug={product.slug}

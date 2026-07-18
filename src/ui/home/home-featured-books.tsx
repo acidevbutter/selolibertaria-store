@@ -14,6 +14,7 @@ import {
 	EditorialSection,
 	EditorialShell,
 } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { ProductTeaserActions } from "@/ui/products/product-teaser-actions.client";
 import { YnsLink } from "@/ui/yns-link";
@@ -89,9 +90,10 @@ export async function HomeFeaturedBooks({
 								</h2>
 							</Reveal>
 							<Reveal delay={0.12}>
-								<p className="max-w-[36rem] text-base leading-8 text-[color:rgba(247,244,239,0.72)]">
-									{featured.summary ?? fallbackSummary}
-								</p>
+								<EditorialRichText
+									source={featured.summary ?? fallbackSummary}
+									className="max-w-[36rem] text-base leading-8 text-[color:rgba(247,244,239,0.72)]"
+								/>
 							</Reveal>
 							<Reveal delay={0.16}>
 								<div className="flex flex-wrap gap-2">
@@ -140,7 +142,10 @@ export async function HomeFeaturedBooks({
 							</h2>
 						</Reveal>
 						<Reveal delay={0.06}>
-							<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">{catalogDescription}</p>
+							<EditorialRichText
+								source={catalogDescription}
+								className="text-sm leading-7 text-[color:var(--editorial-muted)]"
+							/>
 						</Reveal>
 					</div>
 					<ul className="grid gap-8 lg:grid-cols-3">
@@ -162,9 +167,10 @@ export async function HomeFeaturedBooks({
 											<p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
 												{formatMoney({ amount: product.price, currency: product.currency, locale })}
 											</p>
-											<p className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]">
-												{product.summary ?? (index === 0 ? primaryCardSummary : defaultCardSummary)}
-											</p>
+											<EditorialRichText
+												source={product.summary ?? (index === 0 ? primaryCardSummary : defaultCardSummary)}
+												className="mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
+											/>
 											{(() => {
 												const actionState = getProductCardActionState(product);
 												const favoriteKey = buildFavoriteKey(product.slug, actionState.variantId);

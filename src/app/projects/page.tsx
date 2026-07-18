@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getEditorialProjectsPage, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialPanel, EditorialShell } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
@@ -37,9 +38,12 @@ export default async function ProjectsPage() {
 								<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
 									{page.hero?.title || "Uma atuação que atravessa livro, palco e formação."}
 								</h1>
-								<p className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base">
-									{page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita."}
-								</p>
+								<EditorialRichText
+									source={
+										page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita."
+									}
+									className="max-w-2xl text-sm leading-8 text-[color:rgba(247,244,239,0.8)] sm:text-base"
+								/>
 							</div>
 							<div className="border border-white/30 bg-[color:rgba(247,244,239,0.12)] p-5">
 								{featuredProject?.image?.src ? (
@@ -72,14 +76,19 @@ export default async function ProjectsPage() {
 					</Reveal>
 					<Reveal delay={0.08}>
 						<div className="space-y-5 text-base leading-8 text-[color:var(--editorial-ink)]">
-							<p>
-								{page.curatorialNote?.body ||
-									"Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara."}
-							</p>
-							<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-								{page.listing?.body ||
-									"Os projetos seguem vindo dos registros publicados do acervo editorial do admin."}
-							</p>
+							<EditorialRichText
+								source={
+									page.curatorialNote?.body ||
+									"Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara."
+								}
+							/>
+							<EditorialRichText
+								source={
+									page.listing?.body ||
+									"Os projetos seguem vindo dos registros publicados do acervo editorial do admin."
+								}
+								className="text-sm leading-7 text-[color:var(--editorial-muted)]"
+							/>
 						</div>
 					</Reveal>
 				</EditorialShell>
@@ -114,9 +123,10 @@ export default async function ProjectsPage() {
 											<h3 className="mt-3 text-3xl leading-[0.98] font-black tracking-[-0.04em]">
 												{project.title}
 											</h3>
-											<p className="mt-4 flex-1 text-sm leading-7 text-[color:var(--editorial-muted)]">
-												{project.summary || project.description}
-											</p>
+											<EditorialRichText
+												source={project.summary || project.description}
+												className="mt-4 flex-1 text-sm leading-7 text-[color:var(--editorial-muted)]"
+											/>
 											<YnsLink
 												href={`/projects#${project.slug}`}
 												className="mt-6 inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:rgba(216,208,196,0.24)]"
@@ -145,10 +155,12 @@ export default async function ProjectsPage() {
 								</h2>
 							</div>
 							<div className="flex flex-col gap-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
-								<p>
-									{page.finalCta?.body ||
-										"A página de projetos deve abrir saídas diretas para contato e Sarau Safado."}
-								</p>
+								<EditorialRichText
+									source={
+										page.finalCta?.body ||
+										"A página de projetos deve abrir saídas diretas para contato e Sarau Safado."
+									}
+								/>
 								<div className="flex flex-wrap gap-3">
 									<YnsLink
 										href={page.finalCta?.primaryCtaHref || "/contact"}

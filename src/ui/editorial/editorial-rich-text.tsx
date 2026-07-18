@@ -6,12 +6,20 @@ type EditorialRichTextProps = {
 	className?: string;
 };
 
+function normalizeBlocks(source: string) {
+	return source.replace(/\s+(>\s+)/g, "\n\n$1").replace(/\s+(#{3}\s+)/g, "\n\n$1");
+}
+
 function renderInline(text: string) {
-	const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_)/g).filter(Boolean);
+	const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_)/g).filter(Boolean);
 
 	return parts.map((part, index) => {
 		if (part.startsWith("**") && part.endsWith("**")) {
 			return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>;
+		}
+
+		if (part.startsWith("*") && part.endsWith("*")) {
+			return <em key={`${part}-${index}`}>{part.slice(1, -1)}</em>;
 		}
 
 		if (part.startsWith("_") && part.endsWith("_")) {
@@ -24,6 +32,7 @@ function renderInline(text: string) {
 
 function renderBlock(block: string, index: number): ReactNode {
 	const trimmed = block.trim();
+
 	if (!trimmed) return null;
 
 	if (trimmed.startsWith("### ")) {
@@ -46,7 +55,7 @@ function renderBlock(block: string, index: number): ReactNode {
 }
 
 export function EditorialRichText({ source, className }: EditorialRichTextProps) {
-	const blocks = (source ?? "")
+	const blocks = normalizeBlocks(source ?? "")
 		.split(/\n{2,}/)
 		.map(renderBlock)
 		.filter(Boolean);

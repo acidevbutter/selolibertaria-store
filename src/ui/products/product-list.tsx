@@ -5,6 +5,7 @@ import type { Product } from "@/lib/commerce-types";
 import { buildFavoriteKey, listFavoriteKeysForUser } from "@/lib/favorites";
 import { deslugify, formatMoney } from "@/lib/utils";
 import { EditorialEyebrow } from "@/ui/editorial/editorial-primitives";
+import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { JsonLd, mappedProductsToJsonLd } from "@/ui/json-ld";
 import { Reveal } from "@/ui/motion/reveal";
 import { ProductCard } from "@/ui/products/product-card.client";
@@ -134,9 +135,10 @@ export const ProductList = async ({
 						{title}
 					</h2>
 				</div>
-				<p className="max-w-[34rem] text-sm leading-7 text-[color:var(--editorial-muted)] sm:text-base">
-					{description}
-				</p>
+				<EditorialRichText
+					source={description}
+					className="max-w-[34rem] text-sm leading-7 text-[color:var(--editorial-muted)] sm:text-base"
+				/>
 			</div>
 		</Reveal>
 	);
