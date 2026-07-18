@@ -238,3 +238,4 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - O hub do admin editorial deve agrupar entradas por `Páginas estruturais`, `Coleções vivas` e `Blocos globais`.
 - Cards e seções editoriais devem usar badges curtos para indicar se o fluxo edita `Texto`, `Imagem`, `Fundo`, `CTA`, `Links`, `Fallback` ou `Publicação`.
 - Labels de imagem devem informar o contexto público, como `Imagem de fundo do hero`, `Imagem principal do evento` ou `Imagem do bloco principal`, evitando o rótulo genérico `Imagem` quando houver risco de confusão.
+- Formulários do admin editorial devem organizar blocos longos em seções sanfonadas com cabeçalho claro, estado aberto/fechado visível e barra flutuante única de salvar.

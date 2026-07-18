@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
@@ -47,8 +48,7 @@ export function EditorialContactForm({
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Hero</h2>
+					<EditorialAccordionSection title="Hero" defaultOpen contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Eyebrow" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
@@ -76,10 +76,9 @@ export function EditorialContactForm({
 								/>
 							</Field>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Formulário</h2>
+					<EditorialAccordionSection title="Formulário" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título do bloco" name="formTitle">
 							<Input id="formTitle" name="formTitle" defaultValue={page.form?.title ?? ""} />
 						</Field>
@@ -95,10 +94,9 @@ export function EditorialContactForm({
 								/>
 							</Field>
 						))}
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Canais diretos</h2>
+					<EditorialAccordionSection title="Canais diretos" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título do bloco" name="directTitle">
 							<Input id="directTitle" name="directTitle" defaultValue={page.direct?.title ?? ""} />
 						</Field>
@@ -128,10 +126,9 @@ export function EditorialContactForm({
 								/>
 							</div>
 						))}
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Caminhos comuns</h2>
+					<EditorialAccordionSection title="Caminhos comuns" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título da faixa final" name="closingTitle">
 							<Input id="closingTitle" name="closingTitle" defaultValue={page.closing?.title ?? ""} />
 						</Field>
@@ -157,9 +154,9 @@ export function EditorialContactForm({
 								/>
 							</div>
 						))}
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="rounded-lg border p-5">
+					<EditorialAccordionSection title="Publicação" contentClassName="px-5 py-5">
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
 								<input
@@ -182,7 +179,7 @@ export function EditorialContactForm({
 								<span className="block font-medium">Rascunho</span>
 							</label>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
 					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina de contato.">
 						{submitLabel}

@@ -1,7 +1,8 @@
+import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
+import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import type { EditorialBackground, EditorialHomePage } from "@/lib/editorial-content";
-import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
@@ -134,8 +135,12 @@ export function EditorialHomeForm({
 				<CardTitle>Editar página inicial</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6">
-					<section className="grid gap-4 rounded-lg border p-5 md:grid-cols-2">
+				<form action={action} className="space-y-6 pb-28 md:pb-32">
+					<EditorialAccordionSection
+						title="Dados internos"
+						defaultOpen
+						contentClassName="grid gap-4 px-5 py-5 md:grid-cols-2"
+					>
 						<Field label="Título interno" name="title">
 							<Input id="title" name="title" defaultValue={page.title} required />
 						</Field>
@@ -154,10 +159,9 @@ export function EditorialHomeForm({
 								<Textarea name="summary" defaultValue={page.summary} rows={3} />
 							</Field>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Hero</h2>
+					<EditorialAccordionSection title="Hero" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Eyebrow" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
@@ -209,10 +213,9 @@ export function EditorialHomeForm({
 							label="Fundo do hero"
 							background={page.hero?.background}
 						/>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="space-y-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Bloco visual do hero</h2>
+					<EditorialAccordionSection title="Bloco visual do hero" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Eyebrow" name="heroFeatureEyebrow">
 								<Input
@@ -263,10 +266,9 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Manifesto</h2>
+					<EditorialAccordionSection title="Manifesto" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título" name="manifestoTitle">
 							<Input id="manifestoTitle" name="manifestoTitle" defaultValue={page.manifesto?.title ?? ""} />
 						</Field>
@@ -292,10 +294,9 @@ export function EditorialHomeForm({
 							label="Fundo do manifesto"
 							background={page.manifesto?.background}
 						/>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="space-y-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">Autora e curadoria</h2>
+					<EditorialAccordionSection title="Autora e curadoria" contentClassName="grid gap-4 px-5 py-5">
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Eyebrow" name="authorEyebrow">
 								<Input id="authorEyebrow" name="authorEyebrow" defaultValue={page.author?.eyebrow ?? ""} />
@@ -366,10 +367,9 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<h2 className="text-base font-semibold">CTA final</h2>
+					<EditorialAccordionSection title="CTA final" contentClassName="grid gap-4 px-5 py-5">
 						<Field label="Título" name="communityTitle">
 							<Input id="communityTitle" name="communityTitle" defaultValue={page.community?.title ?? ""} />
 						</Field>
@@ -406,9 +406,9 @@ export function EditorialHomeForm({
 								/>
 							</div>
 						))}
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="rounded-lg border p-5">
+					<EditorialAccordionSection title="Publicação" contentClassName="px-5 py-5">
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
 								<input
@@ -431,9 +431,11 @@ export function EditorialHomeForm({
 								<span className="block font-medium">Rascunho</span>
 							</label>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<Button type="submit">{submitLabel}</Button>
+					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina inicial.">
+						{submitLabel}
+					</EditorialFloatingSaveBar>
 				</form>
 			</CardContent>
 		</Card>

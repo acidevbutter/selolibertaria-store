@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
@@ -61,13 +62,12 @@ export function EditorialSarauForm({
 			</CardHeader>
 			<CardContent>
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
-					<section className="space-y-4 rounded-lg border p-5">
-						<div className="space-y-1">
-							<h2 className="text-base font-semibold">Hero</h2>
-							<p className="text-sm text-muted-foreground">
-								Controla a abertura principal da página pública do Sarau Safado.
-							</p>
-						</div>
+					<EditorialAccordionSection
+						title="Hero"
+						description="Controla a abertura principal da página pública do Sarau Safado."
+						defaultOpen
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Eyebrow" name="heroEyebrow">
 								<Input id="heroEyebrow" name="heroEyebrow" defaultValue={page.hero?.eyebrow ?? ""} />
@@ -174,50 +174,44 @@ export function EditorialSarauForm({
 								</select>
 							</Field>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<div className="space-y-1">
-							<h2 className="text-base font-semibold">Bloco principal</h2>
-							<p className="text-sm text-muted-foreground">
-								Esse conteúdo alimenta a leitura institucional logo abaixo do hero.
-							</p>
-						</div>
+					<EditorialAccordionSection
+						title="Bloco principal"
+						description="Esse conteúdo alimenta a leitura institucional logo abaixo do hero."
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						<Field label="Título do bloco" name="whyTitle">
 							<Input id="whyTitle" name="whyTitle" defaultValue={page.why?.title ?? ""} />
 						</Field>
 						<Field label="Texto do bloco" name="whyBody">
 							<Textarea name="whyBody" defaultValue={page.why?.body ?? ""} rows={4} />
 						</Field>
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<div className="space-y-1">
-							<h2 className="text-base font-semibold">Sinais curatoriais</h2>
-							<p className="text-sm text-muted-foreground">
-								Use frases curtas. Os itens vazios são ignorados na página pública.
-							</p>
-						</div>
+					<EditorialAccordionSection
+						title="Sinais curatoriais"
+						description="Use frases curtas. Os itens vazios são ignorados na página pública."
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						{[0, 1, 2].map((index) => (
 							<Field key={`signal-${index + 1}`} label={`Sinal ${index + 1}`} name="signals">
 								<Input name="signals" defaultValue={signals[index] ?? ""} />
 							</Field>
 						))}
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="grid gap-4 rounded-lg border p-5">
-						<div className="space-y-1">
-							<h2 className="text-base font-semibold">Blocos editoriais</h2>
-							<p className="text-sm text-muted-foreground">
-								Esses cards aparecem na parte intermediária da página pública.
-							</p>
-						</div>
+					<EditorialAccordionSection
+						title="Blocos editoriais"
+						description="Esses cards aparecem na parte intermediária da página pública."
+						contentClassName="grid gap-4 px-5 py-5"
+					>
 						<NoteFields index={1} title={notes[0]?.title} body={notes[0]?.body} />
 						<NoteFields index={2} title={notes[1]?.title} body={notes[1]?.body} />
 						<NoteFields index={3} title={notes[2]?.title} body={notes[2]?.body} />
-					</section>
+					</EditorialAccordionSection>
 
-					<section className="rounded-lg border p-5">
+					<EditorialAccordionSection title="Publicação" contentClassName="px-5 py-5">
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
 								<input
@@ -244,7 +238,7 @@ export function EditorialSarauForm({
 								</span>
 							</label>
 						</div>
-					</section>
+					</EditorialAccordionSection>
 
 					<EditorialFloatingSaveBar hint="Salvar alteracoes da pagina do Sarau Safado.">
 						{submitLabel}
