@@ -167,11 +167,6 @@ function Field({ field }: { field: FieldConfig }) {
 	return (
 		<label className="grid gap-2">
 			<span className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</span>
-			{field.route ? (
-				<span className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
-					Aparece em: {field.route}
-				</span>
-			) : null}
 			{field.type === "textarea" ? (
 				<Textarea name={field.name} defaultValue={field.defaultValue} rows={field.rows} />
 			) : (
@@ -255,19 +250,18 @@ export function EditorialPageCopyForm({
 					defaultOpen={section.defaultOpen ?? false}
 					contentClassName="grid gap-4 px-6 py-6 md:grid-cols-2"
 				>
-					<div className="flex flex-wrap gap-2 md:col-span-2">
-						<span className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
-							Rota: {section.route}
-						</span>
-						{section.tools?.map((tool) => (
-							<span
-								key={tool}
-								className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
-							>
-								{tool}
-							</span>
-						))}
-					</div>
+					{section.tools?.length ? (
+						<div className="flex flex-wrap gap-2 md:col-span-2">
+							{section.tools?.map((tool) => (
+								<span
+									key={tool}
+									className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
+								>
+									{tool}
+								</span>
+							))}
+						</div>
+					) : null}
 					{section.fields.map((field) => (
 						<div
 							key={field.name}
@@ -275,7 +269,7 @@ export function EditorialPageCopyForm({
 								field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
 							}
 						>
-							<Field field={{ ...field, route: field.route ?? section.route }} />
+							<Field field={field} />
 						</div>
 					))}
 				</EditorialAccordionSection>
