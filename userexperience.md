@@ -193,3 +193,7 @@ Confiança vem de:
 - A pessoa operadora deve entrar no hub editorial e distinguir rapidamente páginas estruturais, coleções vivas e blocos globais.
 - O caminho para editar texto, imagem, fundo, CTAs e publicação deve aparecer no próprio card ou cabeçalho do bloco, antes de abrir campos longos.
 - Labels de imagem precisam comunicar onde a mídia aparece no site, reduzindo a dúvida entre imagem de conteúdo, imagem principal e fundo de hero.
+
+## Atualização 2026-07-18 — sanfonas editoriais
+
+- Ao editar páginas editoriais, cada bloco deve abrir e fechar sem perder valores já preenchidos; erros de validação devem levar a pessoa diretamente à seção problemática.

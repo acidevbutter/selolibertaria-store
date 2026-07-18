@@ -1,8 +1,9 @@
 import type { FocusEvent, FormEvent } from "react";
+import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
-import { Field, FormSection } from "@/app/admin/products/_components/product-form-fields";
+import { Field } from "@/app/admin/products/_components/product-form-fields";
 import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
@@ -68,9 +69,11 @@ export function EditorialEventForm({
 				<form action={action} className="space-y-6 pb-28 md:pb-32">
 					{event ? <input type="hidden" name="currentSlug" value={event.slug} /> : null}
 
-					<FormSection
+					<EditorialAccordionSection
 						title="Identidade e agenda"
 						description="Defina título, status, ordem e resumo do evento."
+						defaultOpen
+						contentClassName="grid gap-4 px-5 py-5"
 					>
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Título do evento" name="title">
@@ -138,11 +141,12 @@ export function EditorialEventForm({
 								</Field>
 							</div>
 						</div>
-					</FormSection>
+					</EditorialAccordionSection>
 
-					<FormSection
+					<EditorialAccordionSection
 						title="Imagem do evento"
 						description="Revise a imagem pública antes de salvar o evento."
+						contentClassName="grid gap-4 px-5 py-5"
 					>
 						<Field label="Imagem principal do evento" name="imageSrc">
 							<AdminImageUrlList
@@ -168,11 +172,12 @@ export function EditorialEventForm({
 								<Input id="imageCaption" name="imageCaption" defaultValue={event?.image?.caption ?? ""} />
 							</Field>
 						</div>
-					</FormSection>
+					</EditorialAccordionSection>
 
-					<FormSection
+					<EditorialAccordionSection
 						title="Publicação"
 						description="Escolha se o evento já deve aparecer no site ou ficar em rascunho."
+						contentClassName="px-5 py-5"
 					>
 						<div className="grid gap-3 md:grid-cols-2">
 							<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
@@ -206,7 +211,7 @@ export function EditorialEventForm({
 								</span>
 							</label>
 						</div>
-					</FormSection>
+					</EditorialAccordionSection>
 
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
 						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
@@ -245,51 +246,37 @@ export function EditorialPageCopyForm({
 			</Card>
 
 			{sections.map((section) => (
-				<Card key={section.title} className="rounded-none border-[color:var(--editorial-border)] p-0">
-					<details open={section.defaultOpen ?? false} className="group">
-						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5">
-							<div className="space-y-2">
-								<CardTitle className="text-xl text-[color:var(--editorial-ink)]">{section.title}</CardTitle>
-								{section.description ? (
-									<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-										{section.description}
-									</p>
-								) : null}
-								<div className="flex flex-wrap gap-2">
-									<span className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
-										Rota: {section.route}
-									</span>
-									{section.tools?.map((tool) => (
-										<span
-											key={tool}
-											className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
-										>
-											{tool}
-										</span>
-									))}
-								</div>
-							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
-								Expandir
+				<EditorialAccordionSection
+					key={section.title}
+					title={section.title}
+					description={section.description}
+					defaultOpen={section.defaultOpen ?? false}
+					contentClassName="grid gap-4 px-6 py-6 md:grid-cols-2"
+				>
+					<div className="flex flex-wrap gap-2 md:col-span-2">
+						<span className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+							Rota: {section.route}
+						</span>
+						{section.tools?.map((tool) => (
+							<span
+								key={tool}
+								className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
+							>
+								{tool}
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
-								Recolher
-							</span>
-						</summary>
-						<CardContent className="grid gap-4 border-t border-[color:var(--editorial-border)] px-6 py-6 md:grid-cols-2">
-							{section.fields.map((field) => (
-								<div
-									key={field.name}
-									className={
-										field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
-									}
-								>
-									<Field field={{ ...field, route: field.route ?? section.route }} />
-								</div>
-							))}
-						</CardContent>
-					</details>
-				</Card>
+						))}
+					</div>
+					{section.fields.map((field) => (
+						<div
+							key={field.name}
+							className={
+								field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
+							}
+						>
+							<Field field={{ ...field, route: field.route ?? section.route }} />
+						</div>
+					))}
+				</EditorialAccordionSection>
 			))}
 
 			{state.status === "success" && state.message ? (
