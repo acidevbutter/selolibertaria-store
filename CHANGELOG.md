@@ -2,12 +2,15 @@
 
 ### Added
 
+- Checkout Mercado Pago agora aceita CPF ou CNPJ, exige tokenização para cartão e exibe Pix com QR Code, código copia e cola, cópia acessível e expiração quando informada pelo provedor.
 - Checkout Mercado Pago configurável para Pix e cartão via Payment Brick, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
 - Catálogo canônico MongoDB em `catalogProducts`, com variantes, preços em menor unidade BRL, estoque, publicação, categorias, `productType`/`format`, seed local e índices de leitura.
 - Migration idempotente de export para MongoDB com `--dry-run` padrão, relatório de inconsistências, snapshot e rollback documentado em `docs/catalog-migration.md`.
 
 ### Fixed
 
+- Removido `currency_id` do payload de criação de pagamentos Mercado Pago, pois o endpoint `/v1/payments` o rejeita para a conta BRL.
+- Payment Brick Mercado Pago agora recebe o `payer` completo do formulário local e não é recriado durante a edição do comprador, evitando campos pessoais duplicados e oscilações visuais no checkout.
 - Checkout Mercado Pago agora encerra o carregamento do SDK ou do Payment Brick após timeout, exibe estado visível enquanto inicializa e mostra erro acionável quando a integração não responde.
 - Payment Brick Mercado Pago agora declara o callback obrigatório `onReady`, evitando falha de inicialização no checkout.
 - Payment Brick Mercado Pago agora informa `payer.entityType=individual`, valor aceito pelo SDK para compradores pessoa física.

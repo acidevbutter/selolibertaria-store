@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
+	isMercadoPagoPixPayment,
 	mapMercadoPagoStatus,
 	validateMercadoPagoPaymentResponse,
 	validateMercadoPagoWebhookSignature,
@@ -13,6 +14,13 @@ describe("mapMercadoPagoStatus", () => {
 		expect(mapMercadoPagoStatus("in_process")).toBe("processing");
 		expect(mapMercadoPagoStatus("charged_back")).toBe("disputed");
 		expect(mapMercadoPagoStatus("rejected")).toBe("failed");
+	});
+});
+
+describe("isMercadoPagoPixPayment", () => {
+	it("recognizes the Pix payment method without accepting card-like IDs", () => {
+		expect(isMercadoPagoPixPayment("pix")).toBe(true);
+		expect(isMercadoPagoPixPayment("visa")).toBe(false);
 	});
 });
 

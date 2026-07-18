@@ -37,6 +37,27 @@ function isValidCpf(value: string) {
 	return firstDigit === Number(digits[9]) && secondDigit === Number(digits[10]);
 }
 
+function isValidCnpj(value: string) {
+	const digits = normalizeDigits(value);
+	if (digits.length !== 14) return false;
+	if (/^(\d)\1{13}$/.test(digits)) return false;
+
+	const calcDigit = (base: string, weights: number[]) => {
+		const total = base.split("").reduce((sum, digit, index) => sum + Number(digit) * weights[index]!, 0);
+		const remainder = total % 11;
+		return remainder < 2 ? 0 : 11 - remainder;
+	};
+
+	return (
+		calcDigit(digits.slice(0, 12), [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === Number(digits[12]) &&
+		calcDigit(digits.slice(0, 13), [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === Number(digits[13])
+	);
+}
+
+export function getCheckoutIdentificationType(value?: string | null) {
+	return normalizeDigits(value).length === 14 ? "CNPJ" : "CPF";
+}
+
 const checkoutBuyerSchema = z.object({
 	fullName: z
 		.string()
@@ -49,7 +70,7 @@ const checkoutBuyerSchema = z.object({
 	cpf: z
 		.string()
 		.transform((value) => normalizeDigits(value))
-		.refine((value) => isValidCpf(value), "Informe um CPF válido."),
+		.refine((value) => isValidCpf(value) || isValidCnpj(value), "Informe um CPF ou CNPJ válido."),
 	phone: z
 		.string()
 		.transform((value) => normalizeDigits(value))
@@ -74,7 +95,15 @@ export function getCheckoutBuyerFieldErrors(input: unknown) {
 }
 
 export function formatCpf(value?: string | null) {
-	const digits = normalizeDigits(value).slice(0, 11);
+	const digits = normalizeDigits(value).slice(0, 14);
+	if (digits.length > 11) {
+		if (digits.length <= 2) return digits;
+		if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+		if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+		if (digits.length <= 12)
+			return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+		return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+	}
 	if (digits.length <= 3) return digits;
 	if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
 	if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
