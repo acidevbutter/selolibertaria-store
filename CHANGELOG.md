@@ -14,8 +14,6 @@
 - Corrigido o carrinho de clientes autenticados para preservar o ID do produto ao adicionar uma variante, permitindo uma nova compra após o primeiro pedido.
 - Checkout Mercado Pago agora mostra o serviço, o prazo e o valor do frete cotado antes do total e do Payment Brick.
 - Payment Brick Mercado Pago agora recebe o e-mail e a identificação já informados no formulário de compra.
-- Payment Brick agora carrega para retirada na loja sem depender de uma cotação de frete.
-- A confirmação Mercado Pago limpa o carrinho convidado e autenticado e reconcilia novamente o mesmo pedido sem falhar no operador posicional do MongoDB.
 - Removido `currency_id` do payload de criação de pagamentos Mercado Pago, pois o endpoint `/v1/payments` o rejeita para a conta BRL.
 - Payment Brick Mercado Pago agora recebe o `payer` completo do formulário local e não é recriado durante a edição do comprador, evitando campos pessoais duplicados e oscilações visuais no checkout.
 - Checkout Mercado Pago agora encerra o carregamento do SDK ou do Payment Brick após timeout, exibe estado visível enquanto inicializa e mostra erro acionável quando a integração não responde.
