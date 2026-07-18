@@ -153,6 +153,7 @@ export function EditorialProjectForm({
 								name="imageSrc"
 								initialValues={project?.image?.src ? [project.image.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">

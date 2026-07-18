@@ -102,6 +102,7 @@ export function EditorialAboutForm({
 								name="sectionImageSrc"
 								initialValues={page.section?.image?.src ? [page.section.image.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">

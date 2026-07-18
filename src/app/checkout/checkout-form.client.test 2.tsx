@@ -118,10 +118,18 @@ describe("CheckoutForm", () => {
 						savedPaymentMethods: [
 							{
 								id: "pm_saved",
-								brand: "visa",
-								last4: "4242",
-								expMonth: 12,
-								expYear: 2030,
+								type: "card",
+								billingDetails: {
+									name: "Pessoa Leitora",
+									email: "leitora@selo.com",
+								},
+								card: {
+									brand: "visa",
+									last4: "4242",
+									expMonth: 12,
+									expYear: 2030,
+								},
+								created: 1710000000,
 							},
 						],
 					}}

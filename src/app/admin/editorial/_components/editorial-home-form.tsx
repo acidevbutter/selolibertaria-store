@@ -160,6 +160,7 @@ export function EditorialHomeForm({
 								name="heroFeatureImageSrc"
 								initialValues={page.hero?.featureImage?.src ? [page.hero.featureImage.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
@@ -263,6 +264,7 @@ export function EditorialHomeForm({
 								name="authorImageSrc"
 								initialValues={page.author?.image?.src ? [page.author.image.src] : []}
 								uploadMode="on-submit"
+								maxItems={1}
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">

@@ -176,3 +176,8 @@ Confiança vem de:
 - Ao editar textos editoriais, a pessoa operadora deve ter ferramentas suficientes para ênfase e ritmo de leitura sem precisar aprender um editor completo.
 - As ações de texto não devem mudar a persistência dos blocos: salvar continua sendo o mesmo fluxo do formulário editorial.
 - Conteúdo antigo deve continuar legível e previsível no site público, mesmo que não use nenhuma marcação.
+
+## Atualização 2026-07-18 — imagens editoriais
+
+- Ao editar imagens editoriais, pessoa operadora precisa ver a prévia local antes do envio, confirmar a troca com intenção clara e descartar a seleção sem perder a imagem já publicada.
+- A troca de imagem só deve virar conteúdo público depois de salvar o formulário editorial, preservando o fluxo de revisar primeiro e publicar depois.

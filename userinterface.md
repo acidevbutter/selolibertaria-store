@@ -221,3 +221,8 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Campos editoriais longos no admin podem exibir uma barra mínima de ferramentas com ícones para negrito, itálico, intertítulo, citação e parágrafo.
 - A barra deve usar superfície de papel, contorno reto e acento vinho no foco, sem transformar os blocos editoriais em um editor genérico amplo.
 - O público deve renderizar a marcação mínima com hierarquia discreta e preservar texto legado sem marcação como parágrafos seguros.
+
+## Atualização 2026-07-18 — imagens editoriais
+
+- Controles editoriais de imagem devem mostrar botão `Selecionar imagem` ou `Substituir imagem`, prévia quadrada estável, modal de revisão e ações explícitas de `Confirmar troca` e `Descartar troca`.
+- Campos públicos de página, evento e projeto tratam imagem como item único por campo; múltiplas imagens continuam reservadas para superfícies de produto quando necessário.

@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, RefreshCw, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
@@ -38,7 +38,9 @@ export function AdminImageUrlList({
 	const inputId = `${name}-file-input`;
 	const previewValues = values.map((value) => value.trim()).filter(Boolean);
 	const isSingleImage = maxItems === 1;
-	const displayedPreviewValues = isSingleImage && pendingPreviewUrls.length > 0 ? [] : previewValues;
+	const hasPendingSelection = pendingFiles.length > 0;
+	const displayedPreviewValues = isSingleImage && hasPendingSelection ? [] : previewValues;
+	const pickerLabel = isSingleImage && previewValues.length > 0 ? "Substituir imagem" : "Selecionar imagem";
 
 	const toFileArray = (value: File[] | FileList | Event | null | undefined) => {
 		if (!value) return [];
@@ -111,6 +113,13 @@ export function AdminImageUrlList({
 		});
 	};
 
+	const removeSelectedImageFromForm = () => {
+		if (!selectedImage) return;
+		removeValueByUrl(selectedImage);
+		setSelectedImage(null);
+		setIsDeleteConfirmOpen(false);
+	};
+
 	const uploadFile = async (file: File) => {
 		const formData = new FormData();
 		formData.set("file", file);
@@ -143,12 +152,11 @@ export function AdminImageUrlList({
 				await uploadFile(file);
 			}
 			clearPendingSelection();
-
 			if (autoSubmitOnUpload) {
 				containerRef.current?.closest("form")?.requestSubmit();
 			}
 		} catch (error) {
-			setUploadError(error instanceof Error ? error.message : "Não foi possível enviar a imagem.");
+			setUploadError(error instanceof Error ? error.message : "Não foi possível enviar imagem.");
 		} finally {
 			setIsUploading(false);
 		}
@@ -181,14 +189,14 @@ export function AdminImageUrlList({
 			});
 			const payload = (await response.json()) as { error?: string };
 			if (!response.ok) {
-				throw new Error(payload.error || "Não foi possível excluir a imagem.");
+				throw new Error(payload.error || "Não foi possível excluir imagem.");
 			}
 
 			removeValueByUrl(selectedImage);
 			setSelectedImage(null);
 			setIsDeleteConfirmOpen(false);
 		} catch (error) {
-			setUploadError(error instanceof Error ? error.message : "Não foi possível excluir a imagem.");
+			setUploadError(error instanceof Error ? error.message : "Não foi possível excluir imagem.");
 		} finally {
 			setIsDeletingImage(false);
 		}
@@ -199,18 +207,19 @@ export function AdminImageUrlList({
 			{previewValues.map((value, index) => (
 				<input key={`${name}-hidden-${index}`} type="hidden" name={name} value={value} />
 			))}
+
 			<div className="flex flex-col gap-3 rounded-md border border-dashed p-3 md:flex-row md:items-center md:justify-between">
 				<div className="space-y-1">
 					<p className="text-sm font-medium">Imagem</p>
 					<p className="text-xs text-muted-foreground">
 						{uploadMode === "on-submit"
-							? "Escolha a imagem, revise a prévia e conclua o envio ao salvar o formulário."
+							? "Escolha, revise a prévia local e salve o formulário para publicar a troca."
 							: isSingleImage
 								? "Escolha uma imagem do computador."
 								: "Escolha uma ou mais imagens do computador."}
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<input
 						id={inputId}
 						name={`${name}File`}
@@ -236,9 +245,14 @@ export function AdminImageUrlList({
 							isUploading ? "pointer-events-none opacity-50" : "",
 						].join(" ")}
 					>
-						<ImagePlus className="h-4 w-4" />
-						{isUploading ? "Enviando..." : isSingleImage ? "Selecionar imagem" : "Selecionar imagens"}
+						{isSingleImage && previewValues.length > 0 ? (
+							<RefreshCw className="h-4 w-4" />
+						) : (
+							<ImagePlus className="h-4 w-4" />
+						)}
+						{isUploading ? "Enviando..." : isSingleImage ? pickerLabel : "Selecionar imagens"}
 					</label>
+
 					{uploadMode === "instant" && pendingFiles.length > 0 && !isUploading ? (
 						<Button type="button" variant="outline" onClick={() => void uploadFiles(pendingFiles)}>
 							Enviar agora
@@ -246,20 +260,32 @@ export function AdminImageUrlList({
 					) : null}
 				</div>
 			</div>
-			{pendingFiles.length > 0 ? (
-				<div className="space-y-2">
-					<p className="text-xs text-muted-foreground">
-						{pendingFiles.length} arquivo(s) selecionado(s):{" "}
-						{pendingFiles.map((file) => file.name).join(", ")}
-					</p>
-					{uploadMode === "on-submit" ? (
-						<div className="inline-flex items-center rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">
-							Arquivo pendente de envio até salvar.
-						</div>
-					) : null}
+
+			{hasPendingSelection ? (
+				<div className="flex flex-col gap-3 border border-amber-300 bg-amber-50 px-3 py-3 text-xs text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+					<div className="space-y-1">
+						<p className="font-medium">
+							{uploadMode === "on-submit"
+								? "Troca pendente: a imagem será enviada ao salvar."
+								: "Imagem selecionada aguardando envio."}
+						</p>
+						<p>{pendingFiles.map((file) => file.name).join(", ")}</p>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={clearPendingSelection}
+						disabled={isUploading}
+					>
+						<X className="mr-2 h-4 w-4" />
+						Descartar troca
+					</Button>
 				</div>
 			) : null}
+
 			{uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
+
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				{displayedPreviewValues.length ? (
 					displayedPreviewValues.map((src, index) => (
@@ -286,6 +312,7 @@ export function AdminImageUrlList({
 						Sem imagem disponível
 					</div>
 				) : null}
+
 				{pendingPreviewUrls.map((src, index) => (
 					<div
 						key={`${src}-${index}`}
@@ -306,6 +333,7 @@ export function AdminImageUrlList({
 					</div>
 				))}
 			</div>
+
 			<Dialog
 				open={isSelectionModalOpen}
 				onOpenChange={(open) => {
@@ -321,7 +349,7 @@ export function AdminImageUrlList({
 				<DialogContent className="max-w-3xl">
 					<DialogHeader>
 						<DialogTitle>Revisar imagem selecionada</DialogTitle>
-						<DialogDescription>Confira a prévia antes de confirmar.</DialogDescription>
+						<DialogDescription>Confira a prévia local antes de confirmar a troca.</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4">
 						{pendingPreviewUrls[0] ? (
@@ -362,13 +390,14 @@ export function AdminImageUrlList({
 								{isUploading
 									? "Enviando..."
 									: uploadMode === "on-submit"
-										? "Confirmar prévia"
+										? "Confirmar troca"
 										: "Salvar e enviar"}
 							</Button>
 						</div>
 					</div>
 				</DialogContent>
 			</Dialog>
+
 			<Dialog
 				open={Boolean(selectedImage)}
 				onOpenChange={(open) => {
@@ -382,7 +411,7 @@ export function AdminImageUrlList({
 					<DialogHeader>
 						<DialogTitle>Prévia da imagem</DialogTitle>
 						<DialogDescription>
-							Revise a imagem selecionada. Você também pode excluí-la do formulário e da biblioteca de mídia.
+							Revise a imagem atual, remova-a do formulário ou exclua a mídia enviada.
 						</DialogDescription>
 					</DialogHeader>
 					{selectedImage ? (
@@ -412,17 +441,28 @@ export function AdminImageUrlList({
 								</Button>
 								<Button
 									type="button"
+									variant="outline"
+									onClick={removeSelectedImageFromForm}
+									disabled={isDeletingImage}
+								>
+									<X className="mr-2 h-4 w-4" />
+									Remover do formulário
+								</Button>
+								<Button
+									type="button"
 									variant="destructive"
 									onClick={() => setIsDeleteConfirmOpen(true)}
 									disabled={isDeletingImage}
 								>
-									Excluir
+									<Trash2 className="mr-2 h-4 w-4" />
+									Excluir mídia
 								</Button>
 							</div>
 						</div>
 					) : null}
 				</DialogContent>
 			</Dialog>
+
 			<Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
 				<DialogContent className="max-w-md">
 					<DialogHeader>
