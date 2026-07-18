@@ -4,6 +4,7 @@ import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/edit
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { EditorialContactPage } from "@/lib/editorial-content";
+import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
@@ -38,8 +39,12 @@ export function EditorialContactForm({
 	page: EditorialContactPage;
 	submitLabel: string;
 }) {
-	const directLinks = page.direct?.links ?? [];
 	const pathLinks = page.paths?.links ?? [];
+	const fixedDirectLinks = [
+		{ label: "Email", text: seloSiteMeta.email },
+		{ label: "Instagram", text: "@selolibertaria" },
+		{ label: "YouTube", text: "Selo Libertária" },
+	];
 
 	return (
 		<Card>
@@ -65,20 +70,6 @@ export function EditorialContactForm({
 									<Textarea name="heroBody" defaultValue={page.hero?.body ?? ""} rows={4} />
 								</Field>
 							</div>
-							<Field label="Destaque lateral · rótulo" name="heroFeaturedLabel">
-								<Input
-									id="heroFeaturedLabel"
-									name="heroFeaturedLabel"
-									defaultValue={page.hero?.featuredLabel ?? ""}
-								/>
-							</Field>
-							<Field label="Destaque lateral · valor" name="heroFeaturedValue">
-								<Input
-									id="heroFeaturedValue"
-									name="heroFeaturedValue"
-									defaultValue={page.hero?.featuredValue ?? ""}
-								/>
-							</Field>
 						</div>
 					</EditorialAccordionSection>
 
@@ -107,29 +98,20 @@ export function EditorialContactForm({
 						<Field label="Descrição do bloco" name="directDescription">
 							<Textarea name="directDescription" defaultValue={page.direct?.description ?? ""} rows={3} />
 						</Field>
-						{[1, 2, 3].map((index) => (
-							<div key={index} className="grid gap-4 rounded-lg border p-4 md:grid-cols-3">
-								<Field label={`Canal ${index} · rótulo`} name={`direct${index}Label`}>
-									<Input
-										id={`direct${index}Label`}
-										name={`direct${index}Label`}
-										defaultValue={directLinks[index - 1]?.label ?? ""}
-									/>
-								</Field>
-								<Field label={`Canal ${index} · texto`} name={`direct${index}Text`}>
-									<Input
-										id={`direct${index}Text`}
-										name={`direct${index}Text`}
-										defaultValue={directLinks[index - 1]?.text ?? ""}
-									/>
-								</Field>
-								<EditorialHrefField
-									label={`Canal ${index} · destino`}
-									name={`direct${index}Href`}
-									defaultValue={directLinks[index - 1]?.href}
-								/>
-							</div>
-						))}
+						<div className="grid gap-3 rounded-md border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
+							<p>
+								Os canais oficiais ficam fixos fora do editor para evitar publicação acidental de dados de
+								contato incorretos.
+							</p>
+							<ul className="grid gap-2">
+								{fixedDirectLinks.map((link) => (
+									<li key={link.label} className="flex flex-wrap gap-2">
+										<span className="font-medium text-foreground">{link.label}:</span>
+										<span>{link.text}</span>
+									</li>
+								))}
+							</ul>
+						</div>
 					</EditorialAccordionSection>
 
 					<EditorialAccordionSection title="Caminhos comuns" contentClassName="grid gap-4 px-5 py-5">

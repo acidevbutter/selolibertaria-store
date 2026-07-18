@@ -199,3 +199,95 @@ describe("editorial item image persistence", () => {
 		});
 	});
 });
+
+function buildContactFormData(overrides: Record<string, string | undefined> = {}) {
+	const formData = new FormData();
+
+	for (const [key, value] of Object.entries({
+		heroEyebrow: "Contato",
+		heroTitle: "Fale com o selo",
+		heroBody: "Texto editorial do contato",
+		formTitle: "Escreva para o selo",
+		formDescription: "Descrição do formulário",
+		subject1: "Comprar livro",
+		directTitle: "Canais diretos",
+		directDescription: "Use os canais oficiais do selo.",
+		direct1Label: "WhatsApp malicioso",
+		direct1Text: "+55 11 00000-0000",
+		direct1HrefPreset: "__custom__",
+		direct1HrefCustom: "https://example.com/nao-usar",
+		pathsTitle: "Caminhos comuns",
+		pathsDescription: "Links editoriais internos.",
+		path1Label: "Projetos",
+		path1HrefPreset: "/projects",
+		closingTitle: "Continue pelo selo",
+		published: "true",
+		...overrides,
+	})) {
+		if (value !== undefined) formData.set(key, value);
+	}
+
+	return formData;
+}
+
+describe("editorial contact fixed channels", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		requireCapabilityMock.mockResolvedValue({ session: { sub: "admin-1", email: "admin@selo.test" } });
+		getEditorialRecordForAdminMock.mockResolvedValue({
+			type: "page_contact",
+			slug: "contact",
+			title: "Contato",
+			published: true,
+			order: 1,
+			hero: {
+				featuredLabel: "Email",
+				featuredValue: "contato-legado@selo.test",
+			},
+			direct: {
+				title: "Canais diretos",
+				description: "Descrição legada.",
+				links: [
+					{
+						label: "Email",
+						href: "mailto:contato-legado@selo.test",
+						text: "contato-legado@selo.test",
+					},
+				],
+			},
+		});
+		updateOneMock.mockReset();
+		updateOneMock.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
+		getDbMock.mockResolvedValue({
+			collection: () => ({
+				updateOne: updateOneMock,
+			}),
+		});
+		redirectMock.mockClear();
+		revalidatePathMock.mockClear();
+	});
+
+	it("preserves fixed contact links instead of accepting channel fields from admin form data", async () => {
+		const { updateEditorialContactAction } = await import("./actions");
+
+		await expect(updateEditorialContactAction(buildContactFormData())).rejects.toThrow(
+			"NEXT_REDIRECT:/admin/editorial/contact",
+		);
+
+		const update = updateOneMock.mock.calls[0]?.[1] as {
+			$set: {
+				direct: { links: Array<{ label: string; href: string; text: string }> };
+				hero: { featuredLabel: string | null; featuredValue: string | null };
+			};
+		};
+
+		expect(update.$set.direct.links).toEqual([
+			{
+				label: "Email",
+				href: "mailto:contato-legado@selo.test",
+				text: "contato-legado@selo.test",
+			},
+		]);
+		expect(update.$set.hero.featuredValue).toBe("contato-legado@selo.test");
+	});
+});

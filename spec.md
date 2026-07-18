@@ -154,6 +154,10 @@ Cada página deve ter:
 3. listagem/conteúdo principal;
 4. continuidade para catálogo, Sarau, projetos, contato ou newsletter.
 
+Em `/contact`, textos editoriais continuam administráveis, mas canais oficiais
+como e-mail e redes sociais vêm de configuração/código e não de campos livres do
+editor.
+
 ## PDP / Página de livro
 
 A PDP precisa preservar compra clara no topo:

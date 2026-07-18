@@ -25,25 +25,23 @@ export default async function ContactPage() {
 	const [contact, supportEmail] = await Promise.all([getEditorialContactPage(), getSupportEmailSetting()]);
 
 	const resolvedSupportEmail = supportEmail || seloSiteMeta.email;
-	const directLinks = contact.direct?.links?.length
-		? contact.direct.links
-		: [
-				{
-					label: "Email",
-					href: `mailto:${resolvedSupportEmail}`,
-					text: resolvedSupportEmail,
-				},
-				{
-					label: "Instagram",
-					href: seloSiteMeta.instagram,
-					text: "@selolibertaria",
-				},
-				{
-					label: "YouTube",
-					href: seloSiteMeta.youtube,
-					text: "Selo Libertária",
-				},
-			];
+	const directLinks = [
+		{
+			label: "Email",
+			href: `mailto:${resolvedSupportEmail}`,
+			text: resolvedSupportEmail,
+		},
+		{
+			label: "Instagram",
+			href: seloSiteMeta.instagram,
+			text: "@selolibertaria",
+		},
+		{
+			label: "YouTube",
+			href: seloSiteMeta.youtube,
+			text: "Selo Libertária",
+		},
+	];
 
 	const subjects = contact.form?.subjects?.length
 		? contact.form.subjects
@@ -79,11 +77,9 @@ export default async function ContactPage() {
 							</div>
 							<div className="ml-auto w-full max-w-sm bg-[color:var(--editorial-paper)] p-6 text-[color:var(--editorial-ink)]">
 								<p className="text-xs uppercase tracking-[0.28em] text-[color:var(--editorial-accent)]">
-									{contact.hero?.featuredLabel || "Email"}
+									Email
 								</p>
-								<p className="mt-4 text-3xl leading-tight font-black break-words">
-									{contact.hero?.featuredValue || resolvedSupportEmail}
-								</p>
+								<p className="mt-4 text-3xl leading-tight font-black break-words">{resolvedSupportEmail}</p>
 							</div>
 						</EditorialShell>
 					</header>
