@@ -37,7 +37,7 @@ export default async function SarauSafadoPage() {
 		: [
 				{
 					title: "O Sarau Safado existe como ritual recorrente de leitura, presença e escuta.",
-					body: "Em vez de um evento avulso, ele sustenta continuidade: cria público, prolonga o catálogo e abre espaço para vozes convidadas dentro de uma linha curatorial nítida.",
+					body: "Em vez de um evento avulso, ele sustenta continuidade, cria público e abre espaço para vozes convidadas dentro de uma linha curatorial nítida.",
 				},
 				{
 					title: "Origem",
@@ -49,7 +49,7 @@ export default async function SarauSafadoPage() {
 				},
 				{
 					title: "Presença",
-					body: "O sarau transforma leitura em acontecimento público e ajuda a dar corpo ao imaginário do selo fora da prateleira.",
+					body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
 				},
 			];
 	const continueLinks = sarau.continueLinks?.length

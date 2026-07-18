@@ -125,12 +125,12 @@ export default async function AboutPage() {
 								{about.closing?.eyebrow || "Manifesto"}
 							</p>
 							<h2 className="mt-3 text-3xl font-black uppercase tracking-tight">
-								{about.closing?.title || "O catálogo, a programação e a autoria se reforçam mutuamente."}
+								{about.closing?.title || "A programação e a autoria se reforçam mutuamente."}
 							</h2>
 							<EditorialRichText
 								source={
 									about.closing?.body ||
-									"Ler um livro, descobrir uma programação, entrar num arquivo e voltar ao catálogo. A experiência deve parecer um único ecossistema, não páginas paralelas."
+									"Conhecer uma autora, descobrir uma programação e entrar num arquivo. A experiência deve formar um ecossistema cultural, não páginas paralelas."
 								}
 								className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--editorial-muted)]"
 							/>

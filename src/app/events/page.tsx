@@ -193,7 +193,7 @@ export default async function EventsPage() {
 							<EditorialRichText
 								source={
 									page.curatorialNote?.body ||
-									"Lançamentos, leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para que programação não pareça um apêndice separado do catálogo."
+									"Leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para apresentar a programação como parte central da atuação cultural."
 								}
 							/>
 							<EditorialRichText
@@ -269,7 +269,7 @@ export default async function EventsPage() {
 							<EditorialRichText
 								source={
 									page.archive?.body ||
-									"A agenda não termina na data. Ela também organiza memória, fotos, textos e retornos para o catálogo."
+									"A agenda não termina na data. Ela também organiza memória, fotos, textos e continuidade para a atuação cultural."
 								}
 								className="text-sm leading-7 text-[color:var(--editorial-muted)]"
 							/>
