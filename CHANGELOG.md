@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Validados os links editoriais da Home no admin para aceitar apenas rotas públicas previsíveis e evitar CTAs apontando para páginas inexistentes.
+
 ### Changed
 
 - Reorganizado o hub do admin editorial em páginas estruturais, coleções vivas e blocos globais, com badges de texto, imagem, fundo, CTAs, links, fallback e publicação.
