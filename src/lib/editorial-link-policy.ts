@@ -1,4 +1,4 @@
-export const EDITORIAL_HOME_LINK_OPTIONS = [
+export const EDITORIAL_LINK_OPTIONS = [
 	{ label: "Livros", href: "/products" },
 	{ label: "Projetos", href: "/projects" },
 	{ label: "Sarau Safado", href: "/sarau-safado" },
@@ -7,7 +7,9 @@ export const EDITORIAL_HOME_LINK_OPTIONS = [
 	{ label: "Eventos", href: "/events" },
 ] as const;
 
-const EDITORIAL_HOME_ALLOWED_PATHS = EDITORIAL_HOME_LINK_OPTIONS.map((option) => option.href);
+export const EDITORIAL_HOME_LINK_OPTIONS = EDITORIAL_LINK_OPTIONS;
+
+const EDITORIAL_ALLOWED_PATHS = EDITORIAL_LINK_OPTIONS.map((option) => option.href);
 
 const EDITORIAL_ALLOWED_CUSTOM_PROTOCOLS = ["http:", "https:", "mailto:", "tel:"] as const;
 
@@ -15,19 +17,21 @@ const CUSTOM_LINK_VALUE = "__custom__";
 
 export const EDITORIAL_HOME_CUSTOM_LINK_VALUE = CUSTOM_LINK_VALUE;
 
-export const EDITORIAL_HOME_LINK_HINT =
+export const EDITORIAL_LINK_HINT =
 	"Escolha uma rota pública do site ou use Personalizado para link externo/outra rota.";
+
+export const EDITORIAL_HOME_LINK_HINT = EDITORIAL_LINK_HINT;
 
 function normalizeInternalHref(value: string, fieldLabel: string) {
 	if (!value.startsWith("/") || value.startsWith("//")) {
-		throw new Error(`${fieldLabel}: use uma rota interna. ${EDITORIAL_HOME_LINK_HINT}`);
+		throw new Error(`${fieldLabel}: use uma rota interna. ${EDITORIAL_LINK_HINT}`);
 	}
 
 	const parsed = new URL(value, "https://selolibertaria.local");
 	const pathname = parsed.pathname.replace(/\/$/, "") || "/";
 
-	if (!EDITORIAL_HOME_ALLOWED_PATHS.includes(pathname as (typeof EDITORIAL_HOME_ALLOWED_PATHS)[number])) {
-		throw new Error(`${fieldLabel}: rota não permitida. ${EDITORIAL_HOME_LINK_HINT}`);
+	if (!EDITORIAL_ALLOWED_PATHS.includes(pathname as (typeof EDITORIAL_ALLOWED_PATHS)[number])) {
+		throw new Error(`${fieldLabel}: rota não permitida. ${EDITORIAL_LINK_HINT}`);
 	}
 
 	return `${pathname}${parsed.search}${parsed.hash}`;
@@ -68,7 +72,9 @@ export function isEditorialHomePresetHref(value?: string | null) {
 	}
 }
 
-export function parseEditorialHomeHrefChoice(
+export const isEditorialPresetHref = isEditorialHomePresetHref;
+
+export function parseEditorialHrefChoice(
 	formData: FormData,
 	fieldName: string,
 	fieldLabel: string,
@@ -91,6 +97,8 @@ export function parseEditorialHomeHrefChoice(
 
 	return normalizeInternalHref(preset, fieldLabel);
 }
+
+export const parseEditorialHomeHrefChoice = parseEditorialHrefChoice;
 
 export function parseEditorialHomeHref(value: FormDataEntryValue | null, fieldLabel: string): string | null {
 	if (typeof value !== "string") return null;

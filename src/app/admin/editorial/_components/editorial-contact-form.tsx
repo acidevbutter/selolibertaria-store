@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
+import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { EditorialContactPage } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
@@ -120,13 +121,11 @@ export function EditorialContactForm({
 										defaultValue={directLinks[index - 1]?.text ?? ""}
 									/>
 								</Field>
-								<Field label={`Canal ${index} · link`} name={`direct${index}Href`}>
-									<Input
-										id={`direct${index}Href`}
-										name={`direct${index}Href`}
-										defaultValue={directLinks[index - 1]?.href ?? ""}
-									/>
-								</Field>
+								<EditorialHrefField
+									label={`Canal ${index} · link`}
+									name={`direct${index}Href`}
+									defaultValue={directLinks[index - 1]?.href}
+								/>
 							</div>
 						))}
 					</section>
@@ -151,13 +150,11 @@ export function EditorialContactForm({
 										defaultValue={pathLinks[index - 1]?.label ?? ""}
 									/>
 								</Field>
-								<Field label={`Link ${index} · href`} name={`path${index}Href`}>
-									<Input
-										id={`path${index}Href`}
-										name={`path${index}Href`}
-										defaultValue={pathLinks[index - 1]?.href ?? ""}
-									/>
-								</Field>
+								<EditorialHrefField
+									label={`Link ${index} · href`}
+									name={`path${index}Href`}
+									defaultValue={pathLinks[index - 1]?.href}
+								/>
 							</div>
 						))}
 					</section>

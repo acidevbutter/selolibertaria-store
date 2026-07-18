@@ -2,7 +2,7 @@
 
 ### Fixed
 
-- Validados os links editoriais da Home no admin para aceitar apenas rotas públicas previsíveis e evitar CTAs apontando para páginas inexistentes.
+- Substituídos campos livres de links editoriais por seletor de destinos públicos com opção `Personalizado`, preservando links externos/rotas customizadas quando escolhidos explicitamente.
 
 ### Changed
 
