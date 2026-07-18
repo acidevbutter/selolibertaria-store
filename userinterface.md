@@ -231,3 +231,9 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 - Testes de interface devem focar os sinais visíveis do contrato: botão de selecionar/substituir, prévia local, ausência de envio imediato e ação de descartar troca.
 - A interface não deve depender de upload automático para comunicar persistência; a publicação continua acontecendo no botão de salvar do formulário inteiro.
+
+## Atualização 2026-07-18 — organização do admin editorial
+
+- O hub do admin editorial deve agrupar entradas por `Páginas estruturais`, `Coleções vivas` e `Blocos globais`.
+- Cards e seções editoriais devem usar badges curtos para indicar se o fluxo edita `Texto`, `Imagem`, `Fundo`, `CTA`, `Links`, `Fallback` ou `Publicação`.
+- Labels de imagem devem informar o contexto público, como `Imagem de fundo do hero`, `Imagem principal do evento` ou `Imagem do bloco principal`, evitando o rótulo genérico `Imagem` quando houver risco de confusão.

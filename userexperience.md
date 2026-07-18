@@ -186,3 +186,9 @@ Confiança vem de:
 
 - A experiência esperada é reversível até o salvamento: selecionar e confirmar uma imagem mostra prévia local; descartar remove a troca pendente; salvar persiste somente a intenção final.
 - Conteúdo antigo deve continuar público e legível após a introdução das ferramentas, sem exigir reedição manual dos blocos legados.
+
+## Atualização 2026-07-18 — organização do admin editorial
+
+- A pessoa operadora deve entrar no hub editorial e distinguir rapidamente páginas estruturais, coleções vivas e blocos globais.
+- O caminho para editar texto, imagem, fundo, CTAs e publicação deve aparecer no próprio card ou cabeçalho do bloco, antes de abrir campos longos.
+- Labels de imagem precisam comunicar onde a mídia aparece no site, reduzindo a dúvida entre imagem de conteúdo, imagem principal e fundo de hero.

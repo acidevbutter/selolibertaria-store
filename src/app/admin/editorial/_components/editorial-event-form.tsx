@@ -140,8 +140,11 @@ export function EditorialEventForm({
 						</div>
 					</FormSection>
 
-					<FormSection title="Imagem principal" description="Revise a imagem antes de salvar o evento.">
-						<Field label="Imagem" name="imageSrc">
+					<FormSection
+						title="Imagem do evento"
+						description="Revise a imagem pública antes de salvar o evento."
+					>
+						<Field label="Imagem principal do evento" name="imageSrc">
 							<AdminImageUrlList
 								name="imageSrc"
 								initialValues={event?.image?.src ? [event.image.src] : []}
@@ -158,7 +161,7 @@ export function EditorialEventForm({
 								<Input id="imageAlt" name="imageAlt" defaultValue={event?.image?.alt ?? ""} />
 							</Field>
 							<Field
-								label="Legenda da imagem"
+								label="Legenda pública da imagem"
 								name="imageCaption"
 								hint="Use uma frase curta para contextualizar a foto no admin e no site."
 							>

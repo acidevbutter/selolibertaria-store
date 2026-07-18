@@ -23,6 +23,7 @@ type SectionConfig = {
 	title: string;
 	description?: string;
 	route: string;
+	tools?: string[];
 	fields: FieldConfig[];
 	defaultOpen?: boolean;
 };
@@ -161,6 +162,19 @@ export function EditorialPageCopyForm({
 										{section.description}
 									</p>
 								) : null}
+								<div className="flex flex-wrap gap-2">
+									<span className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+										Rota: {section.route}
+									</span>
+									{section.tools?.map((tool) => (
+										<span
+											key={tool}
+											className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
+										>
+											{tool}
+										</span>
+									))}
+								</div>
 							</div>
 							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
 								Expandir

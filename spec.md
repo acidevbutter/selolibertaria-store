@@ -224,6 +224,12 @@ Mitigação:
 - `site_global` concentra newsletter e rodapé públicos.
 - `page_projects`, `page_products` e `page_product` sustentam a copy estrutural dessas rotas.
 - A migration editorial padrão é idempotente e não sobrescreve edições reais; ela só cria documentos ausentes e preenche campos ausentes.
+## Addendum — DEV-49
+
+- O hub do admin editorial organiza os destinos em páginas estruturais, coleções vivas e blocos globais.
+- Cada destino editorial deve comunicar de forma previsível se controla texto, imagem, fundo, CTAs, links, fallbacks ou publicação.
+- A revisão de UX dos menus editoriais não altera schema, actions, rotas públicas nem persistência dos campos existentes.
+
 ## Atualização 2026-07-18 — validação editorial
 
 - O fluxo editorial deve ter regressão automatizada para confirmar que a seleção local de imagem não faz upload imediato em `uploadMode="on-submit"`.

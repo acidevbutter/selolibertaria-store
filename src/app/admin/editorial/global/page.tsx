@@ -56,6 +56,7 @@ export default async function AdminEditorialGlobalPage() {
 						title: "Newsletter",
 						description: "Chamada curta acima do campo de email.",
 						route: "todas páginas públicas",
+						tools: ["Texto", "CTA"],
 						defaultOpen: true,
 						fields: [
 							{
@@ -86,6 +87,7 @@ export default async function AdminEditorialGlobalPage() {
 						title: "Rodapé",
 						description: "Texto institucional e links auxiliares.",
 						route: "todas páginas públicas",
+						tools: ["Texto", "Links"],
 						fields: [
 							{
 								name: "footerBrandEyebrow",
