@@ -6,6 +6,8 @@ const getCartIdMock = vi.fn();
 const getCartCookieItemsMock = vi.fn();
 const getCartCouponCodeMock = vi.fn();
 const buildPricedCartPayloadMock = vi.fn();
+const variantResolveMock = vi.fn();
+const getDbMock = vi.fn();
 
 vi.mock("@/lib/api-auth", () => ({
 	requireAuth: () => requireAuthMock(),
@@ -35,13 +37,13 @@ vi.mock("@/lib/commerce", () => ({
 			get: vi.fn(),
 		},
 		variant: {
-			resolve: vi.fn(),
+			resolve: (...args: unknown[]) => variantResolveMock(...args),
 		},
 	},
 }));
 
 vi.mock("@/lib/mongodb", () => ({
-	getDb: vi.fn(),
+	getDb: () => getDbMock(),
 }));
 
 vi.mock("@/lib/promotions", () => ({
@@ -55,6 +57,8 @@ describe("getCartAction", () => {
 		getCartCookieItemsMock.mockReset();
 		getCartCouponCodeMock.mockReset();
 		buildPricedCartPayloadMock.mockReset();
+		variantResolveMock.mockReset();
+		getDbMock.mockReset();
 		vi.resetModules();
 	});
 
@@ -113,5 +117,33 @@ describe("getCartAction", () => {
 			couponCode: null,
 			userId: undefined,
 		});
+	});
+
+	it("preserva o ID do produto ao adicionar uma variante ao carrinho autenticado", async () => {
+		const findOneMock = vi.fn().mockResolvedValue({ cart: { items: [] } });
+		const updateOneMock = vi.fn().mockResolvedValue({ acknowledged: true });
+		getDbMock.mockResolvedValue({
+			collection: () => ({ findOne: findOneMock, updateOne: updateOneMock }),
+		});
+		requireAuthMock.mockResolvedValue({ session: { role: "customer", sub: "64b64c5d10b8a7e4c7b8d123" } });
+		variantResolveMock.mockResolvedValue({
+			product: { id: "prod_123" },
+			variant: { id: "price_123" },
+		});
+		buildPricedCartPayloadMock.mockResolvedValue({ cart: { id: "user-cart" } });
+
+		const { addToCartAction } = await import("@/actions/cart-actions");
+		await addToCartAction("price_123");
+
+		expect(updateOneMock).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({
+				$set: expect.objectContaining({
+					cart: expect.objectContaining({
+						items: [{ productId: "prod_123", variantId: "price_123", quantity: 1 }],
+					}),
+				}),
+			}),
+		);
 	});
 });

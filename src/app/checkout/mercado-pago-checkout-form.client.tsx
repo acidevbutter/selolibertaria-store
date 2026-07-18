@@ -584,6 +584,29 @@ export function MercadoPagoCheckoutForm({
 						{deliveryError}
 					</p>
 				) : null}
+				{deliveryRate ? (
+					<div className="rounded-lg border bg-muted/20 px-3 py-3 text-sm">
+						<div className="flex items-start justify-between gap-4">
+							<div>
+								<span className="block font-medium">Frete</span>
+								<span className="block text-xs text-muted-foreground">
+									{deliveryRate.providerLabel}
+									{deliveryRate.serviceName ? ` · ${deliveryRate.serviceName}` : ""}
+									{deliveryRate.estimated_days
+										? ` · até ${deliveryRate.estimated_days} ${deliveryRate.estimated_days === 1 ? "dia útil" : "dias úteis"}`
+										: ""}
+								</span>
+							</div>
+							<span className="font-medium">
+								{formatMoney({
+									amount: deliveryRate.fixed_amount.amount,
+									currency: deliveryRate.fixed_amount.currency,
+									locale,
+								})}
+							</span>
+						</div>
+					</div>
+				) : null}
 				<div className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-3 text-sm">
 					<span>Total</span>
 					<span className="text-base font-semibold">
@@ -842,6 +865,7 @@ function toMercadoPagoPayer(buyer: TransparentCheckoutIntent["buyer"]) {
 	return {
 		firstName: nameParts[0] ?? "",
 		lastName: nameParts.slice(1).join(" "),
+		email: normalizeBuyerEmail(buyer.email),
 		entityType: "individual",
 		identification: {
 			type: getCheckoutIdentificationType(buyer.cpf),
