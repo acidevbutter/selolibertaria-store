@@ -199,6 +199,81 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		);
 	});
 
+	it("mantém o Pix disponível quando a consulta manual falha", async () => {
+		getPendingMercadoPagoPixPayment.mockResolvedValue({
+			ok: true,
+			payment: {
+				paymentId: "123",
+				status: "processing",
+				qrCode: "pix-copia-e-cola",
+				qrCodeBase64: null,
+				ticketUrl: null,
+				expiresAt: null,
+			},
+		});
+
+		render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<MercadoPagoCheckoutForm checkout={checkout} locale="pt-BR" />
+			</IntlClientProvider>,
+		);
+
+		await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		getPendingMercadoPagoPixPayment.mockResolvedValue({
+			error: "Não foi possível recuperar o pagamento Pix",
+		});
+
+		fireEvent.click(screen.getByRole("button", { name: "Já paguei — verificar pagamento" }));
+		await waitFor(() =>
+			expect(screen.getByRole("status")).toHaveTextContent("Não foi possível recuperar o pagamento Pix"),
+		);
+		expect(screen.getByDisplayValue("pix-copia-e-cola")).toBeVisible();
+		expect(submitMercadoPagoCheckoutPayment).not.toHaveBeenCalled();
+		expect(routerReplace).not.toHaveBeenCalled();
+	});
+
+	it("informa a expiração do Pix sem criar outra cobrança", async () => {
+		getPendingMercadoPagoPixPayment.mockResolvedValue({
+			ok: true,
+			payment: {
+				paymentId: "123",
+				status: "processing",
+				qrCode: "pix-copia-e-cola",
+				qrCodeBase64: null,
+				ticketUrl: null,
+				expiresAt: null,
+			},
+		});
+
+		render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<MercadoPagoCheckoutForm checkout={checkout} locale="pt-BR" />
+			</IntlClientProvider>,
+		);
+
+		await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		getPendingMercadoPagoPixPayment.mockResolvedValue({
+			ok: true,
+			payment: {
+				paymentId: "123",
+				status: "failed",
+				qrCode: null,
+				qrCodeBase64: null,
+				ticketUrl: null,
+				expiresAt: null,
+			},
+		});
+
+		fireEvent.click(screen.getByRole("button", { name: "Já paguei — verificar pagamento" }));
+		await waitFor(() => {
+			expect(
+				screen.getByText("Este Pix não está mais disponível. Gere uma nova cobrança para continuar."),
+			).toBeVisible();
+		});
+		expect(submitMercadoPagoCheckoutPayment).not.toHaveBeenCalled();
+		expect(routerReplace).not.toHaveBeenCalled();
+	});
+
 	it("gera Pix com o e-mail do checkout sem renderizar o formulário Pix do Brick", async () => {
 		getPendingMercadoPagoPixPayment.mockResolvedValue({ ok: true, payment: null });
 		submitMercadoPagoCheckoutPayment.mockResolvedValue({
