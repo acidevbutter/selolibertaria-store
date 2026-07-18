@@ -1,5 +1,9 @@
 import Image from "next/image";
-import type { EditorialHomePage } from "@/lib/editorial-content";
+import {
+	type EditorialHomePage,
+	getEditorialBackgroundContrast,
+	getEditorialBackgroundStyle,
+} from "@/lib/editorial-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
@@ -20,38 +24,70 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 	const quote = hero?.featureQuote || "Ler também pode ser uma forma de acender presença.";
 	const featureImage = hero?.featureImage?.src || "/images/ninfas-example.png";
 	const featureImageAlt = hero?.featureImage?.alt || title;
+	const backgroundStyle = getEditorialBackgroundStyle(hero?.background, null, "strong");
+	const useDarkText = Boolean(backgroundStyle) && getEditorialBackgroundContrast(hero?.background) === "dark";
+	const sectionClassName = [
+		"overflow-hidden",
+		useDarkText
+			? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
+			: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]",
+	].join(" ");
 
 	return (
-		<section className="overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
+		<section className={sectionClassName} style={backgroundStyle}>
 			<EditorialShell className="grid min-h-[720px] grid-cols-1 gap-12 py-8 sm:py-10 lg:min-h-[834px] lg:grid-cols-[minmax(0,0.88fr)_minmax(360px,0.92fr)] lg:items-center lg:gap-20 lg:py-16 xl:py-20">
 				<div className="flex max-w-2xl flex-col justify-center space-y-6 lg:space-y-8">
 					<Reveal>
-						<EditorialEyebrow className="text-[color:var(--editorial-beige)] sm:text-sm">
+						<EditorialEyebrow
+							className={
+								useDarkText
+									? "text-[color:var(--editorial-accent)] sm:text-sm"
+									: "text-[color:var(--editorial-beige)] sm:text-sm"
+							}
+						>
 							{eyebrow}
 						</EditorialEyebrow>
 					</Reveal>
 					<Reveal delay={0.05}>
-						<h1 className="display-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] text-[color:var(--editorial-paper)] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]">
+						<h1
+							className={[
+								"display-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]",
+								useDarkText ? "text-[color:var(--editorial-ink)]" : "text-[color:var(--editorial-paper)]",
+							].join(" ")}
+						>
 							{title}
 						</h1>
 					</Reveal>
 					<Reveal delay={0.1}>
 						<EditorialRichText
 							source={description}
-							className="max-w-[31rem] text-pretty text-base leading-8 text-[color:rgba(247,244,239,0.76)] sm:text-lg sm:leading-8"
+							className={[
+								"max-w-[31rem] text-pretty text-base leading-8 sm:text-lg sm:leading-8",
+								useDarkText ? "text-[color:var(--editorial-ink)]" : "text-[color:rgba(247,244,239,0.76)]",
+							].join(" ")}
 						/>
 					</Reveal>
 					<Reveal delay={0.15}>
 						<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 							<YnsLink
 								href={hero?.primaryCtaHref || "/products"}
-								className="inline-flex h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-6 text-[11px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+								className={[
+									"inline-flex h-12 items-center justify-center px-6 text-[11px] font-black uppercase tracking-[0.24em] transition-colors duration-300",
+									useDarkText
+										? "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+										: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
+								].join(" ")}
 							>
 								{primaryCtaLabel}
 							</YnsLink>
 							<YnsLink
 								href={hero?.secondaryCtaHref || "/sarau-safado"}
-								className="inline-flex h-12 items-center justify-center border border-[color:rgba(247,244,239,0.24)] px-6 text-[11px] font-black uppercase tracking-[0.24em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+								className={[
+									"inline-flex h-12 items-center justify-center border px-6 text-[11px] font-black uppercase tracking-[0.24em] transition-colors duration-300",
+									useDarkText
+										? "border-[color:rgba(11,11,11,0.24)] text-[color:var(--editorial-ink)] hover:bg-[color:rgba(11,11,11,0.06)]"
+										: "border-[color:rgba(247,244,239,0.24)] text-[color:var(--editorial-paper)] hover:bg-[color:rgba(247,244,239,0.08)]",
+								].join(" ")}
 							>
 								{secondaryCtaLabel}
 							</YnsLink>
@@ -60,7 +96,10 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 					<Reveal delay={0.2}>
 						<EditorialRichText
 							source={supportingLine}
-							className="max-w-[28rem] text-sm leading-7 text-[color:rgba(216,208,196,0.84)]"
+							className={[
+								"max-w-[28rem] text-sm leading-7",
+								useDarkText ? "text-[color:var(--editorial-muted)]" : "text-[color:rgba(216,208,196,0.84)]",
+							].join(" ")}
 						/>
 					</Reveal>
 				</div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import {
 	getEditorialEventsPage,
 	listEditorialEvents,
@@ -43,6 +44,10 @@ export default async function EventsPage() {
 	const publishedEvents = events.filter((event) => event.published);
 	const publishedProjects = projects.filter((project) => project.published);
 	const featuredEvent = publishedEvents[0] ?? null;
+	const heroBackgroundStyle = getEditorialBackgroundStyle(page.hero?.background, null, "strong");
+	const hasConfiguredHeroBackground = Boolean(heroBackgroundStyle);
+	const useDarkHeroText =
+		hasConfiguredHeroBackground && getEditorialBackgroundContrast(page.hero?.background) === "dark";
 	const posterEvents = publishedEvents.slice(0, 2);
 	const agendaEvents = publishedEvents.slice(0, 4);
 	const sarauEvent =
@@ -70,8 +75,16 @@ export default async function EventsPage() {
 		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
 			<Nav />
 			<main className="flex flex-1 flex-col">
-				<section className="relative overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
-					{featuredEvent?.image?.src ? (
+				<section
+					className={[
+						"relative overflow-hidden",
+						useDarkHeroText
+							? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
+							: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]",
+					].join(" ")}
+					style={heroBackgroundStyle}
+				>
+					{!hasConfiguredHeroBackground && featuredEvent?.image?.src ? (
 						<>
 							<Image
 								src={featuredEvent.image.src}
@@ -83,13 +96,19 @@ export default async function EventsPage() {
 							/>
 							<div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,11,11,0.92)_0%,rgba(11,11,11,0.86)_48%,rgba(11,11,11,0.72)_100%)]" />
 						</>
-					) : (
+					) : !hasConfiguredHeroBackground ? (
 						<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(122,30,34,0.42),transparent_44%),linear-gradient(135deg,#0b0b0b_0%,#171312_100%)]" />
-					)}
+					) : null}
 
 					<EditorialShell className="relative grid min-h-[620px] gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
 						<div className="max-w-3xl space-y-6">
-							<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)] sm:text-sm">
+							<EditorialEyebrow
+								className={
+									useDarkHeroText
+										? "text-[color:var(--editorial-accent)] sm:text-sm"
+										: "text-[color:rgba(247,244,239,0.7)] sm:text-sm"
+								}
+							>
 								{page.hero?.eyebrow || "Eventos"}
 							</EditorialEyebrow>
 							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
@@ -101,18 +120,33 @@ export default async function EventsPage() {
 									featuredEvent?.summary ||
 									"Eventos, leituras e memória editorial em circulação pública."
 								}
-								className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.78)]"
+								className={[
+									"max-w-2xl text-base leading-8",
+									useDarkHeroText
+										? "text-[color:var(--editorial-ink)]"
+										: "text-[color:rgba(247,244,239,0.78)]",
+								].join(" ")}
 							/>
 							<div className="flex flex-wrap gap-3 pt-2">
 								<YnsLink
 									href={page.hero?.primaryCtaHref || "/sarau-safado"}
-									className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+									className={[
+										"inline-flex min-h-12 items-center justify-center px-5 text-xs font-black uppercase tracking-[0.22em] transition-colors duration-300",
+										useDarkHeroText
+											? "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+											: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
+									].join(" ")}
 								>
 									{page.hero?.primaryCtaLabel || "Ver próxima edição"}
 								</YnsLink>
 								<YnsLink
 									href={page.hero?.secondaryCtaHref || "/projects"}
-									className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
+									className={[
+										"inline-flex min-h-12 items-center justify-center border px-5 text-xs font-black uppercase tracking-[0.22em] transition-colors duration-300",
+										useDarkHeroText
+											? "border-[color:rgba(11,11,11,0.24)] text-[color:var(--editorial-ink)] hover:bg-[color:rgba(11,11,11,0.06)]"
+											: "border-[color:rgba(247,244,239,0.22)] text-[color:var(--editorial-paper)] hover:bg-[color:rgba(247,244,239,0.08)]",
+									].join(" ")}
 								>
 									{page.hero?.secondaryCtaLabel || "Conhecer projetos"}
 								</YnsLink>

@@ -109,13 +109,19 @@ export default async function AdminEditorialHomePage() {
 								defaultValue: page.hero?.featureEyebrow,
 							},
 							{ name: "heroFeatureQuote", label: "Frase de apoio", defaultValue: page.hero?.featureQuote },
+							{
+								name: "heroBackground",
+								label: "Fundo do hero",
+								type: "background",
+								background: page.hero?.background,
+							},
 						],
 					},
 					{
 						title: "Manifesto",
 						description: "Bloco curto entre hero e catálogo.",
 						route: "/",
-						tools: ["Texto", "CTA"],
+						tools: ["Texto", "CTA", "Fundo"],
 						fields: [
 							{ name: "manifestoTitle", label: "Título", defaultValue: page.manifesto?.title },
 							{
@@ -127,13 +133,19 @@ export default async function AdminEditorialHomePage() {
 							},
 							{ name: "manifestoLinkLabel", label: "Botão", defaultValue: page.manifesto?.linkLabel },
 							{ name: "manifestoLinkHref", label: "Link do botão", defaultValue: page.manifesto?.linkHref },
+							{
+								name: "manifestoBackground",
+								label: "Fundo do manifesto",
+								type: "background",
+								background: page.manifesto?.background,
+							},
 						],
 					},
 					{
 						title: "Livro em destaque",
 						description: "Texto estrutural do bloco principal de livro.",
 						route: "/",
-						tools: ["Texto", "CTA"],
+						tools: ["Texto", "CTA", "Fundo"],
 						fields: [
 							{
 								name: "featuredProductSlug",
@@ -218,6 +230,12 @@ export default async function AdminEditorialHomePage() {
 							},
 							{ name: "programCtaLabel", label: "Botão", defaultValue: page.program?.ctaLabel },
 							{ name: "programCtaHref", label: "Link do botão", defaultValue: page.program?.ctaHref },
+							{
+								name: "programBackground",
+								label: "Fundo da programação",
+								type: "background",
+								background: page.program?.background,
+							},
 						],
 					},
 				]}

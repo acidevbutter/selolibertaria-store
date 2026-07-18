@@ -4,7 +4,13 @@ import type { Filter } from "mongodb";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireCapability } from "@/lib/api-auth";
+import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 import type {
+	EditorialBackground,
+	EditorialBackgroundContrast,
+	EditorialBackgroundFit,
+	EditorialBackgroundOverlay,
+	EditorialBackgroundPosition,
 	EditorialDocument,
 	EditorialEventsPage,
 	EditorialHomePage,
@@ -82,6 +88,94 @@ function parseBoolean(value: FormDataEntryValue | null, defaultValue = false) {
 	return value === "true" || value === "on" || value === "1";
 }
 
+function parseBackgroundFit(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundFit = "cover",
+): EditorialBackgroundFit {
+	return value === "cover" || value === "contain" ? value : fallback;
+}
+
+function parseBackgroundPosition(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundPosition = "center",
+): EditorialBackgroundPosition {
+	if (value === "center" || value === "top" || value === "bottom" || value === "left" || value === "right") {
+		return value;
+	}
+
+	return fallback;
+}
+
+function parseBackgroundOverlay(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundOverlay = "medium",
+): EditorialBackgroundOverlay {
+	if (value === "none" || value === "soft" || value === "medium" || value === "strong") {
+		return value;
+	}
+
+	return fallback;
+}
+
+function parseBackgroundContrast(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundContrast = "light",
+): EditorialBackgroundContrast {
+	return value === "light" || value === "dark" ? value : fallback;
+}
+
+async function resolveImageField(
+	formData: FormData,
+	srcField: string,
+	altField: string,
+	captionField: string,
+) {
+	const fileEntry = formData.get(`${srcField}File`);
+	const existingSrc = optionalString(formData.get(srcField));
+	let src = existingSrc;
+
+	if (fileEntry instanceof File && fileEntry.size > 0) {
+		const upload = await uploadImageFileToCloudinary(fileEntry);
+		src = upload.secure_url;
+	}
+
+	if (!src) return null;
+
+	return {
+		src,
+		alt: optionalString(formData.get(altField)),
+		caption: optionalString(formData.get(captionField)),
+	};
+}
+
+async function parseBackgroundByPrefix(
+	formData: FormData,
+	prefix: string,
+	current?: EditorialBackground | null,
+): Promise<EditorialBackground | null> {
+	const srcField = `${prefix}Src`;
+	const hasBackgroundFields =
+		formData.has(srcField) ||
+		formData.has(`${srcField}File`) ||
+		formData.has(`${prefix}Fit`) ||
+		formData.has(`${prefix}Position`) ||
+		formData.has(`${prefix}Overlay`) ||
+		formData.has(`${prefix}Contrast`);
+
+	if (!hasBackgroundFields) return current ?? null;
+
+	const image = await resolveImageField(formData, srcField, `${prefix}Alt`, `${prefix}Caption`);
+	if (!image) return null;
+
+	return {
+		image,
+		fit: parseBackgroundFit(formData.get(`${prefix}Fit`), current?.fit ?? "cover"),
+		position: parseBackgroundPosition(formData.get(`${prefix}Position`), current?.position ?? "center"),
+		overlay: parseBackgroundOverlay(formData.get(`${prefix}Overlay`), current?.overlay ?? "medium"),
+		contrast: parseBackgroundContrast(formData.get(`${prefix}Contrast`), current?.contrast ?? "light"),
+	};
+}
+
 function readLinks(formData: FormData, prefix: string, count: number) {
 	return Array.from({ length: count }, (_, index) => ({
 		label: optionalString(formData.get(`${prefix}${index + 1}Label`)),
@@ -118,11 +212,11 @@ function revalidateEditorialPaths() {
 	}
 }
 
-function buildHomePageDoc(
+async function buildHomePageDoc(
 	formData: FormData,
 	actor: string,
 	current: EditorialHomePage | null,
-): EditorialHomePage {
+): Promise<EditorialHomePage> {
 	const now = new Date().toISOString();
 	const featureTitle = formData.has("heroFeatureTitle")
 		? optionalString(formData.get("heroFeatureTitle"))
@@ -155,12 +249,18 @@ function buildHomePageDoc(
 			featureBody,
 			featureQuote: optionalString(formData.get("heroFeatureQuote")),
 			featureImage: current?.hero?.featureImage ?? null,
+			background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 		},
 		manifesto: {
 			title: optionalString(formData.get("manifestoTitle")),
 			body: optionalString(formData.get("manifestoBody")),
 			linkLabel: optionalString(formData.get("manifestoLinkLabel")),
 			linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Home · manifesto"),
+			background: await parseBackgroundByPrefix(
+				formData,
+				"manifestoBackground",
+				current?.manifesto?.background,
+			),
 		},
 		featuredBook: {
 			productSlug: optionalString(formData.get("featuredProductSlug")),
@@ -184,6 +284,7 @@ function buildHomePageDoc(
 			body: optionalString(formData.get("programBody")),
 			ctaLabel: optionalString(formData.get("programCtaLabel")),
 			ctaHref: parseEditorialHrefChoice(formData, "programCtaHref", "Home · programação"),
+			background: await parseBackgroundByPrefix(formData, "programBackground", current?.program?.background),
 		},
 		createdAt: current?.createdAt ?? now,
 		createdBy: current?.createdBy ?? actor,
@@ -192,11 +293,11 @@ function buildHomePageDoc(
 	};
 }
 
-function buildEventsPageDoc(
+async function buildEventsPageDoc(
 	formData: FormData,
 	actor: string,
 	current: EditorialEventsPage | null,
-): EditorialEventsPage {
+): Promise<EditorialEventsPage> {
 	const now = new Date().toISOString();
 
 	return {
@@ -218,6 +319,7 @@ function buildEventsPageDoc(
 				"heroSecondaryCtaHref",
 				"Eventos · CTA secundário",
 			),
+			background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 		},
 		curatorialNote: {
 			title: optionalString(formData.get("curatorialTitle")),
@@ -257,11 +359,11 @@ function buildEventsPageDoc(
 	};
 }
 
-function buildProjectsPageDoc(
+async function buildProjectsPageDoc(
 	formData: FormData,
 	actor: string,
 	current: EditorialProjectsPage | null,
-): EditorialProjectsPage {
+): Promise<EditorialProjectsPage> {
 	const now = new Date().toISOString();
 
 	return {
@@ -276,6 +378,7 @@ function buildProjectsPageDoc(
 			title: optionalString(formData.get("heroTitle")),
 			body: optionalString(formData.get("heroBody")),
 			imageLabel: optionalString(formData.get("heroImageLabel")),
+			background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 		},
 		curatorialNote: {
 			title: optionalString(formData.get("curatorialTitle")),
@@ -455,13 +558,17 @@ function buildSiteGlobalDoc(
 
 async function savePageCopy<T extends PageCopyType>(
 	type: T,
-	buildDoc: (formData: FormData, actor: string, current: PageCopyRecordMap[T] | null) => PageCopyRecordMap[T],
+	buildDoc: (
+		formData: FormData,
+		actor: string,
+		current: PageCopyRecordMap[T] | null,
+	) => PageCopyRecordMap[T] | Promise<PageCopyRecordMap[T]>,
 	formData: FormData,
 ): Promise<PageCopyActionState> {
 	const session = await requireEditorialManager();
 	const actor = session.email || session.sub;
 	const current = (await getEditorialRecordForAdmin(type)) as PageCopyRecordMap[T] | null;
-	const doc = buildDoc(formData, actor, current);
+	const doc = await buildDoc(formData, actor, current);
 	await upsertPageRecord(type, doc);
 	revalidateEditorialPaths();
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
+import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
@@ -24,6 +25,13 @@ export default async function SarauSafadoPage() {
 	const [sarau, events] = await Promise.all([getEditorialSarauPage(), listEditorialEvents()]);
 	const agenda = events.filter((event) => event.published).slice(0, 3);
 	const signals = sarau.signals?.filter(Boolean) ?? [];
+	const heroBackgroundStyle = getEditorialBackgroundStyle(
+		sarau.hero?.background,
+		sarau.hero?.image ?? null,
+		"strong",
+	);
+	const useDarkHeroText =
+		Boolean(heroBackgroundStyle) && getEditorialBackgroundContrast(sarau.hero?.background) === "dark";
 	const notes = sarau.programNotes?.length
 		? sarau.programNotes
 		: [
@@ -58,40 +66,64 @@ export default async function SarauSafadoPage() {
 			<div className="flex flex-1 flex-col">
 				<Reveal>
 					<section
-						className="relative overflow-hidden bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
-						style={
-							sarau.hero?.image?.src
-								? {
-										backgroundImage: `linear-gradient(120deg, rgba(11,11,11,0.9) 0%, rgba(11,11,11,0.82) 46%, rgba(11,11,11,0.72) 100%), url(${sarau.hero.image.src})`,
-										backgroundPosition: "center",
-										backgroundRepeat: "no-repeat",
-										backgroundSize: "cover",
-									}
-								: undefined
-						}
+						className={[
+							"relative overflow-hidden",
+							useDarkHeroText
+								? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
+								: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]",
+						].join(" ")}
+						style={heroBackgroundStyle}
 					>
 						<EditorialShell className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
 							<div className="max-w-3xl space-y-4">
-								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
+								<EditorialEyebrow
+									className={
+										useDarkHeroText
+											? "text-[color:var(--editorial-accent)] sm:text-sm"
+											: "text-[color:rgba(247,244,239,0.72)] sm:text-sm"
+									}
+								>
 									{sarau.hero?.eyebrow || t("nav.sarau")}
 								</EditorialEyebrow>
-								<h1 className="display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] text-[color:var(--editorial-paper)] sm:text-6xl">
+								<h1
+									className={[
+										"display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
+										useDarkHeroText
+											? "text-[color:var(--editorial-ink)]"
+											: "text-[color:var(--editorial-paper)]",
+									].join(" ")}
+								>
 									{sarau.hero?.title || t("sarau.heroTitle")}
 								</h1>
 								<EditorialRichText
 									source={sarau.hero?.body || t("sarau.heroBody")}
-									className="max-w-2xl text-base leading-8 text-[color:rgba(247,244,239,0.82)] sm:text-lg"
+									className={[
+										"max-w-2xl text-base leading-8 sm:text-lg",
+										useDarkHeroText
+											? "text-[color:var(--editorial-ink)]"
+											: "text-[color:rgba(247,244,239,0.82)]",
+									].join(" ")}
 								/>
 								<div className="flex flex-wrap gap-3 pt-2">
 									<YnsLink
 										href={sarau.hero?.primaryCtaHref || "/events"}
-										className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
+										className={[
+											"inline-flex min-h-11 items-center justify-center px-5 text-xs font-semibold uppercase tracking-[0.22em] transition-colors duration-300",
+											useDarkHeroText
+												? "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
+												: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
+										].join(" ")}
 									>
 										{sarau.hero?.primaryCtaLabel || "Próxima edição"}
 									</YnsLink>
 									<YnsLink
 										href={sarau.hero?.secondaryCtaHref || "/events"}
-										className="inline-flex min-h-11 items-center justify-center border border-white/20 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-white/8"
+										className={[
+											"inline-flex min-h-11 items-center justify-center border px-5 text-xs font-semibold uppercase tracking-[0.22em] transition-colors duration-300",
+											useDarkHeroText
+												? "border-[color:rgba(11,11,11,0.24)] text-[color:var(--editorial-ink)] hover:bg-[color:rgba(11,11,11,0.06)]"
+												: "border-white/20 text-[color:var(--editorial-paper)] hover:bg-white/8",
+										].join(" ")}
 									>
 										{sarau.hero?.secondaryCtaLabel || "Memória do Sarau"}
 									</YnsLink>
@@ -101,7 +133,12 @@ export default async function SarauSafadoPage() {
 										{signals.map((signal) => (
 											<span
 												key={signal}
-												className="border border-[color:rgba(247,244,239,0.22)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
+												className={[
+													"border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]",
+													useDarkHeroText
+														? "border-[color:rgba(11,11,11,0.2)] text-[color:var(--editorial-muted)]"
+														: "border-[color:rgba(247,244,239,0.22)] text-[color:rgba(247,244,239,0.72)]",
+												].join(" ")}
 											>
 												{signal}
 											</span>

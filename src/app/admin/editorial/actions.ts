@@ -6,6 +6,11 @@ import { requireCapability } from "@/lib/api-auth";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 import type {
 	EditorialAboutPage,
+	EditorialBackground,
+	EditorialBackgroundContrast,
+	EditorialBackgroundFit,
+	EditorialBackgroundOverlay,
+	EditorialBackgroundPosition,
 	EditorialContactPage,
 	EditorialEvent,
 	EditorialHomePage,
@@ -48,6 +53,42 @@ function requiredString(formData: FormData, key: string) {
 function parseBoolean(value: FormDataEntryValue | null, defaultValue = false) {
 	if (typeof value !== "string") return defaultValue;
 	return value === "true" || value === "on" || value === "1";
+}
+
+function parseBackgroundFit(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundFit = "cover",
+): EditorialBackgroundFit {
+	return value === "cover" || value === "contain" ? value : fallback;
+}
+
+function parseBackgroundPosition(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundPosition = "center",
+): EditorialBackgroundPosition {
+	if (value === "center" || value === "top" || value === "bottom" || value === "left" || value === "right") {
+		return value;
+	}
+
+	return fallback;
+}
+
+function parseBackgroundOverlay(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundOverlay = "medium",
+): EditorialBackgroundOverlay {
+	if (value === "none" || value === "soft" || value === "medium" || value === "strong") {
+		return value;
+	}
+
+	return fallback;
+}
+
+function parseBackgroundContrast(
+	value: FormDataEntryValue | null,
+	fallback: EditorialBackgroundContrast = "light",
+): EditorialBackgroundContrast {
+	return value === "light" || value === "dark" ? value : fallback;
 }
 
 function parseOrder(value: FormDataEntryValue | null, fallback = 1) {
@@ -117,6 +158,35 @@ async function parseImageByPrefix(formData: FormData, prefix: string) {
 		altField: `${prefix}Alt`,
 		captionField: `${prefix}Caption`,
 	});
+}
+
+async function parseBackgroundByPrefix(
+	formData: FormData,
+	prefix: string,
+	current?: EditorialBackground | null,
+	resolvedImage?: Awaited<ReturnType<typeof parseImageByPrefix>> | null,
+): Promise<EditorialBackground | null> {
+	const srcField = `${prefix}Src`;
+	const hasBackgroundFields =
+		formData.has(srcField) ||
+		formData.has(`${srcField}File`) ||
+		formData.has(`${prefix}Fit`) ||
+		formData.has(`${prefix}Position`) ||
+		formData.has(`${prefix}Overlay`) ||
+		formData.has(`${prefix}Contrast`);
+
+	if (!hasBackgroundFields) return current ?? null;
+
+	const image = resolvedImage ?? (await parseImageByPrefix(formData, prefix));
+	if (!image) return null;
+
+	return {
+		image,
+		fit: parseBackgroundFit(formData.get(`${prefix}Fit`), current?.fit ?? "cover"),
+		position: parseBackgroundPosition(formData.get(`${prefix}Position`), current?.position ?? "center"),
+		overlay: parseBackgroundOverlay(formData.get(`${prefix}Overlay`), current?.overlay ?? "medium"),
+		contrast: parseBackgroundContrast(formData.get(`${prefix}Contrast`), current?.contrast ?? "light"),
+	};
 }
 
 function parseStringList(formData: FormData, key: string) {
@@ -488,6 +558,14 @@ export async function updateEditorialSarauAction(formData: FormData) {
 		Boolean(note.title?.trim() && note.body?.trim()),
 	);
 
+	const heroImage = await parseImageByPrefix(formData, "heroImage");
+	const heroBackground = await parseBackgroundByPrefix(
+		formData,
+		"heroImage",
+		current?.hero?.background,
+		heroImage,
+	);
+
 	await db.collection<EditorialSarauPage>(COLLECTION).updateOne(
 		{ type: "page_sarau", slug: "sarau-safado" },
 		{
@@ -511,7 +589,8 @@ export async function updateEditorialSarauAction(formData: FormData) {
 						"heroSecondaryCtaHref",
 						"Hero · CTA secundário",
 					),
-					image: await parseImageByPrefix(formData, "heroImage"),
+					image: heroImage,
+					background: heroBackground,
 				},
 				why: {
 					title: optionalString(formData.get("whyTitle")),
@@ -704,6 +783,7 @@ export async function updateEditorialHomeAction(formData: FormData) {
 	const db = await getDb();
 	const now = new Date().toISOString();
 	const title = requiredString(formData, "title");
+	const current = await getEditorialRecordForAdmin("page_home");
 
 	const communityLinks = [1, 2, 3]
 		.map((index) => ({
@@ -742,12 +822,18 @@ export async function updateEditorialHomeAction(formData: FormData) {
 					featureBody: optionalString(formData.get("heroFeatureBody")),
 					featureQuote: optionalString(formData.get("heroFeatureQuote")),
 					featureImage: await parseImageByPrefix(formData, "heroFeatureImage"),
+					background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 				},
 				manifesto: {
 					title: optionalString(formData.get("manifestoTitle")),
 					body: optionalString(formData.get("manifestoBody")),
 					linkLabel: optionalString(formData.get("manifestoLinkLabel")),
 					linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Manifesto · Link"),
+					background: await parseBackgroundByPrefix(
+						formData,
+						"manifestoBackground",
+						current?.manifesto?.background,
+					),
 				},
 				author: {
 					eyebrow: optionalString(formData.get("authorEyebrow")),

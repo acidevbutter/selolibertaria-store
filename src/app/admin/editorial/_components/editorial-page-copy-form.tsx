@@ -5,10 +5,12 @@ import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/edit
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { PageCopyActionState } from "@/app/admin/editorial/page-content-actions";
+import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
+import type { EditorialBackground } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 
-type FieldType = "text" | "textarea";
+type FieldType = "text" | "textarea" | "background";
 
 type FieldConfig = {
 	name: string;
@@ -18,6 +20,7 @@ type FieldConfig = {
 	type?: FieldType;
 	rows?: number;
 	defaultValue?: string | null;
+	background?: EditorialBackground | null;
 };
 
 type SectionConfig = {
@@ -68,7 +71,92 @@ function Textarea({
 	return <EditorialTextEditor name={name} defaultValue={defaultValue} rows={rows} />;
 }
 
+function BackgroundField({ field }: { field: FieldConfig }) {
+	const background = field.background ?? null;
+	const image = background?.image ?? null;
+
+	return (
+		<div className="grid gap-4 rounded-none border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 md:col-span-2">
+			<div className="space-y-1">
+				<p className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</p>
+				<p className="text-xs leading-5 text-[color:var(--editorial-muted)]">
+					Use uma imagem por bloco, com opções fechadas de capa, posição, overlay e contraste.
+				</p>
+			</div>
+			<AdminImageUrlList
+				name={`${field.name}Src`}
+				initialValues={image?.src ? [image.src] : []}
+				uploadMode="on-submit"
+				maxItems={1}
+			/>
+			<div className="grid gap-4 md:grid-cols-2">
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Texto alternativo</span>
+					<Input name={`${field.name}Alt`} defaultValue={image?.alt ?? ""} />
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Legenda</span>
+					<Input name={`${field.name}Caption`} defaultValue={image?.caption ?? ""} />
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Enquadramento</span>
+					<select
+						name={`${field.name}Fit`}
+						defaultValue={background?.fit ?? "cover"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="cover">Cover</option>
+						<option value="contain">Contain</option>
+					</select>
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Posição</span>
+					<select
+						name={`${field.name}Position`}
+						defaultValue={background?.position ?? "center"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="center">Centro</option>
+						<option value="top">Topo</option>
+						<option value="bottom">Base</option>
+						<option value="left">Esquerda</option>
+						<option value="right">Direita</option>
+					</select>
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Overlay</span>
+					<select
+						name={`${field.name}Overlay`}
+						defaultValue={background?.overlay ?? "medium"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="none">Sem overlay</option>
+						<option value="soft">Suave</option>
+						<option value="medium">Médio</option>
+						<option value="strong">Forte</option>
+					</select>
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Contraste</span>
+					<select
+						name={`${field.name}Contrast`}
+						defaultValue={background?.contrast ?? "light"}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="light">Texto claro</option>
+						<option value="dark">Texto escuro</option>
+					</select>
+				</label>
+			</div>
+		</div>
+	);
+}
+
 function Field({ field }: { field: FieldConfig }) {
+	if (field.type === "background") {
+		return <BackgroundField field={field} />;
+	}
+
 	if (field.name.endsWith("Href")) {
 		return <EditorialHrefField label={field.label} name={field.name} defaultValue={field.defaultValue} />;
 	}
@@ -190,7 +278,12 @@ export function EditorialPageCopyForm({
 						</summary>
 						<CardContent className="grid gap-4 border-t border-[color:var(--editorial-border)] px-6 py-6 md:grid-cols-2">
 							{section.fields.map((field) => (
-								<div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : undefined}>
+								<div
+									key={field.name}
+									className={
+										field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
+									}
+								>
 									<Field field={{ ...field, route: field.route ?? section.route }} />
 								</div>
 							))}

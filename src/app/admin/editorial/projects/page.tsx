@@ -96,6 +96,12 @@ export default async function AdminEditorialProjectsPage() {
 									label: "Legenda da imagem do hero",
 									defaultValue: page.hero?.imageLabel,
 								},
+								{
+									name: "heroBackground",
+									label: "Fundo do hero",
+									type: "background",
+									background: page.hero?.background,
+								},
 							],
 						},
 						{
