@@ -226,3 +226,8 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 - Controles editoriais de imagem devem mostrar botão `Selecionar imagem` ou `Substituir imagem`, prévia quadrada estável, modal de revisão e ações explícitas de `Confirmar troca` e `Descartar troca`.
 - Campos públicos de página, evento e projeto tratam imagem como item único por campo; múltiplas imagens continuam reservadas para superfícies de produto quando necessário.
+
+## Atualização 2026-07-18 — regressão editorial
+
+- Testes de interface devem focar os sinais visíveis do contrato: botão de selecionar/substituir, prévia local, ausência de envio imediato e ação de descartar troca.
+- A interface não deve depender de upload automático para comunicar persistência; a publicação continua acontecendo no botão de salvar do formulário inteiro.
