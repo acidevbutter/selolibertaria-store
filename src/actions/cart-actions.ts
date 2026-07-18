@@ -228,6 +228,7 @@ export async function getCartAction(): Promise<Cart | null> {
 export async function addToCartAction(variantId: string, quantity = 1): Promise<Cart | null> {
 	const authContext = await getSelolibertariaAuthContext();
 	if (authContext.kind === "blocked") return null;
+	const { product, variant } = await commerce.variant.resolve({ id: variantId });
 	if (authContext.kind === "buyer") {
 		const userId = authContext.userId;
 		const db = await getDb();
@@ -235,10 +236,12 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
 			.collection("users")
 			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
 		const items: MinimalItem[] = [...(user?.cart?.items || [])];
-		let entry = items.find((item) => item.variantId === variantId);
+		let entry = items.find((item) => item.variantId === variant.id);
 		if (!entry) {
-			entry = { productId: variantId, variantId, quantity: 0 };
+			entry = { productId: product.id, variantId: variant.id, quantity: 0 };
 			items.push(entry);
+		} else {
+			entry.productId = product.id;
 		}
 		entry.quantity += quantity;
 		if (entry.quantity <= 0) items.splice(items.indexOf(entry), 1);
@@ -264,7 +267,6 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
 	}
 
 	const guestSnapshot = await getGuestSnapshotState();
-	const { product, variant } = await commerce.variant.resolve({ id: variantId });
 	const items = upsertMinimalItem(
 		guestSnapshot.items,
 		{ productId: product.id, variantId: variant.id },
