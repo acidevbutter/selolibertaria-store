@@ -33,6 +33,25 @@ export interface MercadoPagoPaymentResponse {
 	date_of_expiration?: string;
 }
 
+export interface MercadoPagoCustomerCard {
+	id?: string | number;
+	token?: string;
+	first_six_digits?: string;
+	last_four_digits?: string;
+	expiration_month?: number;
+	expiration_year?: number;
+	payment_method?: { id?: string; name?: string };
+	issuer?: { id?: string | number; name?: string };
+}
+
+export interface MercadoPagoSavedCard {
+	id: string;
+	brand: string | null;
+	lastFourDigits: string | null;
+	expirationMonth: number | null;
+	expirationYear: number | null;
+}
+
 export interface MercadoPagoPixPaymentData {
 	paymentId: string;
 	status: string;
@@ -55,12 +74,93 @@ export interface MercadoPagoCreatePaymentInput {
 			number: string;
 		};
 	};
+	customer_id?: string;
 	token?: string;
 	installments?: number;
 	issuer_id?: string;
 	external_reference: string;
 	notification_url?: string;
 	metadata?: Record<string, string | number | boolean | null>;
+}
+
+function mercadoPagoError(payload: { message?: string; error?: string } | null, fallback: string) {
+	return payload?.message || payload?.error || fallback;
+}
+
+async function mercadoPagoRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+	if (!env.MERCADO_PAGO_ACCESS_TOKEN) throw new Error("Mercado Pago não configurado");
+	const response = await fetch(`${MERCADO_PAGO_API_BASE_URL}${path}`, {
+		...init,
+		headers: {
+			Authorization: `Bearer ${env.MERCADO_PAGO_ACCESS_TOKEN}`,
+			...(init.body ? { "Content-Type": "application/json" } : {}),
+			...init.headers,
+		},
+		cache: "no-store",
+	});
+	const payload = (await response.json().catch(() => null)) as
+		| (T & { message?: string; error?: string })
+		| null;
+	if (!response.ok) throw new Error(mercadoPagoError(payload, "Falha na comunicação com o Mercado Pago"));
+	return payload as T;
+}
+
+export function mapMercadoPagoSavedCard(card: MercadoPagoCustomerCard): MercadoPagoSavedCard | null {
+	if (!card.id) return null;
+	return {
+		id: String(card.id),
+		brand: card.payment_method?.name ?? card.payment_method?.id ?? null,
+		lastFourDigits: card.last_four_digits ?? null,
+		expirationMonth: Number.isInteger(card.expiration_month) ? card.expiration_month! : null,
+		expirationYear: Number.isInteger(card.expiration_year) ? card.expiration_year! : null,
+	};
+}
+
+export async function createMercadoPagoCustomer(input: {
+	email: string;
+	firstName?: string;
+	lastName?: string;
+	identification?: { type: string; number: string };
+}) {
+	return mercadoPagoRequest<{ id?: string | number }>("/v1/customers", {
+		method: "POST",
+		body: JSON.stringify({
+			email: input.email,
+			first_name: input.firstName,
+			last_name: input.lastName,
+			identification: input.identification,
+		}),
+	});
+}
+
+export async function listMercadoPagoCustomerCards(customerId: string) {
+	const cards = await mercadoPagoRequest<MercadoPagoCustomerCard[] | { cards?: MercadoPagoCustomerCard[] }>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards`,
+	);
+	return Array.isArray(cards) ? cards : (cards.cards ?? []);
+}
+
+export async function retrieveMercadoPagoCustomerCard(customerId: string, cardId: string) {
+	return mercadoPagoRequest<MercadoPagoCustomerCard>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards/${encodeURIComponent(cardId)}`,
+	);
+}
+
+export async function addMercadoPagoCustomerCard(customerId: string, token: string) {
+	return mercadoPagoRequest<MercadoPagoCustomerCard>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards`,
+		{
+			method: "POST",
+			body: JSON.stringify({ token }),
+		},
+	);
+}
+
+export async function removeMercadoPagoCustomerCard(customerId: string, cardId: string) {
+	await mercadoPagoRequest<unknown>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards/${encodeURIComponent(cardId)}`,
+		{ method: "DELETE" },
+	);
 }
 
 export type MercadoPagoPaymentValidation = { ok: true } | { ok: false; error: string };
@@ -136,7 +236,6 @@ export async function createMercadoPagoPayment(
 	idempotencyKey: string,
 ): Promise<MercadoPagoPaymentResponse> {
 	if (!env.MERCADO_PAGO_ACCESS_TOKEN) throw new Error("Mercado Pago não configurado");
-
 	const response = await fetch(`${MERCADO_PAGO_API_BASE_URL}/v1/payments`, {
 		method: "POST",
 		headers: {
@@ -153,7 +252,7 @@ export async function createMercadoPagoPayment(
 		| null;
 
 	if (!response.ok) {
-		const message = payload?.message || payload?.error || "Falha ao criar pagamento no Mercado Pago";
+		const message = mercadoPagoError(payload, "Falha ao criar pagamento no Mercado Pago");
 		throw new Error(message);
 	}
 
