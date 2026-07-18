@@ -155,7 +155,7 @@ export function EditorialHomeForm({
 								</Field>
 							</div>
 						</div>
-						<Field label="Imagem" name="heroFeatureImageSrc">
+						<Field label="Imagem de apoio do hero" name="heroFeatureImageSrc">
 							<AdminImageUrlList
 								name="heroFeatureImageSrc"
 								initialValues={page.hero?.featureImage?.src ? [page.hero.featureImage.src] : []}
@@ -164,14 +164,14 @@ export function EditorialHomeForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Alt da imagem" name="heroFeatureImageAlt">
+							<Field label="Texto alternativo da imagem de apoio" name="heroFeatureImageAlt">
 								<Input
 									id="heroFeatureImageAlt"
 									name="heroFeatureImageAlt"
 									defaultValue={page.hero?.featureImage?.alt ?? ""}
 								/>
 							</Field>
-							<Field label="Legenda da imagem" name="heroFeatureImageCaption">
+							<Field label="Legenda pública da imagem" name="heroFeatureImageCaption">
 								<Input
 									id="heroFeatureImageCaption"
 									name="heroFeatureImageCaption"
@@ -259,7 +259,7 @@ export function EditorialHomeForm({
 								/>
 							</Field>
 						</div>
-						<Field label="Imagem" name="authorImageSrc">
+						<Field label="Imagem do bloco de autoria" name="authorImageSrc">
 							<AdminImageUrlList
 								name="authorImageSrc"
 								initialValues={page.author?.image?.src ? [page.author.image.src] : []}
@@ -275,7 +275,7 @@ export function EditorialHomeForm({
 									defaultValue={page.author?.image?.alt ?? ""}
 								/>
 							</Field>
-							<Field label="Legenda da imagem" name="authorImageCaption">
+							<Field label="Legenda pública da imagem" name="authorImageCaption">
 								<Input
 									id="authorImageCaption"
 									name="authorImageCaption"

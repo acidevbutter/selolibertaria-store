@@ -146,9 +146,9 @@ export function EditorialProjectForm({
 
 					<section className="space-y-4 rounded-lg border p-5">
 						<div className="space-y-1">
-							<h2 className="text-base font-semibold">Imagem principal</h2>
+							<h2 className="text-base font-semibold">Imagem do projeto</h2>
 						</div>
-						<Field label="Imagem" name="imageSrc">
+						<Field label="Imagem principal do projeto" name="imageSrc">
 							<AdminImageUrlList
 								name="imageSrc"
 								initialValues={project?.image?.src ? [project.image.src] : []}
@@ -165,7 +165,7 @@ export function EditorialProjectForm({
 								<Input id="imageAlt" name="imageAlt" defaultValue={project?.image?.alt ?? ""} />
 							</Field>
 							<Field
-								label="Legenda da imagem"
+								label="Legenda pública da imagem"
 								name="imageCaption"
 								hint="Use uma frase curta para contextualizar a imagem do projeto."
 							>

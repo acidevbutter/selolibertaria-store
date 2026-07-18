@@ -108,7 +108,7 @@ export function EditorialSarauForm({
 								/>
 							</Field>
 						</div>
-						<Field label="Imagem" name="heroImageSrc">
+						<Field label="Imagem de fundo do hero" name="heroImageSrc">
 							<AdminImageUrlList
 								name="heroImageSrc"
 								initialValues={page.hero?.image?.src ? [page.hero.image.src] : []}
@@ -117,10 +117,10 @@ export function EditorialSarauForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Alt da imagem" name="heroImageAlt">
+							<Field label="Texto alternativo da imagem de fundo" name="heroImageAlt">
 								<Input id="heroImageAlt" name="heroImageAlt" defaultValue={page.hero?.image?.alt ?? ""} />
 							</Field>
-							<Field label="Legenda da imagem" name="heroImageCaption">
+							<Field label="Legenda pública da imagem" name="heroImageCaption">
 								<Input
 									id="heroImageCaption"
 									name="heroImageCaption"

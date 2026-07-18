@@ -67,6 +67,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Chamada principal",
 						description: "Bloco de abertura da Home.",
 						route: "/",
+						tools: ["Texto", "CTA", "Fundo"],
 						fields: [
 							{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
 							{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
@@ -114,6 +115,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Manifesto",
 						description: "Bloco curto entre hero e catálogo.",
 						route: "/",
+						tools: ["Texto", "CTA"],
 						fields: [
 							{ name: "manifestoTitle", label: "Título", defaultValue: page.manifesto?.title },
 							{
@@ -131,6 +133,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Livro em destaque",
 						description: "Texto estrutural do bloco principal de livro.",
 						route: "/",
+						tools: ["Texto", "CTA"],
 						fields: [
 							{
 								name: "featuredProductSlug",
@@ -162,6 +165,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Catálogo",
 						description: "Copy estrutural do bloco curto de catálogo.",
 						route: "/",
+						tools: ["Texto", "Fallback"],
 						fields: [
 							{ name: "catalogTitle", label: "Título", defaultValue: page.catalog?.title },
 							{
@@ -201,6 +205,7 @@ export default async function AdminEditorialHomePage() {
 						title: "Programação",
 						description: "Bloco de continuidade para Sarau Safado.",
 						route: "/",
+						tools: ["Texto", "CTA"],
 						fields: [
 							{ name: "programEyebrow", label: "Linha curta", defaultValue: page.program?.eyebrow },
 							{ name: "programTitle", label: "Título", defaultValue: page.program?.title },

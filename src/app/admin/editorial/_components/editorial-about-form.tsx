@@ -97,7 +97,7 @@ export function EditorialAboutForm({
 								/>
 							</Field>
 						</div>
-						<Field label="Imagem" name="sectionImageSrc">
+						<Field label="Imagem do bloco principal" name="sectionImageSrc">
 							<AdminImageUrlList
 								name="sectionImageSrc"
 								initialValues={page.section?.image?.src ? [page.section.image.src] : []}
@@ -106,14 +106,14 @@ export function EditorialAboutForm({
 							/>
 						</Field>
 						<div className="grid gap-4 md:grid-cols-2">
-							<Field label="Alt da imagem" name="sectionImageAlt">
+							<Field label="Texto alternativo da imagem" name="sectionImageAlt">
 								<Input
 									id="sectionImageAlt"
 									name="sectionImageAlt"
 									defaultValue={page.section?.image?.alt ?? ""}
 								/>
 							</Field>
-							<Field label="Legenda da imagem" name="sectionImageCaption">
+							<Field label="Legenda pública da imagem" name="sectionImageCaption">
 								<Input
 									id="sectionImageCaption"
 									name="sectionImageCaption"

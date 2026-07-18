@@ -61,6 +61,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Sinopse e trecho",
 						description: "Rótulos fixos da leitura principal.",
 						route: "/product/[slug]",
+						tools: ["Texto", "Fallback"],
 						defaultOpen: true,
 						fields: [
 							{ name: "synopsisLabel", label: "Rótulo da sinopse", defaultValue: page.synopsis?.label },
@@ -78,6 +79,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Ficha técnica",
 						description: "Cabeçalho do bloco factual do livro.",
 						route: "/product/[slug]",
+						tools: ["Texto"],
 						fields: [
 							{ name: "detailsTitle", label: "Título da ficha técnica", defaultValue: page.details?.title },
 						],
@@ -86,6 +88,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Relacionados",
 						description: "Bloco de continuidade entre livros.",
 						route: "/product/[slug]",
+						tools: ["Texto", "CTA", "Fallback"],
 						fields: [
 							{
 								name: "relatedTitle",
@@ -115,6 +118,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Continuidade editorial",
 						description: "Faixa final com saídas para outras rotas públicas.",
 						route: "/product/[slug]",
+						tools: ["Texto", "CTAs"],
 						fields: [
 							{
 								name: "continuityTitle",
@@ -167,6 +171,7 @@ export default async function AdminEditorialProductPage() {
 						title: "Fallback de livro não encontrado",
 						description: "Mensagem editorial de segurança quando o slug não existir.",
 						route: "/product/[slug]",
+						tools: ["Texto", "CTA", "Fallback"],
 						fields: [
 							{ name: "notFoundTitle", label: "Título do fallback", defaultValue: page.notFound?.title },
 							{

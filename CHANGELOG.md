@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- Reorganizado o hub do admin editorial em páginas estruturais, coleções vivas e blocos globais, com badges de texto, imagem, fundo, CTAs, links, fallback e publicação.
+- Ajustada a nomenclatura de imagens editoriais em formulários de Home, Sobre, Sarau Safado, Eventos e Projetos para indicar onde cada mídia aparece no site.
+
 ### Added
 
 - Cobertura de regressão para o fluxo editorial de texto e imagem, validando prévia/descartar no admin, preservação de imagem existente e persistência de nova imagem ao salvar.
