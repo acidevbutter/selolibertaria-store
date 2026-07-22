@@ -153,6 +153,12 @@ export async function listMercadoPagoCustomerCards(customerId: string) {
 	return Array.isArray(cards) ? cards : (cards.cards ?? []);
 }
 
+export async function retrieveMercadoPagoCustomerCard(customerId: string, cardId: string) {
+	return mercadoPagoRequest<MercadoPagoCustomerCard>(
+		`/v1/customers/${encodeURIComponent(customerId)}/cards/${encodeURIComponent(cardId)}`,
+	);
+}
+
 export async function addMercadoPagoCustomerCard(customerId: string, token: string) {
 	return mercadoPagoRequest<MercadoPagoCustomerCard>(
 		`/v1/customers/${encodeURIComponent(customerId)}/cards`,
