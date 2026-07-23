@@ -375,6 +375,7 @@
 
 ### Changed
 
+- documentada a matriz de migração da Payments API legada para a Orders API em DEV-152, incluindo fluxos, persistência, contratos, riscos e ordem de implementação
 - normalized mixed PT-BR/English user-facing copy to English across storefront, admin, checkout, favorites, institutional pages, coupon flows, webhook/email admin views, and transactional email templates
 - changed the i18n fallback locale to `en-US` so English remains the default when no explicit locale is selected
 - completed the sign-up flow localization by translating the shared address fields and postal-code autofill helper text to English
