@@ -9,6 +9,7 @@
 - Checkout Mercado Pago configurável para Pix e cartão via Payment Brick, com criação server-side de pagamento, idempotência por tentativa, webhook assinado e reconciliação server-side antes de atualizar o pedido local.
 - Catálogo canônico MongoDB em `catalogProducts`, com variantes, preços em menor unidade BRL, estoque, publicação, categorias, `productType`/`format`, seed local e índices de leitura.
 - Migration idempotente de export para MongoDB com `--dry-run` padrão, relatório de inconsistências, snapshot e rollback documentado em `docs/catalog-migration.md`.
+- Checkout e reconciliação agora criam e consultam orders exclusivamente pelo contrato normalizado da Orders API; o legado incompatível de cartões salvos permanece isolado para reconstrução.
 
 ### Fixed
 
