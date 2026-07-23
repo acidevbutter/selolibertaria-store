@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { getDb } from "@/lib/mongodb";
 import { listOrderAuditEntries, type OrderAuditEntry } from "@/lib/order-audit";
-import { matchesOrderIdentifier } from "@/lib/order-identity";
+import { matchesOrderIdentifier, type OrderRelatedIds } from "@/lib/order-identity";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
@@ -178,7 +178,11 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		{ $unwind: "$purchases" },
 		{
 			$match: {
-				$or: [{ "purchases.id": purchaseId }, { "purchases.relatedIds.mercadoPagoPaymentId": purchaseId }],
+				$or: [
+					{ "purchases.id": purchaseId },
+					{ "purchases.relatedIds.mercadoPagoPaymentId": purchaseId },
+					{ "purchases.relatedIds.mercadoPagoOrderId": purchaseId },
+				],
 			},
 		},
 		{ $limit: 1 },
@@ -195,7 +199,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		createdAt: string | Date;
 		items?: Array<{ name?: string | null; quantity: number; unitAmount?: number | null }>;
 		fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
-		relatedIds?: { mercadoPagoPaymentId?: string };
+		relatedIds?: OrderRelatedIds;
 		deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
 		deliveryAddress?: {
 			line1?: string | null;
@@ -291,10 +295,12 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 						</div>
 						<div className="space-y-1">
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								ID do pagamento
+								{p.relatedIds?.mercadoPagoOrderId
+									? "ID da order (Mercado Pago)"
+									: "ID do pagamento (Mercado Pago)"}
 							</div>
 							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.mercadoPagoPaymentId || "Não informado"}
+								{p.relatedIds?.mercadoPagoOrderId || p.relatedIds?.mercadoPagoPaymentId || "Não informado"}
 							</div>
 						</div>
 					</div>
