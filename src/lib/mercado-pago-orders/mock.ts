@@ -7,6 +7,7 @@ import {
 	type OrdersPaymentResult,
 	type OrdersPaymentStatus,
 	type OrdersRefundInput,
+	type OrdersSearchInput,
 	type OrdersWebhookEvent,
 } from "@/lib/mercado-pago-orders/contract";
 
@@ -134,6 +135,13 @@ export class MockOrdersApiClient implements OrdersApiClient {
 		}
 		this.setStatus(order, "refunded");
 		return cloneResult(order);
+	}
+
+	async searchOrders(input: OrdersSearchInput) {
+		return [...this.orders.values()]
+			.filter((order) => !input.externalReference || order.externalReference === input.externalReference)
+			.filter((order) => !input.status || order.status === input.status)
+			.map(cloneResult);
 	}
 
 	async reconcileWebhook(event: OrdersWebhookEvent) {
