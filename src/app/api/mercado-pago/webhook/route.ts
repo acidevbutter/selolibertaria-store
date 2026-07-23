@@ -1,23 +1,8 @@
-import type { ObjectId } from "mongodb";
 import type { NextRequest } from "next/server";
 import { recordMercadoPagoCheckout } from "@/actions/mercado-pago-order-actions";
 import { env } from "@/env.mjs";
-import {
-	mapMercadoPagoStatus,
-	retrieveMercadoPagoPayment,
-	validateMercadoPagoPaymentResponse,
-	validateMercadoPagoWebhookSignature,
-} from "@/lib/mercado-pago";
+import { validateMercadoPagoWebhookSignature } from "@/lib/mercado-pago";
 import { getDb } from "@/lib/mongodb";
-
-interface OrderDraftDoc {
-	_id: ObjectId;
-	orderId: string;
-	paymentProvider: "mercado_pago";
-	mercadoPagoPaymentId?: string | null;
-	amountTotal: number;
-	currency: string;
-}
 
 function safeParseJson(bodyText: string) {
 	try {
@@ -84,69 +69,8 @@ export async function POST(req: NextRequest) {
 	}
 
 	try {
-		const payment = await retrieveMercadoPagoPayment(paymentId);
-		const orderId =
-			typeof payment.external_reference === "string"
-				? payment.external_reference
-				: typeof payment.metadata?.orderId === "string"
-					? payment.metadata.orderId
-					: null;
-		const draft = await db.collection<OrderDraftDoc>("orderDrafts").findOne({
-			paymentProvider: "mercado_pago",
-			$or: [{ mercadoPagoPaymentId: paymentId }, ...(orderId ? [{ orderId }] : [])],
-		});
-		if (!draft) {
-			await webhooksCol.updateOne(
-				{ _id: logId },
-				{
-					$set: {
-						verified: true,
-						status: "ignored",
-						error: "Order draft not found",
-						processedAt: new Date(),
-					},
-				},
-			);
-			return new Response("ok", { status: 200 });
-		}
-		const paymentValidation = validateMercadoPagoPaymentResponse(payment, {
-			amountInCents: draft.amountTotal,
-			currency: draft.currency,
-			externalReference: draft.orderId,
-		});
-		if (!paymentValidation.ok) {
-			await webhooksCol.updateOne(
-				{ _id: logId },
-				{
-					$set: { verified: true, status: "failed", error: paymentValidation.error, processedAt: new Date() },
-				},
-			);
-			return new Response("payment mismatch", { status: 422 });
-		}
-		const status = mapMercadoPagoStatus(payment.status);
-		const updateResult = await db.collection<OrderDraftDoc>("orderDrafts").updateOne(
-			{ _id: draft._id },
-			{
-				$set: {
-					status,
-					mercadoPagoPaymentId: paymentId,
-					"mercadoPago.status": payment.status ?? null,
-					"mercadoPago.statusDetail": payment.status_detail ?? null,
-					updatedAt: new Date(),
-					confirmedAt: status === "succeeded" ? new Date() : null,
-					lastMercadoPagoEventId: body?.id ? String(body.id) : null,
-				},
-			},
-		);
-
-		if (status === "succeeded") {
-			const finalized = await recordMercadoPagoCheckout({
-				paymentId,
-				orderId: draft.orderId,
-				createSession: false,
-			});
-			if ("error" in finalized) throw new Error(finalized.error);
-		}
+		const finalized = await recordMercadoPagoCheckout({ paymentId, createSession: false });
+		if ("error" in finalized && finalized.status !== "failed") throw new Error(finalized.error);
 
 		await webhooksCol.updateOne(
 			{ _id: logId },
@@ -155,8 +79,8 @@ export async function POST(req: NextRequest) {
 					eventId: body?.id ? String(body.id) : paymentId,
 					type: body?.type ? String(body.type) : req.nextUrl.searchParams.get("type"),
 					verified: true,
-					status: updateResult.matchedCount > 0 ? "processed" : "ignored",
-					error: updateResult.matchedCount > 0 ? null : "Order draft not found",
+					status: "processed",
+					error: "error" in finalized ? finalized.error : null,
 					processedAt: new Date(),
 				},
 			},

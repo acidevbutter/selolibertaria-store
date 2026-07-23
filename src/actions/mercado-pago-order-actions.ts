@@ -7,11 +7,7 @@ import { clearCartId } from "@/lib/cart-cookies";
 import type { CheckoutSnapshotItem } from "@/lib/checkout/cart-snapshot";
 import { normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
 import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
-import {
-	mapMercadoPagoStatus,
-	retrieveMercadoPagoPayment,
-	validateMercadoPagoPaymentResponse,
-} from "@/lib/mercado-pago";
+import { retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 import { getDb } from "@/lib/mongodb";
 import { matchesOrderIdentifier } from "@/lib/order-identity";
 import { ensureOrderReceivedEmail } from "@/lib/order-received";
@@ -155,13 +151,7 @@ export async function recordMercadoPagoCheckout(input: {
 		const resolvedPaymentId = paymentIdFromInput || draftByOrder?.mercadoPagoPaymentId || null;
 		if (!resolvedPaymentId) return { error: "ID do pagamento Mercado Pago ausente" };
 
-		const payment = await retrieveMercadoPagoPayment(resolvedPaymentId);
-		const paymentOrderId =
-			typeof payment.external_reference === "string"
-				? payment.external_reference
-				: typeof payment.metadata?.orderId === "string"
-					? payment.metadata.orderId
-					: null;
+		const paymentOrderId = draftByOrder?.orderId ?? null;
 		const draft =
 			draftByOrder ||
 			(await db.collection<OrderDraftDoc>("orderDrafts").findOne({
@@ -175,27 +165,23 @@ export async function recordMercadoPagoCheckout(input: {
 			return { error: "Pedido Mercado Pago não encontrado" };
 		}
 		const orderId = draft.orderId;
-		const paymentValidation = validateMercadoPagoPaymentResponse(payment, {
-			amountInCents: draft.amountTotal,
-			currency: draft.currency,
-			externalReference: orderId,
+		const order = await retrieveCheckoutOrder({
+			providerOrderId: resolvedPaymentId,
+			expected: { amountInCents: draft.amountTotal, currency: draft.currency, externalReference: orderId },
 		});
-		if (!paymentValidation.ok) {
-			return { error: paymentValidation.error };
-		}
-		if (paymentOrderId !== orderId) {
+		if (paymentOrderId && paymentOrderId !== order.externalReference) {
 			return { error: "Pagamento não pertence ao pedido informado" };
 		}
 
-		const authoritativeStatus = mapMercadoPagoStatus(payment.status);
+		const authoritativeStatus = order.status;
 		await db.collection<OrderDraftDoc>("orderDrafts").updateOne(
 			{ orderId },
 			{
 				$set: {
 					status: authoritativeStatus,
 					mercadoPagoPaymentId: resolvedPaymentId,
-					"mercadoPago.status": payment.status ?? null,
-					"mercadoPago.statusDetail": payment.status_detail ?? null,
+					"mercadoPago.status": order.providerStatus,
+					"mercadoPago.transactionId": order.transaction.id,
 					updatedAt: new Date(),
 					confirmedAt: authoritativeStatus === "succeeded" ? new Date() : null,
 				},
@@ -213,8 +199,7 @@ export async function recordMercadoPagoCheckout(input: {
 		const browserAccess = await resolveCheckoutBrowserAccess({
 			auth,
 			draft,
-			paymentUserId:
-				draft.userId ?? (typeof payment.metadata?.userId === "string" ? payment.metadata.userId : null),
+			paymentUserId: draft.userId ?? null,
 			createSession: input.createSession,
 		});
 		if (!browserAccess.ok || !browserAccess.userId)
@@ -235,8 +220,8 @@ export async function recordMercadoPagoCheckout(input: {
 		const finalStatus = shouldPreserveAuthoritativePurchaseStatus(existingPurchase?.status)
 			? existingPurchase?.status || authoritativeStatus
 			: authoritativeStatus;
-		const amountTotal = Math.round(Number(payment.transaction_amount ?? draft.amountTotal / 100) * 100);
-		const currency = (payment.currency_id || draft.currency || "BRL").toUpperCase();
+		const amountTotal = order.amountInCents;
+		const currency = order.currency.toUpperCase();
 		const items = (draft.items || []).map((item) => ({
 			name: item.name,
 			quantity: item.quantity,
@@ -250,15 +235,15 @@ export async function recordMercadoPagoCheckout(input: {
 			deliveryAddress: draft.deliveryAddress ?? null,
 			shippingRate: draft.shippingRate ?? null,
 		});
-		const eventId = `mercado-pago:${resolvedPaymentId}:${payment.status ?? "unknown"}`;
-		const relatedIds = { mercadoPagoPaymentId: resolvedPaymentId };
+		const eventId = `mercado-pago:${resolvedPaymentId}:${order.providerStatus}`;
+		const relatedIds = { mercadoPagoOrderId: resolvedPaymentId };
 
 		const updateExisting = await userUpdateCol.updateOne(
 			{
 				_id: new ObjectId(userId),
 				purchases: {
 					$elemMatch: {
-						$or: [{ id: orderId }, { "relatedIds.mercadoPagoPaymentId": resolvedPaymentId }],
+						$or: [{ id: orderId }, { "relatedIds.mercadoPagoOrderId": resolvedPaymentId }],
 					},
 				},
 			},
@@ -319,7 +304,7 @@ export async function recordMercadoPagoCheckout(input: {
 							buyer: draft.buyer ?? null,
 							items,
 							kind: "mercado_pago",
-							mercadoPagoPaymentId: resolvedPaymentId,
+							mercadoPagoOrderId: resolvedPaymentId,
 							relatedIds,
 							...(draft
 								? {

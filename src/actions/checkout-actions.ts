@@ -9,20 +9,14 @@ import type { Cart } from "@/lib/commerce-types";
 import {
 	addMercadoPagoCustomerCard,
 	createMercadoPagoCustomer,
-	createMercadoPagoPayment,
-	getMercadoPagoNotificationUrl,
-	getMercadoPagoPixPaymentData,
 	isMercadoPagoPixPayment,
 	listMercadoPagoCustomerCards,
-	type MercadoPagoCreatePaymentInput,
 	type MercadoPagoSavedCard,
 	mapMercadoPagoSavedCard,
-	mapMercadoPagoStatus,
 	removeMercadoPagoCustomerCard,
 	retrieveMercadoPagoCustomerCard,
-	retrieveMercadoPagoPayment,
-	validateMercadoPagoPaymentResponse,
 } from "@/lib/mercado-pago";
+import { createCheckoutOrder, retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 import { getDb } from "@/lib/mongodb";
 import { createInternalOrderId } from "@/lib/order-identity";
 import { auth } from "@/lib/session";
@@ -112,10 +106,6 @@ function splitBuyerName(fullName: string) {
 	return parts.length <= 1
 		? { firstName: parts[0] ?? fullName.trim(), lastName: "" }
 		: { firstName: parts[0]!, lastName: parts.slice(1).join(" ") };
-}
-
-function toMercadoPagoAmount(amountInCents: number) {
-	return Number((Math.max(0, amountInCents) / 100).toFixed(2));
 }
 
 function toShippingQuoteItems(items: CheckoutSnapshot["items"]) {
@@ -399,56 +389,22 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	} catch (error) {
 		return { error: error instanceof Error ? error.message : "Dados da compra inválidos" } as const;
 	}
-	const { firstName, lastName } = splitBuyerName(buyer.fullName);
-	const body: MercadoPagoCreatePaymentInput = {
-		transaction_amount: toMercadoPagoAmount(draft.amountTotal),
-		description: `Pedido ${draft.orderId} - Selo Libertária`,
-		payment_method_id: paymentMethodId,
-		external_reference: draft.orderId,
-		notification_url: getMercadoPagoNotificationUrl(),
-		payer: {
-			email: buyer.email,
-			first_name: firstName,
-			last_name: lastName,
-			identification: {
-				type: buyer.cpf.replace(/\D/g, "").length === 14 ? "CNPJ" : "CPF",
-				number: buyer.cpf.replace(/\D/g, ""),
-			},
-		},
-		metadata: { orderId: draft.orderId, checkoutOwnerKey: draft.checkoutOwnerKey, cartHash: draft.cartHash },
-	};
-	if (snapshot.isAuthenticated && snapshot.userId) {
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ mercadoPagoCustomerId?: string | null }>(
-				{ _id: new ObjectId(snapshot.userId) },
-				{ projection: { mercadoPagoCustomerId: 1 } },
-			);
-		if (user?.mercadoPagoCustomerId) body.customer_id = user.mercadoPagoCustomerId;
-	}
 	if (savePaymentMethod && paymentToken && snapshot.userId) {
-		const customerId =
-			(body.customer_id as string | undefined) ??
-			(await ensureMercadoPagoCustomer({
-				userId: snapshot.userId,
-				email: buyer.email,
-				fullName: buyer.fullName,
-				cpf: buyer.cpf,
-			}));
+		const customerId = await ensureMercadoPagoCustomer({
+			userId: snapshot.userId,
+			email: buyer.email,
+			fullName: buyer.fullName,
+			cpf: buyer.cpf,
+		});
 		if (!customerId) return { error: "Não foi possível preparar o cartão salvo" } as const;
 		try {
 			const savedCard = await addMercadoPagoCustomerCard(customerId, paymentToken);
 			paymentToken = savedCard.token?.trim();
 			if (!paymentToken) return { error: "Mercado Pago não confirmou o cartão salvo" } as const;
-			body.customer_id = customerId;
 		} catch {
 			return { error: "Não foi possível salvar o cartão no Mercado Pago" } as const;
 		}
 	}
-	if (paymentToken) body.token = paymentToken;
-	if (input.paymentData.installments) body.installments = input.paymentData.installments;
-	if (input.paymentData.issuer_id) body.issuer_id = input.paymentData.issuer_id;
 	const attemptId = await ensureMercadoPagoPaymentAttempt(draft);
 	const idempotencyKey = buildMercadoPagoPaymentAttemptIdempotencyKey({
 		orderId: draft.orderId,
@@ -465,45 +421,48 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	});
 
 	try {
-		const payment = await createMercadoPagoPayment(body, idempotencyKey);
-		const paymentId = payment.id ? String(payment.id) : "";
-		if (!paymentId) return { error: "Mercado Pago não retornou o ID do pagamento" } as const;
-		const paymentValidation = validateMercadoPagoPaymentResponse(payment, {
+		const order = await createCheckoutOrder({
+			orderId: draft.orderId,
+			externalReference: draft.orderId,
 			amountInCents: draft.amountTotal,
 			currency: draft.currency,
-			externalReference: draft.orderId,
+			payer: { email: buyer.email, userId: snapshot.userId ?? null },
+			paymentMethod: {
+				type: isPix ? "pix" : "card",
+				id: isPix ? "pix" : paymentMethodId,
+				token: isPix ? null : paymentToken,
+				installments: input.paymentData.installments ?? null,
+			},
+			idempotencyKey,
+			metadata: {
+				orderId: draft.orderId,
+				checkoutOwnerKey: draft.checkoutOwnerKey,
+				cartHash: draft.cartHash,
+			},
 		});
-		if (!paymentValidation.ok) {
-			await dbUpdateDraft(draft.orderId, {
-				status: "failed",
-				"mercadoPago.lastError": paymentValidation.error,
-				updatedAt: new Date(),
-			});
-			return { error: paymentValidation.error } as const;
-		}
-		const status = mapMercadoPagoStatus(payment.status);
+		const paymentId = order.providerOrderId;
 		await dbUpdateDraft(draft.orderId, {
 			userId: snapshot.userId ?? draft.userId ?? null,
 			buyer,
-			status,
+			status: order.status,
 			mercadoPagoPaymentId: paymentId,
-			"mercadoPago.status": payment.status ?? null,
-			"mercadoPago.statusDetail": payment.status_detail ?? null,
-			"mercadoPago.paymentMethodId": payment.payment_method_id ?? paymentMethodId,
+			"mercadoPago.orderId": paymentId,
+			"mercadoPago.transactionId": order.transaction.id,
+			"mercadoPago.status": order.providerStatus,
+			"mercadoPago.paymentMethodId": paymentMethodId,
 			"mercadoPago.idempotencyKey": idempotencyKey,
 			updatedAt: new Date(),
-			confirmedAt: status === "succeeded" ? new Date() : null,
+			confirmedAt: order.status === "succeeded" ? new Date() : null,
 		});
-		const pixPayment = getMercadoPagoPixPaymentData(payment);
 		return {
 			ok: true as const,
 			orderId: draft.orderId,
 			paymentId,
-			status,
-			qrCode: pixPayment?.qrCode ?? null,
-			qrCodeBase64: pixPayment?.qrCodeBase64 ?? null,
-			ticketUrl: pixPayment?.ticketUrl ?? null,
-			expiresAt: pixPayment?.expiresAt ?? null,
+			status: order.status,
+			qrCode: order.pix?.qrCode ?? null,
+			qrCodeBase64: order.pix?.qrCodeBase64 ?? null,
+			ticketUrl: order.pix?.ticketUrl ?? null,
+			expiresAt: order.pix?.expiresAt ?? null,
 		};
 	} catch (error) {
 		console.error(
@@ -538,14 +497,15 @@ async function ensureMercadoPagoPaymentAttempt(draft: OrderDraftDoc) {
 
 async function resetConfirmedFailedMercadoPagoAttempt(draft: OrderDraftDoc) {
 	try {
-		const payment = await retrieveMercadoPagoPayment(draft.mercadoPagoPaymentId!);
-		const validation = validateMercadoPagoPaymentResponse(payment, {
-			amountInCents: draft.amountTotal,
-			currency: draft.currency,
-			externalReference: draft.orderId,
+		const order = await retrieveCheckoutOrder({
+			providerOrderId: draft.mercadoPagoPaymentId!,
+			expected: {
+				amountInCents: draft.amountTotal,
+				currency: draft.currency,
+				externalReference: draft.orderId,
+			},
 		});
-		if (!validation.ok) return { error: validation.error } as const;
-		const status = mapMercadoPagoStatus(payment.status);
+		const status = order.status;
 		if (status === "processing" || status === "succeeded") return { pending: true } as const;
 		if (status !== "failed") return { error: "O estado do pagamento Mercado Pago é inválido" } as const;
 		const reset = await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
@@ -578,23 +538,26 @@ export async function getPendingMercadoPagoPixPayment(input: { orderId: string }
 	if (!draft.mercadoPagoPaymentId) return { ok: true as const, payment: null };
 
 	try {
-		const payment = await retrieveMercadoPagoPayment(draft.mercadoPagoPaymentId);
-		const validation = validateMercadoPagoPaymentResponse(payment, {
-			amountInCents: draft.amountTotal,
-			currency: draft.currency,
-			externalReference: draft.orderId,
+		const order = await retrieveCheckoutOrder({
+			providerOrderId: draft.mercadoPagoPaymentId,
+			expected: {
+				amountInCents: draft.amountTotal,
+				currency: draft.currency,
+				externalReference: draft.orderId,
+			},
 		});
-		if (!validation.ok) return { error: validation.error } as const;
-		const pixPayment = getMercadoPagoPixPaymentData(payment);
-		if (!pixPayment) return { ok: true as const, payment: null };
+		if (!order.pix) return { ok: true as const, payment: null };
 		await dbUpdateDraft(draft.orderId, {
-			status: pixPayment.status,
-			"mercadoPago.status": payment.status ?? null,
-			"mercadoPago.statusDetail": payment.status_detail ?? null,
+			status: order.status,
+			"mercadoPago.status": order.providerStatus,
+			"mercadoPago.transactionId": order.transaction.id,
 			updatedAt: new Date(),
-			confirmedAt: pixPayment.status === "succeeded" ? new Date() : null,
+			confirmedAt: order.status === "succeeded" ? new Date() : null,
 		});
-		return { ok: true as const, payment: pixPayment };
+		return {
+			ok: true as const,
+			payment: { paymentId: order.providerOrderId, status: order.status, ...order.pix },
+		};
 	} catch (error) {
 		console.error(
 			"[getPendingMercadoPagoPixPayment]",
