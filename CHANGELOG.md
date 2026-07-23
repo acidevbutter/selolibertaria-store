@@ -2,6 +2,7 @@
 
 ### Added
 
+- Evidência documentada de checkout sandbox no Browser com comprador de teste, falha de BIN sem método de pagamento e aprovação posterior via cartão Visa na Orders API.
 - Cartões salvos do Mercado Pago para clientes autenticados, com consentimento explícito, vínculo por `mercadoPagoCustomerId`, listagem mascarada e remoção no checkout, sem persistir dados PCI ou tokens.
 - Cobertura de regressão para a verificação manual do Pix, incluindo consulta indisponível e cobrança expirada sem criação automática de nova cobrança.
 - Após pagamento Mercado Pago confirmado, o webhook agora cria ou vincula a conta do comprador, associa o pedido, envia o acesso seguro e impede duplicidade por e-mail ou CPF/CNPJ normalizado.
