@@ -30,7 +30,6 @@ usa o mesmo mecanismo — ver pergunta em aberto #2 da DEV-152).
 
 ## Direcionado para reconstrução (DEV-157)
 
-`checkout-actions.ts`, `mercado-pago-checkout-form.client.tsx`,
-`mercado-pago-order-actions.ts` (`recordMercadoPagoCheckout`) e o parsing do payload em
-`api/mercado-pago/webhook/route.ts` — todos amarrados ao shape de `payment` da Payments API,
-conforme já classificado como incompatível na DEV-152.
+Cartões salvos e operações de customer continuam isolados, pois a Orders API não oferece
+contrato equivalente validado para esse fluxo. O restante do checkout, reconciliação e webhook
+foi reconectado ao adapter na DEV-156.
