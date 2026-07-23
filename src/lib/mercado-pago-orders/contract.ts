@@ -81,11 +81,21 @@ export interface OrdersRefundInput {
 	idempotencyKey: string;
 }
 
+export interface OrdersSearchInput {
+	beginDate: string;
+	endDate: string;
+	externalReference?: string;
+	status?: string;
+	page?: number;
+	pageSize?: number;
+}
+
 export interface OrdersApiClient {
 	createOrder(input: OrdersPaymentInput): Promise<OrdersPaymentResult>;
 	getOrder(providerOrderId: string): Promise<OrdersPaymentResult>;
 	cancelOrder(input: OrdersCancelInput): Promise<OrdersPaymentResult>;
 	refundOrder(input: OrdersRefundInput): Promise<OrdersPaymentResult>;
+	searchOrders(input: OrdersSearchInput): Promise<OrdersPaymentResult[]>;
 	reconcileWebhook(event: OrdersWebhookEvent): Promise<OrdersPaymentResult>;
 }
 
