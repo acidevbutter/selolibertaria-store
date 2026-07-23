@@ -6,7 +6,7 @@ import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { clearCartId, getCartId } from "@/lib/cart-cookies";
 import { commerce } from "@/lib/commerce";
 import { getDb } from "@/lib/mongodb";
-import { matchesOrderIdentifier } from "@/lib/order-identity";
+import { matchesOrderIdentifier, type OrderRelatedIds } from "@/lib/order-identity";
 
 interface PurchaseItemDoc {
 	name?: string | null;
@@ -28,7 +28,7 @@ interface PurchaseDoc {
 		status?: "received" | "producing" | "shipped";
 		trackingNumber?: string | null;
 	};
-	relatedIds?: { mercadoPagoPaymentId?: string };
+	relatedIds?: OrderRelatedIds;
 }
 
 export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
@@ -69,7 +69,11 @@ export async function getPurchaseDetails(purchaseId: string) {
 		const userDoc = await (await getDb()).collection<{ purchases?: PurchaseDoc[] }>("users").findOne(
 			{
 				_id: new ObjectId(auth.session.sub as string),
-				$or: [{ "purchases.id": purchaseId }, { "purchases.relatedIds.mercadoPagoPaymentId": purchaseId }],
+				$or: [
+					{ "purchases.id": purchaseId },
+					{ "purchases.relatedIds.mercadoPagoPaymentId": purchaseId },
+					{ "purchases.relatedIds.mercadoPagoOrderId": purchaseId },
+				],
 			},
 			{ projection: { purchases: 1 } },
 		);

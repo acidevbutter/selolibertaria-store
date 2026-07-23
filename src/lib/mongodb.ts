@@ -1,6 +1,7 @@
 import { type Db, MongoClient } from "mongodb";
 import { env } from "@/env.mjs";
 import type { SupportedCurrency } from "@/lib/currency";
+import type { OrderRelatedIds } from "@/lib/order-identity";
 
 // Reuse connection in development to avoid creating multiple connections during HMR
 interface GlobalMongoCache {
@@ -320,9 +321,7 @@ export interface UserDoc {
 			unitAmount?: number | null;
 		}>;
 		paymentReferenceId?: string | null;
-		relatedIds?: {
-			mercadoPagoPaymentId?: string;
-		};
+		relatedIds?: OrderRelatedIds;
 		cart?: UserCart | null;
 	}>;
 	accountAccessTokens?: Array<{

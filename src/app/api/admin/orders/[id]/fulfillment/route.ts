@@ -3,7 +3,7 @@ import { requireCapability } from "@/lib/api-auth";
 import { getDb } from "@/lib/mongodb";
 import { notifyOrderStatusChange } from "@/lib/notify-order-status";
 import { recordOrderAuditEntry } from "@/lib/order-audit";
-import { matchesOrderIdentifier } from "@/lib/order-identity";
+import { matchesOrderIdentifier, type OrderRelatedIds } from "@/lib/order-identity";
 import { shouldNotifyCustomerOrderStatusChange } from "@/lib/order-status-notification";
 
 type FulfillmentStatus = "received" | "producing" | "shipped";
@@ -49,7 +49,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 			{ $unwind: "$purchases" },
 			{
 				$match: {
-					$or: [{ "purchases.id": id }, { "purchases.relatedIds.mercadoPagoPaymentId": id }],
+					$or: [
+						{ "purchases.id": id },
+						{ "purchases.relatedIds.mercadoPagoPaymentId": id },
+						{ "purchases.relatedIds.mercadoPagoOrderId": id },
+					],
 				},
 			},
 			{ $limit: 1 },
@@ -59,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 		| {
 				purchases: {
 					id: string;
-					relatedIds?: { mercadoPagoPaymentId?: string };
+					relatedIds?: OrderRelatedIds;
 					fulfillment?: { status?: FulfillmentStatus; trackingNumber?: string | null };
 				};
 		  }
