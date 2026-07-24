@@ -7,8 +7,7 @@ import { requireAuth } from "@/lib/api-auth";
  * Logged-in users still merge any guest cart before continuing, while guests
  * now continue straight into checkout without an auth gate.
  */
-export async function GET(request: Request) {
-	const requestUrl = new URL(request.url);
+export async function GET() {
 	const auth = await requireAuth();
 
 	if (!("error" in auth)) {
@@ -19,5 +18,8 @@ export async function GET(request: Request) {
 		}
 	}
 
-	return NextResponse.redirect(new URL("/checkout?prepared=1", requestUrl));
+	return new NextResponse(null, {
+		status: 307,
+		headers: { Location: "/checkout?prepared=1" },
+	});
 }
