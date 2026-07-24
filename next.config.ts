@@ -8,6 +8,7 @@ const isProductionBuild = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	reactCompiler: true,
+	allowedDevOrigins: ["192.168.15.6"],
 	output: process.env.DOCKER ? "standalone" : undefined,
 	outputFileTracingRoot: projectRoot,
 	logging: {
