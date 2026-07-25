@@ -6,6 +6,7 @@
 - Validação de integridade por valor, moeda e `external_reference` reaproveitada no webhook e na reconciliação; drafts antigos continuam legíveis via fallback de `mercadoPagoPaymentId`, enquanto novas gravações usam `mercadoPagoOrderId`.
 - DEV-145: suporte de parcelamento compatível com o valor da compra e registro seguro de `status_detail`/parcelas no fluxo de cartão da Orders API.
 - DEV-147: operações administrativas de cancelamento e estorno total via Orders API.
+- DEV-146: adicionada cobertura direta para reconciliação pendente, backoff e alerta terminal.
 
 - Evidência documentada de checkout sandbox no Browser com comprador de teste, falha de BIN sem método de pagamento e aprovação posterior via cartão Visa na Orders API.
 - Cartões salvos do Mercado Pago para clientes autenticados, com consentimento explícito, vínculo por `mercadoPagoCustomerId`, listagem mascarada e remoção no checkout, sem persistir dados PCI ou tokens.
