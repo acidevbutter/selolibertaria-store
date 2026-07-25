@@ -150,7 +150,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			</IntlClientProvider>,
 		);
 
-		const button = await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		const button = await screen.findByRole("button", { name: "Já paguei" });
 		fireEvent.click(button);
 		await waitFor(() => {
 			expect(screen.getByRole("status")).toHaveTextContent(
@@ -180,7 +180,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			</IntlClientProvider>,
 		);
 
-		await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		await screen.findByRole("button", { name: "Já paguei" });
 		getPendingMercadoPagoPixPayment.mockResolvedValue({
 			ok: true,
 			payment: {
@@ -193,7 +193,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			},
 		});
 
-		fireEvent.click(screen.getByRole("button", { name: "Já paguei — verificar pagamento" }));
+		fireEvent.click(screen.getByRole("button", { name: "Já paguei" }));
 		await waitFor(() =>
 			expect(routerReplace).toHaveBeenCalledWith("/checkout/processing?order=ord_123&mp_payment=123&guest=1"),
 		);
@@ -218,12 +218,12 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			</IntlClientProvider>,
 		);
 
-		await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		await screen.findByRole("button", { name: "Já paguei" });
 		getPendingMercadoPagoPixPayment.mockResolvedValue({
 			error: "Não foi possível recuperar o pagamento Pix",
 		});
 
-		fireEvent.click(screen.getByRole("button", { name: "Já paguei — verificar pagamento" }));
+		fireEvent.click(screen.getByRole("button", { name: "Já paguei" }));
 		await waitFor(() =>
 			expect(screen.getByRole("status")).toHaveTextContent("Não foi possível recuperar o pagamento Pix"),
 		);
@@ -251,7 +251,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			</IntlClientProvider>,
 		);
 
-		await screen.findByRole("button", { name: "Já paguei — verificar pagamento" });
+		await screen.findByRole("button", { name: "Já paguei" });
 		getPendingMercadoPagoPixPayment.mockResolvedValue({
 			ok: true,
 			payment: {
@@ -264,7 +264,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			},
 		});
 
-		fireEvent.click(screen.getByRole("button", { name: "Já paguei — verificar pagamento" }));
+		fireEvent.click(screen.getByRole("button", { name: "Já paguei" }));
 		await waitFor(() => {
 			expect(
 				screen.getByText("Este Pix não está mais disponível. Gere uma nova cobrança para continuar."),

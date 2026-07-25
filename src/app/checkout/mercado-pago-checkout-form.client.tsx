@@ -750,7 +750,7 @@ export function MercadoPagoCheckoutForm({
 					</p>
 				</div>
 				{pixPayment ? (
-					<div className="space-y-4 rounded-lg border bg-muted/20 p-4">
+					<div className="flex flex-col items-center space-y-4 rounded-lg border bg-muted/20 p-4 text-center">
 						<p className="text-sm font-medium">Pix gerado. Pague pelo QR Code ou copie o código abaixo.</p>
 						{pixPayment.qrCodeBase64 ? (
 							<img
@@ -760,7 +760,7 @@ export function MercadoPagoCheckoutForm({
 							/>
 						) : null}
 						{pixPayment.qrCode ? (
-							<div className="space-y-2">
+							<div className="w-full max-w-xl space-y-2 text-left">
 								<label className="text-xs font-medium" htmlFor="pix-copy-paste-code">
 									Código Pix copia e cola
 								</label>
@@ -787,18 +787,20 @@ export function MercadoPagoCheckoutForm({
 						{pixPayment.expiresAt ? (
 							<p className="text-xs text-muted-foreground">{formatPixExpiration(pixPayment.expiresAt)}</p>
 						) : null}
-						{pixPayment.ticketUrl ? (
-							<a className="text-sm underline" href={pixPayment.ticketUrl} rel="noreferrer" target="_blank">
-								Abrir Pix no Mercado Pago
-							</a>
-						) : null}
-						<Button
-							type="button"
-							disabled={isCheckingPixPayment}
-							onClick={() => void handlePixPaymentCheck()}
-						>
-							{isCheckingPixPayment ? "Verificando pagamento…" : "Já paguei — verificar pagamento"}
-						</Button>
+						<div className="flex flex-col items-center gap-3">
+							{pixPayment.ticketUrl ? (
+								<a className="text-sm underline" href={pixPayment.ticketUrl} rel="noreferrer" target="_blank">
+									Abrir Pix no Mercado Pago
+								</a>
+							) : null}
+							<Button
+								type="button"
+								disabled={isCheckingPixPayment}
+								onClick={() => void handlePixPaymentCheck()}
+							>
+								{isCheckingPixPayment ? "Verificando pagamento…" : "Já paguei"}
+							</Button>
+						</div>
 						{pixPaymentMessage ? (
 							<p className="text-xs text-muted-foreground" role="status">
 								{pixPaymentMessage}
