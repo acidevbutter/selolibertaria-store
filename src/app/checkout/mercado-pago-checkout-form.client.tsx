@@ -1,5 +1,6 @@
 "use client";
 
+import { Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -25,6 +26,7 @@ import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.clien
 import { Button } from "@/ui/shadcn/button";
 import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/ui/shadcn/tooltip";
 
 type MercadoPagoFormData = {
 	payment_method_id?: string;
@@ -163,6 +165,7 @@ export function MercadoPagoCheckoutForm({
 		expiresAt?: string | null;
 	} | null>(null);
 	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
+	const [isPixCopyTooltipOpen, setIsPixCopyTooltipOpen] = useState(false);
 	const [isCheckingPixPayment, setIsCheckingPixPayment] = useState(false);
 	const [pixPaymentMessage, setPixPaymentMessage] = useState<string | null>(null);
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card">("pix");
@@ -438,7 +441,6 @@ export function MercadoPagoCheckoutForm({
 			if (cancelled || "error" in result || !result.payment) return;
 			if (result.payment.status === "processing") {
 				setPixPayment(result.payment);
-				setPixCopyMessage(null);
 			} else if (result.payment.status === "succeeded") {
 				router.replace(
 					`/checkout/processing?order=${checkout.orderId}&mp_payment=${result.payment.paymentId}&guest=${(checkout.isAuthenticated ?? false) ? "0" : "1"}`,
@@ -760,23 +762,42 @@ export function MercadoPagoCheckoutForm({
 							/>
 						) : null}
 						{pixPayment.qrCode ? (
-							<div className="w-full max-w-xl space-y-2 text-left">
-								<label className="text-xs font-medium" htmlFor="pix-copy-paste-code">
-									Código Pix copia e cola
-								</label>
+							<div className="w-full max-w-xl rounded-lg border bg-background/70 p-3 text-left shadow-sm">
+								<div className="mb-2 flex items-center justify-between gap-3">
+									<label className="text-xs font-medium" htmlFor="pix-copy-paste-code">
+										Código Pix copia e cola
+									</label>
+									<TooltipProvider delayDuration={0}>
+										<Tooltip open={isPixCopyTooltipOpen} onOpenChange={setIsPixCopyTooltipOpen}>
+											<TooltipTrigger asChild>
+												<Button
+													type="button"
+													variant="outline"
+													size="icon"
+													aria-label="Copiar código Pix"
+													onClick={() => {
+														void copyPixCode(pixPayment.qrCode!, setPixCopyMessage).then((copied) => {
+															if (!copied) return;
+															setIsPixCopyTooltipOpen(true);
+															window.setTimeout(() => setIsPixCopyTooltipOpen(false), 1800);
+														});
+													}}
+												>
+													<Copy aria-hidden="true" />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												{pixCopyMessage === "Código Pix copiado." ? "Copiado!" : "Copiar código Pix"}
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								</div>
 								<textarea
 									id="pix-copy-paste-code"
 									readOnly
-									className="min-h-24 w-full rounded-md border bg-background p-3 text-xs"
+									className="min-h-24 w-full resize-none rounded-md border-0 bg-muted/50 p-3 font-mono text-xs leading-relaxed"
 									value={pixPayment.qrCode}
 								/>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => void copyPixCode(pixPayment.qrCode!, setPixCopyMessage)}
-								>
-									Copiar código Pix
-								</Button>
 								{pixCopyMessage ? (
 									<p className="text-xs text-muted-foreground" role="status">
 										{pixCopyMessage}
@@ -1095,8 +1116,10 @@ async function copyPixCode(code: string, setMessage: (message: string) => void) 
 		if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
 		await navigator.clipboard.writeText(code);
 		setMessage("Código Pix copiado.");
+		return true;
 	} catch {
 		setMessage("Não foi possível copiar automaticamente. Selecione o código acima para copiar.");
+		return false;
 	}
 }
 
