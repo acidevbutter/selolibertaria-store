@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-148: registrada matriz de homologação Orders API com identidade MongoDB de QA sanitizada, cobertura local e pendências explícitas de sandbox.
 - DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.
 - Reconciliação de orders Mercado Pago pendentes por consulta direta da Orders API, com retries/backoff, limite de tentativas, alerta persistido, endpoint cron protegido e ação manual no admin.
 - Validação de integridade por valor, moeda e `external_reference` reaproveitada no webhook e na reconciliação; drafts antigos continuam legíveis via fallback de `mercadoPagoPaymentId`, enquanto novas gravações usam `mercadoPagoOrderId`.
