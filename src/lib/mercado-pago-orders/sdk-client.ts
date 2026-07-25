@@ -107,6 +107,8 @@ function mapResponse(response: OrderResponse): OrdersPaymentResult {
 	const paymentMethod = normalizePaymentMethod(payment?.payment_method?.id, payment?.payment_method?.type);
 	const status = normalizeStatus(payment?.status ?? response.status);
 	const paymentMethodData = payment?.payment_method;
+	const statusDetail = payment?.status_detail ?? response.status_detail ?? null;
+	const installments = paymentMethodData?.installments ?? null;
 
 	return {
 		providerOrderId,
@@ -116,7 +118,16 @@ function mapResponse(response: OrderResponse): OrdersPaymentResult {
 		amountInCents,
 		currency,
 		paymentMethod,
-		transaction: { id: transactionId, status, amountInCents, currency },
+		transaction: {
+			id: transactionId,
+			status,
+			amountInCents,
+			currency,
+			statusDetail,
+			installments,
+		},
+		statusDetail,
+		installments,
 		pix:
 			paymentMethod === "pix"
 				? {

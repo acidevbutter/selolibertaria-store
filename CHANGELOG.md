@@ -4,6 +4,8 @@
 
 - Reconciliação de orders Mercado Pago pendentes por consulta direta da Orders API, com retries/backoff, limite de tentativas, alerta persistido, endpoint cron protegido e ação manual no admin.
 - Validação de integridade por valor, moeda e `external_reference` reaproveitada no webhook e na reconciliação; drafts antigos continuam legíveis via fallback de `mercadoPagoPaymentId`, enquanto novas gravações usam `mercadoPagoOrderId`.
+- DEV-145: suporte de parcelamento compatível com o valor da compra e registro seguro de `status_detail`/parcelas no fluxo de cartão da Orders API.
+- DEV-147: operações administrativas de cancelamento e estorno total via Orders API.
 
 - Evidência documentada de checkout sandbox no Browser com comprador de teste, falha de BIN sem método de pagamento e aprovação posterior via cartão Visa na Orders API.
 - Cartões salvos do Mercado Pago para clientes autenticados, com consentimento explícito, vínculo por `mercadoPagoCustomerId`, listagem mascarada e remoção no checkout, sem persistir dados PCI ou tokens.
@@ -18,6 +20,7 @@
 
 ### Fixed
 
+- DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
 - O redirecionamento de preparo do checkout agora preserva a origem atual, mantendo o carrinho convidado ao abrir o checkout em ambientes locais de teste.
 - Pix pendente do Mercado Pago agora é retomado após recarga do checkout a partir da consulta server-side; a mesma tentativa técnica persiste sua chave de idempotência e não cria cobrança duplicada, enquanto uma nova cobrança só é liberada após a falha anterior ser confirmada pelo provedor. O checkout agora permite escolher Pix ou cartão antes de abrir o painel correspondente; Pix usa diretamente o e-mail já informado, sem repeti-lo no Brick, e ignora clique duplicado antes da submissão.
 - O QR Pix agora oferece `Já paguei — verificar pagamento`: a consulta server-side mantém o QR pendente visível e só encaminha ao processamento depois da confirmação pelo Mercado Pago.

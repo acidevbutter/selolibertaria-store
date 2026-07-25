@@ -16,6 +16,7 @@ import {
 	removeMercadoPagoCustomerCard,
 	retrieveMercadoPagoCustomerCard,
 } from "@/lib/mercado-pago";
+import { getMaxCardInstallments } from "@/lib/mercado-pago-orders/card";
 import { createCheckoutOrder, retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 import { getDb } from "@/lib/mongodb";
 import { createInternalOrderId } from "@/lib/order-identity";
@@ -356,6 +357,16 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	let paymentMethodId = input.paymentData.payment_method_id?.trim();
 	if (!paymentMethodId) return { error: "Meio de pagamento ausente" } as const;
 	const isPix = isMercadoPagoPixPayment(paymentMethodId);
+	const installments = input.paymentData.installments ?? null;
+	if (
+		!isPix &&
+		installments !== null &&
+		(!Number.isInteger(installments) ||
+			installments < 1 ||
+			installments > getMaxCardInstallments(draft.amountTotal))
+	) {
+		return { error: "Escolha um número de parcelas compatível com o valor da compra." } as const;
+	}
 	let paymentToken = input.paymentData.token?.trim();
 	const savePaymentMethod = input.paymentData.savePaymentMethod === true;
 	if (savePaymentMethod && !snapshot.isAuthenticated)
@@ -433,7 +444,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 				type: isPix ? "pix" : "card",
 				id: isPix ? "pix" : paymentMethodId,
 				token: isPix ? null : paymentToken,
-				installments: input.paymentData.installments ?? null,
+				installments,
 			},
 			idempotencyKey,
 			metadata: {
@@ -452,6 +463,8 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			"mercadoPago.orderId": mercadoPagoOrderId,
 			"mercadoPago.transactionId": order.transaction.id,
 			"mercadoPago.status": order.providerStatus,
+			"mercadoPago.statusDetail": order.statusDetail ?? null,
+			"mercadoPago.installments": order.installments ?? installments,
 			"mercadoPago.paymentMethodId": paymentMethodId,
 			"mercadoPago.idempotencyKey": idempotencyKey,
 			updatedAt: new Date(),
@@ -462,6 +475,8 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			orderId: draft.orderId,
 			paymentId: mercadoPagoOrderId,
 			status: order.status,
+			providerStatus: order.providerStatus,
+			statusDetail: order.statusDetail ?? null,
 			qrCode: order.pix?.qrCode ?? null,
 			qrCodeBase64: order.pix?.qrCodeBase64 ?? null,
 			ticketUrl: order.pix?.ticketUrl ?? null,

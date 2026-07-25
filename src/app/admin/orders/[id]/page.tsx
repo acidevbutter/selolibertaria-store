@@ -16,6 +16,7 @@ import {
 import { Reveal } from "@/ui/motion/reveal";
 import { Badge } from "@/ui/shadcn/badge";
 import { StatusBadge } from "@/ui/status-badge";
+import AdminPaymentOperations from "../_components/admin-payment-operations.client";
 import UpdateFulfillment from "../_components/update-fulfillment.client";
 
 function formatAuditValue(value: string | null | undefined) {
@@ -29,6 +30,8 @@ function getAuditSummary(entry: OrderAuditEntry) {
 			return "Expedição atualizada";
 		case "order_payment_status_webhook_updated":
 			return "Status de pagamento atualizado por evento recebido";
+		case "order_payment_admin_operation":
+			return "Operação de pagamento executada no admin";
 	}
 }
 
@@ -40,6 +43,8 @@ function getAuditChanges(entry: OrderAuditEntry) {
 		nextTrackingNumber?: string | null;
 		webhookType?: string | null;
 		webhookEventId?: string | null;
+		operation?: string | null;
+		providerStatus?: string | null;
 	};
 	const changes: Array<{ label: string; previous: string; next: string }> = [];
 
@@ -59,6 +64,14 @@ function getAuditChanges(entry: OrderAuditEntry) {
 			label: "Status de pagamento",
 			previous: formatAuditValue(details.previousStatus),
 			next: formatAuditValue(details.nextStatus),
+		});
+	}
+
+	if (entry.action === "order_payment_admin_operation") {
+		changes.push({
+			label: "Operação / status confirmado",
+			previous: formatAuditValue(details.operation),
+			next: formatAuditValue(details.providerStatus),
 		});
 	}
 
@@ -304,6 +317,12 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							</div>
 						</div>
 					</div>
+					<AdminPaymentOperations
+						orderId={p.id}
+						status={p.status}
+						amountInCents={p.amountTotal}
+						currency={p.currency}
+					/>
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
 						<div className="mb-4 space-y-1">
 							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
