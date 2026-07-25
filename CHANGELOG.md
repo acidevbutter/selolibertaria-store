@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.
 - Reconciliação de orders Mercado Pago pendentes por consulta direta da Orders API, com retries/backoff, limite de tentativas, alerta persistido, endpoint cron protegido e ação manual no admin.
 - Validação de integridade por valor, moeda e `external_reference` reaproveitada no webhook e na reconciliação; drafts antigos continuam legíveis via fallback de `mercadoPagoPaymentId`, enquanto novas gravações usam `mercadoPagoOrderId`.
 - DEV-145: suporte de parcelamento compatível com o valor da compra e registro seguro de `status_detail`/parcelas no fluxo de cartão da Orders API.
@@ -21,6 +22,7 @@
 
 ### Fixed
 
+- DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
 - O redirecionamento de preparo do checkout agora preserva a origem atual, mantendo o carrinho convidado ao abrir o checkout em ambientes locais de teste.
 - Pix pendente do Mercado Pago agora é retomado após recarga do checkout a partir da consulta server-side; a mesma tentativa técnica persiste sua chave de idempotência e não cria cobrança duplicada, enquanto uma nova cobrança só é liberada após a falha anterior ser confirmada pelo provedor. O checkout agora permite escolher Pix ou cartão antes de abrir o painel correspondente; Pix usa diretamente o e-mail já informado, sem repeti-lo no Brick, e ignora clique duplicado antes da submissão.

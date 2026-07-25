@@ -20,6 +20,7 @@ type UserPageSearchParams = {
 	section?: string;
 	order?: string;
 	setupPassword?: string;
+	pendingPayment?: string;
 };
 
 export default async function UserPage({ searchParams }: { searchParams?: Promise<UserPageSearchParams> }) {
@@ -242,6 +243,17 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 										</Link>
 									</Button>
 								</div>
+							</div>
+						) : null}
+						{resolvedSearchParams.pendingPayment === "1" ? (
+							<div
+								className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+								role="status"
+							>
+								<p className="font-medium">Pagamento Pix em confirmação.</p>
+								<p className="mt-1 text-amber-800">
+									Seu pedido ficará disponível aqui assim que o Mercado Pago confirmar o pagamento.
+								</p>
 							</div>
 						) : null}
 						{!purchases || purchases.length === 0 ? (

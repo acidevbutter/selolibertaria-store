@@ -6,6 +6,7 @@ import { IntlClientProvider } from "@/i18n/client";
 import ptBrMessages from "../../../messages/pt-BR.json";
 
 const getPendingMercadoPagoPixPayment = vi.fn();
+const continuePendingMercadoPagoPixCheckout = vi.fn();
 const submitMercadoPagoCheckoutPayment = vi.fn();
 const updateCheckoutBuyerData = vi.fn();
 const routerReplace = vi.fn();
@@ -23,6 +24,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/actions/checkout-actions", () => ({
+	continuePendingMercadoPagoPixCheckout: (...args: unknown[]) =>
+		continuePendingMercadoPagoPixCheckout(...args),
 	getPendingMercadoPagoPixPayment: (...args: unknown[]) => getPendingMercadoPagoPixPayment(...args),
 	submitMercadoPagoCheckoutPayment: (...args: unknown[]) => submitMercadoPagoCheckoutPayment(...args),
 	updateCheckoutBuyerData: (...args: unknown[]) => updateCheckoutBuyerData(...args),
@@ -50,6 +53,11 @@ const checkout: TransparentCheckoutIntent = {
 describe("MercadoPagoCheckoutForm Pix", () => {
 	beforeEach(() => {
 		getPendingMercadoPagoPixPayment.mockReset();
+		continuePendingMercadoPagoPixCheckout.mockReset();
+		continuePendingMercadoPagoPixCheckout.mockResolvedValue({
+			ok: true,
+			redirectUrl: "/user?section=purchases&order=ord_123&pendingPayment=1",
+		});
 		submitMercadoPagoCheckoutPayment.mockReset();
 		updateCheckoutBuyerData.mockReset();
 		routerReplace.mockReset();
@@ -135,7 +143,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		);
 	});
 
-	it("mantém o Pix visível quando a verificação manual ainda estiver pendente", async () => {
+	it("leva o Pix pendente para acompanhamento autenticado", async () => {
 		getPendingMercadoPagoPixPayment.mockResolvedValue({
 			ok: true,
 			payment: {
@@ -156,13 +164,10 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 
 		const button = await screen.findByRole("button", { name: "Já paguei" });
 		fireEvent.click(button);
-		await waitFor(() => {
-			expect(screen.getByRole("status")).toHaveTextContent(
-				"Pagamento ainda pendente. Assim que for confirmado, você seguirá para o pedido.",
-			);
-		});
-		expect(screen.getByDisplayValue("pix-copia-e-cola")).toBeVisible();
-		expect(routerReplace).not.toHaveBeenCalled();
+		await waitFor(() =>
+			expect(continuePendingMercadoPagoPixCheckout).toHaveBeenCalledWith({ orderId: "ord_123" }),
+		);
+		expect(routerReplace).toHaveBeenCalledWith("/user?section=purchases&order=ord_123&pendingPayment=1");
 	});
 
 	it("encaminha para a confirmação somente depois que o Pix for aprovado", async () => {

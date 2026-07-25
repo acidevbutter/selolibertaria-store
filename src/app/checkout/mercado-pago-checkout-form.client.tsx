@@ -4,6 +4,7 @@ import { Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+	continuePendingMercadoPagoPixCheckout,
 	getPendingMercadoPagoPixPayment,
 	removeSavedMercadoPagoCard,
 	submitMercadoPagoCheckoutPayment,
@@ -432,8 +433,13 @@ export function MercadoPagoCheckoutForm({
 			setMessage("Este Pix não está mais disponível. Gere uma nova cobrança para continuar.");
 			return;
 		}
-		setPixPayment(result.payment);
-		setPixPaymentMessage("Pagamento ainda pendente. Assim que for confirmado, você seguirá para o pedido.");
+		const pending = await continuePendingMercadoPagoPixCheckout({ orderId: checkout.orderId });
+		if ("error" in pending) {
+			setPixPayment(result.payment);
+			setPixPaymentMessage(pending.error ?? "Pagamento ainda pendente. Tente novamente em instantes.");
+			return;
+		}
+		router.replace(pending.redirectUrl);
 	}
 
 	useEffect(() => {

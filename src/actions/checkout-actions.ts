@@ -2,9 +2,11 @@
 
 import { ObjectId } from "mongodb";
 import { env } from "@/env.mjs";
+import { normalizeUserRole } from "@/lib/authz";
 import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { buildMercadoPagoPaymentAttemptIdempotencyKey } from "@/lib/checkout/mercado-pago-idempotency";
 import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
+import { resolveCheckoutUserForDraft } from "@/lib/checkout-customer";
 import type { Cart } from "@/lib/commerce-types";
 import {
 	addMercadoPagoCustomerCard,
@@ -20,7 +22,7 @@ import { getMaxCardInstallments } from "@/lib/mercado-pago-orders/card";
 import { createCheckoutOrder, retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 import { getDb } from "@/lib/mongodb";
 import { createInternalOrderId } from "@/lib/order-identity";
-import { auth } from "@/lib/session";
+import { auth, createPersistentSession } from "@/lib/session";
 import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipping";
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
@@ -591,6 +593,90 @@ export async function getPendingMercadoPagoPixPayment(input: { orderId: string }
 			error instanceof Error ? error.message : "unknown error",
 		);
 		return { error: "Não foi possível recuperar o pagamento Pix" } as const;
+	}
+}
+
+export async function continuePendingMercadoPagoPixCheckout(input: { orderId: string }) {
+	if (!input.orderId.startsWith("ord_")) return { error: "Pedido inválido" } as const;
+	const access = await resolveDraftAccess({ orderId: input.orderId });
+	if ("error" in access) return { error: access.error } as const;
+	const { draft } = access;
+	const mercadoPagoOrderId = draft.mercadoPagoOrderId || draft.mercadoPagoPaymentId;
+	if (!mercadoPagoOrderId) return { error: "Cobrança Pix não encontrada" } as const;
+
+	try {
+		const order = await retrieveCheckoutOrder({
+			providerOrderId: mercadoPagoOrderId,
+			expected: {
+				amountInCents: draft.amountTotal,
+				currency: draft.currency,
+				externalReference: draft.orderId,
+			},
+		});
+		if (!order.pix || order.status !== "processing") {
+			return { error: "O pagamento Pix não está pendente de confirmação" } as const;
+		}
+
+		const currentSession = await auth();
+		if (currentSession?.user.id && draft.userId && currentSession.user.id !== draft.userId) {
+			return { error: "O pagamento não pertence à conta atual" } as const;
+		}
+		const buyer = draft.buyer ? normalizeCheckoutBuyer(draft.buyer) : null;
+		if (!buyer) return { error: "Dados da pessoa compradora ausentes" } as const;
+		const resolvedUser = await resolveCheckoutUserForDraft({
+			orderId: draft.orderId,
+			userId: draft.userId ?? currentSession?.user.id ?? null,
+			buyer,
+			deliveryAddress: draft.deliveryAddress ?? null,
+		});
+		const db = await getDb();
+		const linked = await db.collection<OrderDraftDoc>("orderDrafts").updateOne(
+			{
+				orderId: draft.orderId,
+				$or: [{ userId: null }, { userId: { $exists: false } }, { userId: resolvedUser.userId }],
+			},
+			{
+				$set: {
+					userId: resolvedUser.userId,
+					status: order.status,
+					"mercadoPago.status": order.providerStatus,
+					"mercadoPago.transactionId": order.transaction.id,
+					updatedAt: new Date(),
+					confirmedAt: null,
+				},
+			},
+		);
+		if (!linked.matchedCount) return { error: "O pagamento não pertence a esta pessoa usuária" } as const;
+
+		const user = await db.collection("users").findOne<{
+			_id: ObjectId;
+			email?: string;
+			name?: string;
+			role?: string;
+			passwordHash?: string;
+		}>(
+			{ _id: new ObjectId(resolvedUser.userId) },
+			{ projection: { email: 1, name: 1, role: 1, passwordHash: 1 } },
+		);
+		if (!user?.email) return { error: "Conta da compra não encontrada" } as const;
+		if (!currentSession) {
+			await createPersistentSession({
+				id: user._id.toHexString(),
+				email: user.email,
+				name: user.name,
+				role: normalizeUserRole(user.role),
+			});
+		}
+
+		const params = new URLSearchParams({ section: "purchases", order: draft.orderId, pendingPayment: "1" });
+		if (!user.passwordHash) params.set("setupPassword", "1");
+		return { ok: true as const, redirectUrl: `/user?${params.toString()}` };
+	} catch (error) {
+		console.error(
+			"[continuePendingMercadoPagoPixCheckout]",
+			error instanceof Error ? error.message : "unknown error",
+		);
+		return { error: "Não foi possível preparar o acompanhamento do Pix" } as const;
 	}
 }
 
