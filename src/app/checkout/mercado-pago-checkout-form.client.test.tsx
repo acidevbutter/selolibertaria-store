@@ -128,7 +128,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		await screen.findByRole("button", { name: "Copiar código Pix" });
 		fireEvent.click(screen.getByRole("button", { name: "Copiar código Pix" }));
 		await waitFor(() => expect(writeText).toHaveBeenCalledWith("pix-copia-e-cola"));
-		expect(screen.getByRole("status")).toHaveTextContent("Código Pix copiado.");
+		await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Código Pix copiado."));
 	});
 
 	it("mantém o Pix visível quando a verificação manual ainda estiver pendente", async () => {
