@@ -15,8 +15,9 @@ const response: OrderResponse = {
 			{
 				id: "mp_transaction_1",
 				status: "approved",
+				status_detail: "accredited",
 				amount: "42.00",
-				payment_method: { id: "pix", type: "bank_transfer", qr_code: "pix-code" },
+				payment_method: { id: "pix", type: "bank_transfer", qr_code: "pix-code", installments: 1 },
 			},
 		],
 	},
@@ -69,6 +70,8 @@ describe("MercadoPagoOrdersSdkClient", () => {
 			status: "approved",
 			paymentMethod: "pix",
 			transaction: { id: "mp_transaction_1", amountInCents: 4200 },
+			statusDetail: "accredited",
+			installments: 1,
 		});
 		expect(createInput).toMatchObject({
 			body: {
@@ -81,6 +84,34 @@ describe("MercadoPagoOrdersSdkClient", () => {
 			requestOptions: { timeout: 7000, idempotencyKey: "orders:ord_1:attempt-1" },
 		});
 		expect(JSON.stringify(logs)).not.toContain("buyer@example.test");
+	});
+
+	it("forwards token and selected installments through the Orders transaction", async () => {
+		let createInput: Parameters<MercadoPagoOrderSdk["create"]>[0] | undefined;
+		const client = new MercadoPagoOrdersSdkClient(
+			createSdk({
+				create: async (input) => {
+					createInput = input;
+					return response;
+				},
+			}),
+		);
+
+		await client.createOrder({
+			orderId: "ord_card_1",
+			externalReference: "ord_card_1",
+			amountInCents: 4200,
+			currency: "BRL",
+			payer: { email: "buyer@example.test" },
+			paymentMethod: { type: "card", id: "visa", token: "one-time-token", installments: 3 },
+			idempotencyKey: "orders:ord_card_1:attempt-1",
+		});
+
+		expect(createInput?.body.transactions?.payments?.[0]?.payment_method).toMatchObject({
+			id: "visa",
+			token: "one-time-token",
+			installments: 3,
+		});
 	});
 
 	it("uses the SDK for search, cancel, partial refund and webhook reconciliation", async () => {

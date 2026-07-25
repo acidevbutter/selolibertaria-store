@@ -21,6 +21,7 @@ import {
 	normalizeBuyerEmail,
 	normalizeBuyerName,
 } from "@/lib/checkout-buyer";
+import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/mercado-pago-orders/card";
 import { cn, formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { Button } from "@/ui/shadcn/button";
@@ -478,7 +479,7 @@ export function MercadoPagoCheckoutForm({
 							paymentMethods: {
 								creditCard: "all",
 								debitCard: "all",
-								maxInstallments: 12,
+								maxInstallments: getMaxCardInstallments(amountTotal),
 							},
 						},
 						callbacks: {
@@ -514,7 +515,7 @@ export function MercadoPagoCheckoutForm({
 									return Promise.resolve();
 								}
 								if (result.status === "failed") {
-									setMessage("Pagamento recusado. Revise os dados ou escolha outra forma de pagamento.");
+									setMessage(getMercadoPagoCardErrorMessage(result.statusDetail));
 									return Promise.reject();
 								}
 								setMessage(confirmationFailedMessage);

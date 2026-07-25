@@ -45,6 +45,8 @@ export interface OrdersTransaction {
 	status: OrdersPaymentStatus;
 	amountInCents: number;
 	currency: string;
+	statusDetail?: string | null;
+	installments?: number | null;
 }
 
 export interface OrdersPaymentResult {
@@ -57,6 +59,8 @@ export interface OrdersPaymentResult {
 	paymentMethod: OrdersPaymentMethodType;
 	transaction: OrdersTransaction;
 	pix: OrdersPixData | null;
+	statusDetail?: string | null;
+	installments?: number | null;
 }
 
 export interface OrdersWebhookEvent {

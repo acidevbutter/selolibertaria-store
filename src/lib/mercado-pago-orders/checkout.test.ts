@@ -7,6 +7,7 @@ vi.mock("@/lib/mercado-pago-orders/server-client", () => ({
 	createMercadoPagoOrdersClient: createClient,
 }));
 
+import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/mercado-pago-orders/card";
 import { createCheckoutOrder, retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 
 const result: OrdersPaymentResult = {
@@ -24,6 +25,13 @@ const result: OrdersPaymentResult = {
 describe("checkout Orders gateway", () => {
 	beforeEach(() => {
 		createClient.mockReset();
+	});
+
+	it("limits installments by order value and keeps rejection details safe", () => {
+		expect(getMaxCardInstallments(4200)).toBe(12);
+		expect(getMaxCardInstallments(599)).toBe(5);
+		expect(getMercadoPagoCardErrorMessage("cc_rejected_insufficient_amount")).toContain("limite");
+		expect(getMercadoPagoCardErrorMessage("unknown_provider_detail")).toContain("recusado");
 	});
 
 	it("maps pending Orders status and keeps Pix data for the embedded checkout", async () => {

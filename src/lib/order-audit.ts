@@ -2,7 +2,10 @@ import "server-only";
 
 import { getDb } from "@/lib/mongodb";
 
-export type OrderAuditAction = "order_fulfillment_updated" | "order_payment_status_webhook_updated";
+export type OrderAuditAction =
+	| "order_fulfillment_updated"
+	| "order_payment_status_webhook_updated"
+	| "order_payment_admin_operation";
 export type OrderAuditActorRole = "admin" | "vendor" | "customer" | "system";
 
 export interface OrderAuditEntry {

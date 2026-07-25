@@ -25,8 +25,8 @@ interface AttemptDoc {
 	orderId: string;
 	attempts: number;
 	lastAttemptAt?: Date;
-	nextAttemptAt?: Date;
-	lockedUntil?: Date;
+	nextAttemptAt?: Date | null;
+	lockedUntil?: Date | null;
 	status: ReconciliationOutcome;
 	lastError?: string | null;
 	alert?: boolean;
@@ -39,6 +39,10 @@ function providerOrderId(draft: PendingDraft) {
 
 function isPendingStatus(status?: string) {
 	return status === "pending" || status === "processing";
+}
+
+function retryDelay(attemptNumber: number) {
+	return BACKOFF_MS[Math.min(attemptNumber - 1, BACKOFF_MS.length - 1)] ?? 60_000;
 }
 
 export async function reconcilePendingMercadoPagoOrders(input: { limit?: number; orderId?: string } = {}) {
@@ -75,7 +79,7 @@ async function reconcileOne(db: Awaited<ReturnType<typeof getDb>>, orderId: stri
 	if (current?.nextAttemptAt && current.nextAttemptAt > now) {
 		return { orderId, providerOrderId, outcome: current.status };
 	}
-	if (current?.alert || (current?.attempts ?? 0) >= MAX_ATTEMPTS) {
+	if (current && (current.alert || current.attempts >= MAX_ATTEMPTS)) {
 		return { orderId, providerOrderId, outcome: "alerted" as const, error: current.lastError ?? undefined };
 	}
 
@@ -102,7 +106,7 @@ async function reconcileOne(db: Awaited<ReturnType<typeof getDb>>, orderId: stri
 			createSession: false,
 		});
 		if ("ok" in result) {
-			const outcome = result.status === "processing" ? "still_pending" : "reconciled";
+			const outcome: ReconciliationOutcome = result.status === "processing" ? "still_pending" : "reconciled";
 			await attempts.updateOne(
 				{ providerOrderId },
 				{
@@ -110,7 +114,7 @@ async function reconcileOne(db: Awaited<ReturnType<typeof getDb>>, orderId: stri
 						status: outcome,
 						lastError: null,
 						nextAttemptAt:
-							outcome === "still_pending" ? new Date(now.getTime() + BACKOFF_MS[attemptNumber - 1]) : null,
+							outcome === "still_pending" ? new Date(now.getTime() + retryDelay(attemptNumber)) : null,
 						lockedUntil: null,
 						updatedAt: new Date(),
 					},
@@ -128,7 +132,7 @@ async function reconcileOne(db: Awaited<ReturnType<typeof getDb>>, orderId: stri
 				$set: {
 					status: exhausted ? "alerted" : "failed",
 					lastError: message,
-					nextAttemptAt: exhausted ? null : new Date(now.getTime() + BACKOFF_MS[attemptNumber - 1]),
+					nextAttemptAt: exhausted ? null : new Date(now.getTime() + retryDelay(attemptNumber)),
 					alert: exhausted,
 					lockedUntil: null,
 					updatedAt: new Date(),
