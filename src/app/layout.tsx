@@ -79,30 +79,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 						data-website-id={env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
 					/>
 				)}
-				<Script
-					id="dd-rum-sync"
-					src="https://www.datadoghq-browser-agent.com/us5/v6/datadog-rum.js"
-					type="text/javascript"
-					strategy="beforeInteractive"
-				/>
-				<Script id="datadog-rum">
-					{`
-window.DD_RUM && window.DD_RUM.init({
-    applicationId: "${env.NEXT_PUBLIC_DD_RUM_APPLICATION_ID}",
-    clientToken: "${env.NEXT_PUBLIC_DD_RUM_CLIENT_TOKEN}",
-    site: "${env.NEXT_PUBLIC_DD_SITE}",
-    service: "${env.NEXT_PUBLIC_DD_SERVICE}",
-    env: "${env.NEXT_PUBLIC_DD_ENV}",
-    version: "${env.NEXT_PUBLIC_DD_VERSION}",
-    sessionSampleRate: ${env.NEXT_PUBLIC_DD_SESSION_SAMPLE_RATE},
-    sessionReplaySampleRate: ${env.NEXT_PUBLIC_DD_SESSION_REPLAY_SAMPLE_RATE},
-    trackUserInteractions: true,
-    trackResources: true,
-    trackLongTasks: true,
-    defaultPrivacyLevel: "${env.NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL}",
-});
-`}
-				</Script>
 				{shouldLoadVercelClientTelemetry ? <SpeedInsights /> : null}
 				{shouldLoadVercelClientTelemetry ? <Analytics /> : null}
 			</body>
