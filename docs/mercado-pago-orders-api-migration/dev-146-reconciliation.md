@@ -20,3 +20,9 @@
 
 Execução automática: chamar `GET /api/cron/mercado-pago-reconciliation` com `Authorization: Bearer $MERCADO_PAGO_RECONCILIATION_SECRET`.
 Execução manual: botão em `/admin/webhooks` ou `POST /api/admin/mercado-pago/reconcile`.
+
+## Evidência de regressão
+
+- `reconciliation.test.ts` cobre recuperação por consulta, exclusão de estados finais, backoff sem reprocessar e divergência que gera alerta terminal.
+- Suíte completa: 156 testes aprovados e 1 skipped; lint, typecheck e `git diff --check` aprovados.
+- O conector Mercado Pago está habilitado por OAuth, mas suas ferramentas ainda não foram carregadas nesta sessão; a validação externa fica pendente desse carregamento.
