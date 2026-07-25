@@ -1115,7 +1115,7 @@ async function copyPixCode(code: string, setMessage: (message: string) => void) 
 	try {
 		if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
 		await navigator.clipboard.writeText(code);
-		setMessage("Código Pix copiado.");
+		setMessage("Código Pix copiado para a área de transferência.");
 		return true;
 	} catch {
 		setMessage("Não foi possível copiar automaticamente. Selecione o código acima para copiar.");

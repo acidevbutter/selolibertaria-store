@@ -44,6 +44,7 @@
 
 ### Changed
 
+- Após a cópia, o painel Pix agora informa explicitamente que o código está na área de transferência.
 - O código Pix agora fica em painel compacto com ação de cópia por ícone, tooltip de confirmação e fallback acessível quando a área de transferência não estiver disponível.
 - Centralizado o bloco Pix do checkout; o QR Code fica alinhado ao centro e o botão `Já paguei` aparece abaixo do link para abrir o Pix no Mercado Pago.
 - Reorganizado o hub do admin editorial para separar conteúdo institucional, programação e projetos, conteúdo global e operação comercial; reescritas cópias públicas que tratavam eventos, projetos e Sarau Safado como extensões do catálogo.
