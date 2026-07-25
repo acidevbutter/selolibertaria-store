@@ -14,6 +14,7 @@ import {
 } from "@/ui/editorial/editorial-primitives";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 import { StatusBadge } from "@/ui/status-badge";
+import { ReconcileOrdersButton } from "./reconcile-orders-button.client";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,7 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 				description="Acompanhe eventos recebidos, falhas e validação de assinatura."
 				actions={
 					<div className="flex flex-wrap gap-2">
+						<ReconcileOrdersButton />
 						{[
 							{ href: "/admin/webhooks?status=all", label: "Todos", active: status === "all" },
 							{

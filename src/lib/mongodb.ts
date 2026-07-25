@@ -161,6 +161,12 @@ export async function ensureIndexes() {
 				createOptionalIndex(sessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })),
 				createOptionalIndex(db.collection("webhooks").createIndex({ receivedAt: -1 })),
 				createOptionalIndex(db.collection("webhooks").createIndex({ eventId: 1 })),
+				createOptionalIndex(
+					db.collection("mercadoPagoReconciliation").createIndex({ providerOrderId: 1 }, { unique: true }),
+				),
+				createOptionalIndex(
+					db.collection("mercadoPagoReconciliation").createIndex({ status: 1, nextAttemptAt: 1 }),
+				),
 				createOptionalIndex(db.collection("communication").createIndex({ sentAt: -1 })),
 				createOptionalIndex(db.collection("communication").createIndex({ status: 1, sentAt: -1 })),
 				createOptionalIndex(db.collection("communication").createIndex({ kind: 1, sentAt: -1 })),

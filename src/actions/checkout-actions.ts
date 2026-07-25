@@ -51,6 +51,7 @@ interface OrderDraftDoc {
 	paymentReferenceId?: string | null;
 	paymentProvider: "mercado_pago";
 	mercadoPagoPaymentId?: string | null;
+	mercadoPagoOrderId?: string | null;
 	mercadoPago?: {
 		attemptId?: string | null;
 		idempotencyKey?: string | null;
@@ -335,10 +336,11 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	const { snapshot } = access;
 	const draftValidationError = validateCheckoutDraft(draft, snapshot);
 	if (draftValidationError) return { error: draftValidationError } as const;
-	if (draft.mercadoPagoPaymentId && (draft.status === "processing" || draft.status === "succeeded")) {
+	const existingMercadoPagoOrderId = draft.mercadoPagoOrderId || draft.mercadoPagoPaymentId;
+	if (existingMercadoPagoOrderId && (draft.status === "processing" || draft.status === "succeeded")) {
 		return { error: "Já existe um pagamento Mercado Pago em processamento para este pedido" } as const;
 	}
-	if (draft.mercadoPagoPaymentId && draft.status === "failed") {
+	if (existingMercadoPagoOrderId && draft.status === "failed") {
 		const resetResult = await resetConfirmedFailedMercadoPagoAttempt(draft);
 		if ("error" in resetResult) return { error: resetResult.error } as const;
 		if (resetResult.pending) {
@@ -440,13 +442,14 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 				cartHash: draft.cartHash,
 			},
 		});
-		const paymentId = order.providerOrderId;
+		const mercadoPagoOrderId = order.providerOrderId;
 		await dbUpdateDraft(draft.orderId, {
 			userId: snapshot.userId ?? draft.userId ?? null,
 			buyer,
 			status: order.status,
-			mercadoPagoPaymentId: paymentId,
-			"mercadoPago.orderId": paymentId,
+			mercadoPagoOrderId,
+			mercadoPagoPaymentId: mercadoPagoOrderId,
+			"mercadoPago.orderId": mercadoPagoOrderId,
 			"mercadoPago.transactionId": order.transaction.id,
 			"mercadoPago.status": order.providerStatus,
 			"mercadoPago.paymentMethodId": paymentMethodId,
@@ -457,7 +460,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 		return {
 			ok: true as const,
 			orderId: draft.orderId,
-			paymentId,
+			paymentId: mercadoPagoOrderId,
 			status: order.status,
 			qrCode: order.pix?.qrCode ?? null,
 			qrCodeBase64: order.pix?.qrCodeBase64 ?? null,
@@ -498,7 +501,7 @@ async function ensureMercadoPagoPaymentAttempt(draft: OrderDraftDoc) {
 async function resetConfirmedFailedMercadoPagoAttempt(draft: OrderDraftDoc) {
 	try {
 		const order = await retrieveCheckoutOrder({
-			providerOrderId: draft.mercadoPagoPaymentId!,
+			providerOrderId: draft.mercadoPagoOrderId || draft.mercadoPagoPaymentId!,
 			expected: {
 				amountInCents: draft.amountTotal,
 				currency: draft.currency,
@@ -509,11 +512,19 @@ async function resetConfirmedFailedMercadoPagoAttempt(draft: OrderDraftDoc) {
 		if (status === "processing" || status === "succeeded") return { pending: true } as const;
 		if (status !== "failed") return { error: "O estado do pagamento Mercado Pago é inválido" } as const;
 		const reset = await (await getDb()).collection<OrderDraftDoc>("orderDrafts").updateOne(
-			{ _id: draft._id, mercadoPagoPaymentId: draft.mercadoPagoPaymentId, status: "failed" },
+			{
+				_id: draft._id,
+				$or: [
+					{ mercadoPagoOrderId: draft.mercadoPagoOrderId || draft.mercadoPagoPaymentId },
+					{ mercadoPagoPaymentId: draft.mercadoPagoPaymentId },
+				],
+				status: "failed",
+			},
 			{
 				$set: { status: "requires_payment_method", updatedAt: new Date(), confirmedAt: null },
 				$unset: {
 					mercadoPagoPaymentId: "",
+					mercadoPagoOrderId: "",
 					"mercadoPago.attemptId": "",
 					"mercadoPago.idempotencyKey": "",
 				},
@@ -535,11 +546,12 @@ export async function getPendingMercadoPagoPixPayment(input: { orderId: string }
 	const access = await resolveDraftAccess({ orderId: input.orderId });
 	if ("error" in access) return { error: access.error } as const;
 	const { draft } = access;
-	if (!draft.mercadoPagoPaymentId) return { ok: true as const, payment: null };
+	const mercadoPagoOrderId = draft.mercadoPagoOrderId || draft.mercadoPagoPaymentId;
+	if (!mercadoPagoOrderId) return { ok: true as const, payment: null };
 
 	try {
 		const order = await retrieveCheckoutOrder({
-			providerOrderId: draft.mercadoPagoPaymentId,
+			providerOrderId: mercadoPagoOrderId,
 			expected: {
 				amountInCents: draft.amountTotal,
 				currency: draft.currency,
