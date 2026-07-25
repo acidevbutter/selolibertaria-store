@@ -29,6 +29,7 @@ interface OrderDraftDoc {
 	paymentReferenceId?: string | null;
 	paymentProvider?: "mercado_pago";
 	mercadoPagoPaymentId?: string | null;
+	mercadoPagoOrderId?: string | null;
 	status: string;
 	subtotal?: number;
 	discountTotal?: number;
@@ -130,33 +131,45 @@ async function resolveCheckoutBrowserAccess(input: {
 
 export async function recordMercadoPagoCheckout(input: {
 	paymentId?: string | null;
+	mercadoPagoOrderId?: string | null;
 	orderId?: string | null;
 	createSession?: boolean;
 }): Promise<
 	| { ok: true; status: string; cartCleared: boolean; setupPasswordRequired: boolean }
 	| { error: string; status?: string }
 > {
+	const providerOrderIdFromInput =
+		typeof input.mercadoPagoOrderId === "string" && /^[0-9A-Za-z_-]+$/.test(input.mercadoPagoOrderId)
+			? input.mercadoPagoOrderId
+			: null;
 	const paymentIdFromInput =
 		typeof input.paymentId === "string" && /^[0-9A-Za-z_-]+$/.test(input.paymentId) ? input.paymentId : null;
 	const orderIdFromInput =
 		typeof input.orderId === "string" && input.orderId.startsWith("ord_") ? input.orderId : null;
 
-	if (!paymentIdFromInput && !orderIdFromInput) return { error: "ID do pagamento ausente" };
+	if (!paymentIdFromInput && !providerOrderIdFromInput && !orderIdFromInput)
+		return { error: "ID da order ausente" };
 
 	try {
 		const db = await getDb();
 		const draftByOrder = orderIdFromInput
 			? await db.collection<OrderDraftDoc>("orderDrafts").findOne({ orderId: orderIdFromInput })
 			: null;
-		const resolvedPaymentId = paymentIdFromInput || draftByOrder?.mercadoPagoPaymentId || null;
-		if (!resolvedPaymentId) return { error: "ID do pagamento Mercado Pago ausente" };
+		const resolvedOrderId =
+			providerOrderIdFromInput ||
+			paymentIdFromInput ||
+			draftByOrder?.mercadoPagoOrderId ||
+			draftByOrder?.mercadoPagoPaymentId ||
+			null;
+		if (!resolvedOrderId) return { error: "ID da order Mercado Pago ausente" };
 
 		const paymentOrderId = draftByOrder?.orderId ?? null;
 		const draft =
 			draftByOrder ||
 			(await db.collection<OrderDraftDoc>("orderDrafts").findOne({
 				$or: [
-					{ mercadoPagoPaymentId: resolvedPaymentId },
+					{ mercadoPagoOrderId: resolvedOrderId },
+					{ mercadoPagoPaymentId: resolvedOrderId },
 					...(paymentOrderId ? [{ orderId: paymentOrderId }] : []),
 				],
 			}));
@@ -166,7 +179,7 @@ export async function recordMercadoPagoCheckout(input: {
 		}
 		const orderId = draft.orderId;
 		const order = await retrieveCheckoutOrder({
-			providerOrderId: resolvedPaymentId,
+			providerOrderId: resolvedOrderId,
 			expected: { amountInCents: draft.amountTotal, currency: draft.currency, externalReference: orderId },
 		});
 		if (paymentOrderId && paymentOrderId !== order.externalReference) {
@@ -179,7 +192,8 @@ export async function recordMercadoPagoCheckout(input: {
 			{
 				$set: {
 					status: authoritativeStatus,
-					mercadoPagoPaymentId: resolvedPaymentId,
+					mercadoPagoOrderId: resolvedOrderId,
+					mercadoPagoPaymentId: resolvedOrderId,
 					"mercadoPago.status": order.providerStatus,
 					"mercadoPago.transactionId": order.transaction.id,
 					updatedAt: new Date(),
@@ -235,15 +249,15 @@ export async function recordMercadoPagoCheckout(input: {
 			deliveryAddress: draft.deliveryAddress ?? null,
 			shippingRate: draft.shippingRate ?? null,
 		});
-		const eventId = `mercado-pago:${resolvedPaymentId}:${order.providerStatus}`;
-		const relatedIds = { mercadoPagoOrderId: resolvedPaymentId };
+		const eventId = `mercado-pago-order:${resolvedOrderId}:${order.providerStatus}`;
+		const relatedIds = { mercadoPagoOrderId: resolvedOrderId };
 
 		const updateExisting = await userUpdateCol.updateOne(
 			{
 				_id: new ObjectId(userId),
 				purchases: {
 					$elemMatch: {
-						$or: [{ id: orderId }, { "relatedIds.mercadoPagoOrderId": resolvedPaymentId }],
+						$or: [{ id: orderId }, { "relatedIds.mercadoPagoOrderId": resolvedOrderId }],
 					},
 				},
 			},
@@ -304,7 +318,7 @@ export async function recordMercadoPagoCheckout(input: {
 							buyer: draft.buyer ?? null,
 							items,
 							kind: "mercado_pago",
-							mercadoPagoOrderId: resolvedPaymentId,
+							mercadoPagoOrderId: resolvedOrderId,
 							relatedIds,
 							...(draft
 								? {
