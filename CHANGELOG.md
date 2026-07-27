@@ -25,6 +25,8 @@
 
 ### Fixed
 
+- Mercado Pago Orders API: status `processing` agora é tratado como pagamento pendente, permitindo que o Pix sandbox criado com sucesso siga para o acompanhamento sem erro genérico.
+
 - DEV-151: o Card Payment Brick é reinicializado quando o e-mail da pessoa compradora muda, reutilizando o dado já preenchido no checkout.
 - DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
