@@ -10,6 +10,7 @@ const continuePendingMercadoPagoPixCheckout = vi.fn();
 const submitMercadoPagoCheckoutPayment = vi.fn();
 const updateCheckoutBuyerData = vi.fn();
 const routerReplace = vi.fn();
+const createPaymentBrick = vi.fn();
 
 function createDeferred<T>() {
 	let resolve!: (value: T | PromiseLike<T>) => void;
@@ -61,6 +62,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		submitMercadoPagoCheckoutPayment.mockReset();
 		updateCheckoutBuyerData.mockReset();
 		routerReplace.mockReset();
+		createPaymentBrick.mockReset();
 		updateCheckoutBuyerData.mockResolvedValue({ ok: true });
 		getPendingMercadoPagoPixPayment.mockResolvedValue({ ok: true, payment: null });
 		vi.stubGlobal(
@@ -71,8 +73,12 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 						create: async (
 							_type: string,
 							_container: string,
-							settings: { callbacks: { onReady: () => void } },
+							settings: {
+								initialization: { payer: { email: string } };
+								callbacks: { onReady: () => void };
+							},
 						) => {
+							createPaymentBrick(settings);
 							settings.callbacks.onReady();
 							return { unmount: vi.fn() };
 						},
@@ -331,6 +337,32 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			expect(
 				screen.getByText("Informe os dados do cartão no formulário seguro do Mercado Pago."),
 			).toBeVisible(),
+		);
+	});
+
+	it("recria o Brick com o e-mail informado no checkout", async () => {
+		getPendingMercadoPagoPixPayment.mockResolvedValue({ ok: true, payment: null });
+
+		render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<MercadoPagoCheckoutForm checkout={checkout} locale="pt-BR" />
+			</IntlClientProvider>,
+		);
+
+		fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "novo@selo.test" } });
+		const card = await screen.findByRole("radio", {
+			name: "CartãoCrédito ou débito no formulário seguro",
+		});
+		fireEvent.click(card);
+
+		await waitFor(() =>
+			expect(createPaymentBrick).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					initialization: expect.objectContaining({
+						payer: expect.objectContaining({ email: "novo@selo.test" }),
+					}),
+				}),
+			),
 		);
 	});
 

@@ -6,6 +6,9 @@
   `/checkout`, sem redirecionamento externo.
 - A seleção de cartão carregou o Card Payment Brick, incluindo meios de pagamento e botão
   `Pagar`, sem erros ou warnings no console.
+- O e-mail do formulário principal agora reinicializa o Brick quando alterado; no Browser, o
+  e-mail sanitizado informado acima foi aplicado e o campo interno de e-mail deixou de ser
+  exibido pelo Brick.
 - O Pix permanece no mesmo checkout com ação de gerar QR Code; testes de componente cobrem
   QR Code, copia e cola, expiração, recarga e bloqueio de clique duplicado.
 - Validação atual: 17 testes focados aprovados; suíte completa com 157 aprovados e 1 ignorado;

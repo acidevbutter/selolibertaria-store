@@ -25,6 +25,7 @@
 
 ### Fixed
 
+- DEV-151: o Card Payment Brick é reinicializado quando o e-mail da pessoa compradora muda, reutilizando o dado já preenchido no checkout.
 - DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
 - O redirecionamento de preparo do checkout agora preserva a origem atual, mantendo o carrinho convidado ao abrir o checkout em ambientes locais de teste.
