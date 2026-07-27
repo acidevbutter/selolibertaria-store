@@ -551,6 +551,7 @@ export function MercadoPagoCheckoutForm({
 		};
 	}, [
 		amountTotal,
+		buyer.email,
 		checkout.orderId,
 		checkout.publishableKey,
 		deliveryReady,

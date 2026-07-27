@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-151/DEV-148: registrada validação local atual do checkout embutido, Card Payment Brick, build e checklist de deploy/rollback, mantendo explícita a pendência de homologação financeira controlada.
 - DEV-152 a DEV-157: documentada a auditoria final do mapa, contratos, SDK, adapter e reconexão/reconstrução da Orders API, incluindo limites explícitos de sandbox e de cartões salvos.
 - DEV-148: registrada matriz de homologação Orders API com identidade MongoDB de QA sanitizada, cobertura local e pendências explícitas de sandbox.
 - DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.
@@ -24,6 +25,9 @@
 
 ### Fixed
 
+- Mercado Pago Orders API: status `processing` agora é tratado como pagamento pendente, permitindo que o Pix sandbox criado com sucesso siga para o acompanhamento sem erro genérico.
+
+- DEV-151: o Card Payment Brick é reinicializado quando o e-mail da pessoa compradora muda, reutilizando o dado já preenchido no checkout.
 - DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
 - O redirecionamento de preparo do checkout agora preserva a origem atual, mantendo o carrinho convidado ao abrir o checkout em ambientes locais de teste.
