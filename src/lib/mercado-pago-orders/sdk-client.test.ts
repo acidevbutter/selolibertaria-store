@@ -86,6 +86,32 @@ describe("MercadoPagoOrdersSdkClient", () => {
 		expect(JSON.stringify(logs)).not.toContain("buyer@example.test");
 	});
 
+	it("maps the Orders processing status to a pending payment", async () => {
+		const client = new MercadoPagoOrdersSdkClient(
+			createSdk({
+				create: async () => ({
+					...response,
+					status: "processing",
+					transactions: {
+						payments: [{ ...response.transactions?.payments?.[0], status: "processing" }],
+					},
+				}),
+			}),
+		);
+
+		await expect(
+			client.createOrder({
+				orderId: "ord_processing_1",
+				externalReference: "ord_processing_1",
+				amountInCents: 4200,
+				currency: "BRL",
+				payer: { email: "buyer@example.test" },
+				paymentMethod: { type: "pix" },
+				idempotencyKey: "orders:ord_processing_1:attempt-1",
+			}),
+		).resolves.toMatchObject({ status: "pending", transaction: { status: "pending" } });
+	});
+
 	it("forwards token and selected installments through the Orders transaction", async () => {
 		let createInput: Parameters<MercadoPagoOrderSdk["create"]>[0] | undefined;
 		const client = new MercadoPagoOrdersSdkClient(
