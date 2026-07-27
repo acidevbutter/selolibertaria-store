@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-151/DEV-148: registrada validação local atual do checkout embutido, Card Payment Brick, build e checklist de deploy/rollback, mantendo explícita a pendência de homologação financeira controlada.
 - DEV-152 a DEV-157: documentada a auditoria final do mapa, contratos, SDK, adapter e reconexão/reconstrução da Orders API, incluindo limites explícitos de sandbox e de cartões salvos.
 - DEV-148: registrada matriz de homologação Orders API com identidade MongoDB de QA sanitizada, cobertura local e pendências explícitas de sandbox.
 - DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.

@@ -2,13 +2,16 @@
 
 ## Evidência confirmada
 
-- O Browser acessou catálogo e PDP sem exibir uma conta de compra.
-- A aplicação bloqueou corretamente checkout para a sessão ainda identificada como backoffice, sem criar cobrança.
-- Console do Browser sem erros ou warnings.
+- Browser local em 2026-07-26: checkout com carrinho válido mostrou Pix e cartão dentro de
+  `/checkout`, sem redirecionamento externo.
+- A seleção de cartão carregou o Card Payment Brick, incluindo meios de pagamento e botão
+  `Pagar`, sem erros ou warnings no console.
+- O Pix permanece no mesmo checkout com ação de gerar QR Code; testes de componente cobrem
+  QR Code, copia e cola, expiração, recarga e bloqueio de clique duplicado.
+- Validação atual: 17 testes focados aprovados; suíte completa com 157 aprovados e 1 ignorado;
+  `yarn lint`, `yarn tsc --noEmit` e `yarn build` aprovados.
 
 ## Limite da execução
 
-- A ação de sair não removeu a sessão de backoffice de forma observável no Browser; por isso o checkout convidado, o Card Brick e o Pix não foram executados nesta validação.
-- O MCP Mercado Pago está OAuth-enabled no CLI, mas suas ferramentas não foram carregadas nesta conversa. Não houve chamada direta ao provedor como substituição.
-
-Os prints `dev-151-checkout-current.png` e `dev-151-guest-checkout.png` registram o bloqueio seguro.
+- Nenhum clique em `Pagar` foi feito nesta sessão: não foi criada cobrança nem transmitido
+  dado de pagamento. A homologação financeira controlada continua registrada em DEV-148.
