@@ -30,6 +30,15 @@ import { slugify } from "@/lib/utils";
 
 const COLLECTION = "editorialContent";
 
+export type EditorialItemFormActionState = {
+	status: "idle" | "error";
+	message: string | null;
+	fieldErrors: {
+		title?: string;
+		order?: string;
+	};
+};
+
 async function requireEditorialManager() {
 	const auth = await requireCapability("editorial.write");
 	if ("error" in auth) {
@@ -49,6 +58,47 @@ function requiredString(formData: FormData, key: string) {
 	const value = optionalString(formData.get(key));
 	if (!value) throw new Error(`${key} é obrigatório.`);
 	return value;
+}
+
+function isNavigationError(error: unknown) {
+	if (error instanceof Error && error.message.startsWith("NEXT_")) return true;
+
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"digest" in error &&
+		typeof error.digest === "string" &&
+		error.digest.startsWith("NEXT_")
+	);
+}
+
+function validateEditorialItemForm(formData: FormData): EditorialItemFormActionState | null {
+	const title = optionalString(formData.get("title"));
+	const order = formData.get("order");
+	const fieldErrors: EditorialItemFormActionState["fieldErrors"] = {};
+
+	if (!title) fieldErrors.title = "Informe o título do evento.";
+	if (typeof order === "string" && order.trim() && (!/^\d+$/.test(order) || Number(order) < 1)) {
+		fieldErrors.order = "Informe uma ordem inteira maior ou igual a 1.";
+	}
+
+	if (!Object.keys(fieldErrors).length) return null;
+	return {
+		status: "error",
+		message: "Revise os campos destacados antes de salvar.",
+		fieldErrors,
+	};
+}
+
+function toEditorialItemFormError(error: unknown): EditorialItemFormActionState {
+	return {
+		status: "error",
+		message:
+			error instanceof Error && error.message
+				? error.message
+				: "Não foi possível salvar o evento. Tente novamente.",
+		fieldErrors: {},
+	};
 }
 
 function parseBoolean(value: FormDataEntryValue | null, defaultValue = false) {
@@ -292,76 +342,98 @@ async function moveEditorialItem(
 	]);
 }
 
-export async function createEditorialEventAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const db = await getDb();
-	const title = requiredString(formData, "title");
-	const slug = slugify(optionalString(formData.get("slug")) || title);
-	const now = new Date().toISOString();
+export async function createEditorialEventAction(
+	_previousState: EditorialItemFormActionState,
+	formData: FormData,
+): Promise<EditorialItemFormActionState> {
+	const validationError = validateEditorialItemForm(formData);
+	if (validationError) return validationError;
 
-	const doc: EditorialEvent = {
-		type: "event",
-		slug,
-		title,
-		summary: optionalString(formData.get("summary")),
-		description: optionalString(formData.get("description")),
-		status: optionalString(formData.get("status")),
-		period: optionalString(formData.get("period")),
-		location: optionalString(formData.get("location")),
-		eyebrow: optionalString(formData.get("eyebrow")),
-		published: parseBoolean(formData.get("published"), true),
-		order: parseOrder(formData.get("order"), 1),
-		image: await parseImage(formData),
-		updatedAt: now,
-		updatedBy: String(session.sub),
-		createdAt: now,
-		createdBy: String(session.sub),
-	};
+	try {
+		const session = await requireEditorialManager();
+		const db = await getDb();
+		const title = requiredString(formData, "title");
+		const slug = slugify(optionalString(formData.get("slug")) || title);
+		const now = new Date().toISOString();
 
-	await db.collection<EditorialEvent>(COLLECTION).updateOne(
-		{ type: "event", slug },
-		{
-			$set: doc,
-		},
-		{ upsert: true },
-	);
+		const doc: EditorialEvent = {
+			type: "event",
+			slug,
+			title,
+			summary: optionalString(formData.get("summary")),
+			description: optionalString(formData.get("description")),
+			status: optionalString(formData.get("status")),
+			period: optionalString(formData.get("period")),
+			location: optionalString(formData.get("location")),
+			eyebrow: optionalString(formData.get("eyebrow")),
+			published: parseBoolean(formData.get("published"), true),
+			order: parseOrder(formData.get("order"), 1),
+			image: await parseImage(formData),
+			updatedAt: now,
+			updatedBy: String(session.sub),
+			createdAt: now,
+			createdBy: String(session.sub),
+		};
 
-	refreshEventPaths(slug);
-	redirect(`/admin/editorial/events/${encodeURIComponent(slug)}`);
+		await db.collection<EditorialEvent>(COLLECTION).updateOne(
+			{ type: "event", slug },
+			{
+				$set: doc,
+			},
+			{ upsert: true },
+		);
+
+		refreshEventPaths(slug);
+		redirect(`/admin/editorial/events/${encodeURIComponent(slug)}`);
+	} catch (error) {
+		if (isNavigationError(error)) throw error;
+		return toEditorialItemFormError(error);
+	}
 }
 
-export async function updateEditorialEventAction(formData: FormData) {
-	const session = await requireEditorialManager();
-	const db = await getDb();
-	const currentSlug = requiredString(formData, "currentSlug");
-	const title = requiredString(formData, "title");
-	const slug = slugify(optionalString(formData.get("slug")) || title);
-	const now = new Date().toISOString();
+export async function updateEditorialEventAction(
+	_previousState: EditorialItemFormActionState,
+	formData: FormData,
+): Promise<EditorialItemFormActionState> {
+	const validationError = validateEditorialItemForm(formData);
+	if (validationError) return validationError;
 
-	await db.collection<EditorialEvent>(COLLECTION).updateOne(
-		{ type: "event", slug: currentSlug },
-		{
-			$set: {
-				title,
-				slug,
-				summary: optionalString(formData.get("summary")),
-				description: optionalString(formData.get("description")),
-				status: optionalString(formData.get("status")),
-				period: optionalString(formData.get("period")),
-				location: optionalString(formData.get("location")),
-				eyebrow: optionalString(formData.get("eyebrow")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
-				image: await parseImage(formData),
-				updatedAt: now,
-				updatedBy: String(session.sub),
+	try {
+		const session = await requireEditorialManager();
+		const db = await getDb();
+		const currentSlug = requiredString(formData, "currentSlug");
+		const title = requiredString(formData, "title");
+		const slug = slugify(optionalString(formData.get("slug")) || title);
+		const now = new Date().toISOString();
+
+		await db.collection<EditorialEvent>(COLLECTION).updateOne(
+			{ type: "event", slug: currentSlug },
+			{
+				$set: {
+					title,
+					slug,
+					summary: optionalString(formData.get("summary")),
+					description: optionalString(formData.get("description")),
+					status: optionalString(formData.get("status")),
+					period: optionalString(formData.get("period")),
+					location: optionalString(formData.get("location")),
+					eyebrow: optionalString(formData.get("eyebrow")),
+					published: parseBoolean(formData.get("published"), true),
+					order: parseOrder(formData.get("order"), 1),
+					image: await parseImage(formData),
+					updatedAt: now,
+					updatedBy: String(session.sub),
+				},
 			},
-		},
-	);
+		);
 
-	refreshEventPaths(currentSlug);
-	if (currentSlug !== slug) refreshEventPaths(slug);
-	redirect(`/admin/editorial/events/${encodeURIComponent(slug)}`);
+		refreshEventPaths(currentSlug);
+		if (currentSlug !== slug) refreshEventPaths(slug);
+		redirect(`/admin/editorial/events/${encodeURIComponent(slug)}`);
+	} catch (error) {
+		if (isNavigationError(error)) throw error;
+		return toEditorialItemFormError(error);
+	}
 }
 
 export async function toggleEditorialEventPublishedAction(formData: FormData) {

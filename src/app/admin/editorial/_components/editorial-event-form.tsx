@@ -1,12 +1,21 @@
-import type { FocusEvent, FormEvent } from "react";
+"use client";
+
+import { type FocusEvent, type FormEvent, useActionState } from "react";
 import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
+import type { EditorialItemFormActionState } from "@/app/admin/editorial/actions";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import { Field } from "@/app/admin/products/_components/product-form-fields";
 import type { EditorialEvent } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
+
+const INITIAL_EDITORIAL_ITEM_FORM_STATE: EditorialItemFormActionState = {
+	status: "idle",
+	message: null,
+	fieldErrors: {},
+};
 
 function formatSlugToKebab(value: string) {
 	return value
@@ -56,17 +65,22 @@ export function EditorialEventForm({
 	event,
 	submitLabel,
 }: {
-	action: (formData: FormData) => void | Promise<void>;
+	action: (
+		state: EditorialItemFormActionState,
+		formData: FormData,
+	) => EditorialItemFormActionState | Promise<EditorialItemFormActionState>;
 	event?: EditorialEvent | null;
 	submitLabel: string;
 }) {
+	const [state, formAction] = useActionState(action, INITIAL_EDITORIAL_ITEM_FORM_STATE);
+
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle>{event ? "Editar evento" : "Novo evento"}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6 pb-28 md:pb-32">
+				<form action={formAction} className="space-y-6 pb-28 md:pb-32">
 					{event ? <input type="hidden" name="currentSlug" value={event.slug} /> : null}
 
 					<EditorialAccordionSection
@@ -77,7 +91,16 @@ export function EditorialEventForm({
 					>
 						<div className="grid gap-4 md:grid-cols-2">
 							<Field label="Título do evento" name="title">
-								<Input id="title" name="title" defaultValue={event?.title ?? ""} required />
+								<Input
+									id="title"
+									name="title"
+									defaultValue={event?.title ?? ""}
+									aria-invalid={Boolean(state.fieldErrors.title)}
+									required
+								/>
+								{state.fieldErrors.title ? (
+									<p className="text-xs text-destructive">{state.fieldErrors.title}</p>
+								) : null}
 							</Field>
 							<Field
 								label="Endereço público do evento"
@@ -114,7 +137,11 @@ export function EditorialEventForm({
 									min="1"
 									step="1"
 									defaultValue={String(event?.order ?? 1)}
+									aria-invalid={Boolean(state.fieldErrors.order)}
 								/>
+								{state.fieldErrors.order ? (
+									<p className="text-xs text-destructive">{state.fieldErrors.order}</p>
+								) : null}
 							</Field>
 							<Field
 								label="Período exibido"
@@ -216,6 +243,11 @@ export function EditorialEventForm({
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-xs leading-6 text-[color:var(--editorial-muted)]">
 						A imagem será enviada somente ao salvar o formulário. Até lá, a prévia fica pendente nesta página.
 					</div>
+					{state.status === "error" && state.message ? (
+						<p role="alert" className="text-sm text-destructive">
+							{state.message}
+						</p>
+					) : null}
 
 					<EditorialFloatingSaveBar hint="Salvar alterações do evento.">
 						{submitLabel}
