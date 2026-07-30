@@ -24,6 +24,7 @@
 
 ### Fixed
 
+- DEV-82: campos de escurecimento das imagens de fundo do editorial agora usam a chave persistida pelas Server Actions.
 - DEV-81: uploads administrativos agora expiram com erro compreensível quando a mídia não responde; o seletor informa confirmação de prévia, sucesso de envio, exclusão e falhas sem estado silencioso.
 - DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.

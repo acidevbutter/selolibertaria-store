@@ -129,7 +129,7 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 						Escurecimento sobre a imagem
 					</span>
 					<select
-						name={`${field.name}Escurecimento sobre a imagem`}
+						name={`${field.name}Overlay`}
 						defaultValue={background?.overlay ?? "medium"}
 						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 					>
