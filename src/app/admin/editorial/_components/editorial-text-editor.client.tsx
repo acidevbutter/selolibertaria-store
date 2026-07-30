@@ -74,7 +74,7 @@ export function EditorialTextEditor({ name, defaultValue, rows = 4 }: EditorialT
 					key,
 					(
 						form.elements.namedItem(
-							`${name}Style${key[0].toUpperCase()}${key.slice(1)}`,
+							`${name}Style${key.charAt(0).toUpperCase()}${key.slice(1)}`,
 						) as HTMLSelectElement | null
 					)?.value,
 				]),

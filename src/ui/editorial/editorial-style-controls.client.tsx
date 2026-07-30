@@ -53,7 +53,7 @@ export function EditorialStyleControls({
 				<label key={key} className="grid gap-1 text-xs font-medium text-[color:var(--editorial-muted)]">
 					{label}
 					<select
-						name={`${name}Style${key[0].toUpperCase()}${key.slice(1)}`}
+						name={`${name}Style${key.charAt(0).toUpperCase()}${key.slice(1)}`}
 						defaultValue={defaultStyle[key]}
 						className="h-8 border border-[color:var(--editorial-border)] bg-white px-2 text-xs text-[color:var(--editorial-ink)]"
 					>
