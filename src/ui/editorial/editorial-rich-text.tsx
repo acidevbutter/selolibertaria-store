@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { readEditorialText } from "@/lib/editorial-style";
 import { cn } from "@/lib/utils";
 
 type EditorialRichTextProps = {
@@ -55,12 +56,29 @@ function renderBlock(block: string, index: number): ReactNode {
 }
 
 export function EditorialRichText({ source, className }: EditorialRichTextProps) {
-	const blocks = normalizeBlocks(source ?? "")
+	const text = readEditorialText(source);
+	const styleClasses =
+		{
+			serif: "font-serif",
+			sans: "font-sans",
+		}[text.style.font] +
+		" " +
+		{ sm: "text-sm", base: "text-base", lg: "text-lg" }[text.style.scale] +
+		" " +
+		{
+			ink: "text-[color:var(--editorial-ink)]",
+			muted: "text-[color:var(--editorial-muted)]",
+			wine: "text-[color:var(--editorial-accent)]",
+			paper: "text-[color:var(--editorial-paper)]",
+		}[text.style.color] +
+		" " +
+		(text.style.emphasis === "strong" ? "font-semibold" : "");
+	const blocks = normalizeBlocks(text.source)
 		.split(/\n{2,}/)
 		.map(renderBlock)
 		.filter(Boolean);
 
 	if (blocks.length === 0) return null;
 
-	return <div className={cn("space-y-4", className)}>{blocks}</div>;
+	return <div className={cn("space-y-4", styleClasses, className)}>{blocks}</div>;
 }
