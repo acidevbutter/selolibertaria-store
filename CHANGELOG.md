@@ -24,6 +24,7 @@
 
 ### Fixed
 
+- DEV-162: o botão do menu móvel agora possui nome acessível em pt-BR.
 - DEV-161: o destaque inicial de contato não produz mais overflow horizontal em telas móveis.
 - DEV-84: o catálogo administrativo destaca `Novo livro` e oferece cadastro também quando não houver itens, com linguagem alinhada à operação editorial.
 - DEV-83: criação e edição de eventos agora retornam validação de título e ordem no próprio formulário e preservam os dados quando o upload ou salvamento falha.
