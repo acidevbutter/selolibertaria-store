@@ -106,12 +106,76 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 					<CardContent className="text-sm text-muted-foreground">{error}</CardContent>
 				</EditorialPanel>
 			) : (
-				<EditorialPanel className="overflow-hidden p-0">
+				<EditorialPanel className="p-0">
 					<CardHeader>
 						<CardTitle>Produtos</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<Table className="min-w-[760px]">
+						<div className="space-y-3 md:hidden">
+							{filtered.map((group) => {
+								const prices = group.variants
+									.map((variant) =>
+										typeof variant.priceAmount === "number"
+											? { amount: variant.priceAmount, currency: variant.currency }
+											: null,
+									)
+									.filter((price): price is { amount: number; currency: string } => Boolean(price))
+									.sort((a, b) => a.amount - b.amount);
+								const firstPrice = prices[0];
+								const lastPrice = prices[prices.length - 1];
+								const priceLabel =
+									firstPrice && lastPrice
+										? firstPrice.amount === lastPrice.amount
+											? formatMoney({ ...firstPrice, locale: displayLocale })
+											: `${formatMoney({ ...firstPrice, locale: displayLocale })} - ${formatMoney({ ...lastPrice, locale: displayLocale })}`
+										: "Sem preço";
+
+								return (
+									<div
+										key={group.slug}
+										className="space-y-3 border border-[color:var(--editorial-border)] bg-white/50 p-4"
+									>
+										<div className="flex min-w-0 items-center gap-3">
+											<AdminProductImagePreview images={group.images} alt={group.name} size="sm" />
+											<div className="min-w-0">
+												<div className="truncate font-medium">{group.name}</div>
+												<div className="truncate font-mono text-xs text-muted-foreground">{group.slug}</div>
+											</div>
+										</div>
+										<div className="grid grid-cols-2 gap-3 text-sm">
+											<div>
+												<span className="block text-xs text-muted-foreground">Categoria</span>
+												{group.category || "Não informada"}
+											</div>
+											<div>
+												<span className="block text-xs text-muted-foreground">Preço</span>
+												{priceLabel}
+											</div>
+											<div>
+												<span className="block text-xs text-muted-foreground">Variantes</span>
+												{group.variants.length}
+											</div>
+											<div>
+												<span className="block text-xs text-muted-foreground">Status</span>
+												<Badge variant={group.active ? "secondary" : "outline"}>
+													{group.active ? "Ativo" : "Inativo"}
+												</Badge>
+											</div>
+										</div>
+										<Link
+											className="inline-block text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
+											href={`/admin/products/${group.slug}`}
+										>
+											Editar produto
+										</Link>
+									</div>
+								);
+							})}
+							{filtered.length === 0 ? (
+								<div className="py-6 text-sm text-muted-foreground">Nenhum livro encontrado.</div>
+							) : null}
+						</div>
+						<Table className="hidden min-w-[760px] md:table">
 							<TableHeader>
 								<TableRow>
 									<TableHead>Produto</TableHead>

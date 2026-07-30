@@ -27,6 +27,7 @@
 - DEV-162: o botão do menu móvel agora possui nome acessível em pt-BR.
 - DEV-161: o destaque inicial de contato não produz mais overflow horizontal em telas móveis.
 - DEV-84: o catálogo administrativo destaca `Novo livro` e oferece cadastro também quando não houver itens, com linguagem alinhada à operação editorial.
+- DEV-84: a lista de livros administrativos usa cartões responsivos no mobile, evitando overflow horizontal sem perder categoria, preço, variantes, status e acesso à edição.
 - DEV-83: criação e edição de eventos agora retornam validação de título e ordem no próprio formulário e preservam os dados quando o upload ou salvamento falha.
 - DEV-82: campos de escurecimento das imagens de fundo do editorial agora usam a chave persistida pelas Server Actions; comandos de publicação e exclusão passam a informar execução, resultado e confirmação, mantendo o estado local após publicação e expondo falhas de exclusão.
 - DEV-81: uploads administrativos agora expiram com erro compreensível quando a mídia não responde; o seletor informa confirmação de prévia, sucesso de envio, exclusão e falhas sem estado silencioso.
