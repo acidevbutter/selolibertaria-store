@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { EditorialSarauForm } from "@/app/admin/editorial/_components/editorial-sarau-form";
 import { getEditorialSarauRecord, updateEditorialSarauAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
@@ -30,6 +31,7 @@ export default async function AdminEditorialSarauPage() {
 				description="Edite a página institucional do programa principal do selo."
 				actions={
 					<div className="flex flex-wrap gap-3">
+						<EditorialPagePreview href="/sarau-safado" published={page.published} />
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"

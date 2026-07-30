@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialAboutForm } from "@/app/admin/editorial/_components/editorial-about-form";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { getEditorialAboutRecord, updateEditorialAboutAction } from "@/app/admin/editorial/actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
@@ -30,6 +31,7 @@ export default async function AdminEditorialAboutPage() {
 				description="Edite a narrativa principal do selo e os blocos da página de apresentação."
 				actions={
 					<div className="flex flex-wrap gap-3">
+						<EditorialPagePreview href="/about" published={page.published} />
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
