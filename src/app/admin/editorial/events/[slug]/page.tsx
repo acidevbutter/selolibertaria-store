@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { EditorialEventForm } from "@/app/admin/editorial/_components/editorial-event-form";
 import { EditorialItemActions } from "@/app/admin/editorial/_components/editorial-item-actions.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
 	deleteEditorialEventAction,
 	getEditorialEventBySlug,
@@ -43,6 +44,7 @@ export default async function AdminEditorialEventDetailsPage({
 				description="Edite agenda, imagem, status e publicação do evento."
 				actions={
 					<div className="flex flex-wrap gap-3">
+						<EditorialPagePreview href="/events" published={event.published} />
 						<Link
 							href="/admin/editorial/events"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
