@@ -24,6 +24,7 @@
 
 ### Fixed
 
+- DEV-84: o catálogo administrativo destaca `Novo livro` e oferece cadastro também quando não houver itens, com linguagem alinhada à operação editorial.
 - DEV-83: criação e edição de eventos agora retornam validação de título e ordem no próprio formulário e preservam os dados quando o upload ou salvamento falha.
 - DEV-82: campos de escurecimento das imagens de fundo do editorial agora usam a chave persistida pelas Server Actions; comandos de publicação e exclusão passam a informar execução, resultado e confirmação.
 - DEV-81: uploads administrativos agora expiram com erro compreensível quando a mídia não responde; o seletor informa confirmação de prévia, sucesso de envio, exclusão e falhas sem estado silencioso.

@@ -56,8 +56,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 		<AdminEditorialPage>
 			<AdminEditorialHero
 				eyebrow="Produtos"
-				title="Catálogo"
-				description="Gerencie produtos, variantes e preços."
+				title="Catálogo de livros"
+				description="Gerencie livros da loja, variantes, preços e disponibilidade."
 				actions={
 					<>
 						<form className="min-w-[280px] max-w-md flex-1">
@@ -82,7 +82,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 						>
 							<Link href="/admin/products/new">
 								<PackagePlus className="h-4 w-4" />
-								Novo produto
+								Novo livro
 							</Link>
 						</Button>
 					</>
@@ -174,7 +174,12 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 								{filtered.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											Nenhum produto encontrado.
+											<div className="flex flex-wrap items-center justify-between gap-3">
+												<span>Nenhum livro encontrado.</span>
+												<Button asChild size="sm" className="rounded-none">
+													<Link href="/admin/products/new">Cadastrar novo livro</Link>
+												</Button>
+											</div>
 										</TableCell>
 									</TableRow>
 								) : null}
