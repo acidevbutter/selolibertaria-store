@@ -3,6 +3,7 @@
 ### Added
 
 - DEV-62: dicas acessíveis por popover nos campos editoriais de endereço público, posição, publicação e imagem.
+- DEV-62: destinos de botões e links agora explicam onde levam; controles de imagem de fundo recebem orientação sobre enquadramento, posição, escurecimento e contraste.
 - DEV-80: preview integrado das páginas editoriais, com iframe da rota pública e alternância desktop/mobile sem sair do formulário.
 - DEV-159: logs estruturados e sanitizados para operações da Orders API, com correlação segura por pedido/order e duração.
 - DEV-152 a DEV-157: documentada a auditoria final do mapa, contratos, SDK, adapter e reconexão/reconstrução da Orders API, incluindo limites explícitos de sandbox e de cartões salvos.

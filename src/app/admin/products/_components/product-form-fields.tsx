@@ -25,7 +25,7 @@ export function Field({
 	hint?: string;
 	className?: string;
 }) {
-	const help = FIELD_HELP[name];
+	const help = FIELD_HELP[name] ?? getFieldHelp(name);
 	return (
 		<div className={className ?? "space-y-2"}>
 			<div className="flex items-center gap-1">
@@ -52,6 +52,20 @@ const FIELD_HELP: Record<string, string> = {
 	imageCaption: "Texto curto exibido junto da imagem quando a página usar legenda.",
 	imageSrc: "Imagem que aparece no bloco público. A prévia só é publicada depois de salvar o formulário.",
 };
+
+function getFieldHelp(name: string) {
+	if (name.endsWith("CtaLabel"))
+		return "É o texto visível do botão. Aparece na página pública e orienta a próxima ação de quem está lendo.";
+	if (name.endsWith("ImageFit"))
+		return "Define se a imagem preenche todo o espaço ou aparece inteira. Altera apenas o enquadramento visual do bloco.";
+	if (name.endsWith("Position"))
+		return "Escolhe qual parte da imagem fica em evidência quando o espaço é cortado.";
+	if (name.endsWith("Overlay"))
+		return "Escurece a imagem de fundo para melhorar a leitura do texto sobre ela.";
+	if (name.endsWith("Contrast"))
+		return "Define se o texto sobre a imagem será claro ou escuro. Escolha a opção com melhor leitura.";
+	return undefined;
+}
 
 export function Textarea({
 	name,
