@@ -59,8 +59,8 @@ export default async function ContactPage() {
 			<div className="relative">
 				<Reveal>
 					<header className="mb-10 bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
-						<EditorialShell className="grid gap-8 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-							<div className="max-w-4xl space-y-5">
+						<EditorialShell className="grid grid-cols-[minmax(0,1fr)] gap-8 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+							<div className="min-w-0 max-w-4xl space-y-5">
 								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.72)] sm:text-sm">
 									{contact.hero?.eyebrow || "Contato"}
 								</EditorialEyebrow>
