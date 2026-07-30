@@ -8,6 +8,7 @@ import { Button } from "@/ui/shadcn/button";
 type ActionState = {
 	status: "idle" | "success" | "error";
 	message: string | null;
+	published?: boolean;
 };
 
 type EditorialItemAction = (formData: FormData) => void | Promise<void>;
@@ -58,18 +59,39 @@ export function EditorialItemActions({
 	toggleAction: EditorialItemAction;
 	deleteAction: EditorialItemAction;
 }) {
-	const [state, formAction] = useActionState(async (_previous: ActionState, formData: FormData) => {
-		try {
-			await toggleAction(formData);
-			return {
-				status: "success" as const,
-				message: published ? "Movido para rascunho com sucesso." : "Publicado com sucesso.",
-			};
-		} catch (error) {
-			if (isNavigationError(error)) throw error;
-			return { status: "error" as const, message: getErrorMessage(error) };
-		}
-	}, INITIAL_STATE);
+	const [toggleState, toggleFormAction] = useActionState(
+		async (_previous: ActionState, formData: FormData): Promise<ActionState> => {
+			try {
+				await toggleAction(formData);
+				const nextPublished = formData.get("published") === "true";
+				return {
+					status: "success" as const,
+					message: nextPublished ? "Publicado com sucesso." : "Movido para rascunho com sucesso.",
+					published: nextPublished,
+				};
+			} catch (error) {
+				if (isNavigationError(error)) throw error;
+				return { status: "error" as const, message: getErrorMessage(error) };
+			}
+		},
+		INITIAL_STATE,
+	);
+	const [deleteState, deleteFormAction] = useActionState(
+		async (_previous: ActionState, formData: FormData): Promise<ActionState> => {
+			try {
+				await deleteAction(formData);
+				return {
+					status: "success" as const,
+					message: `${itemLabel === "evento" ? "Evento" : "Projeto"} excluído com sucesso.`,
+				};
+			} catch (error) {
+				if (isNavigationError(error)) throw error;
+				return { status: "error" as const, message: getErrorMessage(error) };
+			}
+		},
+		INITIAL_STATE,
+	);
+	const isPublished = toggleState.published ?? published;
 
 	function confirmDeletion(event: FormEvent<HTMLFormElement>) {
 		if (!window.confirm(`Excluir este ${itemLabel}? Esta ação não pode ser desfeita.`)) {
@@ -79,23 +101,28 @@ export function EditorialItemActions({
 
 	return (
 		<div className="space-y-3">
-			<form action={formAction}>
+			<form action={toggleFormAction}>
 				<input type="hidden" name="slug" value={slug} />
-				<input type="hidden" name="published" value={published ? "false" : "true"} />
-				<SubmitButton>{published ? "Mover para rascunho" : "Publicar"}</SubmitButton>
+				<input type="hidden" name="published" value={isPublished ? "false" : "true"} />
+				<SubmitButton>{isPublished ? "Mover para rascunho" : "Publicar"}</SubmitButton>
 			</form>
-			<form action={deleteAction} onSubmit={confirmDeletion}>
+			<form action={deleteFormAction} onSubmit={confirmDeletion}>
 				<input type="hidden" name="slug" value={slug} />
 				<SubmitButton variant="destructive">{`Excluir ${itemLabel}`}</SubmitButton>
 			</form>
-			{state.status === "success" && state.message ? (
+			{toggleState.status === "success" && toggleState.message ? (
 				<p role="status" className="text-sm text-emerald-700">
-					{state.message}
+					{toggleState.message}
 				</p>
 			) : null}
-			{state.status === "error" && state.message ? (
+			{toggleState.status === "error" && toggleState.message ? (
 				<p role="alert" className="text-sm text-destructive">
-					{state.message}
+					{toggleState.message}
+				</p>
+			) : null}
+			{deleteState.status === "error" && deleteState.message ? (
+				<p role="alert" className="text-sm text-destructive">
+					{deleteState.message}
 				</p>
 			) : null}
 		</div>
