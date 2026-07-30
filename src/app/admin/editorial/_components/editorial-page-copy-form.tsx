@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
@@ -11,7 +11,12 @@ import type { EditorialBackground } from "@/lib/editorial-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import { Input } from "@/ui/shadcn/input";
 
-type FieldType = "text" | "textarea" | "background";
+type FieldType = "text" | "textarea" | "background" | "select" | "radio";
+
+type FieldOption = {
+	label: string;
+	value: string;
+};
 
 type FieldConfig = {
 	name: string;
@@ -22,6 +27,8 @@ type FieldConfig = {
 	rows?: number;
 	defaultValue?: string | null;
 	background?: EditorialBackground | null;
+	options?: FieldOption[];
+	visibleWhen?: { name: string; value: string };
 };
 
 type SectionConfig = {
@@ -155,7 +162,7 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 	);
 }
 
-function Field({ field }: { field: FieldConfig }) {
+function Field({ field, onValueChange }: { field: FieldConfig; onValueChange?: (value: string) => void }) {
 	if (field.type === "background") {
 		return <BackgroundField field={field} />;
 	}
@@ -164,13 +171,59 @@ function Field({ field }: { field: FieldConfig }) {
 		return <EditorialHrefField label={field.label} name={field.name} defaultValue={field.defaultValue} />;
 	}
 
+	if (field.type === "radio") {
+		return (
+			<fieldset className="grid gap-3">
+				<legend className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</legend>
+				<div className="grid gap-3 md:grid-cols-2">
+					{field.options?.map((option) => (
+						<label
+							key={option.value}
+							className="flex items-center gap-3 border border-[color:var(--editorial-border)] bg-white/60 px-4 py-3 text-sm"
+						>
+							<input
+								type="radio"
+								name={field.name}
+								value={option.value}
+								defaultChecked={(field.defaultValue ?? "") === option.value}
+								onChange={() => onValueChange?.(option.value)}
+							/>
+							<span>{option.label}</span>
+						</label>
+					))}
+				</div>
+				{field.help ? (
+					<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">{field.help}</span>
+				) : null}
+			</fieldset>
+		);
+	}
+
 	return (
 		<label className="grid gap-2">
 			<span className="text-sm font-medium text-[color:var(--editorial-ink)]">{field.label}</span>
 			{field.type === "textarea" ? (
 				<Textarea name={field.name} defaultValue={field.defaultValue} rows={field.rows} />
+			) : field.type === "select" ? (
+				<select
+					name={field.name}
+					defaultValue={field.defaultValue ?? ""}
+					onChange={(event) => onValueChange?.(event.target.value)}
+					className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+				>
+					<option value="">Selecione um livro publicado</option>
+					{field.options?.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
 			) : (
-				<Input name={field.name} defaultValue={field.defaultValue ?? ""} />
+				<Input
+					name={field.name}
+					defaultValue={field.defaultValue ?? ""}
+					onChange={(event) => onValueChange?.(event.target.value)}
+				/>
 			)}
 			{field.help ? (
 				<span className="text-xs leading-5 text-[color:var(--editorial-muted)]">{field.help}</span>
@@ -191,6 +244,7 @@ export function EditorialPageCopyForm({
 	sections: SectionConfig[];
 }) {
 	const [state, formAction] = useActionState(action, INITIAL_STATE);
+	const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
 	const savedAtLabel = formatSavedAt(state.savedAt);
 
 	return (
@@ -262,16 +316,30 @@ export function EditorialPageCopyForm({
 							))}
 						</div>
 					) : null}
-					{section.fields.map((field) => (
-						<div
-							key={field.name}
-							className={
-								field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
-							}
-						>
-							<Field field={field} />
-						</div>
-					))}
+					{section.fields
+						.filter(
+							(field) =>
+								!field.visibleWhen ||
+								(fieldValues[field.visibleWhen.name] ??
+									section.fields.find((candidate) => candidate.name === field.visibleWhen?.name)
+										?.defaultValue ??
+									"") === field.visibleWhen.value,
+						)
+						.map((field) => (
+							<div
+								key={field.name}
+								className={
+									field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
+								}
+							>
+								<Field
+									field={field}
+									onValueChange={(value) =>
+										setFieldValues((current) => ({ ...current, [field.name]: value }))
+									}
+								/>
+							</div>
+						))}
 				</EditorialAccordionSection>
 			))}
 

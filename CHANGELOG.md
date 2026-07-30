@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-58: hero da Home pode usar uma composição personalizada ou um livro publicado, reaproveitando capa, título, resumo e CTA do catálogo.
 - DEV-62: dicas acessíveis por popover nos campos editoriais de endereço público, posição, publicação e imagem.
 - DEV-62: destinos de botões e links agora explicam onde levam; controles de imagem de fundo recebem orientação sobre enquadramento, posição, escurecimento e contraste.
 - DEV-80: preview integrado das páginas editoriais, com iframe da rota pública e alternância desktop/mobile sem sair do formulário.
