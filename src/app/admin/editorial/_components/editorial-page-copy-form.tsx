@@ -16,6 +16,7 @@ type FieldType = "text" | "textarea" | "background" | "select" | "radio";
 type FieldOption = {
 	label: string;
 	value: string;
+	description?: string;
 };
 
 type FieldConfig = {
@@ -162,7 +163,15 @@ function BackgroundField({ field }: { field: FieldConfig }) {
 	);
 }
 
-function Field({ field, onValueChange }: { field: FieldConfig; onValueChange?: (value: string) => void }) {
+function Field({
+	field,
+	onValueChange,
+	selectedValue,
+}: {
+	field: FieldConfig;
+	onValueChange?: (value: string) => void;
+	selectedValue?: string;
+}) {
 	if (field.type === "background") {
 		return <BackgroundField field={field} />;
 	}
@@ -198,6 +207,9 @@ function Field({ field, onValueChange }: { field: FieldConfig; onValueChange?: (
 			</fieldset>
 		);
 	}
+	const selectedOption = field.options?.find(
+		(option) => option.value === (selectedValue ?? field.defaultValue),
+	);
 
 	return (
 		<label className="grid gap-2">
@@ -205,19 +217,27 @@ function Field({ field, onValueChange }: { field: FieldConfig; onValueChange?: (
 			{field.type === "textarea" ? (
 				<Textarea name={field.name} defaultValue={field.defaultValue} rows={field.rows} />
 			) : field.type === "select" ? (
-				<select
-					name={field.name}
-					defaultValue={field.defaultValue ?? ""}
-					onChange={(event) => onValueChange?.(event.target.value)}
-					className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
-				>
-					<option value="">Selecione um livro publicado</option>
-					{field.options?.map((option) => (
-						<option key={option.value} value={option.value}>
-							{option.label}
-						</option>
-					))}
-				</select>
+				<>
+					<select
+						name={field.name}
+						defaultValue={field.defaultValue ?? ""}
+						onChange={(event) => onValueChange?.(event.target.value)}
+						className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+					>
+						<option value="">Selecione um produto publicado</option>
+						{field.options?.map((option) => (
+							<option key={option.value} value={option.value}>
+								{option.label}
+							</option>
+						))}
+					</select>
+					{selectedOption?.description ? (
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-3 py-2 text-xs leading-5 text-[color:var(--editorial-muted)]">
+							<p className="font-medium text-[color:var(--editorial-ink)]">Resumo do produto selecionado</p>
+							<p>{selectedOption.description}</p>
+						</div>
+					) : null}
+				</>
 			) : (
 				<Input
 					name={field.name}
@@ -334,6 +354,7 @@ export function EditorialPageCopyForm({
 							>
 								<Field
 									field={field}
+									selectedValue={fieldValues[field.name]}
 									onValueChange={(value) =>
 										setFieldValues((current) => ({ ...current, [field.name]: value }))
 									}

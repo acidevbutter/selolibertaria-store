@@ -96,6 +96,7 @@ export default async function AdminEditorialHomePage() {
 									.map((product) => ({
 										value: product.slug,
 										label: product.name,
+										description: product.description || "Sem resumo cadastrado para este produto.",
 									})),
 								visibleWhen: { name: "heroMode", value: "product" },
 							},
