@@ -19,7 +19,7 @@ export async function HomeHero({
 }) {
 	const hero = content ?? null;
 	const usesProduct = hero?.mode === "product" && Boolean(product);
-	const eyebrow = usesProduct ? "Livro em destaque" : hero?.eyebrow || "Lançamento";
+	const eyebrow = usesProduct ? "Destaque principal" : hero?.eyebrow || "Lançamento";
 	const title = usesProduct ? product?.name || "Livro em destaque" : hero?.title || "Ninfas do Tiete";
 	const description =
 		(usesProduct ? product?.summary : hero?.description) ||

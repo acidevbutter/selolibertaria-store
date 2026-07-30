@@ -82,13 +82,13 @@ export default async function AdminEditorialHomePage() {
 								defaultValue: page.hero?.mode ?? "custom",
 								options: [
 									{ value: "custom", label: "Personalizado" },
-									{ value: "product", label: "Livro em destaque" },
+									{ value: "product", label: "Produto destacado" },
 								],
 								help: "No modo livro, capa, título, resumo e CTA vêm do catálogo publicado.",
 							},
 							{
 								name: "heroProductSlug",
-								label: "Livro em destaque",
+								label: "Produto destacado",
 								type: "select",
 								defaultValue: page.hero?.productSlug,
 								options: products
