@@ -689,6 +689,7 @@ export function MercadoPagoCheckoutForm({
 					<div className="space-y-4 rounded-lg border bg-muted/20 p-4">
 						<AddressFields
 							idPrefix="checkout-delivery-mp"
+							countryMode="br-only"
 							value={newAddress}
 							onChange={(value) => {
 								setNewAddress(value);
