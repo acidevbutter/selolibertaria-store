@@ -2,6 +2,7 @@
 
 ### Added
 
+- DEV-159: logs estruturados e sanitizados para operações da Orders API, com correlação segura por pedido/order e duração.
 - DEV-152 a DEV-157: documentada a auditoria final do mapa, contratos, SDK, adapter e reconexão/reconstrução da Orders API, incluindo limites explícitos de sandbox e de cartões salvos.
 - DEV-148: registrada matriz de homologação Orders API com identidade MongoDB de QA sanitizada, cobertura local e pendências explícitas de sandbox.
 - DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.

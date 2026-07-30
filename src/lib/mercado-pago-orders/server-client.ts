@@ -3,6 +3,7 @@ import "server-only";
 import { MercadoPagoConfig, Order } from "mercadopago";
 import { env } from "@/env.mjs";
 import { type OrdersApiClient, OrdersApiError } from "@/lib/mercado-pago-orders/contract";
+import { logMercadoPagoOrders } from "@/lib/mercado-pago-orders/observability";
 import {
 	type MercadoPagoOrderSdk,
 	MercadoPagoOrdersSdkClient,
@@ -22,5 +23,5 @@ export function createMercadoPagoOrdersClient(options?: {
 	const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 	const sdk =
 		options?.sdk ?? new Order(new MercadoPagoConfig({ accessToken, options: { timeout: timeoutMs } }));
-	return new MercadoPagoOrdersSdkClient(sdk, timeoutMs, options?.logger);
+	return new MercadoPagoOrdersSdkClient(sdk, timeoutMs, options?.logger ?? logMercadoPagoOrders);
 }
