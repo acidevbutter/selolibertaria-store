@@ -61,6 +61,7 @@ function normalizeStatus(status?: string | null) {
 		case "created":
 		case "action_required":
 		case "pending":
+		case "processing":
 		case "in_process":
 		case "in_review":
 			return "pending" as const;

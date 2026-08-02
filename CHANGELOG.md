@@ -2,11 +2,13 @@
 
 ### Added
 
+
 - DEV-58: hero da Home pode usar uma composição personalizada ou um livro publicado, reaproveitando capa, título, resumo e CTA do catálogo.
 - DEV-62: dicas acessíveis por popover nos campos editoriais de endereço público, posição, publicação e imagem.
 - DEV-62: destinos de botões e links agora explicam onde levam; controles de imagem de fundo recebem orientação sobre enquadramento, posição, escurecimento e contraste.
 - DEV-80: preview integrado das páginas editoriais, com iframe da rota pública e alternância desktop/mobile sem sair do formulário.
 - DEV-159: logs estruturados e sanitizados para operações da Orders API, com correlação segura por pedido/order e duração.
+- DEV-151/DEV-148: registrada validação local atual do checkout embutido, Card Payment Brick, build e checklist de deploy/rollback, mantendo explícita a pendência de homologação financeira controlada.
 - DEV-152 a DEV-157: documentada a auditoria final do mapa, contratos, SDK, adapter e reconexão/reconstrução da Orders API, incluindo limites explícitos de sandbox e de cartões salvos.
 - DEV-148: registrada matriz de homologação Orders API com identidade MongoDB de QA sanitizada, cobertura local e pendências explícitas de sandbox.
 - DEV-160: o fluxo de Pix pendente agora cria ou vincula a conta, inicia a sessão e encaminha para acompanhamento autenticado sem tratar a cobrança como aprovada.
@@ -37,6 +39,8 @@
 - DEV-83: criação e edição de eventos agora retornam validação de título e ordem no próprio formulário e preservam os dados quando o upload ou salvamento falha.
 - DEV-82: campos de escurecimento das imagens de fundo do editorial agora usam a chave persistida pelas Server Actions; comandos de publicação e exclusão passam a informar execução, resultado e confirmação, mantendo o estado local após publicação e expondo falhas de exclusão.
 - DEV-81: uploads administrativos agora expiram com erro compreensível quando a mídia não responde; o seletor informa confirmação de prévia, sucesso de envio, exclusão e falhas sem estado silencioso.
+- Mercado Pago Orders API: status `processing` agora é tratado como pagamento pendente, permitindo que o Pix sandbox criado com sucesso siga para o acompanhamento sem erro genérico.
+- DEV-151: o Card Payment Brick é reinicializado quando o e-mail da pessoa compradora muda, reutilizando o dado já preenchido no checkout.
 - DEV-160: cliques repetidos em `Já paguei` preservam o draft em processamento e reutilizam o mesmo vínculo de pessoa compradora; a confirmação financeira, e-mail, pedido e limpeza do carrinho continuam exclusivos do webhook/reconciliação.
 - DEV-145: recusas de cartão agora exibem mensagens seguras e novas tentativas rejeitam parcelas inválidas antes da chamada ao Mercado Pago.
 - O redirecionamento de preparo do checkout agora preserva a origem atual, mantendo o carrinho convidado ao abrir o checkout em ambientes locais de teste.
