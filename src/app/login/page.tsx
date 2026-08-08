@@ -11,6 +11,8 @@ import LoginShell from "./login-shell.client";
 export default async function LoginPage() {
 	const user = await auth();
 	const role = user && typeof user === "object" && "role" in user ? user.role : null;
+	// Any redirect target here (/admin, /, or /maintenance via proxy.ts once there)
+	// is a distinct path from /login, so this can never loop back to itself.
 	if (user) redirect(isBackofficeRole(typeof role === "string" ? role : null) ? "/admin" : "/");
 	const locale = await getLocale();
 	const [providers, defaultCountry] = await Promise.all([
