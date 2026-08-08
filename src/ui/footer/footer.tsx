@@ -1,5 +1,5 @@
 import { getEditorialSiteGlobal } from "@/lib/editorial-content-store";
-import { listSystemCategories } from "@/lib/product-categories";
+import { listSystemCategoriesWithProducts } from "@/lib/product-categories";
 import { seloSiteMeta, seloSocialLinks } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 import FooterClient from "@/ui/footer/footer.client";
@@ -8,7 +8,7 @@ export async function Footer() {
 	const year = new Date().getFullYear();
 	const [globalContent, dynamicCategories, supportEmail] = await Promise.all([
 		getEditorialSiteGlobal(),
-		listSystemCategories(),
+		listSystemCategoriesWithProducts(),
 		getSupportEmailSetting(),
 	]);
 
