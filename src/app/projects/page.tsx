@@ -52,7 +52,7 @@ export default async function ProjectsPage() {
 								>
 									{page.hero?.eyebrow || "Projetos"}
 								</EditorialEyebrow>
-								<h1 className="display-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
+								<h1 className="title-font text-5xl font-black tracking-[-0.06em] sm:text-6xl">
 									{page.hero?.title || "Uma atuação que atravessa livro, palco e formação."}
 								</h1>
 								<EditorialRichText

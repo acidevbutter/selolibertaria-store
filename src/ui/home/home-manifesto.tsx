@@ -38,7 +38,7 @@ export async function HomeManifesto({ content }: { content?: EditorialHomePage["
 						<EditorialEyebrow>Manifesto</EditorialEyebrow>
 						<p
 							className={[
-								"display-font max-w-[16ch] text-balance text-[2.95rem] leading-[0.9] font-black tracking-[-0.06em] sm:text-[4.35rem] lg:text-[5.1rem]",
+								"title-font max-w-[16ch] text-balance text-[2.95rem] leading-[0.9] font-black tracking-[-0.06em] sm:text-[4.35rem] lg:text-[5.1rem]",
 								useLightText ? "text-[color:var(--editorial-paper)]" : "text-[color:var(--editorial-ink)]",
 							].join(" ")}
 						>

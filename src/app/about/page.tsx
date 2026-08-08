@@ -33,7 +33,7 @@ export default async function AboutPage() {
 								<EditorialEyebrow className="text-[color:var(--editorial-accent)] sm:text-sm">
 									{about.hero?.eyebrow || "Sobre o selo"}
 								</EditorialEyebrow>
-								<h1 className="display-font max-w-5xl text-balance text-5xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">
+								<h1 className="title-font max-w-5xl text-balance text-5xl leading-[0.92] font-black tracking-[-0.06em] sm:text-6xl">
 									{about.hero?.title ||
 										"O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens."}
 								</h1>

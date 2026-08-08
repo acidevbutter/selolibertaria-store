@@ -60,7 +60,7 @@ export async function HomeHero({
 					<Reveal delay={0.05}>
 						<h1
 							className={[
-								"display-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]",
+								"title-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]",
 								useDarkText ? "text-[color:var(--editorial-ink)]" : "text-[color:var(--editorial-paper)]",
 							].join(" ")}
 						>

@@ -85,7 +85,7 @@ export async function HomeFeaturedBooks({
 								</EditorialEyebrow>
 							</Reveal>
 							<Reveal delay={0.08}>
-								<h2 className="display-font max-w-[10ch] text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl lg:text-[4.9rem]">
+								<h2 className="title-font max-w-[10ch] text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl lg:text-[4.9rem]">
 									{featured.name}
 								</h2>
 							</Reveal>
@@ -137,7 +137,7 @@ export async function HomeFeaturedBooks({
 				<EditorialShell className="space-y-8">
 					<div className="grid gap-6 border-t border-[color:var(--editorial-border)] pt-8 lg:grid-cols-[1fr_380px] lg:items-start">
 						<Reveal>
-							<h2 className="display-font text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl">
+							<h2 className="title-font text-4xl font-black uppercase tracking-[-0.05em] sm:text-6xl">
 								{catalogTitle}
 							</h2>
 						</Reveal>
