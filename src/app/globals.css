@@ -3,7 +3,7 @@
 
 /* Neutral typography helpers for the generic selolibertaria baseline. */
 .display-font {
-	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 }
 
 .price-font {
@@ -130,7 +130,7 @@
 }
 
 @utility display-font {
-	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 }
 
 @utility editorial-serif {
