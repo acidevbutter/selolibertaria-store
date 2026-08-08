@@ -16,8 +16,8 @@ import { IntlClientProvider } from "@/i18n/client";
 import { getMessages } from "@/i18n/server";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 
-const dccAsh = localFont({
-	src: "../../public/fonts/DCC - Ash.otf",
+const rubikDistressed = localFont({
+	src: "../../public/fonts/RubikDistressed-Regular.ttf",
 	variable: "--font-editorial-display",
 	display: "swap",
 });
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 		<html
 			lang="pt-BR"
 			suppressHydrationWarning
-			className={`h-full antialiased ${dccAsh.variable} ${fertigoPro.variable}`}
+			className={`h-full antialiased ${rubikDistressed.variable} ${fertigoPro.variable}`}
 		>
 			<body className="display-font flex min-h-full flex-col bg-background text-foreground">
 				<ThemeProviderWrapper>
