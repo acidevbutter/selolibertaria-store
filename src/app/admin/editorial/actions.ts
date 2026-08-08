@@ -675,7 +675,7 @@ export async function updateEditorialSarauAction(formData: FormData) {
 				continueLinks: [
 					{ label: "Eventos", href: "/events" },
 					{ label: "Projetos", href: "/projects" },
-					{ label: "Livros", href: "/products" },
+					{ label: "Loja", href: "/products" },
 				],
 				updatedAt: now,
 				updatedBy: String(session.sub),

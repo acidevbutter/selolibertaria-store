@@ -50,7 +50,7 @@ export default async function ContactPage() {
 	const closingLinks = contact.paths?.links?.slice(0, 3) || [
 		{ label: "Projetos", href: "/projects" },
 		{ label: "Sarau Safado", href: "/sarau-safado" },
-		{ label: "Livros", href: "/products" },
+		{ label: "Loja", href: "/products" },
 	];
 
 	return (

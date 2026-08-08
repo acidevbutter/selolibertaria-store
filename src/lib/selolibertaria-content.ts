@@ -13,7 +13,7 @@ export const seloSiteMeta = {
 };
 
 export const seloPrimaryLinks = [
-	{ label: "Livros", href: PUBLIC_NAVIGATION.shop },
+	{ label: "Loja", href: PUBLIC_NAVIGATION.shop },
 	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
 	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
 	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },

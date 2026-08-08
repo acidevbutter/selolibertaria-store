@@ -107,7 +107,7 @@ export default async function AdminEditorialGlobalPage() {
 							},
 							{
 								name: "footerCatalogueTitle",
-								label: "Título da coluna Livros",
+								label: "Título da coluna Loja",
 								defaultValue: page.footer?.catalogueTitle,
 							},
 							{

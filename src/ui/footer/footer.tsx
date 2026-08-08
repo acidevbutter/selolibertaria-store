@@ -43,7 +43,7 @@ export async function Footer() {
 			newsletterButtonLabel={newsletter?.buttonLabel || "Assinar"}
 			sections={[
 				{
-					header: footer?.catalogueTitle || "Livros",
+					header: footer?.catalogueTitle || "Loja",
 					links: [
 						{ label: "Catálogo", href: "/products" },
 						...dynamicCategories.map(({ name, slug }) => ({
