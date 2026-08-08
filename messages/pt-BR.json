@@ -479,6 +479,8 @@
 	"CartSidebar.summary.total": "Total",
 	"CartSidebar.actions.close": "Fechar carrinho",
 	"CartSidebar.actions.removeItem": "Remover item",
+	"CartSidebar.actions.decreaseQuantity": "Diminuir quantidade",
+	"CartSidebar.actions.increaseQuantity": "Aumentar quantidade",
 	"CartSidebar.actions.openingCheckout": "Abrindo checkout...",
 	"CartSidebar.actions.checkout": "Checkout",
 	"Checkout.page.errorTitle": "Erro no checkout",
