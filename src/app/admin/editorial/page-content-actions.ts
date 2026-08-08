@@ -229,6 +229,15 @@ async function buildHomePageDoc(
 	const featuredTitle = formData.has("featuredTitle")
 		? optionalString(formData.get("featuredTitle"))
 		: (current?.featuredBook?.title ?? null);
+	const heroModeValue = formData.has("heroMode")
+		? optionalString(formData.get("heroMode"))
+		: (current?.hero?.mode ?? "custom");
+	const heroMode = heroModeValue === "product" ? "product" : "custom";
+	const heroProductSlug = formData.has("heroProductSlug")
+		? optionalString(formData.get("heroProductSlug"))
+		: (current?.hero?.productSlug ?? null);
+	const heroField = (name: string, currentValue?: string | null) =>
+		formData.has(name) ? optionalString(formData.get(name)) : (currentValue ?? null);
 
 	return {
 		type: "page_home",
@@ -238,18 +247,24 @@ async function buildHomePageDoc(
 		published: parseBoolean(formData.get("published"), current?.published ?? true),
 		order: parseOrder(formData.get("order"), current?.order ?? 1),
 		hero: {
-			eyebrow: optionalString(formData.get("heroEyebrow")),
-			title: optionalString(formData.get("heroTitle")),
-			description: optionalString(formData.get("heroDescription")),
-			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Home · CTA principal"),
-			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Home · CTA secundário"),
-			supportingLine: optionalString(formData.get("heroSupportingLine")),
-			featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
+			mode: heroMode,
+			productSlug: heroProductSlug,
+			eyebrow: heroField("heroEyebrow", current?.hero?.eyebrow),
+			title: heroField("heroTitle", current?.hero?.title),
+			description: heroField("heroDescription", current?.hero?.description),
+			primaryCtaLabel: heroField("heroPrimaryCtaLabel", current?.hero?.primaryCtaLabel),
+			primaryCtaHref: formData.has("heroPrimaryCtaHref")
+				? parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Home · CTA principal")
+				: (current?.hero?.primaryCtaHref ?? null),
+			secondaryCtaLabel: heroField("heroSecondaryCtaLabel", current?.hero?.secondaryCtaLabel),
+			secondaryCtaHref: formData.has("heroSecondaryCtaHref")
+				? parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Home · CTA secundário")
+				: (current?.hero?.secondaryCtaHref ?? null),
+			supportingLine: heroField("heroSupportingLine", current?.hero?.supportingLine),
+			featureEyebrow: heroField("heroFeatureEyebrow", current?.hero?.featureEyebrow),
 			featureTitle,
 			featureBody,
-			featureQuote: optionalString(formData.get("heroFeatureQuote")),
+			featureQuote: heroField("heroFeatureQuote", current?.hero?.featureQuote),
 			featureImage: current?.hero?.featureImage ?? null,
 			background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 		},

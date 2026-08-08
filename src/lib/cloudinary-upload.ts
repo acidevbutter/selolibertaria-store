@@ -2,6 +2,8 @@ import { nanoid } from "nanoid";
 import { env } from "@/env.mjs";
 import { getCloudinaryClient, isCloudinaryConfigured } from "@/lib/cloudinary";
 
+const CLOUDINARY_UPLOAD_TIMEOUT_MS = 45_000;
+
 function sanitizeFilename(filename: string) {
 	return filename
 		.toLowerCase()
@@ -26,6 +28,14 @@ export async function uploadImageFileToCloudinary(file: File) {
 		secure_url: string;
 		public_id: string;
 	}>((resolve, reject) => {
+		let settled = false;
+		let timeout: ReturnType<typeof setTimeout> | undefined;
+		const settle = (callback: () => void) => {
+			if (settled) return;
+			settled = true;
+			if (timeout) clearTimeout(timeout);
+			callback();
+		};
 		const stream = client.uploader.upload_stream(
 			{
 				folder,
@@ -35,16 +45,23 @@ export async function uploadImageFileToCloudinary(file: File) {
 			},
 			(error, uploadResult) => {
 				if (error || !uploadResult) {
-					reject(error || new Error("Não foi possível enviar a imagem."));
+					settle(() => reject(error || new Error("Não foi possível enviar a imagem.")));
 					return;
 				}
 
-				resolve({
-					secure_url: uploadResult.secure_url,
-					public_id: uploadResult.public_id,
-				});
+				settle(() =>
+					resolve({
+						secure_url: uploadResult.secure_url,
+						public_id: uploadResult.public_id,
+					}),
+				);
 			},
 		);
+		timeout = setTimeout(() => {
+			const error = new Error("O envio da imagem demorou demais. Verifique a conexão e tente novamente.");
+			stream.destroy(error);
+			settle(() => reject(error));
+		}, CLOUDINARY_UPLOAD_TIMEOUT_MS);
 
 		stream.end(bytes);
 	});

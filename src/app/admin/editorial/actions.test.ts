@@ -10,6 +10,7 @@ const redirectMock = vi.fn((path: string) => {
 	throw new Error(`NEXT_REDIRECT:${path}`);
 });
 const revalidatePathMock = vi.fn();
+const actionState = { status: "idle" as const, message: null, fieldErrors: {} };
 
 vi.mock("server-only", () => ({}));
 
@@ -121,9 +122,9 @@ describe("editorial item image persistence", () => {
 	it("preserves the existing image URL when saving text-only editorial changes", async () => {
 		const { updateEditorialEventAction } = await import("./actions");
 
-		await expect(updateEditorialEventAction(buildEventFormData({ title: "Sarau revisado" }))).rejects.toThrow(
-			"NEXT_REDIRECT:/admin/editorial/events/sarau-antigo",
-		);
+		await expect(
+			updateEditorialEventAction(actionState, buildEventFormData({ title: "Sarau revisado" })),
+		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
 		expect(uploadImageFileToCloudinaryMock).not.toHaveBeenCalled();
 		const update = updateOneMock.mock.calls[0]?.[1] as {
@@ -137,6 +138,35 @@ describe("editorial item image persistence", () => {
 		});
 	});
 
+	it("keeps the form data in place and returns a field error when a new event has no title", async () => {
+		const { createEditorialEventAction } = await import("./actions");
+		const result = await createEditorialEventAction(actionState, buildEventFormData({ title: "" }));
+
+		expect(result).toEqual({
+			status: "error",
+			message: "Revise os campos destacados antes de salvar.",
+			fieldErrors: { title: "Informe o título do evento." },
+		});
+		expect(updateOneMock).not.toHaveBeenCalled();
+	});
+
+	it("creates a new event and redirects to its editable record", async () => {
+		const { createEditorialEventAction } = await import("./actions");
+
+		await expect(
+			createEditorialEventAction(
+				actionState,
+				buildEventFormData({ currentSlug: undefined, slug: undefined, title: "Novo Sarau" }),
+			),
+		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/");
+
+		expect(updateOneMock).toHaveBeenCalledWith(
+			{ type: "event", slug: "novo-sarau" },
+			expect.objectContaining({ $set: expect.objectContaining({ title: "Novo Sarau" }) }),
+			{ upsert: true },
+		);
+	});
+
 	it("uploads a confirmed file on save and persists the returned public URL", async () => {
 		const uploadedFile = new File(["nova-imagem"], "evento-novo.jpg", { type: "image/jpeg" });
 		uploadImageFileToCloudinaryMock.mockResolvedValue({
@@ -145,7 +175,7 @@ describe("editorial item image persistence", () => {
 		const { updateEditorialEventAction } = await import("./actions");
 
 		await expect(
-			updateEditorialEventAction(buildEventFormData({ imageSrcFile: uploadedFile })),
+			updateEditorialEventAction(actionState, buildEventFormData({ imageSrcFile: uploadedFile })),
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
 		expect(uploadImageFileToCloudinaryMock).toHaveBeenCalledWith(uploadedFile);
@@ -163,9 +193,16 @@ describe("editorial item image persistence", () => {
 		});
 		const { updateEditorialEventAction } = await import("./actions");
 
-		await expect(
-			updateEditorialEventAction(buildEventFormData({ imageSrcFile: oversizedFile })),
-		).rejects.toThrow("A imagem deve ter no máximo 5 MB.");
+		const result = await updateEditorialEventAction(
+			actionState,
+			buildEventFormData({ imageSrcFile: oversizedFile }),
+		);
+
+		expect(result).toEqual({
+			status: "error",
+			message: "A imagem deve ter no máximo 5 MB.",
+			fieldErrors: {},
+		});
 
 		expect(uploadImageFileToCloudinaryMock).not.toHaveBeenCalled();
 		expect(updateOneMock).not.toHaveBeenCalled();

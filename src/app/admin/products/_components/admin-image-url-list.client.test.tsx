@@ -120,4 +120,33 @@ describe("AdminImageUrlList editorial on-submit flow", () => {
 		expect(submittedForm.get("heroImageSrcFile")).toBeInstanceOf(File);
 		expect((submittedForm.get("heroImageSrcFile") as File).size).toBe(0);
 	});
+
+	it("confirms a successful immediate upload and surfaces a readable failure", async () => {
+		fetchMock.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ url: "https://res.cloudinary.com/selo/nova-capa.jpg" }),
+		});
+
+		render(<AdminImageUrlList name="images" />);
+		const successFile = new File(["imagem"], "nova-capa.jpg", { type: "image/jpeg" });
+
+		fireEvent.change(screen.getByLabelText("Selecionar imagens"), {
+			target: { files: [successFile] },
+		});
+		fireEvent.click(await screen.findByRole("button", { name: "Salvar e enviar" }));
+		await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Imagem enviada com sucesso."));
+
+		fetchMock.mockResolvedValueOnce({
+			ok: false,
+			json: async () => ({ error: "A imagem não pôde ser processada." }),
+		});
+		const failedFile = new File(["imagem"], "falhou.jpg", { type: "image/jpeg" });
+		fireEvent.change(screen.getByLabelText("Selecionar imagens"), {
+			target: { files: [failedFile] },
+		});
+		fireEvent.click(await screen.findByRole("button", { name: "Salvar e enviar" }));
+		await waitFor(() =>
+			expect(screen.getByRole("alert")).toHaveTextContent("A imagem não pôde ser processada."),
+		);
+	});
 });

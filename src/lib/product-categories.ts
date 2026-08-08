@@ -1,3 +1,4 @@
+import { getCatalogCollection } from "@/lib/catalog";
 import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
@@ -88,6 +89,26 @@ export async function listSystemCategories({ syncCatalog = true }: { syncCatalog
 		.find({}, { projection: { _id: 0 } })
 		.sort({ name: 1 })
 		.toArray();
+}
+
+/**
+ * Categories with zero published products resolve to a 404 on /category/[slug],
+ * so public surfaces (e.g. the footer) should only link to categories that
+ * currently have at least one published product attached.
+ */
+export async function listSystemCategoriesWithProducts({
+	syncCatalog = true,
+}: {
+	syncCatalog?: boolean;
+} = {}) {
+	const [categories, catalogProducts] = await Promise.all([
+		listSystemCategories({ syncCatalog }),
+		(await getCatalogCollection())
+			.find({ published: true, "category.slug": { $exists: true } }, { projection: { category: 1 } })
+			.toArray(),
+	]);
+	const slugsWithProducts = new Set(catalogProducts.map((product) => product.category?.slug).filter(Boolean));
+	return categories.filter((category) => slugsWithProducts.has(category.slug));
 }
 
 export async function getSystemCategoryBySlugOrName(value: string) {

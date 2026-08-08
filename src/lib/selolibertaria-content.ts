@@ -1,8 +1,8 @@
 import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
 
 export const seloSiteMeta = {
-	name: "Selo Libertaria",
-	title: "Selo Libertaria",
+	name: "Selo Libertária",
+	title: "Selo Libertária",
 	description:
 		"Site editorial autoral de livros, performances, oficinas e projetos culturais do universo Selo Libertária.",
 	tagline: "Livros, performances e literatura erótica com direção cultural.",

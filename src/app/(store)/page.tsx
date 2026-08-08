@@ -22,12 +22,15 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
 	const homeContent = await getEditorialHomePage();
-	const [featuredEvents, sarauPage, t, featuredProduct] = await Promise.all([
+	const [featuredEvents, sarauPage, t, featuredProduct, heroProduct] = await Promise.all([
 		listEditorialEvents(),
 		getEditorialSarauPage(),
 		getTranslations("Selo.home.fallback"),
 		homeContent.featuredBook?.productSlug
 			? commerce.product.get({ slug: homeContent.featuredBook.productSlug }).catch(() => null)
+			: Promise.resolve(null),
+		homeContent.hero?.mode === "product" && homeContent.hero.productSlug
+			? commerce.product.get({ slug: homeContent.hero.productSlug }).catch(() => null)
 			: Promise.resolve(null),
 	]);
 	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
@@ -37,7 +40,7 @@ export default async function Home() {
 
 		return (
 			<div className="space-y-8 md:space-y-12">
-				<HomeHero content={homeContent.hero} />
+				<HomeHero content={homeContent.hero} product={heroProduct} />
 				<div className="space-y-8 md:space-y-12">
 					<HomeManifesto content={homeContent.manifesto} />
 					<HomeFeaturedBooks products={products} content={homeContent} featuredProduct={featuredProduct} />
@@ -48,7 +51,7 @@ export default async function Home() {
 	} catch (error) {
 		return (
 			<div className="space-y-8 md:space-y-12">
-				<HomeHero content={homeContent.hero} />
+				<HomeHero content={homeContent.hero} product={heroProduct} />
 				<div className="space-y-8 md:space-y-12">
 					<section className="border border-red-500/30 bg-red-500/8 p-4 text-center text-sm text-red-700 dark:text-red-300">
 						{t("catalogUnavailable")}

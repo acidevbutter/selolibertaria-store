@@ -155,6 +155,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 														<button
 															type="button"
 															onClick={() => handleUpdateQuantity(quantityKey, item.quantity - 1)}
+															aria-label={t("actions.decreaseQuantity")}
 															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
 															disabled={item.quantity <= 1}
 														>
@@ -164,6 +165,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 														<button
 															type="button"
 															onClick={() => handleUpdateQuantity(quantityKey, item.quantity + 1)}
+															aria-label={t("actions.increaseQuantity")}
 															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
 														>
 															<Plus className="h-3 w-3" />

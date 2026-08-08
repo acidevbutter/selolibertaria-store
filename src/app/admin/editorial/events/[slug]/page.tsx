@@ -2,7 +2,9 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialEventForm } from "@/app/admin/editorial/_components/editorial-event-form";
+import { EditorialItemActions } from "@/app/admin/editorial/_components/editorial-item-actions.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
 	deleteEditorialEventAction,
 	getEditorialEventBySlug,
@@ -16,7 +18,6 @@ import {
 	AdminEditorialPage,
 	AdminEditorialStat,
 } from "@/ui/editorial/editorial-primitives";
-import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export default async function AdminEditorialEventDetailsPage({
 				description="Edite agenda, imagem, status e publicação do evento."
 				actions={
 					<div className="flex flex-wrap gap-3">
+						<EditorialPagePreview href="/events" published={event.published} />
 						<Link
 							href="/admin/editorial/events"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -93,19 +95,13 @@ export default async function AdminEditorialEventDetailsPage({
 							<CardTitle>Ações</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-3">
-							<form action={toggleEditorialEventPublishedAction}>
-								<input type="hidden" name="slug" value={event.slug} />
-								<input type="hidden" name="published" value={event.published ? "false" : "true"} />
-								<Button type="submit" variant="outline" className="w-full">
-									{event.published ? "Mover para rascunho" : "Publicar"}
-								</Button>
-							</form>
-							<form action={deleteEditorialEventAction}>
-								<input type="hidden" name="slug" value={event.slug} />
-								<Button type="submit" variant="destructive" className="w-full">
-									Excluir evento
-								</Button>
-							</form>
+							<EditorialItemActions
+								slug={event.slug}
+								published={event.published}
+								itemLabel="evento"
+								toggleAction={toggleEditorialEventPublishedAction}
+								deleteAction={deleteEditorialEventAction}
+							/>
 						</CardContent>
 					</Card>
 				</div>

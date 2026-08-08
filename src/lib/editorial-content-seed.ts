@@ -138,7 +138,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 			secondaryLinks: [
 				{ label: "Instagram", href: seloSiteMeta.instagram },
 				{ label: "Projetos", href: "/projects" },
-				{ label: "Livros", href: "/products" },
+				{ label: "Loja", href: "/products" },
 			],
 		},
 	};
@@ -359,7 +359,7 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 		continueLinks: [
 			{ label: "Eventos", href: "/events" },
 			{ label: "Projetos", href: "/projects" },
-			{ label: "Livros", href: "/products" },
+			{ label: "Loja", href: "/products" },
 		],
 	};
 }
@@ -486,7 +486,7 @@ export function buildSeedSiteGlobal(): EditorialSiteGlobal {
 			brandEyebrow: "Selo Libertária",
 			brandDescription:
 				"Livros, performances, oficinas e programação cultural reunidos em um mesmo site editorial.",
-			catalogueTitle: "Livros",
+			catalogueTitle: "Loja",
 			editorialTitle: "Editorial",
 			supportTitle: "Suporte",
 			auxiliaryLinks: [

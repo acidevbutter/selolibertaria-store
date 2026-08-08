@@ -27,6 +27,7 @@ export function AdminImageUrlList({
 	);
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadError, setUploadError] = useState("");
+	const [uploadSuccess, setUploadSuccess] = useState("");
 	const [selectedImage, setSelectedImage] = useState<string | null>(null);
 	const [isDeletingImage, setIsDeletingImage] = useState(false);
 	const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -95,6 +96,7 @@ export function AdminImageUrlList({
 		preservePendingSelectionRef.current = false;
 		setPendingFiles(nextFiles);
 		setUploadError("");
+		setUploadSuccess("");
 		setIsSelectionModalOpen(true);
 	};
 
@@ -131,12 +133,26 @@ export function AdminImageUrlList({
 	const uploadFile = async (file: File) => {
 		const formData = new FormData();
 		formData.set("file", file);
+		const controller = new AbortController();
+		const timeout = window.setTimeout(() => controller.abort(), 45_000);
+		let response: Response;
 
-		const response = await fetch("/api/admin/media/upload", {
-			method: "POST",
-			body: formData,
-		});
-		const payload = (await response.json()) as { error?: string; url?: string };
+		try {
+			response = await fetch("/api/admin/media/upload", {
+				method: "POST",
+				body: formData,
+				signal: controller.signal,
+			});
+		} catch (error) {
+			if (error instanceof DOMException && error.name === "AbortError") {
+				throw new Error("O envio da imagem demorou demais. Verifique a conexão e tente novamente.");
+			}
+			throw error;
+		} finally {
+			window.clearTimeout(timeout);
+		}
+
+		const payload = (await response.json().catch(() => ({}))) as { error?: string; url?: string };
 
 		if (!response.ok || !payload.url) {
 			throw new Error(payload.error || "Não foi possível enviar a imagem.");
@@ -154,12 +170,16 @@ export function AdminImageUrlList({
 
 		setIsUploading(true);
 		setUploadError("");
+		setUploadSuccess("");
 
 		try {
 			for (const file of nextFiles) {
 				await uploadFile(file);
 			}
 			clearPendingSelection();
+			setUploadSuccess(
+				nextFiles.length === 1 ? "Imagem enviada com sucesso." : "Imagens enviadas com sucesso.",
+			);
 			if (autoSubmitOnUpload) {
 				containerRef.current?.closest("form")?.requestSubmit();
 			}
@@ -180,6 +200,8 @@ export function AdminImageUrlList({
 		setIsSelectionModalOpen(false);
 		if (uploadMode === "instant") {
 			await uploadFiles(pendingFiles);
+		} else {
+			setUploadSuccess("Imagem confirmada. Ela será enviada ao salvar o formulário.");
 		}
 	};
 
@@ -188,6 +210,7 @@ export function AdminImageUrlList({
 
 		setIsDeletingImage(true);
 		setUploadError("");
+		setUploadSuccess("");
 
 		try {
 			const response = await fetch("/api/admin/media/delete", {
@@ -203,6 +226,7 @@ export function AdminImageUrlList({
 			removeValueByUrl(selectedImage);
 			setSelectedImage(null);
 			setIsDeleteConfirmOpen(false);
+			setUploadSuccess("Imagem excluída com sucesso.");
 		} catch (error) {
 			setUploadError(error instanceof Error ? error.message : "Não foi possível excluir imagem.");
 		} finally {
@@ -292,7 +316,16 @@ export function AdminImageUrlList({
 				</div>
 			) : null}
 
-			{uploadError ? <p className="text-sm text-destructive">{uploadError}</p> : null}
+			{uploadError ? (
+				<p role="alert" className="text-sm text-destructive">
+					{uploadError}
+				</p>
+			) : null}
+			{uploadSuccess ? (
+				<p role="status" className="text-sm text-emerald-700">
+					{uploadSuccess}
+				</p>
+			) : null}
 
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				{displayedPreviewValues.length ? (

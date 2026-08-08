@@ -149,10 +149,10 @@ export function EditorialSarauForm({
 									<option value="right">Direita</option>
 								</select>
 							</Field>
-							<Field label="Escurecimento sobre a imagem" name="heroImageEscurecimento sobre a imagem">
+							<Field label="Escurecimento sobre a imagem" name="heroImageOverlay">
 								<select
-									id="heroImageEscurecimento sobre a imagem"
-									name="heroImageEscurecimento sobre a imagem"
+									id="heroImageOverlay"
+									name="heroImageOverlay"
 									defaultValue={page.hero?.background?.overlay ?? "strong"}
 									className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
 								>

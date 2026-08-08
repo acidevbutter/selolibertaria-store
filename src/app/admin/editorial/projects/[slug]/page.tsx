@@ -1,7 +1,9 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EditorialItemActions } from "@/app/admin/editorial/_components/editorial-item-actions.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { EditorialProjectForm } from "@/app/admin/editorial/_components/editorial-project-form";
 import {
 	deleteEditorialProjectAction,
@@ -16,7 +18,6 @@ import {
 	AdminEditorialPage,
 	AdminEditorialStat,
 } from "@/ui/editorial/editorial-primitives";
-import { Button } from "@/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export default async function AdminEditorialProjectDetailsPage({
@@ -39,6 +40,7 @@ export default async function AdminEditorialProjectDetailsPage({
 				description="Edite narrativa, período, local e publicação do projeto."
 				actions={
 					<div className="flex flex-wrap gap-3">
+						<EditorialPagePreview href="/projects" published={project.published} />
 						<Link
 							href="/admin/editorial/projects"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -90,19 +92,13 @@ export default async function AdminEditorialProjectDetailsPage({
 							<CardTitle>Ações</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-3">
-							<form action={toggleEditorialProjectPublishedAction}>
-								<input type="hidden" name="slug" value={project.slug} />
-								<input type="hidden" name="published" value={project.published ? "false" : "true"} />
-								<Button type="submit" variant="outline" className="w-full">
-									{project.published ? "Mover para rascunho" : "Publicar"}
-								</Button>
-							</form>
-							<form action={deleteEditorialProjectAction}>
-								<input type="hidden" name="slug" value={project.slug} />
-								<Button type="submit" variant="destructive" className="w-full">
-									Excluir projeto
-								</Button>
-							</form>
+							<EditorialItemActions
+								slug={project.slug}
+								published={project.published}
+								itemLabel="projeto"
+								toggleAction={toggleEditorialProjectPublishedAction}
+								deleteAction={deleteEditorialProjectAction}
+							/>
 						</CardContent>
 					</Card>
 				</div>

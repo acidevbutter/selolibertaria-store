@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
 	getEditorialProductPageCopyRecord,
 	updateEditorialProductPageCopyAction,
@@ -26,13 +27,16 @@ export default async function AdminEditorialProductPage() {
 				title="Página do produto"
 				description="Textos estruturais globais da página pública de produto."
 				actions={
-					<Link
-						href="/admin/editorial"
-						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
-					>
-						<ArrowLeft className="h-4 w-4" />
-						Voltar para editorial
-					</Link>
+					<>
+						<EditorialPagePreview href="/products" published={page.published} />
+						<Link
+							href="/admin/editorial"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para editorial
+						</Link>
+					</>
 				}
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">

@@ -2,7 +2,8 @@ import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { matchLocale } from "@/i18n/config";
-import { isBackofficeRole } from "@/lib/authz";
+import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
+import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
 type ProxySessionPayload = {
 	expires?: number;
@@ -86,10 +87,33 @@ function getLocaleRedirect(request: NextRequest) {
 	return NextResponse.redirect(redirectUrl, { status: 307 });
 }
 
+function isMaintenanceAllowedPath(pathname: string) {
+	return (
+		pathname === "/login" ||
+		pathname === "/login/submit" ||
+		pathname === "/api/auth/login" ||
+		pathname === "/api/auth/login/form" ||
+		pathname === "/maintenance"
+	);
+}
+
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 	const localeRedirect = getLocaleRedirect(request);
 	if (localeRedirect) return localeRedirect;
+
+	if (isMaintenanceModeEnabled() && !isMaintenanceAllowedPath(pathname)) {
+		const session = request.cookies.get("session")?.value;
+		const data = session ? await decryptProxySession(session) : null;
+		const isAuthenticatedAdmin =
+			!!data?.expires && data.expires > Date.now() && normalizeUserRole(data.user?.role) === "admin";
+		if (!isAuthenticatedAdmin) {
+			if (pathname.startsWith("/api")) {
+				return NextResponse.json({ error: "Site em manutenção", code: "MAINTENANCE_MODE" }, { status: 503 });
+			}
+			return NextResponse.redirect(new URL("/maintenance", request.url));
+		}
+	}
 
 	const isApi = pathname.startsWith("/api");
 	const pageProtected = pathname.startsWith("/orders") || pathname.startsWith("/user");

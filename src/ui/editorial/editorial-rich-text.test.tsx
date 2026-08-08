@@ -33,4 +33,13 @@ describe("EditorialRichText", () => {
 
 		expect(screen.getByText("<script>alert('x')</script>")).toBeTruthy();
 	});
+
+	it("applies safe styles stored with the editorial text", () => {
+		render(
+			<EditorialRichText
+				source={"<!-- editorial-style:font=sans;scale=lg;color=wine;emphasis=strong -->\nTexto"}
+			/>,
+		);
+		expect(screen.getByText("Texto").closest("div")).toHaveClass("font-sans", "text-lg", "font-semibold");
+	});
 });
