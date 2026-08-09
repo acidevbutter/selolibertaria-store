@@ -86,7 +86,7 @@ export function EditorialProjectForm({
 				<CardTitle>{project ? "Editar projeto" : "Novo projeto"}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6 pb-28 md:pb-32">
+				<form id="editorial-project-form" action={action} className="space-y-6 pb-28 md:pb-32">
 					{project ? <input type="hidden" name="currentSlug" value={project.slug} /> : null}
 
 					<EditorialAccordionSection

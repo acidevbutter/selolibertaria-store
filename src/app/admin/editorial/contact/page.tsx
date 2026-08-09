@@ -31,7 +31,12 @@ export default async function AdminEditorialContactPage() {
 				description="Edite abertura, canais diretos e caminhos públicos da página de contato."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/contact" published={page.published} />
+						<EditorialPagePreview
+							href="/contact"
+							published={page.published}
+							formId="editorial-contact-form"
+							pageTitle="Contato"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"

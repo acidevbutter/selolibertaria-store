@@ -240,6 +240,11 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Labels de imagem devem informar o contexto público, como `Imagem de fundo do hero`, `Imagem principal do evento` ou `Imagem do bloco principal`, evitando o rótulo genérico `Imagem` quando houver risco de confusão.
 - Formulários do admin editorial devem organizar blocos longos em seções sanfonadas com cabeçalho claro, estado aberto/fechado visível e barra flutuante única de salvar.
 
+## Atualização 2026-08-09 — preview editorial live
+
+- A visualização editorial deve separar `Rascunho ao vivo` e `Página pública`, com o primeiro refletindo alterações locais sem salvar e o segundo preservando a versão publicada.
+- O preview deve alternar entre desktop e mobile e oferecer descarte explícito do rascunho sem alterar o conteúdo persistido.
+
 ## Atualização 2026-07-18 — Mercado Pago
 
 - Com Mercado Pago ativo, `/checkout` mantém os blocos de dados e entrega existentes e apresenta a escolha explícita entre Pix e cartão; Pix usa o e-mail já informado para gerar QR/copia e cola, enquanto cartão renderiza o Payment Brick.

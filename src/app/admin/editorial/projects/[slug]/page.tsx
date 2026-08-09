@@ -40,7 +40,7 @@ export default async function AdminEditorialProjectDetailsPage({
 				description="Edite narrativa, período, local e publicação do projeto."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/projects" published={project.published} />
+						<EditorialPagePreview href="/projects" published={project.published} formId="editorial-project-form" pageTitle={project.title} />
 						<Link
 							href="/admin/editorial/projects"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"

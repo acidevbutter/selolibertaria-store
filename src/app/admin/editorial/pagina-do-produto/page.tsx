@@ -28,7 +28,12 @@ export default async function AdminEditorialProductPage() {
 				description="Textos estruturais globais da página pública de produto."
 				actions={
 					<>
-						<EditorialPagePreview href="/products" published={page.published} />
+						<EditorialPagePreview
+							href="/products"
+							published={page.published}
+							formId="editorial-copy-form-pagina-do-produto"
+							pageTitle="Página do produto"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -60,6 +65,8 @@ export default async function AdminEditorialProductPage() {
 				action={updateEditorialProductPageCopyAction}
 				submitLabel="Salvar textos da página do produto"
 				base={{ published: page.published }}
+				previewHref="/products"
+				pageTitle="Página do produto"
 				sections={[
 					{
 						title: "Sinopse e trecho",

@@ -4,6 +4,10 @@ import { useActionState, useState } from "react";
 import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
 import { EditorialHrefField } from "@/app/admin/editorial/_components/editorial-href-field";
+import {
+	EditorialDraftSavedSignal,
+	EditorialLivePreview,
+} from "@/app/admin/editorial/_components/editorial-live-preview.client";
 import { EditorialTextEditor } from "@/app/admin/editorial/_components/editorial-text-editor.client";
 import type { PageCopyActionState } from "@/app/admin/editorial/page-content-actions";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
@@ -257,18 +261,39 @@ export function EditorialPageCopyForm({
 	submitLabel,
 	base,
 	sections,
+	previewHref,
+	pageTitle,
 }: {
 	action: (state: PageCopyActionState, formData: FormData) => Promise<PageCopyActionState>;
 	submitLabel: string;
 	base: PublishedState;
 	sections: SectionConfig[];
+	previewHref: string;
+	pageTitle: string;
 }) {
+	const formId = `editorial-copy-form-${pageTitle
+		.toLocaleLowerCase("pt-BR")
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "")}`;
 	const [state, formAction] = useActionState(action, INITIAL_STATE);
 	const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
 	const savedAtLabel = formatSavedAt(state.savedAt);
 
 	return (
-		<form action={formAction} className="space-y-6 pb-28 md:pb-32">
+		<form id={formId} action={formAction} className="space-y-6 pb-28 md:pb-32">
+			<div className="flex flex-wrap items-center justify-between gap-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
+				<p className="text-sm text-[color:var(--editorial-muted)]">
+					Confira o rascunho antes de salvar ou publicar.
+				</p>
+				<EditorialLivePreview
+					formId={formId}
+					href={previewHref}
+					pageTitle={pageTitle}
+					published={base.published}
+				/>
+			</div>
 			<Card className="rounded-none border-[color:var(--editorial-border)]">
 				<CardHeader>
 					<CardTitle className="text-xl text-[color:var(--editorial-ink)]">Publicação</CardTitle>
@@ -366,6 +391,7 @@ export function EditorialPageCopyForm({
 
 			{state.status === "success" && state.message ? (
 				<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-ink)]">
+					<EditorialDraftSavedSignal formId={formId} />
 					<p className="font-medium">{state.message}</p>
 					{savedAtLabel ? (
 						<p className="mt-1 text-xs leading-5 text-[color:var(--editorial-muted)]">

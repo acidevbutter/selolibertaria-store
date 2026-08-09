@@ -31,7 +31,12 @@ export default async function AdminEditorialAboutPage() {
 				description="Edite a narrativa principal do selo e os blocos da página de apresentação."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/about" published={page.published} />
+						<EditorialPagePreview
+							href="/about"
+							published={page.published}
+							formId="editorial-about-form"
+							pageTitle="Sobre"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"

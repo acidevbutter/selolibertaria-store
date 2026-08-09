@@ -75,6 +75,8 @@ export default async function AdminEditorialProjectsPage() {
 					action={updateEditorialProjectsPageCopyAction}
 					submitLabel="Salvar textos de /projects"
 					base={{ published: page.published }}
+					previewHref="/projects"
+					pageTitle="Projetos"
 					sections={[
 						{
 							title: "Abertura",

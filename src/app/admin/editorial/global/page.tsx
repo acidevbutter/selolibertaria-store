@@ -29,7 +29,12 @@ export default async function AdminEditorialGlobalPage() {
 				description="Conteúdo global público editável, sem depender de `messages/pt-BR.json`."
 				actions={
 					<>
-						<EditorialPagePreview href="/" published={page.published} />
+						<EditorialPagePreview
+							href="/"
+							published={page.published}
+							formId="editorial-copy-form-conteudo-global"
+							pageTitle="Conteúdo global"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -55,6 +60,8 @@ export default async function AdminEditorialGlobalPage() {
 				action={updateEditorialSiteGlobalCopyAction}
 				submitLabel="Salvar conteúdo global público"
 				base={{ published: page.published }}
+				previewHref="/"
+				pageTitle="Conteúdo global"
 				sections={[
 					{
 						title: "Newsletter",

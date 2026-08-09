@@ -198,6 +198,11 @@ Confiança vem de:
 
 - Ao editar páginas editoriais, cada bloco deve abrir e fechar sem perder valores já preenchidos; erros de validação devem levar a pessoa diretamente à seção problemática.
 
+## Atualização 2026-08-09 — preview editorial live
+
+- A pessoa operadora pode revisar alterações em uma sessão local antes de salvar; fechar e reabrir o preview preserva o rascunho, enquanto descartar restaura a versão ainda carregada no formulário.
+- A página pública continua intacta até o salvamento; imagens confirmadas permanecem apenas como prévia local até esse momento.
+
 ## Atualização 2026-07-18 — Mercado Pago
 
 - Com Mercado Pago ativo, a pessoa escolhe Pix ou cartão antes de abrir o meio correspondente: cartão confirma e segue para processamento; Pix usa os dados já informados e mostra QR Code/código antes de verificar manualmente o pagamento. Enquanto estiver pendente, o QR permanece visível; após a confirmação do Mercado Pago, a pessoa segue para o pedido.

@@ -31,7 +31,12 @@ export default async function AdminEditorialSarauPage() {
 				description="Edite a página institucional do programa principal do selo."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/sarau-safado" published={page.published} />
+						<EditorialPagePreview
+							href="/sarau-safado"
+							published={page.published}
+							formId="editorial-sarau-form"
+							pageTitle="Sarau Safado"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
