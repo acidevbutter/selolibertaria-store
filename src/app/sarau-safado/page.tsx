@@ -87,7 +87,7 @@ export default async function SarauSafadoPage() {
 								</EditorialEyebrow>
 								<h1
 									className={[
-										"display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
+										"title-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
 										useDarkHeroText
 											? "text-[color:var(--editorial-ink)]"
 											: "text-[color:var(--editorial-paper)]",

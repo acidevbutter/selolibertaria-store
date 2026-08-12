@@ -80,7 +80,7 @@ export function AdminEditorialHero({
 						{eyebrow ? (
 							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">{eyebrow}</EditorialEyebrow>
 						) : null}
-						<h1 className="display-font max-w-4xl text-[2.6rem] font-black leading-[0.9] tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-[4rem]">
+						<h1 className="title-font max-w-4xl text-[2.6rem] font-black leading-[0.9] tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-[4rem]">
 							{title}
 						</h1>
 						{description ? (

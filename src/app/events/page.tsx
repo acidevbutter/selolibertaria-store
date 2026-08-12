@@ -111,7 +111,7 @@ export default async function EventsPage() {
 							>
 								{page.hero?.eyebrow || "Eventos"}
 							</EditorialEyebrow>
-							<h1 className="display-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
+							<h1 className="title-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
 								{page.hero?.title || featuredEvent?.title || "Agenda pública"}
 							</h1>
 							<EditorialRichText
@@ -184,7 +184,7 @@ export default async function EventsPage() {
 				<EditorialShell className="py-16">
 					<section className="grid gap-10 border-t border-[color:var(--editorial-border)] pt-10 lg:grid-cols-[0.95fr_0.75fr] lg:gap-16">
 						<div>
-							<h2 className="display-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
+							<h2 className="title-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
 								{page.curatorialNote?.title ||
 									"A agenda pública aproxima livro, presença e continuidade curatorial."}
 							</h2>
@@ -263,7 +263,7 @@ export default async function EventsPage() {
 					<EditorialShell className="grid gap-8 py-16 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
 						<div className="space-y-4">
 							<EditorialEyebrow>{page.archive?.label || "Arquivo e memória"}</EditorialEyebrow>
-							<h2 className="display-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
+							<h2 className="title-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
 								{page.archive?.title || "A programação também deixa rastro, repertório e retorno aos livros."}
 							</h2>
 							<EditorialRichText
@@ -308,7 +308,7 @@ export default async function EventsPage() {
 				<EditorialShell className="py-12">
 					<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[1.1fr_auto] lg:items-center">
 						<div>
-							<h2 className="display-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
+							<h2 className="title-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
 								{page.finalCta?.title || "A agenda abre caminho para encontros, livros e projetos do selo."}
 							</h2>
 							<EditorialRichText
