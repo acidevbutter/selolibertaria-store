@@ -65,7 +65,6 @@ export default async function AdminEditorialProductPage() {
 				action={updateEditorialProductPageCopyAction}
 				submitLabel="Salvar textos da página do produto"
 				base={{ published: page.published }}
-				previewHref="/products"
 				pageTitle="Página do produto"
 				sections={[
 					{

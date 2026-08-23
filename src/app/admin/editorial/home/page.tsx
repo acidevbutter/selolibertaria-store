@@ -72,7 +72,6 @@ export default async function AdminEditorialHomePage() {
 				action={updateEditorialHomeCopyAction}
 				submitLabel="Salvar página inicial"
 				base={{ published: page.published }}
-				previewHref="/"
 				pageTitle="Página inicial"
 				sections={[
 					{

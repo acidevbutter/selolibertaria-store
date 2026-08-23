@@ -242,8 +242,8 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 
 ## Atualização 2026-08-09 — preview editorial live
 
-- A visualização editorial deve separar `Rascunho ao vivo` e `Página pública`, com o primeiro refletindo alterações locais sem salvar e o segundo preservando a versão publicada.
-- O preview deve alternar entre desktop e mobile e oferecer descarte explícito do rascunho sem alterar o conteúdo persistido.
+- O `Rascunho ao vivo` deve permanecer fixo ao lado dos blocos editáveis e refletir alterações locais sem salvar.
+- A `Página pública` inteira deve abrir separadamente, com alternância desktop/mobile; o rascunho oferece descarte explícito sem alterar conteúdo persistido.
 
 ## Atualização 2026-07-18 — Mercado Pago
 

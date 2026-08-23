@@ -60,7 +60,6 @@ export default async function AdminEditorialGlobalPage() {
 				action={updateEditorialSiteGlobalCopyAction}
 				submitLabel="Salvar conteúdo global público"
 				base={{ published: page.published }}
-				previewHref="/"
 				pageTitle="Conteúdo global"
 				sections={[
 					{

@@ -261,14 +261,12 @@ export function EditorialPageCopyForm({
 	submitLabel,
 	base,
 	sections,
-	previewHref,
 	pageTitle,
 }: {
 	action: (state: PageCopyActionState, formData: FormData) => Promise<PageCopyActionState>;
 	submitLabel: string;
 	base: PublishedState;
 	sections: SectionConfig[];
-	previewHref: string;
 	pageTitle: string;
 }) {
 	const formId = `editorial-copy-form-${pageTitle
@@ -282,124 +280,120 @@ export function EditorialPageCopyForm({
 	const savedAtLabel = formatSavedAt(state.savedAt);
 
 	return (
-		<form id={formId} action={formAction} className="space-y-6 pb-28 md:pb-32">
-			<div className="flex flex-wrap items-center justify-between gap-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
-				<p className="text-sm text-[color:var(--editorial-muted)]">
-					Confira o rascunho antes de salvar ou publicar.
-				</p>
-				<EditorialLivePreview
-					formId={formId}
-					href={previewHref}
-					pageTitle={pageTitle}
-					published={base.published}
-				/>
-			</div>
-			<Card className="rounded-none border-[color:var(--editorial-border)]">
-				<CardHeader>
-					<CardTitle className="text-xl text-[color:var(--editorial-ink)]">Publicação</CardTitle>
-				</CardHeader>
-				<CardContent className="grid gap-4">
-					<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-						Este bloco só controla se a versão salva já deve aparecer na rota pública. Os textos e botoes
-						abaixo continuam sendo a fonte principal da página.
-					</p>
-					<div>
-						<span className="text-sm font-medium text-[color:var(--editorial-ink)]">Status da página</span>
-						<div className="mt-3 grid gap-3 md:grid-cols-2">
-							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
-								<input
-									type="radio"
-									name="published"
-									value="true"
-									defaultChecked={base.published}
-									className="mt-0.5"
-								/>
-								<span className="space-y-1">
-									<span className="block font-medium text-[color:var(--editorial-ink)]">Publicado</span>
-									<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
-										Usa esta copy na rota pública assim que a página for revalidada.
-									</span>
+		<form id={formId} action={formAction} className="pb-28 md:pb-32">
+			<div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]">
+				<div className="space-y-6">
+					<Card className="rounded-none border-[color:var(--editorial-border)]">
+						<CardHeader>
+							<CardTitle className="text-xl text-[color:var(--editorial-ink)]">Publicação</CardTitle>
+						</CardHeader>
+						<CardContent className="grid gap-4">
+							<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								Este bloco só controla se a versão salva já deve aparecer na rota pública. Os textos e botoes
+								abaixo continuam sendo a fonte principal da página.
+							</p>
+							<div>
+								<span className="text-sm font-medium text-[color:var(--editorial-ink)]">
+									Status da página
 								</span>
-							</label>
-							<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
-								<input
-									type="radio"
-									name="published"
-									value="false"
-									defaultChecked={!base.published}
-									className="mt-0.5"
-								/>
-								<span className="space-y-1">
-									<span className="block font-medium text-[color:var(--editorial-ink)]">Rascunho</span>
-									<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
-										Mantém o conteúdo salvo no admin sem publicar esta versão na vitrine.
-									</span>
-								</span>
-							</label>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{sections.map((section) => (
-				<EditorialAccordionSection
-					key={section.title}
-					title={section.title}
-					description={section.description}
-					defaultOpen={section.defaultOpen ?? false}
-					contentClassName="grid gap-4 px-6 py-6 md:grid-cols-2"
-				>
-					{section.tools?.length ? (
-						<div className="flex flex-wrap gap-2 md:col-span-2">
-							{section.tools?.map((tool) => (
-								<span
-									key={tool}
-									className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
-								>
-									{tool}
-								</span>
-							))}
-						</div>
-					) : null}
-					{section.fields
-						.filter(
-							(field) =>
-								!field.visibleWhen ||
-								(fieldValues[field.visibleWhen.name] ??
-									section.fields.find((candidate) => candidate.name === field.visibleWhen?.name)
-										?.defaultValue ??
-									"") === field.visibleWhen.value,
-						)
-						.map((field) => (
-							<div
-								key={field.name}
-								className={
-									field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
-								}
-							>
-								<Field
-									field={field}
-									selectedValue={fieldValues[field.name]}
-									onValueChange={(value) =>
-										setFieldValues((current) => ({ ...current, [field.name]: value }))
-									}
-								/>
+								<div className="mt-3 grid gap-3 md:grid-cols-2">
+									<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
+										<input
+											type="radio"
+											name="published"
+											value="true"
+											defaultChecked={base.published}
+											className="mt-0.5"
+										/>
+										<span className="space-y-1">
+											<span className="block font-medium text-[color:var(--editorial-ink)]">Publicado</span>
+											<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
+												Usa esta copy na rota pública assim que a página for revalidada.
+											</span>
+										</span>
+									</label>
+									<label className="flex items-start gap-3 rounded-none border border-[color:var(--editorial-border)] bg-white/60 px-4 py-4 text-sm">
+										<input
+											type="radio"
+											name="published"
+											value="false"
+											defaultChecked={!base.published}
+											className="mt-0.5"
+										/>
+										<span className="space-y-1">
+											<span className="block font-medium text-[color:var(--editorial-ink)]">Rascunho</span>
+											<span className="block text-xs leading-5 text-[color:var(--editorial-muted)]">
+												Mantém o conteúdo salvo no admin sem publicar esta versão na vitrine.
+											</span>
+										</span>
+									</label>
+								</div>
 							</div>
-						))}
-				</EditorialAccordionSection>
-			))}
+						</CardContent>
+					</Card>
 
-			{state.status === "success" && state.message ? (
-				<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-ink)]">
-					<EditorialDraftSavedSignal formId={formId} />
-					<p className="font-medium">{state.message}</p>
-					{savedAtLabel ? (
-						<p className="mt-1 text-xs leading-5 text-[color:var(--editorial-muted)]">
-							Último salvamento: {savedAtLabel}.
-						</p>
+					{sections.map((section) => (
+						<EditorialAccordionSection
+							key={section.title}
+							title={section.title}
+							description={section.description}
+							defaultOpen={section.defaultOpen ?? false}
+							contentClassName="grid gap-4 px-6 py-6 md:grid-cols-2"
+						>
+							{section.tools?.length ? (
+								<div className="flex flex-wrap gap-2 md:col-span-2">
+									{section.tools?.map((tool) => (
+										<span
+											key={tool}
+											className="border border-[color:var(--editorial-border)] bg-white/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--editorial-accent)]"
+										>
+											{tool}
+										</span>
+									))}
+								</div>
+							) : null}
+							{section.fields
+								.filter(
+									(field) =>
+										!field.visibleWhen ||
+										(fieldValues[field.visibleWhen.name] ??
+											section.fields.find((candidate) => candidate.name === field.visibleWhen?.name)
+												?.defaultValue ??
+											"") === field.visibleWhen.value,
+								)
+								.map((field) => (
+									<div
+										key={field.name}
+										className={
+											field.type === "textarea" || field.type === "background" ? "md:col-span-2" : undefined
+										}
+									>
+										<Field
+											field={field}
+											selectedValue={fieldValues[field.name]}
+											onValueChange={(value) =>
+												setFieldValues((current) => ({ ...current, [field.name]: value }))
+											}
+										/>
+									</div>
+								))}
+						</EditorialAccordionSection>
+					))}
+
+					{state.status === "success" && state.message ? (
+						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-ink)]">
+							<EditorialDraftSavedSignal formId={formId} />
+							<p className="font-medium">{state.message}</p>
+							{savedAtLabel ? (
+								<p className="mt-1 text-xs leading-5 text-[color:var(--editorial-muted)]">
+									Último salvamento: {savedAtLabel}.
+								</p>
+							) : null}
+						</div>
 					) : null}
 				</div>
-			) : null}
+				<EditorialLivePreview formId={formId} pageTitle={pageTitle} published={base.published} />
+			</div>
 
 			<EditorialFloatingSaveBar hint="Salvar alterações desta página.">
 				{submitLabel}

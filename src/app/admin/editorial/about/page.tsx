@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialAboutForm } from "@/app/admin/editorial/_components/editorial-about-form";
+import { EditorialLivePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
 import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { getEditorialAboutRecord, updateEditorialAboutAction } from "@/app/admin/editorial/actions";
@@ -67,12 +68,15 @@ export default async function AdminEditorialAboutPage() {
 					page={page}
 					submitLabel="Salvar página sobre"
 				/>
-				<EditorialMetaCard
-					published={page.published}
-					order={page.order}
-					updatedAt={page.updatedAt}
-					updatedBy={page.updatedBy}
-				/>
+				<div className="space-y-6">
+					<EditorialLivePreview formId="editorial-about-form" pageTitle="Sobre" published={page.published} />
+					<EditorialMetaCard
+						published={page.published}
+						order={page.order}
+						updatedAt={page.updatedAt}
+						updatedBy={page.updatedBy}
+					/>
+				</div>
 			</div>
 		</AdminEditorialPage>
 	);

@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Button } from "@/ui/shadcn/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/ui/shadcn/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/shadcn/tabs";
 
 type DraftValues = Record<string, string[]>;
 type MediaOverrides = Record<string, string | null>;
@@ -152,17 +151,13 @@ function DraftCanvas({
 
 export function EditorialLivePreview({
 	formId,
-	href,
 	pageTitle,
 	published,
 }: {
 	formId: string;
-	href: string;
 	pageTitle: string;
 	published: boolean;
 }) {
-	const [open, setOpen] = useState(false);
-	const [mobile, setMobile] = useState(false);
 	const [draft, setDraft] = useState<DraftValues>({});
 	const [initialDraft, setInitialDraft] = useState<DraftValues>({});
 	const [media, setMedia] = useState<MediaOverrides>({});
@@ -245,48 +240,56 @@ export function EditorialLivePreview({
 	}
 
 	return (
+		<aside className="sticky top-6 overflow-hidden border border-[color:var(--editorial-border)] bg-[#fbf7f1] shadow-sm">
+			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--editorial-border)] px-4 py-3">
+				<div>
+					<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">Rascunho ao vivo</p>
+					<p className="mt-1 text-xs text-[color:var(--editorial-muted)]">{status}</p>
+				</div>
+				{dirty ? (
+					<Button type="button" size="sm" variant="outline" className="rounded-none" onClick={discardDraft}>
+						<RotateCcw className="h-4 w-4" />
+						Descartar
+					</Button>
+				) : null}
+			</div>
+			<div className="max-h-[calc(100vh-11rem)] overflow-auto bg-muted p-3">
+				<DraftCanvas values={draft} media={media} pageTitle={pageTitle} mobile={false} />
+			</div>
+		</aside>
+	);
+}
+
+export function EditorialFullPagePreview({ href }: { href: string }) {
+	const [open, setOpen] = useState(false);
+	const [mobile, setMobile] = useState(false);
+
+	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button type="button" variant="outline" className="rounded-none">
 					<Eye className="h-4 w-4" />
-					Visualizar alterações
+					Visualizar página inteira
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="h-[88vh] max-w-7xl overflow-hidden p-0">
 				<DialogHeader className="flex-row items-center justify-between border-b p-4 pr-12">
 					<div>
-						<DialogTitle>Visualização editorial</DialogTitle>
-						<p className="mt-1 text-xs text-muted-foreground">{status}</p>
+						<DialogTitle>Página pública</DialogTitle>
+						<p className="mt-1 text-xs text-muted-foreground">Última versão salva e publicada.</p>
 					</div>
-					<div className="flex items-center gap-2">
-						<Button type="button" size="sm" variant="outline" onClick={() => setMobile((value) => !value)}>
-							{mobile ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
-							{mobile ? "Desktop" : "Mobile"}
-						</Button>
-						{dirty ? (
-							<Button type="button" size="sm" variant="outline" onClick={discardDraft}>
-								<RotateCcw className="h-4 w-4" />
-								Descartar rascunho
-							</Button>
-						) : null}
-					</div>
+					<Button type="button" size="sm" variant="outline" onClick={() => setMobile((value) => !value)}>
+						{mobile ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
+						{mobile ? "Desktop" : "Mobile"}
+					</Button>
 				</DialogHeader>
-				<Tabs defaultValue="draft" className="flex h-[calc(88vh-73px)] flex-col">
-					<TabsList className="m-4 w-fit rounded-none bg-muted">
-						<TabsTrigger value="draft">Rascunho ao vivo</TabsTrigger>
-						<TabsTrigger value="published">Página pública</TabsTrigger>
-					</TabsList>
-					<TabsContent value="draft" className="mt-0 min-h-0 flex-1 overflow-auto bg-muted p-4">
-						<DraftCanvas values={draft} media={media} pageTitle={pageTitle} mobile={mobile} />
-					</TabsContent>
-					<TabsContent value="published" className="mt-0 min-h-0 flex-1 overflow-auto bg-muted p-4">
-						<iframe
-							title="Visualização da página pública"
-							src={href}
-							className={mobile ? "mx-auto h-full w-[390px] max-w-full bg-white" : "h-full w-full bg-white"}
-						/>
-					</TabsContent>
-				</Tabs>
+				<div className="h-[calc(88vh-73px)] overflow-auto bg-muted p-4">
+					<iframe
+						title="Visualização da página pública"
+						src={href}
+						className={mobile ? "mx-auto h-full w-[390px] max-w-full bg-white" : "h-full w-full bg-white"}
+					/>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

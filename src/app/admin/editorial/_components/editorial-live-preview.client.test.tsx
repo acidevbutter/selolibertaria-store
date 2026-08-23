@@ -26,21 +26,19 @@ describe("EditorialLivePreview", () => {
 			<form id="editorial-test-form">
 				<input name="heroTitle" defaultValue="Título publicado" />
 				<input name="heroBody" defaultValue="Texto publicado" />
-				<EditorialLivePreview formId="editorial-test-form" href="/about" pageTitle="Sobre" published />
+				<EditorialLivePreview formId="editorial-test-form" pageTitle="Sobre" published />
 			</form>,
 		);
 
 		fireEvent.input(screen.getByDisplayValue("Título publicado"), {
 			target: { value: "Título em rascunho" },
 		});
-		fireEvent.click(screen.getByRole("button", { name: "Visualizar alterações" }));
-
 		expect(await screen.findByText("Título em rascunho")).toBeInTheDocument();
 		expect(window.sessionStorage.getItem("selo-editorial-draft:editorial-test-form")).toContain(
 			"Título em rascunho",
 		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Descartar rascunho" }));
+		fireEvent.click(screen.getByRole("button", { name: "Descartar" }));
 		await waitFor(() => expect(screen.getByDisplayValue("Título publicado")).toBeInTheDocument());
 		expect(window.sessionStorage.getItem("selo-editorial-draft:editorial-test-form")).toBeNull();
 	});
@@ -56,7 +54,7 @@ describe("EditorialLivePreview", () => {
 		render(
 			<form id="editorial-restored-form">
 				<input name="heroTitle" defaultValue="Título publicado" />
-				<EditorialLivePreview formId="editorial-restored-form" href="/about" pageTitle="Sobre" published />
+				<EditorialLivePreview formId="editorial-restored-form" pageTitle="Sobre" published />
 			</form>,
 		);
 

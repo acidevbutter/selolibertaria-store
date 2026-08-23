@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialEventForm } from "@/app/admin/editorial/_components/editorial-event-form";
 import { EditorialItemActions } from "@/app/admin/editorial/_components/editorial-item-actions.client";
+import { EditorialLivePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
 import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
@@ -44,7 +45,12 @@ export default async function AdminEditorialEventDetailsPage({
 				description="Edite agenda, imagem, status e publicação do evento."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/events" published={event.published} formId="editorial-event-form" pageTitle={event.title} />
+						<EditorialPagePreview
+							href="/events"
+							published={event.published}
+							formId="editorial-event-form"
+							pageTitle={event.title}
+						/>
 						<Link
 							href="/admin/editorial/events"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -84,6 +90,11 @@ export default async function AdminEditorialEventDetailsPage({
 				<EditorialEventForm action={updateEditorialEventAction} event={event} submitLabel="Salvar evento" />
 
 				<div className="space-y-6">
+					<EditorialLivePreview
+						formId="editorial-event-form"
+						pageTitle={event.title}
+						published={event.published}
+					/>
 					<EditorialMetaCard
 						published={event.published}
 						order={event.order}

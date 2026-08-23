@@ -1,17 +1,17 @@
 "use client";
 
-import { EditorialLivePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
+import { EditorialFullPagePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
 
 export function EditorialPagePreview({
 	href,
-	published,
-	formId,
-	pageTitle,
+	published: _published,
+	formId: _formId,
+	pageTitle: _pageTitle,
 }: {
 	href: string;
 	published: boolean;
 	formId: string;
 	pageTitle: string;
 }) {
-	return <EditorialLivePreview formId={formId} href={href} pageTitle={pageTitle} published={published} />;
+	return <EditorialFullPagePreview href={href} />;
 }

@@ -200,7 +200,7 @@ Confiança vem de:
 
 ## Atualização 2026-08-09 — preview editorial live
 
-- A pessoa operadora pode revisar alterações em uma sessão local antes de salvar; fechar e reabrir o preview preserva o rascunho, enquanto descartar restaura a versão ainda carregada no formulário.
+- A pessoa operadora vê o rascunho ao vivo ao lado dos blocos enquanto edita; a sessão local é preservada e `Descartar` restaura a versão ainda carregada no formulário.
 - A página pública continua intacta até o salvamento; imagens confirmadas permanecem apenas como prévia local até esse momento.
 
 ## Atualização 2026-07-18 — Mercado Pago

@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EditorialContactForm } from "@/app/admin/editorial/_components/editorial-contact-form";
+import { EditorialLivePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
 import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { getEditorialContactRecord, updateEditorialContactAction } from "@/app/admin/editorial/actions";
@@ -67,12 +68,19 @@ export default async function AdminEditorialContactPage() {
 					page={page}
 					submitLabel="Salvar página de contato"
 				/>
-				<EditorialMetaCard
-					published={page.published}
-					order={page.order}
-					updatedAt={page.updatedAt}
-					updatedBy={page.updatedBy}
-				/>
+				<div className="space-y-6">
+					<EditorialLivePreview
+						formId="editorial-contact-form"
+						pageTitle="Contato"
+						published={page.published}
+					/>
+					<EditorialMetaCard
+						published={page.published}
+						order={page.order}
+						updatedAt={page.updatedAt}
+						updatedBy={page.updatedBy}
+					/>
+				</div>
 			</div>
 		</AdminEditorialPage>
 	);
