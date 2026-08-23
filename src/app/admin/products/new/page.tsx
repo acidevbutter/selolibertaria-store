@@ -35,16 +35,16 @@ export default async function NewAdminProductPage() {
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Produto"
-				title="Novo produto"
-				description="Cadastre os dados principais do produto, defina a primeira variante e publique o item sem perder o contexto do catálogo."
+				eyebrow="Catálogo"
+				title="Novo livro"
+				description="Cadastre os dados comerciais do livro, defina a primeira variante e publique o item sem perder o contexto do catálogo."
 				actions={
 					<Link
 						href="/admin/products"
 						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
 					>
 						<ArrowLeft className="h-4 w-4" />
-						Voltar para produtos
+						Voltar para livros
 					</Link>
 				}
 			/>
@@ -62,17 +62,17 @@ export default async function NewAdminProductPage() {
 				/>
 				<AdminEditorialNote
 					title="Como usar"
-					description="Preencha os dados principais, revise a primeira variante e salve para abrir a gestão completa do produto."
+					description="Preencha os dados principais do livro, revise a primeira variante e salve para abrir a gestão completa do item."
 				/>
 			</div>
 
 			<EditorialPanel>
 				<CardHeader>
-					<CardTitle>Cadastro</CardTitle>
+					<CardTitle>Cadastro do livro</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<form action={createProductAction} className="space-y-6">
-						<FormSection title="Informações principais">
+						<FormSection title="Informações principais do livro">
 							<ProductCoreFields categories={categories} orderOptions={orderOptions} autoFormatSlug />
 						</FormSection>
 						<FormSection title="Primeira variante">
@@ -82,7 +82,7 @@ export default async function NewAdminProductPage() {
 							<PriceFields />
 						</FormSection>
 						<ActiveCheckbox defaultChecked />
-						<SubmitButton>Criar produto</SubmitButton>
+						<SubmitButton>Criar livro</SubmitButton>
 					</form>
 				</CardContent>
 			</EditorialPanel>

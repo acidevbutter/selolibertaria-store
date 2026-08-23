@@ -1,3 +1,4 @@
+import { AdminFieldHelp } from "@/app/admin/_components/admin-field-help";
 import {
 	EDITORIAL_HOME_CUSTOM_LINK_VALUE,
 	EDITORIAL_LINK_HINT,
@@ -26,7 +27,12 @@ export function EditorialHrefField({
 
 	return (
 		<div className="space-y-2">
-			<Label htmlFor={name}>{label}</Label>
+			<div className="flex items-center gap-1">
+				<Label htmlFor={name}>{label}</Label>
+				<AdminFieldHelp label={label}>
+					Escolha onde este botão ou link leva. O destino aparece na página pública depois de salvar.
+				</AdminFieldHelp>
+			</div>
 			<select
 				id={name}
 				name={`${name}Preset`}

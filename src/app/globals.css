@@ -6,6 +6,11 @@
 	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
 }
 
+/* Distinctive editorial font, reserved for the site's main titles (not nav/menu/admin). */
+.title-font {
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+}
+
 .price-font {
 	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 	font-synthesis: none;
@@ -131,6 +136,10 @@
 
 @utility display-font {
 	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+}
+
+@utility title-font {
+	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
 }
 
 @utility editorial-serif {

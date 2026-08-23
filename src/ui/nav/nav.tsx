@@ -40,7 +40,7 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 								Selo
 							</div>
 							<div className="text-sm font-black uppercase tracking-[0.28em] text-[color:var(--editorial-ink)] sm:text-base">
-								Libertaria
+								Libertária
 							</div>
 						</div>
 					</YnsLink>

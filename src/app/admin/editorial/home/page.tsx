@@ -1,10 +1,12 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
 	getEditorialHomeCopyRecord,
 	updateEditorialHomeCopyAction,
 } from "@/app/admin/editorial/page-content-actions";
+import { listAdminProductGroups } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import {
@@ -22,7 +24,7 @@ export default async function AdminEditorialHomePage() {
 		return null;
 	}
 
-	const page = await getEditorialHomeCopyRecord();
+	const [page, products] = await Promise.all([getEditorialHomeCopyRecord(), listAdminProductGroups()]);
 	if (!page) {
 		return null;
 	}
@@ -34,13 +36,16 @@ export default async function AdminEditorialHomePage() {
 				title="Página inicial"
 				description="Texto público principal da Home. Organize a copy pelos mesmos blocos que aparecem na página."
 				actions={
-					<Link
-						href="/admin/editorial"
-						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
-					>
-						<ArrowLeft className="h-4 w-4" />
-						Voltar para editorial
-					</Link>
+					<>
+						<EditorialPagePreview href="/" published={page.published} />
+						<Link
+							href="/admin/editorial"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para editorial
+						</Link>
+					</>
 				}
 			/>
 
@@ -65,55 +70,104 @@ export default async function AdminEditorialHomePage() {
 				sections={[
 					{
 						title: "Chamada principal",
-						description: "Bloco de abertura da Home.",
+						description:
+							"Bloco de abertura da Home. Escolha um livro publicado ou mantenha a composição personalizada.",
 						route: "/",
 						tools: ["Texto", "botão", "Fundo"],
 						fields: [
-							{ name: "heroEyebrow", label: "Linha curta", defaultValue: page.hero?.eyebrow },
-							{ name: "heroTitle", label: "Título", defaultValue: page.hero?.title },
+							{
+								name: "heroMode",
+								label: "Modo do hero",
+								type: "radio",
+								defaultValue: page.hero?.mode ?? "custom",
+								options: [
+									{ value: "custom", label: "Personalizado" },
+									{ value: "product", label: "Produto destacado" },
+								],
+								help: "No modo livro, capa, título, resumo e CTA vêm do catálogo publicado.",
+							},
+							{
+								name: "heroProductSlug",
+								label: "Produto destacado",
+								type: "select",
+								defaultValue: page.hero?.productSlug,
+								options: products
+									.filter((product) => product.active)
+									.map((product) => ({
+										value: product.slug,
+										label: product.name,
+										description: product.description || "Sem resumo cadastrado para este produto.",
+									})),
+								visibleWhen: { name: "heroMode", value: "product" },
+							},
+							{
+								name: "heroEyebrow",
+								label: "Linha curta",
+								defaultValue: page.hero?.eyebrow,
+								visibleWhen: { name: "heroMode", value: "custom" },
+							},
+							{
+								name: "heroTitle",
+								label: "Título",
+								defaultValue: page.hero?.title,
+								visibleWhen: { name: "heroMode", value: "custom" },
+							},
 							{
 								name: "heroDescription",
 								label: "Texto",
 								type: "textarea",
 								rows: 4,
 								defaultValue: page.hero?.description,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroPrimaryCtaLabel",
 								label: "Botão principal",
 								defaultValue: page.hero?.primaryCtaLabel,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroPrimaryCtaHref",
 								label: "Destino do botão principal",
 								defaultValue: page.hero?.primaryCtaHref,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroSecondaryCtaLabel",
 								label: "Botão secundário",
 								defaultValue: page.hero?.secondaryCtaLabel,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroSecondaryCtaHref",
 								label: "Destino do botão secundário",
 								defaultValue: page.hero?.secondaryCtaHref,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroSupportingLine",
 								label: "Linha de apoio",
 								defaultValue: page.hero?.supportingLine,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 							{
 								name: "heroFeatureEyebrow",
 								label: "Linha do destaque",
 								defaultValue: page.hero?.featureEyebrow,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
-							{ name: "heroFeatureQuote", label: "Frase de apoio", defaultValue: page.hero?.featureQuote },
+							{
+								name: "heroFeatureQuote",
+								label: "Frase de apoio",
+								defaultValue: page.hero?.featureQuote,
+								visibleWhen: { name: "heroMode", value: "custom" },
+							},
 							{
 								name: "heroBackground",
 								label: "Imagem de fundo da abertura",
 								type: "background",
 								background: page.hero?.background,
+								visibleWhen: { name: "heroMode", value: "custom" },
 							},
 						],
 					},

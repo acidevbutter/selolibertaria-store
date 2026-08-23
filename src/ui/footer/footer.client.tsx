@@ -179,9 +179,9 @@ export default function FooterClient({
 									<Image
 										src={iconVariant(icon.src)}
 										alt={icon.label}
-										width={52}
+										width={32}
 										height={32}
-										className="h-8 w-auto object-contain opacity-80 transition-opacity hover:opacity-100"
+										className="h-8 w-8 object-contain opacity-80 transition-opacity hover:opacity-100"
 									/>
 									<span className="sr-only">{icon.label}</span>
 								</span>

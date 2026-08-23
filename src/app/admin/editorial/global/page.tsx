@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { EditorialPageCopyForm } from "@/app/admin/editorial/_components/editorial-page-copy-form";
+import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import {
 	getEditorialSiteGlobalCopyRecord,
 	updateEditorialSiteGlobalCopyAction,
@@ -27,13 +28,16 @@ export default async function AdminEditorialGlobalPage() {
 				title="Newsletter e rodapé"
 				description="Conteúdo global público editável, sem depender de `messages/pt-BR.json`."
 				actions={
-					<Link
-						href="/admin/editorial"
-						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
-					>
-						<ArrowLeft className="h-4 w-4" />
-						Voltar para editorial
-					</Link>
+					<>
+						<EditorialPagePreview href="/" published={page.published} />
+						<Link
+							href="/admin/editorial"
+							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Voltar para editorial
+						</Link>
+					</>
 				}
 			/>
 
@@ -103,7 +107,7 @@ export default async function AdminEditorialGlobalPage() {
 							},
 							{
 								name: "footerCatalogueTitle",
-								label: "Título da coluna Livros",
+								label: "Título da coluna Loja",
 								defaultValue: page.footer?.catalogueTitle,
 							},
 							{

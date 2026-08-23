@@ -2,7 +2,10 @@ import "server-only";
 
 import { ObjectId } from "mongodb";
 import { isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
+import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 import { createPersistentSession } from "@/lib/session";
+
+const MAINTENANCE_LOGIN_RESTRICTED_ERROR = "Login restrito à administração durante a manutenção.";
 
 type LoginInput = {
 	email: string;
@@ -72,6 +75,12 @@ export async function authenticateAndCreateSession({
 
 		const ok = await bcrypt.compare(password, user.passwordHash);
 		if (!ok) return { ok: false, error: "Credenciais inválidas" };
+
+		const role = normalizeUserRole(user.role);
+		if (isMaintenanceModeEnabled() && role !== "admin") {
+			return { ok: false, error: MAINTENANCE_LOGIN_RESTRICTED_ERROR };
+		}
+
 		if (user.email !== normalizedEmail) {
 			await db
 				.collection("users")
@@ -139,7 +148,6 @@ export async function authenticateAndCreateSession({
 			console.debug("[login] no cart override");
 		}
 
-		const role = normalizeUserRole(user.role);
 		await createPersistentSession({
 			id: String(user._id),
 			email: normalizedEmail,

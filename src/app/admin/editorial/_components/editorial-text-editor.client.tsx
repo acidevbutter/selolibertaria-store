@@ -2,7 +2,9 @@
 
 import { Bold, Heading3, Italic, Pilcrow, Quote } from "lucide-react";
 import type { ComponentType } from "react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { readEditorialText, serializeEditorialText } from "@/lib/editorial-style";
+import { EditorialStyleControls } from "@/ui/editorial/editorial-style-controls.client";
 
 type EditorialTextEditorProps = {
 	name: string;
@@ -61,6 +63,27 @@ const actions: FormatAction[] = [
 
 export function EditorialTextEditor({ name, defaultValue, rows = 4 }: EditorialTextEditorProps) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const initial = readEditorialText(defaultValue);
+	useEffect(() => {
+		const textarea = textareaRef.current;
+		const form = textarea?.form;
+		if (!textarea || !form) return;
+		const onSubmit = () => {
+			const style = Object.fromEntries(
+				["font", "scale", "color", "emphasis"].map((key) => [
+					key,
+					(
+						form.elements.namedItem(
+							`${name}Style${key.charAt(0).toUpperCase()}${key.slice(1)}`,
+						) as HTMLSelectElement | null
+					)?.value,
+				]),
+			);
+			textarea.value = serializeEditorialText(textarea.value, style);
+		};
+		form.addEventListener("submit", onSubmit);
+		return () => form.removeEventListener("submit", onSubmit);
+	}, [name]);
 
 	function applyFormat(action: FormatAction) {
 		const textarea = textareaRef.current;
@@ -104,10 +127,11 @@ export function EditorialTextEditor({ name, defaultValue, rows = 4 }: EditorialT
 				ref={textareaRef}
 				id={name}
 				name={name}
-				defaultValue={defaultValue ?? ""}
+				defaultValue={initial.source}
 				rows={rows}
 				className="min-h-24 w-full resize-y bg-transparent px-3 py-2 text-sm leading-6 shadow-xs focus-visible:outline-hidden"
 			/>
+			<EditorialStyleControls name={name} defaultStyle={initial.style} />
 		</div>
 	);
 }

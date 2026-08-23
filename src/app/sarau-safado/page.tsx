@@ -87,7 +87,7 @@ export default async function SarauSafadoPage() {
 								</EditorialEyebrow>
 								<h1
 									className={[
-										"display-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
+										"title-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
 										useDarkHeroText
 											? "text-[color:var(--editorial-ink)]"
 											: "text-[color:var(--editorial-paper)]",
@@ -167,7 +167,7 @@ export default async function SarauSafadoPage() {
 									className="grid gap-3 border-b border-[color:var(--editorial-border)] pb-6 sm:grid-cols-[5.5rem_1fr]"
 								>
 									<div className="text-3xl font-black text-[color:var(--editorial-accent)]">
-										{event.period?.slice(0, 6).toUpperCase() || "AGENDA"}
+										{event.period?.toUpperCase() || "AGENDA"}
 									</div>
 									<div>
 										<h3 className="text-2xl font-semibold">{event.title}</h3>

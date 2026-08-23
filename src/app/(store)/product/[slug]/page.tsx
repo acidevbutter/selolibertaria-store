@@ -79,7 +79,7 @@ export default async function SingleProductPage(props: {
 				<EditorialShell className="grid min-h-[60vh] gap-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
 					<div className="space-y-5">
 						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Catálogo</EditorialEyebrow>
-						<h1 className="display-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
+						<h1 className="title-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
 							{pageContent.notFound?.title || "Produto não encontrado"}
 						</h1>
 						<EditorialRichText
@@ -217,7 +217,7 @@ export default async function SingleProductPage(props: {
 										<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
 											{category ? deslugify(category) : "Produto"}
 										</EditorialEyebrow>
-										<h1 className="display-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
+										<h1 className="title-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
 											{selectedVariant?.label
 												? formatProductName(product.name, selectedVariant.label)
 												: product.name}
@@ -330,7 +330,7 @@ export default async function SingleProductPage(props: {
 									<EditorialEyebrow className="text-[color:rgba(247,244,239,0.62)]">
 										{pageContent.excerpt?.title || "Trecho"}
 									</EditorialEyebrow>
-									<h2 className="mt-4 display-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
+									<h2 className="mt-4 title-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
 										{excerpt}
 									</h2>
 								</div>

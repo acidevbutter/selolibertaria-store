@@ -1,5 +1,5 @@
 export const EDITORIAL_LINK_OPTIONS = [
-	{ label: "Livros", href: "/products" },
+	{ label: "Loja", href: "/products" },
 	{ label: "Projetos", href: "/projects" },
 	{ label: "Sarau Safado", href: "/sarau-safado" },
 	{ label: "Sobre", href: "/about" },

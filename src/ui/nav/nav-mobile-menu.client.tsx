@@ -17,7 +17,7 @@ export const NavMobileMenu = ({ children }: { children: ReactNode }) => {
 	const t = useTranslations("Global.nav.mobileMenu");
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
-			<DrawerTrigger>
+			<DrawerTrigger aria-label={t("title")} title={t("title")}>
 				<MenuIcon className="h-5 w-5 text-[color:var(--editorial-ink)]" />
 			</DrawerTrigger>
 			<DrawerContent>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Product } from "@/lib/commerce-types";
 import {
 	type EditorialHomePage,
 	getEditorialBackgroundContrast,
@@ -9,20 +10,28 @@ import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { YnsLink } from "@/ui/yns-link";
 
-export async function HomeHero({ content }: { content?: EditorialHomePage["hero"] | null }) {
+export async function HomeHero({
+	content,
+	product,
+}: {
+	content?: EditorialHomePage["hero"] | null;
+	product?: Product | null;
+}) {
 	const hero = content ?? null;
-	const eyebrow = hero?.eyebrow || "Lançamento";
-	const title = hero?.title || "Ninfas do Tiete";
+	const usesProduct = hero?.mode === "product" && Boolean(product);
+	const eyebrow = usesProduct ? "Destaque principal" : hero?.eyebrow || "Lançamento";
+	const title = usesProduct ? product?.name || "Livro em destaque" : hero?.title || "Ninfas do Tiete";
 	const description =
-		hero?.description ||
+		(usesProduct ? product?.summary : hero?.description) ||
 		"Um romance breve, noturno e urbano em que desejo, cidade e memória atravessam a leitura como presença.";
-	const primaryCtaLabel = hero?.primaryCtaLabel || "Ver loja";
+	const primaryCtaLabel = usesProduct ? "Ver livro" : hero?.primaryCtaLabel || "Ver loja";
 	const secondaryCtaLabel = hero?.secondaryCtaLabel || "Conhecer o Sarau Safado";
 	const supportingLine =
 		hero?.supportingLine || "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.";
 	const quoteEyebrow = hero?.featureEyebrow || "Trecho";
 	const quote = hero?.featureQuote || "Ler também pode ser uma forma de acender presença.";
-	const featureImage = hero?.featureImage?.src || "/images/ninfas-example.png";
+	const featureImage =
+		(usesProduct ? product?.images[0] : hero?.featureImage?.src) || "/images/ninfas-example.png";
 	const featureImageAlt = hero?.featureImage?.alt || title;
 	const backgroundStyle = getEditorialBackgroundStyle(hero?.background, null, "strong");
 	const useDarkText = Boolean(backgroundStyle) && getEditorialBackgroundContrast(hero?.background) === "dark";
@@ -51,7 +60,7 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 					<Reveal delay={0.05}>
 						<h1
 							className={[
-								"display-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]",
+								"title-font max-w-[8ch] text-balance text-[3.45rem] leading-[0.84] font-black tracking-[-0.07em] uppercase sm:text-[5.2rem] lg:text-[6.2rem] xl:text-[6.7rem]",
 								useDarkText ? "text-[color:var(--editorial-ink)]" : "text-[color:var(--editorial-paper)]",
 							].join(" ")}
 						>
@@ -70,7 +79,9 @@ export async function HomeHero({ content }: { content?: EditorialHomePage["hero"
 					<Reveal delay={0.15}>
 						<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 							<YnsLink
-								href={hero?.primaryCtaHref || "/products"}
+								href={
+									usesProduct && product ? `/product/${product.slug}` : hero?.primaryCtaHref || "/products"
+								}
 								className={[
 									"inline-flex h-12 items-center justify-center px-6 text-[11px] font-black uppercase tracking-[0.24em] transition-colors duration-300",
 									useDarkText

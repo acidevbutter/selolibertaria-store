@@ -268,6 +268,8 @@ export type EditorialContactPage = EditorialBase & {
 export type EditorialHomePage = EditorialBase & {
 	type: "page_home";
 	hero?: {
+		mode?: "custom" | "product" | null;
+		productSlug?: string | null;
 		eyebrow?: string | null;
 		title?: string | null;
 		description?: string | null;

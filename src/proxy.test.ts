@@ -1,8 +1,23 @@
 // @vitest-environment node
 
+import { SignJWT } from "jose";
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { proxy } from "@/proxy";
+
+async function signSessionCookie(role: string, expiresInMs = 60_000) {
+	const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+	const jwt = await new SignJWT({ user: { role }, expires: Date.now() + expiresInMs })
+		.setProtectedHeader({ alg: "HS256" })
+		.sign(secret);
+	return `session=${jwt}`;
+}
+
+// Tests must not depend on whatever MAINTENANCE_MODE happens to be set to in
+// the real .env file — start every test from a known "off" state.
+beforeEach(() => {
+	delete process.env.MAINTENANCE_MODE;
+});
 
 describe("proxy public auth paths", () => {
 	it("redireciona prefixos legados de locale para a rota canônica", async () => {
@@ -41,5 +56,79 @@ describe("proxy public auth paths", () => {
 		const res = await proxy(new NextRequest("http://localhost/api/user"));
 
 		expect(res.status).toBe(401);
+	});
+});
+
+describe("proxy maintenance mode", () => {
+	it("does not redirect when maintenance mode is off", async () => {
+		const res = await proxy(new NextRequest("http://localhost/products"));
+
+		expect(res.status).toBe(200);
+	});
+
+	it("redirects anonymous visitors of any page to /maintenance, not /login", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const res = await proxy(new NextRequest("http://localhost/products"));
+
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toBe("http://localhost/maintenance");
+	});
+
+	it("returns a JSON 503 for api routes instead of redirecting to an HTML page", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const res = await proxy(new NextRequest("http://localhost/api/cart"));
+
+		expect(res.status).toBe(503);
+		expect(res.headers.get("content-type")).toContain("application/json");
+		await expect(res.json()).resolves.toMatchObject({ code: "MAINTENANCE_MODE" });
+	});
+
+	it("lets /maintenance itself load", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const res = await proxy(new NextRequest("http://localhost/maintenance"));
+
+		expect(res.status).toBe(200);
+	});
+
+	it("lets /login itself load — direct link is the only way in", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const res = await proxy(new NextRequest("http://localhost/login"));
+
+		expect(res.status).toBe(200);
+	});
+
+	it("lets the login submit routes through so credentials can be checked", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const submit = await proxy(new NextRequest("http://localhost/login/submit", { method: "POST" }));
+		const apiForm = await proxy(new NextRequest("http://localhost/api/auth/login/form", { method: "POST" }));
+
+		expect(submit.status).toBe(200);
+		expect(apiForm.status).toBe(200);
+	});
+
+	it("redirects a non-admin session away from every page, to /maintenance", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const cookie = await signSessionCookie("customer");
+		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
+
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toBe("http://localhost/maintenance");
+	});
+
+	it("lets an authenticated admin session through to any page", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const cookie = await signSessionCookie("admin");
+		const res = await proxy(new NextRequest("http://localhost/admin", { headers: { cookie } }));
+
+		expect(res.status).toBe(200);
+	});
+
+	it("does not let an expired admin session bypass maintenance mode", async () => {
+		process.env.MAINTENANCE_MODE = "true";
+		const cookie = await signSessionCookie("admin", -1000);
+		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
+
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toBe("http://localhost/maintenance");
 	});
 });

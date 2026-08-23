@@ -49,7 +49,7 @@ export async function HomeProgramGrid({
 						<EditorialEyebrow>{content?.eyebrow || "Sarau Safado"}</EditorialEyebrow>
 					</Reveal>
 					<Reveal delay={0.04}>
-						<h2 className="display-font max-w-[12ch] text-4xl font-black tracking-[-0.05em] sm:text-5xl">
+						<h2 className="title-font max-w-[12ch] text-4xl font-black tracking-[-0.05em] sm:text-5xl">
 							{featuredTitle}
 						</h2>
 					</Reveal>

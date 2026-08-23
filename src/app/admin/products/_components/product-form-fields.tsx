@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { AdminFieldHelp } from "@/app/admin/_components/admin-field-help";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
 import { CategorySelectField } from "@/app/admin/products/_components/category-select-field.client";
@@ -24,18 +25,46 @@ export function Field({
 	hint?: string;
 	className?: string;
 }) {
+	const help = FIELD_HELP[name] ?? getFieldHelp(name);
 	return (
 		<div className={className ?? "space-y-2"}>
-			<Label
-				htmlFor={name}
-				className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-			>
-				{label}
-			</Label>
+			<div className="flex items-center gap-1">
+				<Label
+					htmlFor={name}
+					className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
+				>
+					{label}
+				</Label>
+				{help ? <AdminFieldHelp label={label}>{help}</AdminFieldHelp> : null}
+			</div>
 			{children}
 			{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 		</div>
 	);
+}
+
+const FIELD_HELP: Record<string, string> = {
+	slug: "É o endereço público da página. Aparece na URL e muda onde o conteúdo pode ser acessado após salvar.",
+	order: "Define a posição de exibição. Números menores aparecem primeiro nas listas editoriais.",
+	published: "Controla se a versão salva fica visível no site público ou permanece como rascunho.",
+	imageAlt:
+		"Descreve a imagem para leitoras e leitores que usam recursos de acessibilidade. Explique o que a imagem mostra.",
+	imageCaption: "Texto curto exibido junto da imagem quando a página usar legenda.",
+	imageSrc: "Imagem que aparece no bloco público. A prévia só é publicada depois de salvar o formulário.",
+};
+
+function getFieldHelp(name: string) {
+	if (name.endsWith("CtaLabel"))
+		return "É o texto visível do botão. Aparece na página pública e orienta a próxima ação de quem está lendo.";
+	if (name.endsWith("ImageFit"))
+		return "Define se a imagem preenche todo o espaço ou aparece inteira. Altera apenas o enquadramento visual do bloco.";
+	if (name.endsWith("Position"))
+		return "Escolhe qual parte da imagem fica em evidência quando o espaço é cortado.";
+	if (name.endsWith("Overlay"))
+		return "Escurece a imagem de fundo para melhorar a leitura do texto sobre ela.";
+	if (name.endsWith("Contrast"))
+		return "Define se o texto sobre a imagem será claro ou escuro. Escolha a opção com melhor leitura.";
+	return undefined;
 }
 
 export function Textarea({
