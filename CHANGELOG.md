@@ -2,6 +2,8 @@
 
 ### Added
 
+- FastAPI: categorias canônicas de catálogo em PostgreSQL, com endpoints e migração de `productCategories`.
+
 - FastAPI: domínio `auth` com cadastro, login, JWT persistido, sessão, verificação de e-mail e reset de senha em PostgreSQL.
 
 - Mapa de migração do Next.js para FastAPI, incluindo responsabilidades de domínio, resíduos Mongo e avaliação das rotas Mercado Pago em `docs/architecture/fastapi-migration-map.md`.
