@@ -28,7 +28,7 @@ Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticaç
 |---|---|---|
 | Identidade | login, registro, verificação, recuperação, OAuth, sessões, magic link e RBAC | Parcial; `auth` existe no FastAPI, mas Next.js ainda usa Mongo/JWT local e faltam OAuth, magic link e RBAC |
 | Carrinho | carrinho convidado/autenticado, merge e snapshot imutável de checkout | Parcial; domínio e migração de `users.cart` existem no FastAPI, mas o Next.js ainda usa Mongo/cookies |
-| Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Parcial; intents, pagamento Mercado Pago e finalização estão no FastAPI, enquanto snapshot/preço e frete ainda dependem do Next.js |
+| Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Parcial; Server Actions usam intents, pagamento, Pix, finalização, comprador e entrega no FastAPI; snapshot/preço e cotação ainda dependem do Next.js |
 | Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
 | Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
 | Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação/reconciliação de checkout e assinatura do webhook estão no FastAPI; customer cards, cancelamento e estorno continuam pendentes |
@@ -70,7 +70,7 @@ Não foi encontrado endpoint legado `/v1/payments` ativo no código atual. O flu
 1. Implementar o contrato no FastAPI e testes de domínio.
 2. Adicionar autenticação serviço-a-serviço e autorização por papel.
 3. Criar o client server-only do FastAPI no Next.js.
-4. Trocar uma superfície por vez para proxy, preservando o contrato público.
+4. Trocar uma superfície por vez para proxy, preservando o contrato público. Checkout já usa esse caminho para intent, pagamento, Pix, finalização, comprador e entrega.
 5. Validar leitura, escrita, idempotência, erros e reload direto.
 6. Executar cutover controlado e confirmar ausência de `mongodb`, `getDb` e `ensureIndexes` em `src/app/api`, `src/actions` e módulos usados por essas rotas.
 7. Só então remover `MONGODB_URI`, `MONGODB_DB_NAME`, dependência `mongodb` e `src/lib/mongodb.ts` do frontend. As variáveis Mongo do script de migração devem permanecer apenas no ambiente operacional do backend até o encerramento da migração.
