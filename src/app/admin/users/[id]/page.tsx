@@ -1,11 +1,11 @@
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { setUserBlockedAction, updateUserRoleAction } from "@/app/admin/users/actions";
+import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability, isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
@@ -16,10 +16,6 @@ import {
 import { Reveal } from "@/ui/motion/reveal";
 import { Button } from "@/ui/shadcn/button";
 import { StatusBadge } from "@/ui/status-badge";
-
-function isValidObjectId(id: string | undefined | null): id is string {
-	return !!id && /^[0-9a-fA-F]{24}$/.test(id);
-}
 
 function getRoleLabel(role: UserRole | undefined) {
 	switch (normalizeUserRole(role)) {
@@ -39,30 +35,42 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
 	const { id } = await params;
-	if (!isValidObjectId(id)) redirect("/admin/users");
-
-	const db = await getDb();
-	const user = await db.collection("users").findOne<{
-		_id: ObjectId;
-		email: string;
-		name?: string;
-		role?: UserRole;
-		phone?: string;
-		address?: {
-			line1?: string;
-			city?: string;
-			state?: string;
-			postalCode?: string;
-			country?: string;
-		};
-		access?: {
-			blockedAt?: Date | string | null;
-			blockedBy?: string | null;
-			blockedReason?: string | null;
-		} | null;
-		purchases?: Array<{ id: string; status: string; createdAt: string | Date }>;
-	}>({ _id: new ObjectId(id) }, { projection: { passwordHash: 0 } });
-	if (!user) redirect("/admin/users");
+	if (!/^[0-9a-f-]{36}$/i.test(id)) redirect("/admin/users");
+	const token = (await cookies()).get("session")?.value;
+	if (!token) redirect("/login");
+	const headers = { authorization: `Bearer ${token}` };
+	const [userResponse, ordersResponse] = await Promise.all([
+		fetch(`${env.FASTAPI_API_URL}/users/${encodeURIComponent(id)}`, { headers, cache: "no-store" }),
+		fetch(`${env.FASTAPI_API_URL}/orders/?page=1&page_size=200&user_id=${encodeURIComponent(id)}`, {
+			headers,
+			cache: "no-store",
+		}),
+	]);
+	if (!userResponse.ok) redirect("/admin/users");
+	const remote = (await userResponse.json()) as Record<string, unknown>;
+	const orders = ordersResponse.ok
+		? ((await ordersResponse.json()) as { items: Array<{ id: string; status: string; created_at: string }> })
+				.items
+		: [];
+	const user = {
+		email: String(remote.email),
+		name: typeof remote.name === "string" ? remote.name : undefined,
+		role: remote.role as UserRole | undefined,
+		phone: typeof remote.phone === "string" ? remote.phone : undefined,
+		address: {
+			line1: remote.address_line1 as string | undefined,
+			city: remote.address_city as string | undefined,
+			state: remote.address_state as string | undefined,
+			postalCode: remote.address_postal_code as string | undefined,
+			country: remote.address_country as string | undefined,
+		},
+		access: {
+			blockedAt: remote.blocked_at as string | null,
+			blockedBy: remote.blocked_by as string | null,
+			blockedReason: remote.blocked_reason as string | null,
+		},
+		purchases: orders.map((order) => ({ id: order.id, status: order.status, createdAt: order.created_at })),
+	};
 	const canManageStaff = hasCapability(session.user.role, "staff.manage");
 	const role = normalizeUserRole(user.role);
 	const roleLabel = getRoleLabel(user.role);
