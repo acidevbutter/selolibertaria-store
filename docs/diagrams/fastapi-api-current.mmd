@@ -9,6 +9,12 @@ flowchart LR
         exceptions["Exception handlers"]
         health["Meta:<br/>GET /health<br/>GET /openapi.json · /docs · /redoc"]
 
+        subgraph auth["Auth — /auth"]
+            auth_routes["POST /register · /login · /logout<br/>GET /me<br/>POST /verify · /password-reset<br/>POST /password-reset/confirm"]
+            auth_service["AuthService"]
+            auth_repo["AuthRepository"]
+        end
+
         subgraph users["Users — /users"]
             users_routes["POST /<br/>GET /<br/>GET /{user_id}<br/>PATCH /{user_id}<br/>PATCH /{user_id}/role<br/>PATCH /{user_id}/block"]
             users_service["UserService"]
@@ -27,6 +33,12 @@ flowchart LR
             catalog_repo["CatalogRepository"]
         end
 
+        subgraph carts["Carts — /carts"]
+            carts_routes["POST /guest<br/>GET/POST/PUT/DELETE /guest/{cart_id}<br/>GET/POST/PUT/DELETE /me<br/>POST /me/merge"]
+            carts_service["CartService"]
+            carts_repo["CartRepository"]
+        end
+
         subgraph migrations["Migration — /admin/migrations"]
             migration_route["POST /mongo-to-postgres"]
             migration_service["MigrationService<br/>execução única"]
@@ -40,6 +52,7 @@ flowchart LR
         users_db[("users<br/>identities · sessions<br/>access tokens")]
         orders_db[("orders<br/>items · events · drafts<br/>audit · reconciliation")]
         catalog_db[("catalog_products<br/>catalog_variants<br/>product_audit_logs")]
+        carts_db[("shopping_carts<br/>shopping_cart_items")]
         migration_db[("migration_runs")]
     end
 
@@ -47,15 +60,20 @@ flowchart LR
 
     client --> middleware
     middleware --> health
+    middleware --> auth_routes
     middleware --> users_routes
     middleware --> orders_routes
     middleware --> catalog_routes
+    middleware --> carts_routes
     middleware --> migration_route
     middleware -."erros".-> exceptions
 
     users_routes --> users_service --> users_repo --> users_db
+    auth_routes --> auth_service --> auth_repo --> users_db
     orders_routes --> orders_service --> orders_repo --> orders_db
     catalog_routes --> catalog_service --> catalog_repo --> catalog_db
+    carts_routes --> carts_service --> carts_repo --> carts_db
+    carts_service -."consulta catálogo".-> catalog_db
 
     migration_route --> migration_service
     migration_service --> migration_repo --> migration_db
@@ -63,18 +81,21 @@ flowchart LR
     migration_service --> users_db
     migration_service --> orders_db
     migration_service --> catalog_db
+    migration_service --> carts_db
 
     di -."injeta dependências".-> users_service
+    di -."injeta dependências".-> auth_service
     di -."injeta dependências".-> orders_service
     di -."injeta dependências".-> catalog_service
+    di -."injeta dependências".-> carts_service
     di -."injeta dependências".-> migration_service
 
     classDef route fill:#7A1E22,color:#fff,stroke:#0B0B0B,stroke-width:1px;
     classDef service fill:#D8D0C4,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
     classDef store fill:#F7F4EF,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
-    class users_routes,orders_routes,catalog_routes,migration_route,health route;
-    class users_service,orders_service,catalog_service,migration_service,di,middleware,exceptions service;
-    class users_db,orders_db,catalog_db,migration_db,mongo store;
+    class users_routes,auth_routes,orders_routes,catalog_routes,carts_routes,migration_route,health route;
+    class users_service,auth_service,orders_service,catalog_service,carts_service,migration_service,di,middleware,exceptions service;
+    class users_db,orders_db,catalog_db,carts_db,migration_db,mongo store;
 
-    note["Limites atuais:<br/>• rotas de escrita/gestão são contratos de referência<br/>• autenticação de admin ainda não está conectada<br/>• promoções e conteúdo editorial continuam no Next.js/Mongo"]
+    note["Limites atuais:<br/>• Next.js ainda não consome auth/carts do FastAPI<br/>• autenticação de admin ainda não está conectada<br/>• Mercado Pago, promoções e editorial continuam no Next.js/Mongo"]
     api -.-> note

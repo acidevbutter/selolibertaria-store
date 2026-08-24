@@ -2,6 +2,8 @@
 
 ### Added
 
+- FastAPI: carrinhos de convidado e autenticados em PostgreSQL, com merge no login, itens validados pelo catálogo e migração de `users.cart`.
+
 - FastAPI: categorias canônicas de catálogo em PostgreSQL, com endpoints e migração de `productCategories`.
 
 - FastAPI: domínio `auth` com cadastro, login, JWT persistido, sessão, verificação de e-mail e reset de senha em PostgreSQL.

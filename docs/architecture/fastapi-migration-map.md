@@ -13,8 +13,10 @@ O Next.js não deve importar `mongodb`, `getDb`, `ensureIndexes` ou manter `MONG
 Já existe em `backend/app/`:
 
 - `users`: cadastro, listagem, leitura, perfil, papel e bloqueio;
+- `auth`: cadastro, login, sessão JWT persistida, verificação e reset de senha;
 - `orders`: criação, listagem, leitura e fulfillment;
 - `catalog`: produtos, variantes, publicação e auditoria;
+- `carts`: carrinhos de convidado/autenticados, merge e itens validados pelo catálogo;
 - migração única Mongo→PostgreSQL;
 - PostgreSQL assíncrono, SQLAlchemy, Alembic, paginação e logs de requisição.
 
@@ -24,8 +26,8 @@ Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticaç
 
 | Domínio | Escopo necessário | Estado |
 |---|---|---|
-| Identidade | login, registro, verificação, recuperação, OAuth, sessões, magic link e RBAC | Pendente; hoje depende de Mongo no Next.js |
-| Carrinho | carrinho convidado/autenticado, merge e snapshot imutável de checkout | Pendente; hoje depende de Mongo/cookies no Next.js |
+| Identidade | login, registro, verificação, recuperação, OAuth, sessões, magic link e RBAC | Parcial; `auth` existe no FastAPI, mas Next.js ainda usa Mongo/JWT local e faltam OAuth, magic link e RBAC |
+| Carrinho | carrinho convidado/autenticado, merge e snapshot imutável de checkout | Parcial; domínio e migração de `users.cart` existem no FastAPI, mas o Next.js ainda usa Mongo/cookies |
 | Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Pendente; hoje em Server Actions/Mongo |
 | Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
 | Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
