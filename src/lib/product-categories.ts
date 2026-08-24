@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { env } from "@/env.mjs";
 import { slugify } from "@/lib/utils";
 
@@ -33,7 +34,13 @@ function toCategory(category: FastApiCategory): SystemCategory {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, { ...options, cache: "no-store" });
+	const headers = new Headers(options?.headers);
+	if (options?.body) {
+		const token = (await cookies()).get("session")?.value;
+		if (!token) throw new Error("Não autorizado");
+		headers.set("authorization", `Bearer ${token}`);
+	}
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, { ...options, headers, cache: "no-store" });
 	if (!response.ok) throw new Error("Categorias indisponíveis");
 	return (await response.json()) as T;
 }
