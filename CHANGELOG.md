@@ -2,6 +2,8 @@
 
 ### Added
 
+- FastAPI: domínio `auth` com cadastro, login, JWT persistido, sessão, verificação de e-mail e reset de senha em PostgreSQL.
+
 - Mapa de migração do Next.js para FastAPI, incluindo responsabilidades de domínio, resíduos Mongo e avaliação das rotas Mercado Pago em `docs/architecture/fastapi-migration-map.md`.
 
 - Diagrama Mermaid da API FastAPI atual em `docs/diagrams/fastapi-api-current.mmd`, com rotas, camadas, persistência e limites de integração.
