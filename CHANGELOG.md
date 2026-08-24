@@ -6,6 +6,8 @@
 - FastAPI: operações de pagamento e finalização exigem a chave privada do checkout associada ao draft.
 - Frontend: Server Actions de checkout passaram a usar o contrato FastAPI para intents, pagamentos, consulta Pix, finalização, comprador e entrega; snapshot/preço e frete permanecem em migração.
 - FastAPI: intents reutilizam drafts pelo proprietário e hash do carrinho, evitando duplicação ao recarregar o checkout.
+- FastAPI: seleção e reconciliação de drafts Mercado Pago pendentes passaram para `POST /checkout/reconcile`, protegido por chave interna.
+- Frontend: reconciliação admin/cron e processamento pós-checkout deixaram de consultar Mongo e passaram a usar o FastAPI.
 
 - Frontend: leituras de catálogo público e gestão delegadas ao FastAPI.
 

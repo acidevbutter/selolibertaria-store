@@ -31,7 +31,7 @@ Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticaç
 | Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Parcial; Server Actions usam intents, pagamento, Pix, finalização, comprador e entrega no FastAPI; snapshot/preço e cotação ainda dependem do Next.js |
 | Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
 | Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
-| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação/reconciliação de checkout e assinatura do webhook estão no FastAPI; customer cards, cancelamento e estorno continuam pendentes |
+| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação, finalização e seleção/reconciliação de checkout estão no FastAPI; webhook processado, customer cards, cancelamento, estorno e retry persistido continuam pendentes |
 | Frete | Melhor Envio, cotação, seleção do menor serviço e snapshot | Pendente; hoje no Next.js |
 | Editorial | home, páginas, eventos, projetos, Sarau Safado e mídia | Pendente; permanece no Next.js/Mongo |
 | Promoções | promoções, cupons, elegibilidade, resgate e alertas | Pendente; permanece no Next.js/Mongo |
