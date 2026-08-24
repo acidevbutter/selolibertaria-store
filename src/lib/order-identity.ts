@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { randomUUID } from "node:crypto";
 
 export interface OrderRelatedIds {
 	/** Legacy Payments API `payment_id`. Kept for orders placed before the Orders API migration. */
@@ -13,7 +13,7 @@ export interface OrderIdentifierLike {
 }
 
 export function createInternalOrderId() {
-	return `ord_${new ObjectId().toHexString()}`;
+	return `ord_${randomUUID().replaceAll("-", "")}`;
 }
 
 export function matchesOrderIdentifier(order: OrderIdentifierLike, identifier: string) {
