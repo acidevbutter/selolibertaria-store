@@ -2,6 +2,12 @@
 
 ### Added
 
+- Mapa de migração do Next.js para FastAPI, incluindo responsabilidades de domínio, resíduos Mongo e avaliação das rotas Mercado Pago em `docs/architecture/fastapi-migration-map.md`.
+
+- Diagrama Mermaid da API FastAPI atual em `docs/diagrams/fastapi-api-current.mmd`, com rotas, camadas, persistência e limites de integração.
+
+- Backend FastAPI: domínio `catalog` com produtos, variantes e trilha de auditoria normalizados em PostgreSQL.
+
 - DEV-58: hero da Home pode usar uma composição personalizada ou um livro publicado, reaproveitando capa, título, resumo e CTA do catálogo.
 - DEV-62: dicas acessíveis por popover nos campos editoriais de endereço público, posição, publicação e imagem.
 - DEV-62: destinos de botões e links agora explicam onde levam; controles de imagem de fundo recebem orientação sobre enquadramento, posição, escurecimento e contraste.

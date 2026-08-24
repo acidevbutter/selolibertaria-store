@@ -1,0 +1,80 @@
+%% Selo Libertária — FastAPI API atual
+%% Fonte: backend/app/main.py, routers, services, repositories e models.
+%% Escopo: contrato de referência do backend; não representa as rotas Next.js/Mongo ainda ativas.
+flowchart LR
+    client["Clientes / Next.js proxy<br/>contratos de referência"]
+
+    subgraph api["FastAPI — Selo Libertária Backend"]
+        middleware["RequestContextMiddleware<br/>request-id · duração · logs"]
+        exceptions["Exception handlers"]
+        health["Meta:<br/>GET /health<br/>GET /openapi.json · /docs · /redoc"]
+
+        subgraph users["Users — /users"]
+            users_routes["POST /<br/>GET /<br/>GET /{user_id}<br/>PATCH /{user_id}<br/>PATCH /{user_id}/role<br/>PATCH /{user_id}/block"]
+            users_service["UserService"]
+            users_repo["UserRepository"]
+        end
+
+        subgraph orders["Orders — /orders"]
+            orders_routes["POST /<br/>GET /<br/>GET /{order_id}<br/>PATCH /{order_id}/fulfillment"]
+            orders_service["OrderService"]
+            orders_repo["OrderRepository"]
+        end
+
+        subgraph catalog["Catalog — /catalog"]
+            catalog_routes["POST /<br/>GET /<br/>GET /management/<br/>GET /{slug}<br/>PATCH /{slug}<br/>POST /{slug}/variants<br/>PATCH /{slug}/variants/{variant_id}"]
+            catalog_service["CatalogService"]
+            catalog_repo["CatalogRepository"]
+        end
+
+        subgraph migrations["Migration — /admin/migrations"]
+            migration_route["POST /mongo-to-postgres"]
+            migration_service["MigrationService<br/>execução única"]
+            migration_repo["MigrationRunRepository"]
+        end
+
+        di["Dependency injection<br/>DbSession · MongoDb<br/>Pagination · SessionFactory"]
+    end
+
+    subgraph postgres["PostgreSQL / SQLAlchemy async"]
+        users_db[("users<br/>identities · sessions<br/>access tokens")]
+        orders_db[("orders<br/>items · events · drafts<br/>audit · reconciliation")]
+        catalog_db[("catalog_products<br/>catalog_variants<br/>product_audit_logs")]
+        migration_db[("migration_runs")]
+    end
+
+    mongo[("MongoDB legado<br/>users · orderDrafts<br/>mercadoPagoReconciliation<br/>catalogProducts · productAuditLogs")]
+
+    client --> middleware
+    middleware --> health
+    middleware --> users_routes
+    middleware --> orders_routes
+    middleware --> catalog_routes
+    middleware --> migration_route
+    middleware -."erros".-> exceptions
+
+    users_routes --> users_service --> users_repo --> users_db
+    orders_routes --> orders_service --> orders_repo --> orders_db
+    catalog_routes --> catalog_service --> catalog_repo --> catalog_db
+
+    migration_route --> migration_service
+    migration_service --> migration_repo --> migration_db
+    migration_service -."leitura de origem".-> mongo
+    migration_service --> users_db
+    migration_service --> orders_db
+    migration_service --> catalog_db
+
+    di -."injeta dependências".-> users_service
+    di -."injeta dependências".-> orders_service
+    di -."injeta dependências".-> catalog_service
+    di -."injeta dependências".-> migration_service
+
+    classDef route fill:#7A1E22,color:#fff,stroke:#0B0B0B,stroke-width:1px;
+    classDef service fill:#D8D0C4,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
+    classDef store fill:#F7F4EF,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
+    class users_routes,orders_routes,catalog_routes,migration_route,health route;
+    class users_service,orders_service,catalog_service,migration_service,di,middleware,exceptions service;
+    class users_db,orders_db,catalog_db,migration_db,mongo store;
+
+    note["Limites atuais:<br/>• rotas de escrita/gestão são contratos de referência<br/>• autenticação de admin ainda não está conectada<br/>• promoções e conteúdo editorial continuam no Next.js/Mongo"]
+    api -.-> note
