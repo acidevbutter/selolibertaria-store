@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: guards de API e RBAC delegados a `GET /auth/me` do FastAPI.
+
 - Frontend: login por formulário delegado ao FastAPI, com cookie bearer server-only.
 
 - Frontend: leitura de sessão delegada a `GET /auth/me` do FastAPI.
