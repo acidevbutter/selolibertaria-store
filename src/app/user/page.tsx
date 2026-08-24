@@ -1,8 +1,10 @@
 import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PasswordResetMenuButton } from "@/app/user/password-reset-menu-button.client";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { getDefaultCurrencyForLocale } from "@/lib/currency";
@@ -38,7 +40,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	const defaultCurrency = getDefaultCurrencyForLocale(locale);
 
 	interface FullUserDoc {
-		_id: ObjectId;
+		_id: string;
 		email: string;
 		name?: string;
 		phone?: string;
@@ -67,10 +69,45 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	let fullUser: FullUserDoc | null = null;
 	if (section === "profile") {
 		try {
-			const db = await getDb();
-			fullUser = await db
-				.collection<FullUserDoc>("users")
-				.findOne({ _id: new ObjectId(user.id) }, { projection: { passwordHash: 0 } });
+			const token = (await cookies()).get("session")?.value;
+			const response = token
+				? await fetch(`${env.FASTAPI_API_URL}/users/${encodeURIComponent(user.id)}`, {
+						headers: { authorization: `Bearer ${token}` },
+						cache: "no-store",
+					})
+				: null;
+			if (response?.ok) {
+				const remote = (await response.json()) as Record<string, unknown>;
+				fullUser = {
+					_id: user.id,
+					email: String(remote.email ?? user.email),
+					name: typeof remote.name === "string" ? remote.name : undefined,
+					phone: typeof remote.phone === "string" ? remote.phone : undefined,
+					cpf: typeof remote.cpf === "string" ? remote.cpf : undefined,
+					preferredCurrency:
+						typeof remote.preferred_currency === "string"
+							? (remote.preferred_currency as FullUserDoc["preferredCurrency"])
+							: undefined,
+					phoneDetails: {
+						country: remote.phone_country as string | undefined,
+						dialCode: remote.phone_dial_code as string | undefined,
+						national: remote.phone_national as string | undefined,
+						display: remote.phone_display as string | undefined,
+					},
+					address: {
+						line1: remote.address_line1 as string | undefined,
+						line2: remote.address_line2 as string | undefined,
+						number: remote.address_number as string | undefined,
+						complement: remote.address_complement as string | undefined,
+						district: remote.address_district as string | undefined,
+						city: remote.address_city as string | undefined,
+						state: remote.address_state as string | undefined,
+						postalCode: remote.address_postal_code as string | undefined,
+						country: remote.address_country as string | undefined,
+					},
+					marketing: { email: { optIn: remote.marketing_email_opt_in as boolean | undefined } },
+				};
+			}
 		} catch (e) {
 			console.error("[user/page] Failed to load full user data", e);
 		}
