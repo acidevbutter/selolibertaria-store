@@ -105,13 +105,21 @@ export async function getCatalogProductBySlug(slug: string) {
 }
 
 export async function getCatalogProductById(id: string) {
-	const products = await getCatalogCollection();
-	return products.findOne({ id });
+	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/id/${encodeURIComponent(id)}`, {
+		cache: "no-store",
+	});
+	if (response.status === 404) return null;
+	if (!response.ok) throw new Error("Catálogo indisponível");
+	return fromFastApiProduct(await response.json());
 }
 
 export async function getCatalogProductByVariantId(variantId: string) {
-	const products = await getCatalogCollection();
-	return products.findOne({ "variants.id": variantId });
+	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/variants/${encodeURIComponent(variantId)}`, {
+		cache: "no-store",
+	});
+	if (response.status === 404) return null;
+	if (!response.ok) throw new Error("Catálogo indisponível");
+	return fromFastApiProduct(await response.json());
 }
 
 export async function listCatalogProducts({
@@ -143,7 +151,10 @@ function fromFastApiProduct(
 ): CatalogProductDocument {
 	return normalizeCatalogProductDocument({
 		...value,
-		category: value.category_name ? { name: value.category_name, slug: value.category_slug } : null,
+		category:
+			value.category_name && value.category_slug
+				? { name: value.category_name, slug: value.category_slug }
+				: null,
 		productType: value.product_type,
 		createdAt: new Date(value.created_at),
 		updatedAt: new Date(value.updated_at),
