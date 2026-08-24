@@ -46,27 +46,20 @@ export async function decrypt(input: string): Promise<SessionData | null | undef
 export async function auth() {
 	const token = (await cookies()).get("session")?.value;
 	if (!token) return null;
-	const data = await decrypt(token);
-	if (!data || data.expires < Date.now()) {
+	try {
+		const response = await fetch(`${env.FASTAPI_API_URL}/auth/me`, {
+			headers: { Authorization: `Bearer ${token}` },
+			cache: "no-store",
+		});
+		if (!response.ok) return null;
+		const user = (await response.json()) as { id: string; email: string; name?: string; role?: UserRole };
+		return {
+			user: { id: user.id, email: user.email, name: user.name, role: user.role },
+			expires: Date.now() + SessionDuration,
+		};
+	} catch {
 		return null;
 	}
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	const existing = await db.collection("sessions").findOne({ jwt: token, userId: data.user.id });
-	if (!existing) {
-		return null;
-	}
-	const user = await db
-		.collection("users")
-		.findOne<{ access?: { blockedAt?: Date | string | null } | null }>(
-			{ _id: new ObjectId(data.user.id) },
-			{ projection: { access: 1 } },
-		);
-	if (isUserBlocked(user)) {
-		await db.collection("sessions").deleteMany({ userId: data.user.id });
-		return null;
-	}
-	return data;
 }
 
 export async function createPersistentSession(user: {

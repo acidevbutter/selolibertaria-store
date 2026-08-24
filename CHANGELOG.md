@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: leitura de sessão delegada a `GET /auth/me` do FastAPI.
+
 - Frontend: endpoint JSON de login delegado ao FastAPI.
 
 - Frontend: consulta de disponibilidade de e-mail delegada ao FastAPI.
