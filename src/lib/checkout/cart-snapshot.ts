@@ -1,15 +1,14 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
 import { commerce } from "@/lib/commerce";
 import type { AppliedPromotion } from "@/lib/commerce-types";
-import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
-import { getDb } from "@/lib/mongodb";
 
 interface MinimalItem {
 	productId: string;
@@ -184,29 +183,41 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 	}
 
 	const userId = isAuthenticated ? (auth.session.sub as string) : null;
-	const db = await getDb();
-
-	const user = userId
-		? await db.collection("users").findOne<{
-				cart?: { items: MinimalItem[]; couponCode?: string | null };
-				email?: string;
-				name?: string;
-				cpf?: string;
-				phone?: string;
-				address?: CheckoutUserAddress;
-			}>(
-				{ _id: new ObjectId(userId) },
-				{
-					projection: {
-						cart: 1,
-						email: 1,
-						name: 1,
-						cpf: 1,
-						phone: 1,
-						address: 1,
-					},
+	const token = userId ? (await cookies()).get("session")?.value : null;
+	const headers = token ? { authorization: `Bearer ${token}` } : undefined;
+	const [userResponse, cartResponse] =
+		userId && headers
+			? await Promise.all([
+					fetch(`${env.FASTAPI_API_URL}/users/${encodeURIComponent(userId)}`, { headers, cache: "no-store" }),
+					fetch(`${env.FASTAPI_API_URL}/carts/me`, { headers, cache: "no-store" }),
+				])
+			: [null, null];
+	const remoteUser = userResponse?.ok ? ((await userResponse.json()) as Record<string, unknown>) : null;
+	const remoteCart = cartResponse?.ok
+		? ((await cartResponse.json()) as {
+				coupon_code?: string | null;
+				items?: Array<{ product_id: string; variant_id: string; quantity: number }>;
+			})
+		: null;
+	const user = remoteUser
+		? {
+				email: remoteUser.email as string | undefined,
+				name: remoteUser.name as string | undefined,
+				cpf: remoteUser.cpf as string | undefined,
+				phone: remoteUser.phone as string | undefined,
+				preferredCurrency: remoteUser.preferred_currency as string | undefined,
+				address: {
+					line1: remoteUser.address_line1 as string | undefined,
+					line2: remoteUser.address_line2 as string | undefined,
+					number: remoteUser.address_number as string | undefined,
+					complement: remoteUser.address_complement as string | undefined,
+					district: remoteUser.address_district as string | undefined,
+					city: remoteUser.address_city as string | undefined,
+					state: remoteUser.address_state as string | undefined,
+					postalCode: remoteUser.address_postal_code as string | undefined,
+					country: remoteUser.address_country as string | undefined,
 				},
-			)
+			}
 		: null;
 
 	const [guestCartId, guestCartItems, guestCouponCode] = await Promise.all([
@@ -214,18 +225,24 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 		getCartCookieItems(),
 		getCartCouponCode(),
 	]);
-	const sourceItems = user?.cart?.items?.length ? user.cart.items : (guestCartItems ?? []);
+	const sourceItems = remoteCart?.items?.length
+		? remoteCart.items.map((item) => ({
+				productId: item.product_id,
+				variantId: item.variant_id,
+				quantity: item.quantity,
+			}))
+		: (guestCartItems ?? []);
 	const minimalItems = normalizeMinimalItems(await resolveCheckoutItems(sourceItems));
 
 	if (minimalItems.length === 0) {
 		return { ok: false, error: "Empty cart" };
 	}
 
-	const preferredCurrency = userId ? await getUserPreferredCurrencyById(userId) : null;
+	const preferredCurrency = user?.preferredCurrency ?? null;
 	const priced = await buildPricedCartPayload({
 		cartId: userId ? "checkout-snapshot" : guestCartId || "guest-checkout-snapshot",
 		minimalItems,
-		couponCode: user?.cart?.couponCode ?? guestCouponCode ?? null,
+		couponCode: remoteCart?.coupon_code ?? guestCouponCode ?? null,
 		userId,
 		strictCoupon: true,
 		preferredCurrency,
