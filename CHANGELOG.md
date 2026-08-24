@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: login por formulário delegado ao FastAPI, com cookie bearer server-only.
+
 - Frontend: leitura de sessão delegada a `GET /auth/me` do FastAPI.
 
 - Frontend: endpoint JSON de login delegado ao FastAPI.
