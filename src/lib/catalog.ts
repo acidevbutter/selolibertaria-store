@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import type { Collection, Db, Filter, ObjectId } from "mongodb";
+import { env } from "@/env.mjs";
 import { getDb } from "@/lib/mongodb";
 import { filterRenderableProductImages } from "@/lib/product-image-utils";
 import { slugify } from "@/lib/utils";
@@ -97,8 +98,10 @@ export async function upsertCatalogProduct(input: CatalogProductInput) {
 }
 
 export async function getCatalogProductBySlug(slug: string) {
-	const products = await getCatalogCollection();
-	return products.findOne({ slug: slugify(slug) });
+	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/${slugify(slug)}`, { cache: "no-store" });
+	if (response.status === 404) return null;
+	if (!response.ok) throw new Error("Catálogo indisponível");
+	return fromFastApiProduct(await response.json());
 }
 
 export async function getCatalogProductById(id: string) {
@@ -120,13 +123,32 @@ export async function listCatalogProducts({
 	category?: string;
 	includeUnpublished?: boolean;
 } = {}) {
-	const products = await getCatalogCollection();
-	const filter: Filter<CatalogProductDocument> = includeUnpublished ? {} : { published: true };
-	const rows = await products.find(filter).sort({ order: 1, name: 1 }).limit(Math.max(1, first)).toArray();
-	const expectedCategory = category ? slugify(category) : null;
-	return rows
-		.filter((product) => !expectedCategory || product.category?.slug === expectedCategory)
-		.map((product) => normalizeCatalogProductDocument(product, { includeUnpublished }));
+	const params = new URLSearchParams({ page_size: String(Math.max(1, first)) });
+	if (category) params.set("category", slugify(category));
+	const path = includeUnpublished ? "/catalog/management/" : "/catalog/";
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}?${params}`, { cache: "no-store" });
+	if (!response.ok) throw new Error("Catálogo indisponível");
+	const body = (await response.json()) as { items: unknown[] };
+	return body.items.map(fromFastApiProduct);
+}
+
+function fromFastApiProduct(
+	value: CatalogProductDocument & {
+		category_name?: string | null;
+		category_slug?: string | null;
+		product_type?: string | null;
+		created_at: string;
+		updated_at: string;
+	},
+): CatalogProductDocument {
+	return normalizeCatalogProductDocument({
+		...value,
+		category: value.category_name ? { name: value.category_name, slug: value.category_slug } : null,
+		productType: value.product_type,
+		createdAt: new Date(value.created_at),
+		updatedAt: new Date(value.updated_at),
+		variants: value.variants,
+	});
 }
 
 export function normalizeCatalogStock(value: unknown): number | null {

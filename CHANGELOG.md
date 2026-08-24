@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: leituras de catálogo público e gestão delegadas ao FastAPI.
+
 - Frontend: middleware de rotas valida sessão no FastAPI.
 
 - Frontend: guards de API e RBAC delegados a `GET /auth/me` do FastAPI.
