@@ -6,6 +6,7 @@ import { z } from "zod";
 export const env = createEnv({
 	server: {
 		CATALOG_CURRENCY: z.string().optional().default("BRL"),
+		FASTAPI_API_URL: z.string().url().default("http://localhost:8000"),
 		MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
 		MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
 		MERCADO_PAGO_RECONCILIATION_SECRET: z.string().optional(),
@@ -55,6 +56,7 @@ export const env = createEnv({
 	},
 	runtimeEnv: {
 		CATALOG_CURRENCY: process.env.CATALOG_CURRENCY,
+		FASTAPI_API_URL: process.env.FASTAPI_API_URL,
 		MERCADO_PAGO_ACCESS_TOKEN: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 		MERCADO_PAGO_WEBHOOK_SECRET: process.env.MERCADO_PAGO_WEBHOOK_SECRET,
 		MERCADO_PAGO_RECONCILIATION_SECRET: process.env.MERCADO_PAGO_RECONCILIATION_SECRET,

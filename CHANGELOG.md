@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: consulta de disponibilidade de e-mail delegada ao FastAPI.
+
 - FastAPI: validação assinada do webhook Mercado Pago com segredo exclusivo do backend.
 
 - FastAPI: carrinhos de convidado e autenticados em PostgreSQL, com merge no login, itens validados pelo catálogo e migração de `users.cart`.
