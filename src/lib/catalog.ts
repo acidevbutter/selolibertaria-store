@@ -1,9 +1,8 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import type { Collection, Db, Filter, ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import { env } from "@/env.mjs";
-import { getDb } from "@/lib/mongodb";
 import { filterRenderableProductImages } from "@/lib/product-image-utils";
 import { slugify } from "@/lib/utils";
 
@@ -25,7 +24,6 @@ export interface CatalogVariantDocument {
 }
 
 export interface CatalogProductDocument {
-	_id?: ObjectId;
 	id: string;
 	slug: string;
 	name: string;
@@ -49,7 +47,7 @@ export interface CatalogProductDocument {
 
 export type CatalogProductInput = Omit<
 	CatalogProductDocument,
-	"_id" | "createdAt" | "updatedAt" | "legacyProviderIds"
+	"createdAt" | "updatedAt" | "legacyProviderIds"
 > & {
 	legacyProviderIds?: CatalogProductDocument["legacyProviderIds"];
 };
@@ -67,59 +65,45 @@ export function deterministicCatalogId(value: string, prefix: string) {
 	return `${prefix}_${createHash("sha256").update(value).digest("hex").slice(0, 20)}`;
 }
 
-export async function getCatalogCollection(): Promise<Collection<CatalogProductDocument>> {
-	const db = await getDb();
-	return db.collection<CatalogProductDocument>("catalogProducts");
-}
-
-export async function ensureCatalogIndexes(db?: Db) {
-	const currentDb = db ?? (await getDb());
-	const products = currentDb.collection<CatalogProductDocument>("catalogProducts");
-	await products.createIndex({ slug: 1 }, { unique: true });
-	await products.createIndex({ published: 1, order: 1, name: 1 });
-	await products.createIndex({ "category.slug": 1, published: 1, order: 1 });
-	await products.createIndex({ "variants.id": 1 }, { unique: true });
-	await products.createIndex({ productType: 1, format: 1 });
-}
-
-export async function upsertCatalogProduct(input: CatalogProductInput) {
-	const products = await getCatalogCollection();
-	const now = new Date();
-	const { _id: _ignored, ...document } = input as CatalogProductDocument;
-	await products.updateOne(
-		{ slug: input.slug },
-		{
-			$set: { ...document, updatedAt: now },
-			$setOnInsert: { createdAt: now },
-		},
-		{ upsert: true },
-	);
-	return products.findOne({ slug: input.slug });
+async function request<T>(path: string, options: RequestInit = {}, authenticated = false): Promise<T> {
+	const headers = new Headers(options.headers);
+	if (authenticated) {
+		const token = (await cookies()).get("session")?.value;
+		if (!token) throw new Error("Autenticação obrigatória");
+		headers.set("authorization", `Bearer ${token}`);
+	}
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, {
+		...options,
+		headers,
+		cache: "no-store",
+	});
+	if (response.status === 404) return null as T;
+	if (!response.ok) throw new Error("Catálogo indisponível");
+	return (await response.json()) as T;
 }
 
 export async function getCatalogProductBySlug(slug: string) {
-	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/${slugify(slug)}`, { cache: "no-store" });
-	if (response.status === 404) return null;
-	if (!response.ok) throw new Error("Catálogo indisponível");
-	return fromFastApiProduct(await response.json());
+	const product = await request<FastApiProduct | null>(`/catalog/${slugify(slug)}`);
+	return product ? fromFastApiProduct(product) : null;
 }
 
 export async function getCatalogProductById(id: string) {
-	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/id/${encodeURIComponent(id)}`, {
-		cache: "no-store",
-	});
-	if (response.status === 404) return null;
-	if (!response.ok) throw new Error("Catálogo indisponível");
-	return fromFastApiProduct(await response.json());
+	const product = await request<FastApiProduct | null>(`/catalog/id/${encodeURIComponent(id)}`);
+	return product ? fromFastApiProduct(product) : null;
 }
 
 export async function getCatalogProductByVariantId(variantId: string) {
-	const response = await fetch(`${env.FASTAPI_API_URL}/catalog/variants/${encodeURIComponent(variantId)}`, {
-		cache: "no-store",
-	});
-	if (response.status === 404) return null;
-	if (!response.ok) throw new Error("Catálogo indisponível");
-	return fromFastApiProduct(await response.json());
+	const product = await request<FastApiProduct | null>(`/catalog/variants/${encodeURIComponent(variantId)}`);
+	return product ? fromFastApiProduct(product) : null;
+}
+
+export async function getCatalogManagementProductBySlug(slug: string) {
+	const product = await request<FastApiProduct | null>(
+		`/catalog/management/${encodeURIComponent(slugify(slug))}`,
+		{},
+		true,
+	);
+	return product ? fromFastApiProduct(product) : null;
 }
 
 export async function listCatalogProducts({
@@ -134,21 +118,19 @@ export async function listCatalogProducts({
 	const params = new URLSearchParams({ page_size: String(Math.max(1, first)) });
 	if (category) params.set("category", slugify(category));
 	const path = includeUnpublished ? "/catalog/management/" : "/catalog/";
-	const response = await fetch(`${env.FASTAPI_API_URL}${path}?${params}`, { cache: "no-store" });
-	if (!response.ok) throw new Error("Catálogo indisponível");
-	const body = (await response.json()) as { items: unknown[] };
+	const body = await request<{ items: FastApiProduct[] }>(`${path}?${params}`, {}, includeUnpublished);
 	return body.items.map(fromFastApiProduct);
 }
 
-function fromFastApiProduct(
-	value: CatalogProductDocument & {
-		category_name?: string | null;
-		category_slug?: string | null;
-		product_type?: string | null;
-		created_at: string;
-		updated_at: string;
-	},
-): CatalogProductDocument {
+type FastApiProduct = CatalogProductDocument & {
+	category_name?: string | null;
+	category_slug?: string | null;
+	product_type?: string | null;
+	created_at: string;
+	updated_at: string;
+};
+
+function fromFastApiProduct(value: FastApiProduct): CatalogProductDocument {
 	return normalizeCatalogProductDocument({
 		...value,
 		category:
@@ -160,6 +142,111 @@ function fromFastApiProduct(
 		updatedAt: new Date(value.updated_at),
 		variants: value.variants,
 	});
+}
+
+function toFastApiVariant(variant: CatalogVariantDocument) {
+	return {
+		id: variant.id,
+		label: variant.label ?? null,
+		slug: variant.slug ?? null,
+		description: variant.description ?? null,
+		images: variant.images,
+		price: variant.price,
+		currency: variant.currency,
+		stock: variant.stock ?? null,
+		published: variant.published,
+		order: variant.order ?? null,
+		legacy_provider_ids: variant.legacyProviderIds ?? null,
+	};
+}
+
+function toFastApiProduct(product: CatalogProductInput) {
+	return {
+		id: product.id,
+		slug: product.slug,
+		name: product.name,
+		description: product.description ?? null,
+		images: product.images,
+		category: product.category ?? null,
+		stock: product.stock ?? null,
+		product_type: product.productType ?? null,
+		format: product.format ?? null,
+		order: product.order ?? null,
+		published: product.published,
+		legacy_provider_ids: product.legacyProviderIds ?? null,
+		variants: product.variants.map(toFastApiVariant),
+	};
+}
+
+export async function createCatalogProduct(product: CatalogProductInput) {
+	const created = await request<FastApiProduct>(
+		"/catalog/",
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(toFastApiProduct(product)),
+		},
+		true,
+	);
+	return fromFastApiProduct(created);
+}
+
+export async function updateCatalogProduct(
+	slug: string,
+	payload: Omit<Partial<CatalogProductInput>, "id" | "variants">,
+) {
+	const body = {
+		...payload,
+		product_type: payload.productType,
+		legacy_provider_ids: payload.legacyProviderIds,
+	};
+	delete body.productType;
+	delete body.legacyProviderIds;
+	const product = await request<FastApiProduct>(
+		`/catalog/${encodeURIComponent(slugify(slug))}`,
+		{
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(body),
+		},
+		true,
+	);
+	return fromFastApiProduct(product);
+}
+
+export async function addCatalogVariant(slug: string, variant: CatalogVariantDocument) {
+	const product = await request<FastApiProduct>(
+		`/catalog/${encodeURIComponent(slugify(slug))}/variants`,
+		{
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(toFastApiVariant(variant)),
+		},
+		true,
+	);
+	return fromFastApiProduct(product);
+}
+
+export async function updateCatalogVariant(
+	slug: string,
+	variantId: string,
+	payload: Partial<Omit<CatalogVariantDocument, "id">>,
+) {
+	const body = {
+		...payload,
+		legacy_provider_ids: payload.legacyProviderIds,
+	};
+	delete body.legacyProviderIds;
+	const product = await request<FastApiProduct>(
+		`/catalog/${encodeURIComponent(slugify(slug))}/variants/${encodeURIComponent(variantId)}`,
+		{
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(body),
+		},
+		true,
+	);
+	return fromFastApiProduct(product);
 }
 
 export function normalizeCatalogStock(value: unknown): number | null {

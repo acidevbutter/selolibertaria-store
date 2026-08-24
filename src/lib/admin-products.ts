@@ -1,9 +1,4 @@
-import {
-	type CatalogProductDocument,
-	type CatalogVariantDocument,
-	getCatalogCollection,
-	listCatalogProducts,
-} from "@/lib/catalog";
+import { type CatalogProductDocument, type CatalogVariantDocument, listCatalogProducts } from "@/lib/catalog";
 import { filterRenderableProductImages } from "@/lib/product-image-utils";
 import { getDecimalFromMinorAmount, getMinorAmountFromDecimal, slugify } from "@/lib/utils";
 
@@ -149,21 +144,6 @@ export async function listAdminProductCategories() {
 	return Array.from(categories.values()).sort((a, b) =>
 		a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
 	);
-}
-
-export async function updateProductsCategory(oldCategory: string, newCategory: string) {
-	const products = await getCatalogCollection();
-	const result = await products.updateMany(
-		{ "category.slug": slugify(oldCategory) },
-		{
-			$set: {
-				"category.name": newCategory.trim(),
-				"category.slug": slugify(newCategory),
-				updatedAt: new Date(),
-			},
-		},
-	);
-	return result.modifiedCount;
 }
 
 export function getCatalogCurrency() {
