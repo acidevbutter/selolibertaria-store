@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consumeAccountAccessToken } from "@/lib/account-access";
+import { env } from "@/env.mjs";
 import { createPersistentSession } from "@/lib/session";
 
 export async function GET(req: Request) {
@@ -9,22 +9,37 @@ export async function GET(req: Request) {
 		return NextResponse.redirect(new URL("/login?access=missing", url.origin));
 	}
 
-	const result = await consumeAccountAccessToken(token);
-	if (!result.ok) {
-		return NextResponse.redirect(new URL(`/login?access=${result.error}`, url.origin));
-	}
+	const response = await fetch(`${env.FASTAPI_API_URL}/auth/account-access/consume`, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ token }),
+		cache: "no-store",
+	});
+	if (!response.ok) return NextResponse.redirect(new URL("/login?access=invalid", url.origin));
+	const result = (await response.json()) as {
+		order_id: string;
+		session: {
+			user: {
+				id: string;
+				email: string;
+				name?: string;
+				role?: "admin" | "vendor" | "customer";
+				has_password: boolean;
+			};
+		};
+	};
 
 	await createPersistentSession({
-		id: result.user.id,
-		email: result.user.email,
-		name: result.user.name,
-		role: result.user.role,
+		id: result.session.user.id,
+		email: result.session.user.email,
+		name: result.session.user.name,
+		role: result.session.user.role,
 	});
 
 	const redirectUrl = new URL("/user", url.origin);
 	redirectUrl.searchParams.set("section", "purchases");
-	redirectUrl.searchParams.set("order", result.orderId);
-	if (!result.user.hasPassword) {
+	redirectUrl.searchParams.set("order", result.order_id);
+	if (!result.session.user.has_password) {
 		redirectUrl.searchParams.set("setupPassword", "1");
 	}
 
