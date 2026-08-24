@@ -1,16 +1,16 @@
 "use server";
 
-import { ObjectId } from "mongodb";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { requireCapability } from "@/lib/api-auth";
-import { normalizeUserRole, type UserRole } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
+import { normalizeUserRole } from "@/lib/authz";
 import { revokeAllUserSessions } from "@/lib/session";
 
 function parseUserId(formData: FormData) {
 	const userId = String(formData.get("userId") ?? "").trim();
-	if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+	if (!/^[0-9a-f-]{36}$/.test(userId)) {
 		throw new Error("ID de usuário inválido.");
 	}
 	return userId;
@@ -22,21 +22,23 @@ async function requireStaffManager() {
 	return auth.session;
 }
 
-async function countActiveAdmins() {
-	const db = await getDb();
-	return await db.collection("users").countDocuments({
-		role: "admin",
-		$or: [
-			{ access: { $exists: false } },
-			{ "access.blockedAt": null },
-			{ "access.blockedAt": { $exists: false } },
-		],
-	});
-}
-
 async function refreshAdminUserViews(userId: string) {
 	revalidatePath("/admin/users");
 	revalidatePath(`/admin/users/${userId}`);
+}
+
+async function fastApiRequest(userId: string, path: string, body: Record<string, unknown>) {
+	const token = (await cookies()).get("session")?.value;
+	if (!token) redirect("/login");
+	const response = await fetch(`${env.FASTAPI_API_URL}/users/${encodeURIComponent(userId)}${path}`, {
+		method: "PATCH",
+		headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+		body: JSON.stringify(body),
+		cache: "no-store",
+	});
+	if (response.ok) return;
+	const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
+	throw new Error(payload?.detail || "Não foi possível atualizar o usuário.");
 }
 
 export async function updateUserRoleAction(formData: FormData) {
@@ -48,30 +50,7 @@ export async function updateUserRoleAction(formData: FormData) {
 		throw new Error("Você não pode alterar o próprio papel.");
 	}
 
-	const db = await getDb();
-	const users = db.collection("users");
-	const existing = await users.findOne<{ _id: ObjectId; role?: UserRole }>({ _id: new ObjectId(userId) });
-	if (!existing) {
-		throw new Error("Usuário não encontrado.");
-	}
-
-	if (normalizeUserRole(existing.role) === "admin" && nextRole !== "admin") {
-		const adminCount = await countActiveAdmins();
-		if (adminCount <= 1) {
-			throw new Error("Pelo menos um administrador ativo deve permanecer.");
-		}
-	}
-
-	await users.updateOne(
-		{ _id: existing._id },
-		{
-			$set: {
-				role: nextRole,
-				updatedAt: new Date(),
-			},
-		},
-	);
-
+	await fastApiRequest(userId, "/role", { role: nextRole });
 	await revokeAllUserSessions(userId);
 	await refreshAdminUserViews(userId);
 }
@@ -86,41 +65,11 @@ export async function setUserBlockedAction(formData: FormData) {
 		throw new Error("Você não pode bloquear a própria conta.");
 	}
 
-	const db = await getDb();
-	const users = db.collection("users");
-	const existing = await users.findOne<{ _id: ObjectId; role?: UserRole }>({ _id: new ObjectId(userId) });
-	if (!existing) {
-		throw new Error("Usuário não encontrado.");
-	}
-
-	if (normalizeUserRole(existing.role) === "admin" && shouldBlock) {
-		const adminCount = await countActiveAdmins();
-		if (adminCount <= 1) {
-			throw new Error("Pelo menos um administrador ativo deve permanecer.");
-		}
-	}
-
-	await users.updateOne(
-		{ _id: existing._id },
-		shouldBlock
-			? {
-					$set: {
-						"access.blockedAt": new Date(),
-						"access.blockedBy": String(session.sub),
-						"access.blockedReason": reason,
-						updatedAt: new Date(),
-					},
-				}
-			: {
-					$set: {
-						"access.blockedAt": null,
-						"access.blockedBy": String(session.sub),
-						"access.blockedReason": reason,
-						updatedAt: new Date(),
-					},
-				},
-	);
-
+	await fastApiRequest(userId, "/block", {
+		blocked: shouldBlock,
+		blocked_by: String(session.sub),
+		blocked_reason: reason,
+	});
 	await revokeAllUserSessions(userId);
 	await refreshAdminUserViews(userId);
 }
