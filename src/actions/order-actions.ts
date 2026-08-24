@@ -1,60 +1,36 @@
 "use server";
 
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { clearCartId, getCartId } from "@/lib/cart-cookies";
-import { commerce } from "@/lib/commerce";
-import { getDb } from "@/lib/mongodb";
-import { matchesOrderIdentifier, type OrderRelatedIds } from "@/lib/order-identity";
 
-interface PurchaseItemDoc {
-	name?: string | null;
-	quantity?: number;
-	unitAmount?: number | null;
-	priceId?: string | null;
-	productId?: string | null;
-	image?: string | null;
-}
-
-interface PurchaseDoc {
-	id: string;
-	status: string;
-	createdAt: Date | string;
-	amountTotal: number;
-	currency: string;
-	items?: PurchaseItemDoc[];
-	fulfillment?: {
-		status?: "received" | "producing" | "shipped";
-		trackingNumber?: string | null;
-	};
-	relatedIds?: OrderRelatedIds;
+async function sessionToken() {
+	return (await cookies()).get("session")?.value ?? null;
 }
 
 export async function finalizeCheckoutCleanup(): Promise<{ ok: true } | { error: string }> {
-	const auth = await requireAuth();
 	try {
+		const [auth, token, guestCartId] = await Promise.all([requireAuth(), sessionToken(), getCartId()]);
 		if (!("error" in auth)) {
 			if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" };
-			await (await getDb())
-				.collection("users")
-				.updateOne(
-					{ _id: new ObjectId(auth.session.sub as string) },
-					{ $unset: { cart: "" }, $set: { updatedAt: new Date() } },
-				);
-		}
-		const cartId = await getCartId();
-		if (cartId) {
-			try {
-				commerce.cart.clear({ cartId });
-			} catch {
-				// Best effort only.
+			if (token) {
+				await fetch(`${env.FASTAPI_API_URL}/carts/me`, {
+					method: "DELETE",
+					headers: { authorization: `Bearer ${token}` },
+					cache: "no-store",
+				});
 			}
+		} else if (guestCartId) {
+			await fetch(`${env.FASTAPI_API_URL}/carts/guest/${guestCartId}`, {
+				method: "DELETE",
+				cache: "no-store",
+			});
 		}
 		await clearCartId();
 		return { ok: true };
-	} catch (error) {
-		console.error("[finalizeCheckoutCleanup]", error);
+	} catch {
 		return { error: "Falha ao limpar o carrinho" };
 	}
 }
@@ -64,39 +40,48 @@ export async function getPurchaseDetails(purchaseId: string) {
 	const auth = await requireAuth();
 	if ("error" in auth) return { error: "Não autorizado" } as const;
 	if (!canBuyOnSelolibertaria(auth.session.role)) return { error: "Acesso negado" } as const;
-
+	const token = await sessionToken();
+	if (!token) return { error: "Não autorizado" } as const;
 	try {
-		const userDoc = await (await getDb()).collection<{ purchases?: PurchaseDoc[] }>("users").findOne(
-			{
-				_id: new ObjectId(auth.session.sub as string),
-				$or: [
-					{ "purchases.id": purchaseId },
-					{ "purchases.relatedIds.mercadoPagoPaymentId": purchaseId },
-					{ "purchases.relatedIds.mercadoPagoOrderId": purchaseId },
-				],
-			},
-			{ projection: { purchases: 1 } },
-		);
-		const purchase = userDoc?.purchases?.find((entry) => matchesOrderIdentifier(entry, purchaseId));
-		if (!purchase) return { error: "Pedido não encontrado" } as const;
-		return {
-			id: purchase.id,
-			status: purchase.status,
-			createdAt: purchase.createdAt,
-			amountTotal: purchase.amountTotal,
-			currency: purchase.currency,
-			items: (purchase.items ?? []).map((item) => ({
-				name: item.name ?? null,
-				quantity: item.quantity ?? 0,
-				unitAmount: item.unitAmount ?? null,
-				priceId: item.priceId ?? null,
-				productId: item.productId ?? null,
-				image: item.image ?? null,
-			})),
-			fulfillment: purchase.fulfillment,
+		const response = await fetch(`${env.FASTAPI_API_URL}/orders/me/${encodeURIComponent(purchaseId)}`, {
+			headers: { authorization: `Bearer ${token}` },
+			cache: "no-store",
+		});
+		if (response.status === 404) return { error: "Pedido não encontrado" } as const;
+		if (!response.ok) throw new Error("Order API unavailable");
+		const order = (await response.json()) as {
+			id: string;
+			status: string;
+			created_at: string;
+			amount_total: number;
+			currency: string;
+			items: Array<{
+				name: string | null;
+				quantity: number;
+				unit_amount: number | null;
+				price_id: string | null;
+				product_id: string | null;
+			}>;
+			fulfillment_status: "received" | "producing" | "shipped";
+			tracking_number: string | null;
 		};
-	} catch (error) {
-		console.error("[getPurchaseDetails]", error);
+		return {
+			id: order.id,
+			status: order.status,
+			createdAt: order.created_at,
+			amountTotal: order.amount_total,
+			currency: order.currency,
+			items: order.items.map((item) => ({
+				name: item.name,
+				quantity: item.quantity,
+				unitAmount: item.unit_amount,
+				priceId: item.price_id,
+				productId: item.product_id,
+				image: null,
+			})),
+			fulfillment: { status: order.fulfillment_status, trackingNumber: order.tracking_number },
+		};
+	} catch {
 		return { error: "Falha ao carregar o pedido" } as const;
 	}
 }
