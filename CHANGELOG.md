@@ -2,6 +2,8 @@
 
 ### Added
 
+- FastAPI: domínio de checkout para criar/reutilizar drafts, submeter pagamentos Mercado Pago com idempotência e reconciliar/finalizar pedidos em PostgreSQL; nenhuma migration foi executada.
+
 - Frontend: leituras de catálogo público e gestão delegadas ao FastAPI.
 
 - Frontend: middleware de rotas valida sessão no FastAPI.
