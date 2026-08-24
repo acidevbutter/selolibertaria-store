@@ -3,6 +3,7 @@
 ### Added
 
 - FastAPI: domínio de checkout para criar/reutilizar drafts, submeter pagamentos Mercado Pago com idempotência e reconciliar/finalizar pedidos em PostgreSQL; nenhuma migration foi executada.
+- FastAPI: operações de pagamento e finalização exigem a chave privada do checkout associada ao draft.
 
 - Frontend: leituras de catálogo público e gestão delegadas ao FastAPI.
 
