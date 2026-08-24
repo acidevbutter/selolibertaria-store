@@ -1,22 +1,17 @@
 import "server-only";
 
-import type { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import { commerce } from "@/lib/commerce";
 import type { Product } from "@/lib/commerce-types";
-import { getUserPreferredCurrencyById } from "@/lib/currency-preference";
-import { ensureIndexes, getDb } from "@/lib/mongodb";
 
 export interface FavoriteDoc {
-	_id?: ObjectId;
+	_id?: string;
 	userId: string;
 	productSlug: string;
 	variantId?: string | null;
 	productId?: string | null;
-	snapshot: {
-		name: string;
-		image?: string | null;
-		variantLabel?: string | null;
-	};
+	snapshot: { name: string; image?: string | null; variantLabel?: string | null };
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -32,19 +27,48 @@ export interface FavoriteViewModel {
 	product: Product | null;
 }
 
+type FastApiFavorite = {
+	id: string;
+	product_slug: string;
+	variant_id: string | null;
+	product_id: string | null;
+	snapshot: FavoriteDoc["snapshot"];
+	created_at: string;
+	updated_at: string;
+};
+
 export function buildFavoriteKey(productSlug: string, variantId?: string | null) {
 	return `${productSlug}::${variantId ?? ""}`;
 }
 
-export async function listFavoriteDocsForUser(userId: string) {
-	await ensureIndexes();
-	const db = await getDb();
-	return await db.collection<FavoriteDoc>("favorites").find({ userId }).sort({ createdAt: -1 }).toArray();
+async function authorization() {
+	const token = (await cookies()).get("session")?.value;
+	if (!token) throw new Error("Autenticação obrigatória");
+	return { authorization: `Bearer ${token}` };
+}
+
+export async function listFavoriteDocsForUser(userId: string): Promise<FavoriteDoc[]> {
+	const response = await fetch(`${env.FASTAPI_API_URL}/favorites/me`, {
+		headers: await authorization(),
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Favoritos indisponíveis");
+	return ((await response.json()) as FastApiFavorite[]).map((item) => ({
+		_id: item.id,
+		userId,
+		productSlug: item.product_slug,
+		variantId: item.variant_id,
+		productId: item.product_id,
+		snapshot: item.snapshot,
+		createdAt: new Date(item.created_at),
+		updatedAt: new Date(item.updated_at),
+	}));
 }
 
 export async function listFavoriteKeysForUser(userId: string) {
-	const favorites = await listFavoriteDocsForUser(userId);
-	return new Set(favorites.map((favorite) => buildFavoriteKey(favorite.productSlug, favorite.variantId)));
+	return new Set(
+		(await listFavoriteDocsForUser(userId)).map((item) => buildFavoriteKey(item.productSlug, item.variantId)),
+	);
 }
 
 export async function toggleFavorite(args: {
@@ -56,69 +80,39 @@ export async function toggleFavorite(args: {
 	image?: string | null;
 	variantLabel?: string | null;
 }) {
-	await ensureIndexes();
-	const db = await getDb();
-	const favorites = db.collection<FavoriteDoc>("favorites");
-	const normalizedSlug = args.productSlug.trim();
-	const normalizedVariantId = args.variantId?.trim() || null;
-	const existing = await favorites.findOne({
-		userId: args.userId,
-		productSlug: normalizedSlug,
-		variantId: normalizedVariantId,
-	});
-
-	if (existing?._id) {
-		await favorites.deleteOne({ _id: existing._id });
-		return { active: false };
-	}
-
-	await favorites.insertOne({
-		userId: args.userId,
-		productSlug: normalizedSlug,
-		variantId: normalizedVariantId,
-		productId: args.productId?.trim() || null,
-		snapshot: {
+	const response = await fetch(`${env.FASTAPI_API_URL}/favorites/toggle`, {
+		method: "POST",
+		headers: { ...(await authorization()), "content-type": "application/json" },
+		body: JSON.stringify({
+			product_slug: args.productSlug,
+			variant_id: args.variantId,
+			product_id: args.productId,
 			name: args.name,
-			image: args.image ?? null,
-			variantLabel: args.variantLabel ?? null,
-		},
-		createdAt: new Date(),
-		updatedAt: new Date(),
+			image: args.image,
+			variant_label: args.variantLabel,
+		}),
+		cache: "no-store",
 	});
-
-	return { active: true };
+	if (!response.ok) throw new Error("Não foi possível atualizar os favoritos");
+	return (await response.json()) as { active: boolean };
 }
 
 export async function isFavorite(args: { userId: string; productSlug: string; variantId?: string | null }) {
-	await ensureIndexes();
-	const db = await getDb();
-	const favorite = await db.collection("favorites").findOne({
-		userId: args.userId,
-		productSlug: args.productSlug.trim(),
-		variantId: args.variantId?.trim() || null,
-	});
-	return Boolean(favorite);
+	return (await listFavoriteKeysForUser(args.userId)).has(buildFavoriteKey(args.productSlug, args.variantId));
 }
 
 export async function getFavoriteViewModels(userId: string): Promise<FavoriteViewModel[]> {
 	const favorites = await listFavoriteDocsForUser(userId);
-	const preferredCurrency = await getUserPreferredCurrencyById(userId);
-	const entries = await Promise.all(
-		favorites.map(async (favorite) => {
-			const product = await commerce.product
-				.get({ slug: favorite.productSlug, currency: preferredCurrency })
-				.catch(() => null);
-			return {
-				id: favorite._id?.toString() ?? buildFavoriteKey(favorite.productSlug, favorite.variantId),
-				productSlug: favorite.productSlug,
-				variantId: favorite.variantId ?? null,
-				productId: favorite.productId ?? null,
-				name: favorite.snapshot.name,
-				image: favorite.snapshot.image ?? null,
-				variantLabel: favorite.snapshot.variantLabel ?? null,
-				product,
-			} satisfies FavoriteViewModel;
-		}),
+	return Promise.all(
+		favorites.map(async (favorite) => ({
+			id: favorite._id ?? buildFavoriteKey(favorite.productSlug, favorite.variantId),
+			productSlug: favorite.productSlug,
+			variantId: favorite.variantId ?? null,
+			productId: favorite.productId ?? null,
+			name: favorite.snapshot.name,
+			image: favorite.snapshot.image ?? null,
+			variantLabel: favorite.snapshot.variantLabel ?? null,
+			product: await commerce.product.get({ slug: favorite.productSlug }).catch(() => null),
+		})),
 	);
-	return entries;
 }
