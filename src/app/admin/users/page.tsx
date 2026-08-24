@@ -1,8 +1,9 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability, normalizeUserRole } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -26,21 +27,27 @@ export default async function AdminUsersPage() {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "customers.read")) redirect("/forbidden");
-
-	const db = await getDb();
+	const token = (await cookies()).get("session")?.value;
+	if (!token) redirect("/login");
 	interface UserLite {
-		_id: unknown;
+		id: string;
 		email: string;
 		name?: string;
 		role?: "admin" | "vendor" | "customer";
 		access?: { blockedAt?: Date | string | null } | null;
 	}
-	const users = (await db
-		.collection("users")
-		.find({}, { projection: { passwordHash: 0 } })
-		.sort({ createdAt: -1 })
-		.limit(50)
-		.toArray()) as unknown as UserLite[];
+	const response = await fetch(`${env.FASTAPI_API_URL}/users/?page=1&page_size=50`, {
+		headers: { authorization: `Bearer ${token}` },
+		cache: "no-store",
+	});
+	if (!response.ok) redirect("/forbidden");
+	const body = (await response.json()) as {
+		items: Array<Omit<UserLite, "access"> & { blocked_at: string | null }>;
+	};
+	const users: UserLite[] = body.items.map((user) => ({
+		...user,
+		access: { blockedAt: user.blocked_at },
+	}));
 
 	const blockedCount = users.filter((user) => Boolean(user.access?.blockedAt)).length;
 	const adminCount = users.filter((user) => normalizeUserRole(user.role) === "admin").length;
@@ -89,7 +96,7 @@ export default async function AdminUsersPage() {
 								{users.map((u: UserLite) => {
 									const role = normalizeUserRole(u.role);
 									return (
-										<TableRow key={String(u._id)}>
+										<TableRow key={u.id}>
 											<TableCell className="font-medium break-all sm:break-normal">{u.email}</TableCell>
 											<TableCell>{u.name || "Nome não informado"}</TableCell>
 											<TableCell className="uppercase text-[11px] tracking-[0.18em] text-[color:var(--editorial-muted)]">
@@ -109,7 +116,7 @@ export default async function AdminUsersPage() {
 											<TableCell className="text-right">
 												<Link
 													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-													href={`/admin/users/${String(u._id)}`}
+													href={`/admin/users/${u.id}`}
 												>
 													Ver usuário
 												</Link>
