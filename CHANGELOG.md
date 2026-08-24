@@ -2,6 +2,8 @@
 
 ### Added
 
+- Frontend: endpoint JSON de login delegado ao FastAPI.
+
 - Frontend: consulta de disponibilidade de e-mail delegada ao FastAPI.
 
 - FastAPI: validação assinada do webhook Mercado Pago com segredo exclusivo do backend.
