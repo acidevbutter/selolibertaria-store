@@ -39,6 +39,8 @@ flowchart LR
             carts_repo["CartRepository"]
         end
 
+        payments_route["Payments — /payments/mercado-pago<br/>POST /webhook"]
+
         subgraph migrations["Migration — /admin/migrations"]
             migration_route["POST /mongo-to-postgres"]
             migration_service["MigrationService<br/>execução única"]
@@ -65,6 +67,7 @@ flowchart LR
     middleware --> orders_routes
     middleware --> catalog_routes
     middleware --> carts_routes
+    middleware --> payments_route
     middleware --> migration_route
     middleware -."erros".-> exceptions
 
@@ -93,7 +96,7 @@ flowchart LR
     classDef route fill:#7A1E22,color:#fff,stroke:#0B0B0B,stroke-width:1px;
     classDef service fill:#D8D0C4,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
     classDef store fill:#F7F4EF,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
-    class users_routes,auth_routes,orders_routes,catalog_routes,carts_routes,migration_route,health route;
+    class users_routes,auth_routes,orders_routes,catalog_routes,carts_routes,payments_route,migration_route,health route;
     class users_service,auth_service,orders_service,catalog_service,carts_service,migration_service,di,middleware,exceptions service;
     class users_db,orders_db,catalog_db,carts_db,migration_db,mongo store;
 

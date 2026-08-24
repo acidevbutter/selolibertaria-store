@@ -2,6 +2,8 @@
 
 ### Added
 
+- FastAPI: validação assinada do webhook Mercado Pago com segredo exclusivo do backend.
+
 - FastAPI: carrinhos de convidado e autenticados em PostgreSQL, com merge no login, itens validados pelo catálogo e migração de `users.cart`.
 
 - FastAPI: categorias canônicas de catálogo em PostgreSQL, com endpoints e migração de `productCategories`.

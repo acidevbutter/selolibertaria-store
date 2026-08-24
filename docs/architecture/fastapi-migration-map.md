@@ -31,7 +31,7 @@ Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticaç
 | Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Pendente; hoje em Server Actions/Mongo |
 | Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
 | Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
-| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Pendente no FastAPI; implementação ativa está no Next.js |
+| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; assinatura do webhook está no FastAPI, mas o ciclo de pagamento continua no Next.js |
 | Frete | Melhor Envio, cotação, seleção do menor serviço e snapshot | Pendente; hoje no Next.js |
 | Editorial | home, páginas, eventos, projetos, Sarau Safado e mídia | Pendente; permanece no Next.js/Mongo |
 | Promoções | promoções, cupons, elegibilidade, resgate e alertas | Pendente; permanece no Next.js/Mongo |
@@ -55,7 +55,7 @@ Por isso, não é correto remover `MONGODB_URI`, `MONGODB_DB_NAME` ou `src/lib/m
 
 | Rota/módulo | Uso atual | Pode remover agora? | Pré-requisito |
 |---|---|---:|---|
-| `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | endpoint FastAPI com validação de assinatura, idempotência e persistência PostgreSQL; manter o Next apenas como proxy bruto se necessário |
+| `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | validação existe em `POST /payments/mercado-pago/webhook`; faltam idempotência e finalização PostgreSQL |
 | `POST /api/admin/orders/[id]/payment` | cancelamento e estorno via Orders API + atualização/auditoria Mongo | Não | operações `cancel/refund` e auditoria no domínio `orders` do FastAPI |
 | `POST /api/admin/mercado-pago/reconcile` | reconciliação manual de pedidos pendentes | Não | worker/serviço de reconciliação no FastAPI e endpoint administrativo autenticado |
 | `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | scheduler/worker FastAPI, lock, retry/backoff e alerta persistido em PostgreSQL |
