@@ -37,7 +37,12 @@ export default async function AdminEditorialHomePage() {
 				description="Texto público principal da Home. Organize a copy pelos mesmos blocos que aparecem na página."
 				actions={
 					<>
-						<EditorialPagePreview href="/" published={page.published} />
+						<EditorialPagePreview
+							href="/"
+							published={page.published}
+							formId="editorial-copy-form-pagina-inicial"
+							pageTitle="Página inicial"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -67,6 +72,7 @@ export default async function AdminEditorialHomePage() {
 				action={updateEditorialHomeCopyAction}
 				submitLabel="Salvar página inicial"
 				base={{ published: page.published }}
+				pageTitle="Página inicial"
 				sections={[
 					{
 						title: "Chamada principal",

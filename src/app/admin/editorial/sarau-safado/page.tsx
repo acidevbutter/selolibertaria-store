@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EditorialLivePreview } from "@/app/admin/editorial/_components/editorial-live-preview.client";
 import { EditorialMetaCard } from "@/app/admin/editorial/_components/editorial-meta-card";
 import { EditorialPagePreview } from "@/app/admin/editorial/_components/editorial-page-preview.client";
 import { EditorialSarauForm } from "@/app/admin/editorial/_components/editorial-sarau-form";
@@ -31,7 +32,12 @@ export default async function AdminEditorialSarauPage() {
 				description="Edite a página institucional do programa principal do selo."
 				actions={
 					<div className="flex flex-wrap gap-3">
-						<EditorialPagePreview href="/sarau-safado" published={page.published} />
+						<EditorialPagePreview
+							href="/sarau-safado"
+							published={page.published}
+							formId="editorial-sarau-form"
+							pageTitle="Sarau Safado"
+						/>
 						<Link
 							href="/admin/editorial"
 							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
@@ -62,12 +68,19 @@ export default async function AdminEditorialSarauPage() {
 					page={page}
 					submitLabel="Salvar página do Sarau Safado"
 				/>
-				<EditorialMetaCard
-					published={page.published}
-					order={page.order}
-					updatedAt={page.updatedAt}
-					updatedBy={page.updatedBy}
-				/>
+				<div className="space-y-6">
+					<EditorialLivePreview
+						formId="editorial-sarau-form"
+						pageTitle="Sarau Safado"
+						published={page.published}
+					/>
+					<EditorialMetaCard
+						published={page.published}
+						order={page.order}
+						updatedAt={page.updatedAt}
+						updatedBy={page.updatedBy}
+					/>
+				</div>
 			</div>
 		</AdminEditorialPage>
 	);

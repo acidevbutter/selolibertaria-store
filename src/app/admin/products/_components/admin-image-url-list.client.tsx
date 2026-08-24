@@ -65,6 +65,18 @@ export function AdminImageUrlList({
 		}
 	};
 
+	const emitDraftMedia = (src: string | null) => {
+		const formId = containerRef.current?.closest("form")?.id;
+		if (!formId) return;
+		window.dispatchEvent(new CustomEvent("editorial-draft-media", { detail: { formId, name, src } }));
+	};
+
+	const resetToInitialValues = () => {
+		clearPendingSelection();
+		setValues(normalizedInitialValues.length > 0 ? normalizedInitialValues : [""]);
+		emitDraftMedia(null);
+	};
+
 	useEffect(() => {
 		return () => {
 			for (const previewUrl of pendingPreviewUrls) {
@@ -72,6 +84,17 @@ export function AdminImageUrlList({
 			}
 		};
 	}, [pendingPreviewUrls]);
+
+	useEffect(() => {
+		const discardDraft = (event: Event) => {
+			const detail = (event as CustomEvent<{ formId: string }>).detail;
+			if (containerRef.current?.closest("form")?.id !== detail.formId) return;
+			resetToInitialValues();
+		};
+
+		window.addEventListener("editorial-draft-discard", discardDraft);
+		return () => window.removeEventListener("editorial-draft-discard", discardDraft);
+	}, [normalizedInitialValues]);
 
 	const handleFiles = (files: FileList | null) => {
 		const nextFiles = isSingleImage ? toFileArray(files).slice(0, 1) : toFileArray(files);
@@ -126,6 +149,7 @@ export function AdminImageUrlList({
 	const removeSelectedImageFromForm = () => {
 		if (!selectedImage) return;
 		removeValueByUrl(selectedImage);
+		emitDraftMedia(null);
 		setSelectedImage(null);
 		setIsDeleteConfirmOpen(false);
 	};
@@ -198,6 +222,7 @@ export function AdminImageUrlList({
 
 		preservePendingSelectionRef.current = true;
 		setIsSelectionModalOpen(false);
+		emitDraftMedia(pendingPreviewUrls[0] ?? null);
 		if (uploadMode === "instant") {
 			await uploadFiles(pendingFiles);
 		} else {

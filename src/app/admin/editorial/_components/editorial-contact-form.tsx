@@ -52,7 +52,7 @@ export function EditorialContactForm({
 				<CardTitle>Editar página de contato</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6 pb-28 md:pb-32">
+				<form id="editorial-contact-form" action={action} className="space-y-6 pb-28 md:pb-32">
 					<EditorialAccordionSection
 						title="Abertura da página"
 						defaultOpen
