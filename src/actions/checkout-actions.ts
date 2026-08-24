@@ -157,6 +157,7 @@ export async function createTransparentCheckoutIntent() {
 				order_id: createInternalOrderId(),
 				checkout_owner_key: snapshot.checkoutOwnerKey,
 				user_id: snapshot.userId,
+				cart_hash: snapshot.cartHash,
 				buyer: {
 					fullName: snapshot.user.name ?? "",
 					email: snapshot.user.email ?? "",

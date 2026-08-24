@@ -70,7 +70,7 @@ Não foi encontrado endpoint legado `/v1/payments` ativo no código atual. O flu
 1. Implementar o contrato no FastAPI e testes de domínio.
 2. Adicionar autenticação serviço-a-serviço e autorização por papel.
 3. Criar o client server-only do FastAPI no Next.js.
-4. Trocar uma superfície por vez para proxy, preservando o contrato público. Checkout já usa esse caminho para intent, pagamento, Pix, finalização, comprador e entrega.
+4. Trocar uma superfície por vez para proxy, preservando o contrato público. Checkout já usa esse caminho para intent, pagamento, Pix, finalização, comprador e entrega; a intent é reutilizada por proprietário e hash do carrinho.
 5. Validar leitura, escrita, idempotência, erros e reload direto.
 6. Executar cutover controlado e confirmar ausência de `mongodb`, `getDb` e `ensureIndexes` em `src/app/api`, `src/actions` e módulos usados por essas rotas.
 7. Só então remover `MONGODB_URI`, `MONGODB_DB_NAME`, dependência `mongodb` e `src/lib/mongodb.ts` do frontend. As variáveis Mongo do script de migração devem permanecer apenas no ambiente operacional do backend até o encerramento da migração.
