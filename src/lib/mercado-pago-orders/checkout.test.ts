@@ -1,30 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OrdersApiClient, OrdersPaymentResult } from "@/lib/mercado-pago-orders/contract";
 
-const { createClient } = vi.hoisted(() => ({ createClient: vi.fn() }));
 vi.mock("server-only", () => ({}));
-vi.mock("@/lib/mercado-pago-orders/server-client", () => ({
-	createMercadoPagoOrdersClient: createClient,
-}));
+vi.mock("@/env.mjs", () => ({ env: { FASTAPI_API_URL: "http://fastapi.test" } }));
 
 import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/mercado-pago-orders/card";
 import { createCheckoutOrder, retrieveCheckoutOrder } from "@/lib/mercado-pago-orders/checkout";
 
-const result: OrdersPaymentResult = {
-	providerOrderId: "mp_order_1",
-	orderId: "ord_1",
-	externalReference: "ord_1",
-	status: "pending",
-	amountInCents: 4200,
+const result = {
+	provider_order_id: "mp_order_1",
+	external_reference: "ord_1",
+	status: "processing",
+	provider_status: "pending",
+	transaction_id: "mp_tx_1",
+	amount_in_cents: 4200,
 	currency: "BRL",
-	paymentMethod: "pix",
-	transaction: { id: "mp_tx_1", status: "pending", amountInCents: 4200, currency: "BRL" },
-	pix: { qrCode: "pix-code", qrCodeBase64: null, ticketUrl: null, expiresAt: null },
+	payment_method: "pix",
+	status_detail: null,
+	installments: null,
+	qr_code: "pix-code",
+	qr_code_base64: null,
+	ticket_url: null,
+	expires_at: null,
 };
 
 describe("checkout Orders gateway", () => {
 	beforeEach(() => {
-		createClient.mockReset();
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(result))));
 	});
 
 	it("limits installments by order value and keeps rejection details safe", () => {
@@ -35,9 +36,6 @@ describe("checkout Orders gateway", () => {
 	});
 
 	it("maps pending Orders status and keeps Pix data for the embedded checkout", async () => {
-		const client = { createOrder: vi.fn().mockResolvedValue(result) } as unknown as OrdersApiClient;
-		createClient.mockReturnValue(client);
-
 		const checkout = await createCheckoutOrder({
 			orderId: "ord_1",
 			externalReference: "ord_1",
@@ -54,9 +52,6 @@ describe("checkout Orders gateway", () => {
 	});
 
 	it("validates the order again when the checkout resumes", async () => {
-		const client = { getOrder: vi.fn().mockResolvedValue(result) } as unknown as OrdersApiClient;
-		createClient.mockReturnValue(client);
-
 		await expect(
 			retrieveCheckoutOrder({
 				providerOrderId: "mp_order_1",
