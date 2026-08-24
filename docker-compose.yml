@@ -18,6 +18,25 @@ services:
       retries: 5
       start_period: 10s
 
+  postgres:
+    image: postgres:16
+    container_name: selolibertaria-backend-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: selolibertaria_backend
+    ports:
+      - "5432:5432"
+    volumes:
+      - backend_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # Opcional: serviço da app se quiser orquestrar junto
   # app:
   #   build: .
@@ -50,4 +69,6 @@ volumes:
   mongo_data:
     driver: local
   mailpit_data:
+    driver: local
+  backend_postgres_data:
     driver: local

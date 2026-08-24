@@ -16,6 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # backend/ is a submodule in a separate (likely private) repo -- the
+      # default GITHUB_TOKEN has no cross-repo access to clone it, so this is
+      # a best-effort init kept off the critical path (continue-on-error)
+      # rather than part of the main checkout, which would otherwise fail
+      # this whole job -- including yarn lint/test, which don't need
+      # backend/ at all -- the moment the submodule can't be fetched. Give
+      # the token cross-repo access (or a PAT scoped to
+      # acidevbutter/selolibertaria_backend) once this workflow needs to
+      # build/test the backend too.
+      - name: Init backend/ submodule (best-effort)
+        continue-on-error: true
+        run: git submodule update --init --recursive
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
