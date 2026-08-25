@@ -17,6 +17,7 @@
 - Removed the Next MongoDB client, package, lockfile entries, environment variables and obsolete Mongo integration tests.
 - Guest cart recovery now reads `/carts/guest/{id}` from FastAPI; the last in-memory storefront cart fallback was removed.
 - Admin media uploads/deletes, newsletter subscriptions and OAuth provider code exchange now pass through FastAPI; provider secrets are no longer handled by Next.
+- Brazilian postal-code lookup now runs in the FastAPI address boundary; Next only proxies the response and the browser no longer calls ViaCEP/BrasilAPI directly.
 - Removed the obsolete local JWT and OAuth secret-encryption requirements from Next; only the OAuth state cookie secret remains at the web boundary.
 
 ### Added
