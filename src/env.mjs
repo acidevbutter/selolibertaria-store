@@ -8,15 +8,13 @@ export const env = createEnv({
 		CATALOG_CURRENCY: z.string().optional().default("BRL"),
 		FASTAPI_API_URL: z.string().url().default("http://localhost:8000"),
 		FASTAPI_INTERNAL_API_KEY: z.string().min(1),
-		MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
-		MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
-		MERCADO_PAGO_RECONCILIATION_SECRET: z.string().optional(),
 		CLOUDINARY_CLOUD_NAME: z.string().optional(),
 		CLOUDINARY_API_KEY: z.string().optional(),
 		CLOUDINARY_API_SECRET: z.string().optional(),
 		CLOUDINARY_UPLOAD_FOLDER: z.string().optional(),
 
-		JWT_SECRET: z.string().min(32),
+		OAUTH_STATE_SECRET: z.string().min(32),
+		OAUTH_SECRETS_ENCRYPTION_KEY: z.string().min(32),
 	},
 	client: {
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
@@ -42,9 +40,6 @@ export const env = createEnv({
 		CATALOG_CURRENCY: process.env.CATALOG_CURRENCY,
 		FASTAPI_API_URL: process.env.FASTAPI_API_URL,
 		FASTAPI_INTERNAL_API_KEY: process.env.FASTAPI_INTERNAL_API_KEY,
-		MERCADO_PAGO_ACCESS_TOKEN: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-		MERCADO_PAGO_WEBHOOK_SECRET: process.env.MERCADO_PAGO_WEBHOOK_SECRET,
-		MERCADO_PAGO_RECONCILIATION_SECRET: process.env.MERCADO_PAGO_RECONCILIATION_SECRET,
 		CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
 		CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
 		CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
@@ -67,7 +62,8 @@ export const env = createEnv({
 		NEXT_PUBLIC_DD_SESSION_REPLAY_SAMPLE_RATE: process.env.NEXT_PUBLIC_DD_SESSION_REPLAY_SAMPLE_RATE,
 		NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL: process.env.NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL,
 
-		JWT_SECRET: process.env.JWT_SECRET,
+		OAUTH_STATE_SECRET: process.env.OAUTH_STATE_SECRET,
+		OAUTH_SECRETS_ENCRYPTION_KEY: process.env.OAUTH_SECRETS_ENCRYPTION_KEY,
 	},
 });
 

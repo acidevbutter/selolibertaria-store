@@ -7,8 +7,11 @@ const SECRET_VERSION = "v1";
 const SECRET_ALGORITHM = "aes-256-gcm";
 const SECRET_IV_LENGTH = 12;
 const SECRET_TAG_LENGTH = 16;
-const secretKey = createHash("sha256").update(env.JWT_SECRET).digest();
-const legacySecretKey = createHash("sha256").update(env.JWT_SECRET).update(":oauth-secrets").digest();
+const secretKey = createHash("sha256").update(env.OAUTH_SECRETS_ENCRYPTION_KEY).digest();
+const legacySecretKey = createHash("sha256")
+	.update(env.OAUTH_SECRETS_ENCRYPTION_KEY)
+	.update(":oauth-secrets")
+	.digest();
 
 function decryptWithKey(value: string, key: Buffer): string | null {
 	const [version, ivEncoded, tagEncoded, payloadEncoded] = value.split(".");

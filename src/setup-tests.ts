@@ -8,7 +8,8 @@ loadEnvConfig(".");
 process.env.NEXT_PUBLIC_URL ??= "http://localhost:3000";
 process.env.CATALOG_CURRENCY ??= "BRL";
 process.env.FASTAPI_INTERNAL_API_KEY ??= "test-internal-key";
-process.env.JWT_SECRET ??= "dev_super_secret_change_me_please_123456";
+process.env.OAUTH_STATE_SECRET ??= "dev_oauth_state_secret_change_me_please_123456";
+process.env.OAUTH_SECRETS_ENCRYPTION_KEY ??= "dev_oauth_secrets_key_change_me_please_123456";
 
 expect.extend(matchers);
 

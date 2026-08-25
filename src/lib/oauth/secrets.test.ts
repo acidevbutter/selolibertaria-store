@@ -14,7 +14,7 @@ let encryptStoredSecret: typeof import("@/lib/oauth/secrets").encryptStoredSecre
 
 function encryptWithLegacyKey(value: string) {
 	const key = createHash("sha256")
-		.update(process.env.JWT_SECRET ?? "dev_super_secret_change_me_please_123456")
+		.update(process.env.OAUTH_SECRETS_ENCRYPTION_KEY ?? "dev_oauth_secrets_key_change_me_please_123456")
 		.update(":oauth-secrets")
 		.digest();
 	const iv = randomBytes(SECRET_IV_LENGTH);

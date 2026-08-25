@@ -8,6 +8,7 @@ import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
 import type { AppliedPromotion } from "@/lib/commerce-types";
+import { resolveSupportedCurrency } from "@/lib/currency";
 
 interface MinimalItem {
 	productId: string;
@@ -219,7 +220,9 @@ export async function getCheckoutSnapshot(): Promise<CheckoutSnapshotResult> {
 				name: remoteUser.name as string | undefined,
 				cpf: remoteUser.cpf as string | undefined,
 				phone: remoteUser.phone as string | undefined,
-				preferredCurrency: remoteUser.preferred_currency as string | undefined,
+				preferredCurrency: resolveSupportedCurrency(
+					typeof remoteUser.preferred_currency === "string" ? remoteUser.preferred_currency : null,
+				),
 				address: {
 					line1: remoteUser.address_line1 as string | undefined,
 					line2: remoteUser.address_line2 as string | undefined,

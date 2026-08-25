@@ -16,6 +16,7 @@
 - Favorite discount alerts now queue and dispatch through FastAPI communications/Butter Relay; Next no longer contains MongoDB promotion or alert code.
 - Removed the Next MongoDB client, package, lockfile entries, environment variables and obsolete Mongo integration tests.
 - Guest cart recovery now reads `/carts/guest/{id}` from FastAPI; the last in-memory storefront cart fallback was removed.
+- Removed the obsolete local JWT secret requirement; OAuth state and encrypted OAuth settings now use dedicated secrets.
 
 ### Added
 

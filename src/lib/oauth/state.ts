@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { env } from "@/env.mjs";
 import type { OAuthProviderId } from "@/lib/oauth/catalog";
 
-const key = new TextEncoder().encode(env.JWT_SECRET);
+const key = new TextEncoder().encode(env.OAUTH_STATE_SECRET);
 const OAUTH_STATE_COOKIE = "oauth_state";
 const OAUTH_PENDING_COOKIE = "oauth_pending";
 
