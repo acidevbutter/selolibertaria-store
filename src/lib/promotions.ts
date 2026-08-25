@@ -628,6 +628,84 @@ export async function priceCartLines(args: {
 	userId?: string | null;
 	strictCoupon?: boolean;
 }): Promise<CartPricingResult> {
+	const response = await fetch(`${env.FASTAPI_API_URL}/promotions/price-cart`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+		},
+		body: JSON.stringify({
+			lines: args.lines.map((line) => ({
+				product_slug: line.productSlug,
+				category_slug: line.categorySlug ?? null,
+				variant_id: line.item.variantId,
+				quantity: line.item.quantity,
+				unit_amount: Math.round(line.baseUnitAmount),
+				currency: line.currency,
+			})),
+			coupon_code: args.couponCode ?? null,
+			user_id: args.userId ?? null,
+			strict_coupon: args.strictCoupon ?? false,
+		}),
+		cache: "no-store",
+	});
+	const payload = (await response.json().catch(() => null)) as {
+		items?: Array<{
+			index: number;
+			base_unit_amount: number;
+			effective_unit_amount: number;
+			line_base_total: number;
+			line_discount_total: number;
+			line_final_total: number;
+			applied_promotions: AppliedPromotion[];
+		}>;
+		subtotal?: number;
+		discount_total?: number;
+		total?: number;
+		currency?: string;
+		coupon_code?: string | null;
+		coupon_error?: string | null;
+		applied_promotions?: AppliedPromotion[];
+	} | null;
+	if (!response.ok || !payload) {
+		throw new Error("Não foi possível calcular os descontos no FastAPI");
+	}
+	if (payload.coupon_error && args.strictCoupon) throw new Error(payload.coupon_error);
+	const remoteItems = payload.items ?? [];
+	const items = args.lines.map((line, index) => {
+		const priced = remoteItems[index];
+		const basePrice = priced?.base_unit_amount ?? line.baseUnitAmount;
+		const finalPrice = priced?.effective_unit_amount ?? line.effectiveUnitAmount;
+		return {
+			...line.item,
+			price: finalPrice,
+			basePrice,
+			finalPrice,
+			lineBaseTotal: priced?.line_base_total ?? basePrice * line.item.quantity,
+			lineDiscountTotal: priced?.line_discount_total ?? 0,
+			lineFinalTotal: priced?.line_final_total ?? finalPrice * line.item.quantity,
+			appliedPromotions: priced?.applied_promotions ?? [],
+		};
+	});
+	return {
+		items,
+		currency: payload.currency ?? args.lines[0]?.currency ?? "BRL",
+		subtotal: payload.subtotal ?? items.reduce((sum, item) => sum + (item.lineBaseTotal ?? 0), 0),
+		discountTotal:
+			payload.discount_total ?? items.reduce((sum, item) => sum + (item.lineDiscountTotal ?? 0), 0),
+		total: payload.total ?? items.reduce((sum, item) => sum + (item.lineFinalTotal ?? 0), 0),
+		couponCode: payload.coupon_code ?? null,
+		couponError: payload.coupon_error ?? null,
+		appliedPromotions: payload.applied_promotions ?? items.flatMap((item) => item.appliedPromotions ?? []),
+	};
+}
+
+async function priceCartLinesLegacy(args: {
+	lines: ResolvedCartPricingLine[];
+	couponCode?: string | null;
+	userId?: string | null;
+	strictCoupon?: boolean;
+}): Promise<CartPricingResult> {
 	const lines = args.lines.map((line) => ({
 		...line,
 		item: {

@@ -61,6 +61,35 @@ describe("promotions", () => {
 	});
 
 	it("mantém subtotal base e total final consistentes", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(
+				new Response(
+					JSON.stringify({
+						items: [
+							{
+								index: 0,
+								base_unit_amount: 10000,
+								effective_unit_amount: 8000,
+								line_base_total: 20000,
+								line_discount_total: 4000,
+								line_final_total: 16000,
+								applied_promotions: [],
+							},
+						],
+						subtotal: 20000,
+						discount_total: 4000,
+						total: 16000,
+						currency: "BRL",
+						coupon_code: null,
+						coupon_error: null,
+						applied_promotions: [],
+					}),
+					{ status: 200, headers: { "Content-Type": "application/json" } },
+				),
+			),
+		);
+
 		const priced = await priceCartLines({
 			lines: [
 				{
@@ -97,5 +126,6 @@ describe("promotions", () => {
 		expect(priced.subtotal).toBe(20000);
 		expect(priced.discountTotal).toBe(4000);
 		expect(priced.total).toBe(16000);
+		vi.unstubAllGlobals();
 	});
 });

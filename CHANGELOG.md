@@ -9,6 +9,7 @@
 - Added the FastAPI promotions foundation with PostgreSQL models, admin CRUD/status endpoints and an Alembic migration file; migration execution remains pending by design.
 - Added full promotion update support in FastAPI, including coupon metadata and status synchronization.
 - Active automatic promotions and coupon lookup for cart pricing now resolve through internal FastAPI endpoints instead of MongoDB reads in Next.
+- Cart pricing, automatic discount application and coupon discount allocation now run through the internal FastAPI `/promotions/price-cart` contract.
 
 ### Added
 
