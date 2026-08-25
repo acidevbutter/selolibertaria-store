@@ -1214,36 +1214,22 @@ export async function recordPromotionRedemption(args: {
 	purchaseId: string;
 	orderDraftId?: string | null;
 }) {
-	await ensureIndexes();
-	const db = await getDb();
-	const record: PromotionRedemptionDoc = {
-		promotionId: new ObjectId(args.promotionId),
-		promotionCodeId: new ObjectId(args.promotionCodeId),
-		userId: args.userId,
-		purchaseId: args.purchaseId,
-		orderDraftId: args.orderDraftId ?? null,
-		status: "consumed",
-		consumedAt: new Date(),
-		createdAt: new Date(),
-	};
-	const result = await db.collection<PromotionRedemptionDoc>("promotionRedemptions").updateOne(
-		{
-			promotionCodeId: record.promotionCodeId,
-			purchaseId: record.purchaseId,
+	const response = await fetch(`${env.FASTAPI_API_URL}/promotions/redemptions`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
 		},
-		{
-			$setOnInsert: record,
-		},
-		{ upsert: true },
-	);
-	if (result.upsertedCount > 0) {
-		await db
-			.collection<PromotionCodeDoc>("promotionCodes")
-			.updateOne(
-				{ _id: record.promotionCodeId },
-				{ $inc: { currentRedemptions: 1 }, $set: { updatedAt: new Date() } },
-			);
-	}
+		body: JSON.stringify({
+			promotion_id: args.promotionId,
+			promotion_code_id: args.promotionCodeId,
+			user_id: args.userId,
+			purchase_id: args.purchaseId,
+			order_draft_id: args.orderDraftId ?? null,
+		}),
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Não foi possível registrar o uso do cupom no FastAPI");
 }
 
 export async function getPromotionById(promotionId: string) {

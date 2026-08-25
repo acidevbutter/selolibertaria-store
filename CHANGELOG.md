@@ -10,6 +10,7 @@
 - Added full promotion update support in FastAPI, including coupon metadata and status synchronization.
 - Active automatic promotions and coupon lookup for cart pricing now resolve through internal FastAPI endpoints instead of MongoDB reads in Next.
 - Cart pricing, automatic discount application and coupon discount allocation now run through the internal FastAPI `/promotions/price-cart` contract.
+- Coupon usage limits and idempotent redemption records now run through FastAPI; the Next redemption helper no longer writes MongoDB.
 
 ### Added
 
