@@ -174,6 +174,8 @@ type FastApiPromotion = {
 		status: "active" | "paused" | "archived";
 		globalLimit?: number | null;
 		perCustomerLimit?: number | null;
+		startsAt?: string | null;
+		endsAt?: string | null;
 	}>;
 };
 
@@ -216,6 +218,26 @@ async function fetchPromotionApi(path: string) {
 	});
 	if (!response.ok) throw new Error("FastAPI promotions unavailable");
 	return response;
+}
+
+async function mutatePromotionApi(path: string, method: string, body: unknown, actorId?: string | null) {
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, {
+		method,
+		headers: {
+			"Content-Type": "application/json",
+			"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+			...(actorId ? { "X-Actor-User-ID": actorId } : {}),
+		},
+		body: JSON.stringify(body),
+		cache: "no-store",
+	});
+	const payload = (await response.json().catch(() => null)) as FastApiPromotion | { detail?: string } | null;
+	if (!response.ok || !payload || !("id" in payload)) {
+		const detail =
+			payload && "detail" in payload && typeof payload.detail === "string" ? payload.detail : null;
+		throw new Error(detail ?? "FastAPI promotions unavailable");
+	}
+	return mapFastApiPromotion(payload);
 }
 
 function normalizeArray(values?: string[] | null) {
@@ -700,7 +722,7 @@ export async function priceCartLines(args: {
 	};
 }
 
-async function priceCartLinesLegacy(args: {
+export async function priceCartLinesLegacy(args: {
 	lines: ResolvedCartPricingLine[];
 	couponCode?: string | null;
 	userId?: string | null;
@@ -856,37 +878,66 @@ export function formatPromotionTargets(targets?: PromotionTargets | null) {
 }
 
 export async function listPromotionsForAdmin() {
-	await ensureIndexes();
-	const db = await getDb();
-	const [promotions, codes, pendingNotifications] = await Promise.all([
-		db.collection<PromotionDoc>("promotions").find({}).sort({ updatedAt: -1, createdAt: -1 }).toArray(),
-		db.collection<PromotionCodeDoc>("promotionCodes").find({}).toArray(),
-		db
-			.collection<PromotionNotificationDoc>("promotionNotifications")
-			.aggregate<{ _id: ObjectId; pending: number }>([
-				{ $match: { status: "pending" } },
-				{ $group: { _id: "$promotionId", pending: { $sum: 1 } } },
-			])
-			.toArray(),
-	]);
-
-	const pendingMap = new Map(pendingNotifications.map((entry) => [String(entry._id), entry.pending]));
-	const codeMap = new Map<string, PromotionCodeDoc[]>();
-	for (const code of codes) {
-		const key = String(code.promotionId);
-		const current = codeMap.get(key) ?? [];
-		current.push(code);
-		codeMap.set(key, current);
-	}
-
-	return promotions.map((promotion) => ({
-		...promotion,
-		codes: codeMap.get(String(promotion._id)) ?? [],
-		pendingNotifications: pendingMap.get(String(promotion._id)) ?? 0,
+	const response = await fetchPromotionApi("/promotions/internal/admin");
+	const payload = (await response.json()) as FastApiPromotion[];
+	return payload.map((promotion) => ({
+		...mapFastApiPromotion(promotion),
+		codes: (promotion.codes ?? []).map((code) => ({
+			_id: code.id,
+			promotionId: promotion.id,
+			code: code.code,
+			codeNormalized: code.code.toUpperCase(),
+			status: code.status,
+			globalLimit: code.globalLimit ?? null,
+			perCustomerLimit: code.perCustomerLimit ?? null,
+			startsAt: code.startsAt ? new Date(code.startsAt) : null,
+			endsAt: code.endsAt ? new Date(code.endsAt) : null,
+			createdAt: new Date(promotion.created_at),
+			updatedAt: new Date(promotion.updated_at),
+		})),
+		pendingNotifications: 0,
 	}));
 }
 
-export async function createPromotionRecord(args: {
+type PromotionRecordArgs = Parameters<typeof createPromotionRecordLegacy>[0];
+
+export async function createPromotionRecord(args: PromotionRecordArgs) {
+	const promotion = await mutatePromotionApi(
+		"/promotions/internal/admin",
+		"POST",
+		{
+			name: args.name,
+			label: args.label ?? null,
+			description: args.description ?? null,
+			kind: args.kind,
+			scope: args.scope,
+			benefit_type: args.benefitType,
+			benefit_value: args.benefitValue,
+			currency: args.currency ?? null,
+			status: args.status,
+			product_slugs: normalizeSlugArray(args.productSlugs),
+			category_slugs: normalizeSlugArray(args.categorySlugs),
+			variant_ids: normalizeArray(args.variantIds),
+			min_subtotal: args.minSubtotal ?? null,
+			first_purchase_only: args.firstPurchaseOnly ?? false,
+			require_verified_email: args.requireVerifiedEmail ?? false,
+			priority: args.priority ?? 0,
+			starts_at: args.startsAt?.toISOString() ?? null,
+			ends_at: args.endsAt?.toISOString() ?? null,
+			coupon_starts_at: args.couponStartsAt?.toISOString() ?? null,
+			coupon_ends_at: args.couponEndsAt?.toISOString() ?? null,
+			coupon_global_limit: args.couponGlobalLimit ?? null,
+			coupon_per_customer_limit: args.couponPerCustomerLimit ?? null,
+			stacking_mode: args.stackingMode ?? null,
+			notify_favorites: args.notifyFavorites ?? true,
+			code: args.code ?? null,
+		},
+		args.userId,
+	);
+	return { promotion, code: null };
+}
+
+async function createPromotionRecordLegacy(args: {
 	name: string;
 	label?: string | null;
 	description?: string | null;
@@ -994,9 +1045,48 @@ export async function createPromotionRecord(args: {
 	return { promotion, code: codeRecord };
 }
 
-export async function updatePromotionRecord(args: {
+type PromotionUpdateArgs = Parameters<typeof updatePromotionRecordLegacy>[0];
+
+export async function updatePromotionRecord(args: PromotionUpdateArgs) {
+	const promotion = await mutatePromotionApi(
+		`/promotions/internal/admin/${encodeURIComponent(args.promotionId)}`,
+		"PUT",
+		{
+			name: args.name,
+			label: args.label ?? null,
+			description: args.description ?? null,
+			kind: args.kind,
+			scope: args.scope,
+			benefit_type: args.benefitType,
+			benefit_value: args.benefitValue,
+			currency: args.currency ?? null,
+			status: args.status ?? "active",
+			product_slugs: normalizeSlugArray(args.productSlugs),
+			category_slugs: normalizeSlugArray(args.categorySlugs),
+			variant_ids: normalizeArray(args.variantIds),
+			min_subtotal: args.minSubtotal ?? null,
+			first_purchase_only: args.firstPurchaseOnly ?? false,
+			require_verified_email: args.requireVerifiedEmail ?? false,
+			priority: args.priority ?? 0,
+			starts_at: args.startsAt?.toISOString() ?? null,
+			ends_at: args.endsAt?.toISOString() ?? null,
+			coupon_starts_at: args.couponStartsAt?.toISOString() ?? null,
+			coupon_ends_at: args.couponEndsAt?.toISOString() ?? null,
+			coupon_global_limit: args.couponGlobalLimit ?? null,
+			coupon_per_customer_limit: args.couponPerCustomerLimit ?? null,
+			stacking_mode: args.stackingMode ?? null,
+			notify_favorites: args.notifyFavorites ?? true,
+			code: args.code ?? null,
+		},
+		args.userId,
+	);
+	return { promotion, code: null };
+}
+
+async function updatePromotionRecordLegacy(args: {
 	promotionId: string;
 	kind: PromotionKind;
+	status: PromotionStatus;
 	name: string;
 	label?: string | null;
 	description?: string | null;
@@ -1170,7 +1260,18 @@ export async function updatePromotionRecord(args: {
 	return { promotion: latest, code: codeRecord };
 }
 
-export async function updatePromotionStatus(args: {
+type PromotionStatusArgs = Parameters<typeof updatePromotionStatusLegacy>[0];
+
+export async function updatePromotionStatus(args: PromotionStatusArgs) {
+	return mutatePromotionApi(
+		`/promotions/internal/admin/${encodeURIComponent(args.promotionId)}/status`,
+		"PATCH",
+		{ status: args.status },
+		args.userId,
+	);
+}
+
+async function updatePromotionStatusLegacy(args: {
 	promotionId: string;
 	status: PromotionStatus;
 	userId?: string | null;
