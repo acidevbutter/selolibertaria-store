@@ -49,8 +49,6 @@ export async function GET(req: Request, context: RouteContext) {
 		const profile = await exchangeCodeForProfile({
 			providerId,
 			code,
-			clientId: config.clientId,
-			clientSecret: config.clientSecret,
 			codeVerifier: stateCookie.codeVerifier,
 		});
 

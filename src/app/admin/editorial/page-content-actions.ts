@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { env } from "@/env.mjs";
 import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
-import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
 import type {
 	EditorialBackground,
 	EditorialBackgroundContrast,
@@ -22,6 +21,7 @@ import type {
 } from "@/lib/editorial-content";
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
+import { uploadImageFileToFastAPI } from "@/lib/media-upload";
 
 type PageCopyType =
 	| "page_home"
@@ -134,7 +134,7 @@ async function resolveImageField(
 
 	if (fileEntry instanceof File && fileEntry.size > 0) {
 		assertAdminImageUploadFile(fileEntry);
-		const upload = await uploadImageFileToCloudinary(fileEntry);
+		const upload = await uploadImageFileToFastAPI(fileEntry);
 		src = upload.secure_url;
 	}
 

@@ -1,22 +1,10 @@
 import { ADMIN_IMAGE_UPLOAD_TOO_LARGE_MESSAGE, assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
-import { isCloudinaryConfigured } from "@/lib/cloudinary";
-import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
+import { uploadImageFileToFastAPI } from "@/lib/media-upload";
 
 export async function POST(request: Request) {
 	const auth = await requireCapability("admin.access");
 	if ("error" in auth) return auth.error;
-
-	if (!isCloudinaryConfigured()) {
-		return Response.json(
-			{
-				error:
-					"Cloudinary não está configurado. Adicione CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET.",
-				code: "ADMIN_MEDIA_UPLOAD_CLOUDINARY_NOT_CONFIGURED",
-			},
-			{ status: 500 },
-		);
-	}
 
 	const formData = await request.formData();
 	const file = formData.get("file");
@@ -43,7 +31,7 @@ export async function POST(request: Request) {
 		);
 	}
 	try {
-		const result = await uploadImageFileToCloudinary(file);
+		const result = await uploadImageFileToFastAPI(file);
 
 		return Response.json({
 			url: result.secure_url,

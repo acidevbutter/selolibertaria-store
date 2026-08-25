@@ -10,9 +10,8 @@ export type SettingsHistoryEntry = {
 export type OAuthProviderSettings = {
 	enabled?: boolean;
 	clientId?: string;
-	clientIdEncrypted?: string | null;
 	clientIdMasked?: string | null;
-	clientSecretEncrypted?: string | null;
+	clientSecret?: string | null;
 	clientSecretMasked?: string | null;
 	lastUpdatedAt?: string | null;
 	lastUpdatedBy?: string | null;

@@ -8,21 +8,14 @@ export const env = createEnv({
 		CATALOG_CURRENCY: z.string().optional().default("BRL"),
 		FASTAPI_API_URL: z.string().url().default("http://localhost:8000"),
 		FASTAPI_INTERNAL_API_KEY: z.string().min(1),
-		CLOUDINARY_CLOUD_NAME: z.string().optional(),
-		CLOUDINARY_API_KEY: z.string().optional(),
-		CLOUDINARY_API_SECRET: z.string().optional(),
-		CLOUDINARY_UPLOAD_FOLDER: z.string().optional(),
 
 		OAUTH_STATE_SECRET: z.string().min(32),
-		OAUTH_SECRETS_ENCRYPTION_KEY: z.string().min(32),
 	},
 	client: {
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
 		NEXT_PUBLIC_URL: z.string().url().optional(),
 
 		NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().optional(),
-
-		NEXT_PUBLIC_NEWSLETTER_ENDPOINT: z.string().optional(),
 
 		NEXT_PUBLIC_LANGUAGE: z.string().optional().default("pt-BR"),
 
@@ -40,15 +33,10 @@ export const env = createEnv({
 		CATALOG_CURRENCY: process.env.CATALOG_CURRENCY,
 		FASTAPI_API_URL: process.env.FASTAPI_API_URL,
 		FASTAPI_INTERNAL_API_KEY: process.env.FASTAPI_INTERNAL_API_KEY,
-		CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
-		CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-		CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
-		CLOUDINARY_UPLOAD_FOLDER: process.env.CLOUDINARY_UPLOAD_FOLDER,
 
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
 		NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
 		NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
-		NEXT_PUBLIC_NEWSLETTER_ENDPOINT: process.env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT,
 
 		NEXT_PUBLIC_LANGUAGE: process.env.NEXT_PUBLIC_LANGUAGE,
 
@@ -63,7 +51,6 @@ export const env = createEnv({
 		NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL: process.env.NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL,
 
 		OAUTH_STATE_SECRET: process.env.OAUTH_STATE_SECRET,
-		OAUTH_SECRETS_ENCRYPTION_KEY: process.env.OAUTH_SECRETS_ENCRYPTION_KEY,
 	},
 });
 
