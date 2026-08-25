@@ -8,7 +8,7 @@ const SessionDuration = 5 * 60 * 60 * 1000;
 export interface UserPayload {
 	id: string;
 	email: string;
-	name?: string;
+	name?: string | null;
 	role?: UserRole;
 }
 

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
@@ -128,7 +129,7 @@ export async function PUT(request: NextRequest, ctx: RouteContext) {
 		if (!response) return Response.json({ error: "Não autorizado" }, { status: 401 });
 		if (!response.ok)
 			return Response.json({ error: "Não foi possível atualizar o perfil." }, { status: response.status });
-		const output = Response.json(toLegacy((await response.json()) as Record<string, unknown>));
+		const output = NextResponse.json(toLegacy((await response.json()) as Record<string, unknown>));
 		if (data.preferredCurrency)
 			output.cookies.set(CURRENCY_COOKIE_NAME, data.preferredCurrency, {
 				path: "/",

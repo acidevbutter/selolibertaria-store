@@ -20,7 +20,7 @@ function aggregateItems(items: MinimalItem[]) {
 }
 
 export async function mergeGuestCartIntoUserCart(_userId: string) {
-	const [cartId, cookieItems, couponCode] = await Promise.all([
+	const [, cookieItems, couponCode] = await Promise.all([
 		getCartId(),
 		getCartCookieItems(),
 		getCartCouponCode(),

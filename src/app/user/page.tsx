@@ -53,6 +53,9 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		address?: {
 			line1?: string;
 			line2?: string;
+			number?: string;
+			complement?: string;
+			district?: string;
 			city?: string;
 			state?: string;
 			postalCode?: string;
@@ -188,7 +191,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 			case "profile": {
 				const initial = {
 					_id: user.id,
-					name: fullUser?.name ?? user.name,
+					name: fullUser?.name ?? user.name ?? undefined,
 					email: fullUser?.email ?? user.email,
 					phone: fullUser?.phone,
 					cpf: fullUser?.cpf,

@@ -10,7 +10,10 @@ export async function authenticateAndCreateSession(input: {
 	email: string;
 	password: string;
 	cartRaw?: string | null;
-}): Promise<{ ok: true; role: UserRole; token: string } | { ok: false; error: string }> {
+}): Promise<
+	| { ok: true; role: UserRole; token: string; preferredCurrency?: string | null }
+	| { ok: false; error: string }
+> {
 	try {
 		const response = await fetch(`${env.FASTAPI_API_URL}/auth/login`, {
 			method: "POST",
@@ -20,7 +23,7 @@ export async function authenticateAndCreateSession(input: {
 		});
 		const body = (await response.json().catch(() => null)) as {
 			access_token?: string;
-			user?: { role?: string };
+			user?: { role?: string; preferred_currency?: string | null };
 			detail?: string;
 		} | null;
 		if (!response.ok || !body?.access_token) {
@@ -30,7 +33,7 @@ export async function authenticateAndCreateSession(input: {
 		if (isMaintenanceModeEnabled() && role !== "admin") {
 			return { ok: false, error: MAINTENANCE_LOGIN_RESTRICTED_ERROR };
 		}
-		return { ok: true, role, token: body.access_token };
+		return { ok: true, role, token: body.access_token, preferredCurrency: body.user?.preferred_currency };
 	} catch {
 		return { ok: false, error: "Erro de autenticação" };
 	}
