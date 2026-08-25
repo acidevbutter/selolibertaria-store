@@ -444,6 +444,8 @@
 
 ### Changed
 
+- ligado o backoff persistido de reconciliação Mercado Pago no FastAPI, com limite de tentativas e estados terminal/pending
+
 - documentada a matriz de migração da Payments API legada para a Orders API em DEV-152, incluindo fluxos, persistência, contratos, riscos e ordem de implementação
 - validado `mercadopago@3.2.0` para Orders API, com prova sandbox de criação/consulta, cobertura de ciclo de vida e decisão de uso exclusivo do SDK no adapter
 - implementado adapter server-side da Orders API com SDK oficial, normalização de respostas/erros, timeout, idempotência, logs seguros e proteção de integridade
