@@ -1,10 +1,10 @@
 import { Activity } from "lucide-react";
-import type { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
-import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
@@ -19,13 +19,13 @@ import { ReconcileOrdersButton } from "./reconcile-orders-button.client";
 export const dynamic = "force-dynamic";
 
 interface WebhookLogDoc {
-	_id: ObjectId;
-	eventId?: string | null;
-	type?: string | null;
+	id: string;
+	event_id?: string | null;
+	event_type?: string | null;
 	status?: string | null;
 	verified?: boolean | null;
-	receivedAt?: Date | string | null;
-	processedAt?: Date | string | null;
+	received_at?: Date | string | null;
+	processed_at?: Date | string | null;
 	error?: string | null;
 	raw?: unknown;
 	headers?: Record<string, string>;
@@ -71,15 +71,15 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 	const skip = Math.max(Number(asString(resolved.skip) || "0"), 0);
 	const status = (asString(resolved.status) || "all").toLowerCase();
 
-	const db = await getDb();
-	const query = status === "all" ? {} : { status };
-	const items = await db
-		.collection<WebhookLogDoc>("webhooks")
-		.find(query)
-		.sort({ receivedAt: -1 })
-		.skip(skip)
-		.limit(limit)
-		.toArray();
+	const token = (await cookies()).get("session")?.value;
+	const response = token
+		? await fetch(
+				`${env.FASTAPI_API_URL}/webhooks?page=${Math.floor(skip / limit) + 1}&page_size=${limit}${status !== "all" ? `&status=${encodeURIComponent(status)}` : ""}`,
+				{ headers: { authorization: `Bearer ${token}` }, cache: "no-store" },
+			)
+		: null;
+	const payload = response?.ok ? ((await response.json()) as { items?: WebhookLogDoc[] }) : { items: [] };
+	const items = payload.items ?? [];
 
 	const processedCount = items.filter((item) => item.status === "processed").length;
 	const failedCount = items.filter((item) => item.status === "failed").length;
@@ -156,16 +156,16 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 							</TableHeader>
 							<TableBody>
 								{items.map((item) => (
-									<TableRow key={String(item._id)}>
-										<TableCell>{toDateString(item.receivedAt, locale)}</TableCell>
+									<TableRow key={item.id}>
+										<TableCell>{toDateString(item.received_at, locale)}</TableCell>
 										<TableCell>
 											<StatusBadge status={item.status || "unknown"} />
 										</TableCell>
 										<TableCell>
 											{item.verified ? "Assinatura validada" : "Assinatura sem validação"}
 										</TableCell>
-										<TableCell className="font-mono text-xs">{item.type || "-"}</TableCell>
-										<TableCell className="font-mono text-xs break-all">{item.eventId || "-"}</TableCell>
+										<TableCell className="font-mono text-xs">{item.event_type || "-"}</TableCell>
+										<TableCell className="font-mono text-xs break-all">{item.event_id || "-"}</TableCell>
 										<TableCell className="max-w-[320px] text-xs text-destructive">
 											{item.error ? <span className="break-words">{item.error}</span> : "-"}
 										</TableCell>
