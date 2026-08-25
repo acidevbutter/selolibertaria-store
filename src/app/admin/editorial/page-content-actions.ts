@@ -1,8 +1,8 @@
 "use server";
 
-import type { Filter } from "mongodb";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/env.mjs";
 import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
@@ -22,9 +22,6 @@ import type {
 } from "@/lib/editorial-content";
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
-import { getDb } from "@/lib/mongodb";
-
-const COLLECTION = "editorialContent";
 
 type PageCopyType =
 	| "page_home"
@@ -186,11 +183,24 @@ function readLinks(formData: FormData, prefix: string, count: number) {
 }
 
 async function upsertPageRecord<T extends EditorialDocument>(type: T["type"], doc: T) {
-	const db = await getDb();
-
-	await db
-		.collection<T>(COLLECTION)
-		.updateOne({ type, slug: doc.slug } as Filter<T>, { $set: doc }, { upsert: true });
+	const response = await fetch(`${env.FASTAPI_API_URL}/editorial/internal/admin`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+			"X-Actor-User-ID": String(doc.updatedBy ?? doc.createdBy ?? "next-internal"),
+		},
+		body: JSON.stringify({
+			type,
+			slug: doc.slug,
+			title: doc.title,
+			content: doc,
+			published: doc.published,
+			order: doc.order,
+		}),
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Não foi possível salvar o conteúdo editorial no FastAPI.");
 }
 
 function revalidateEditorialPaths() {

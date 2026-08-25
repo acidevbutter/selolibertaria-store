@@ -22,8 +22,8 @@ vi.mock("@/lib/cloudinary-upload", () => ({
 	uploadImageFileToCloudinary: (file: File) => uploadImageFileToCloudinaryMock(file),
 }));
 
-vi.mock("@/lib/mongodb", () => ({
-	getDb: () => getDbMock(),
+vi.mock("@/lib/editorial-api-store", () => ({
+	getEditorialApiStore: () => getDbMock(),
 }));
 
 vi.mock("@/lib/editorial-content-store", () => ({

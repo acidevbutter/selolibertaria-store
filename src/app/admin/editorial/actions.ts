@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
 import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
+import { getEditorialApiStore as getDb } from "@/lib/editorial-api-store";
 import type {
 	EditorialAboutPage,
 	EditorialBackground,
@@ -25,7 +26,6 @@ import {
 	listEditorialRecordsForAdmin,
 } from "@/lib/editorial-content-store";
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
-import { getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
 
 const COLLECTION = "editorialContent";

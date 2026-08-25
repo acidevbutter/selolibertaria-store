@@ -12,6 +12,7 @@
 - Cart pricing, automatic discount application and coupon discount allocation now run through the internal FastAPI `/promotions/price-cart` contract.
 - Coupon usage limits and idempotent redemption records now run through FastAPI; the Next redemption helper no longer writes MongoDB.
 - Promotion administration reads and writes now use authenticated Next actions over internal FastAPI promotion endpoints.
+- Public and admin editorial reads/writes now pass through the FastAPI editorial domain; the Alembic migration is created but not executed.
 
 ### Added
 
