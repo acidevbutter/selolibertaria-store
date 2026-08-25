@@ -1,6 +1,7 @@
 import "server-only";
 
 import { ObjectId } from "mongodb";
+import { env } from "@/env.mjs";
 import type { AppliedPromotion, CartItem, Product, ProductVariant, YnsProduct } from "@/lib/commerce-types";
 import { ensureIndexes, getDb } from "@/lib/mongodb";
 import { slugify } from "@/lib/utils";
@@ -27,7 +28,7 @@ export interface PromotionEligibility {
 }
 
 export interface PromotionDoc {
-	_id?: ObjectId;
+	_id?: ObjectId | string;
 	name: string;
 	label?: string | null;
 	description?: string | null;
@@ -59,8 +60,8 @@ export interface PromotionDoc {
 }
 
 export interface PromotionCodeDoc {
-	_id?: ObjectId;
-	promotionId: ObjectId;
+	_id?: ObjectId | string;
+	promotionId: ObjectId | string;
 	code: string;
 	codeNormalized: string;
 	status: "active" | "paused" | "archived";
@@ -76,8 +77,8 @@ export interface PromotionCodeDoc {
 
 export interface PromotionRedemptionDoc {
 	_id?: ObjectId;
-	promotionId: ObjectId;
-	promotionCodeId: ObjectId;
+	promotionId: ObjectId | string;
+	promotionCodeId: ObjectId | string;
 	userId: string;
 	orderDraftId?: string | null;
 	purchaseId: string;
@@ -145,6 +146,77 @@ interface PromotionCustomerContext {
 
 const defaultAutomaticPromotionList: PromotionDoc[] = [];
 let didWarnAboutPromotionFallback = false;
+
+type FastApiPromotion = {
+	id: string;
+	name: string;
+	label?: string | null;
+	description?: string | null;
+	status: PromotionStatus;
+	kind: PromotionKind;
+	scope: PromotionScope;
+	benefit_type: PromotionBenefitType;
+	benefit_value: number;
+	currency?: string | null;
+	stacking_mode?: PromotionStackingMode | null;
+	targets?: PromotionTargets | null;
+	eligibility?: PromotionEligibility | null;
+	schedule?: { startsAt?: string | null; endsAt?: string | null } | null;
+	usage_limits?: { global?: number | null; perCustomer?: number | null } | null;
+	priority?: number;
+	notify_favorites?: boolean;
+	version: number;
+	created_at: string;
+	updated_at: string;
+	codes?: Array<{
+		id: string;
+		code: string;
+		status: "active" | "paused" | "archived";
+		globalLimit?: number | null;
+		perCustomerLimit?: number | null;
+	}>;
+};
+
+function mapFastApiPromotion(value: FastApiPromotion): PromotionDoc {
+	return {
+		_id: value.id,
+		name: value.name,
+		label: value.label ?? null,
+		description: value.description ?? null,
+		status: value.status,
+		kind: value.kind,
+		scope: value.scope,
+		benefitType: value.benefit_type,
+		benefitValue: Number(value.benefit_value),
+		currency: value.currency ?? null,
+		stackingMode: value.stacking_mode ?? undefined,
+		targets: value.targets ?? undefined,
+		eligibility: value.eligibility ?? undefined,
+		schedule: value.schedule
+			? {
+					startsAt: value.schedule.startsAt ? new Date(value.schedule.startsAt) : null,
+					endsAt: value.schedule.endsAt ? new Date(value.schedule.endsAt) : null,
+				}
+			: undefined,
+		usageLimits: value.usage_limits
+			? { global: value.usage_limits.global ?? null, perCustomer: value.usage_limits.perCustomer ?? null }
+			: undefined,
+		priority: value.priority ?? 0,
+		notifyFavorites: value.notify_favorites ?? true,
+		createdAt: new Date(value.created_at),
+		updatedAt: new Date(value.updated_at),
+		version: value.version,
+	};
+}
+
+async function fetchPromotionApi(path: string) {
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, {
+		headers: { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("FastAPI promotions unavailable");
+	return response;
+}
 
 function normalizeArray(values?: string[] | null) {
 	return (values ?? []).map((value) => value.trim()).filter(Boolean);
@@ -322,14 +394,10 @@ async function getPromotionCustomerContext(userId?: string | null): Promise<Prom
 
 export async function listActiveAutomaticPromotions(now = new Date()) {
 	try {
-		const db = await getDb();
-		const promotions = await db
-			.collection<PromotionDoc>("promotions")
-			.find({ kind: "automatic", status: { $in: ["active", "scheduled"] } })
-			.sort({ priority: -1, updatedAt: -1 })
-			.toArray();
-
-		return promotions.filter((promotion) => isPromotionActive(promotion, now));
+		void now;
+		const response = await fetchPromotionApi("/promotions/active");
+		const payload = (await response.json()) as FastApiPromotion[];
+		return payload.map(mapFastApiPromotion);
 	} catch (error) {
 		if (!didWarnAboutPromotionFallback) {
 			didWarnAboutPromotionFallback = true;
@@ -466,24 +534,26 @@ export async function applyAutomaticPromotionsToProducts<T extends Product>(
 export async function resolveCouponByCode(code: string, now = new Date()): Promise<CouponResolution | null> {
 	const normalizedCode = normalizeCouponCode(code);
 	if (!normalizedCode) return null;
-
-	const db = await getDb();
-	const codeDoc = await db.collection<PromotionCodeDoc>("promotionCodes").findOne({
-		codeNormalized: normalizedCode,
-		status: "active",
-		$or: [{ startsAt: { $exists: false } }, { startsAt: null }, { startsAt: { $lte: now } }],
-		$and: [{ $or: [{ endsAt: { $exists: false } }, { endsAt: null }, { endsAt: { $gte: now } }] }],
-	});
-	if (!codeDoc) return null;
-
-	const promotion = await db.collection<PromotionDoc>("promotions").findOne({
-		_id: codeDoc.promotionId,
-		kind: "coupon",
-		status: { $in: ["active", "scheduled"] },
-	});
-	if (!promotion || !isPromotionActive(promotion, now)) return null;
-
-	return { promotion, code: codeDoc };
+	void now;
+	const response = await fetchPromotionApi(`/promotions/coupon/${encodeURIComponent(normalizedCode)}`);
+	const value = (await response.json()) as FastApiPromotion | null;
+	if (!value) return null;
+	const codeValue = value.codes?.[0];
+	if (!codeValue) return null;
+	return {
+		promotion: mapFastApiPromotion(value),
+		code: {
+			_id: codeValue.id,
+			promotionId: value.id,
+			code: codeValue.code,
+			codeNormalized: codeValue.code.toUpperCase(),
+			status: codeValue.status,
+			globalLimit: codeValue.globalLimit ?? null,
+			perCustomerLimit: codeValue.perCustomerLimit ?? null,
+			createdAt: new Date(value.created_at),
+			updatedAt: new Date(value.updated_at),
+		},
+	};
 }
 
 async function validateCouponLimits(args: {
