@@ -4,6 +4,7 @@
 - Admin webhook logs now persist and list through FastAPI; Mercado Pago webhook receipts are stored server-side and the Next admin no longer reads MongoDB.
 - Admin settings and the admin shell theme now read and write through FastAPI; the Next settings route is an authenticated proxy only.
 - OAuth identity creation and linking now use the internal FastAPI auth endpoint; Next no longer persists OAuth users in MongoDB.
+- Removed two unreferenced legacy notification modules that still contained direct MongoDB access.
 
 ### Added
 
