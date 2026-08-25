@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Added the FastAPI shipping quote boundary for Melhor Envio, keeping the access token and provider HTTP calls server-side; Next now consumes only the internal `/shipping/quote` contract.
+
 ### Added
 
 - FastAPI: domínio de checkout para criar/reutilizar drafts, submeter pagamentos Mercado Pago com idempotência e reconciliar/finalizar pedidos em PostgreSQL; nenhuma migration foi executada.

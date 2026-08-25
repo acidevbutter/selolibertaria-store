@@ -22,7 +22,6 @@ export const env = createEnv({
 			.regex(/^mongodb(\+srv)?:\/\//, "MONGODB_URI must start with mongodb:// or mongodb+srv://"),
 		MONGODB_DB_NAME: z.string(),
 		JWT_SECRET: z.string().min(32),
-		MELHOR_ENVIO_ACCESS_TOKEN: z.string().optional(),
 	},
 	client: {
 		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
@@ -76,7 +75,6 @@ export const env = createEnv({
 		MONGODB_URI: process.env.MONGODB_URI,
 		MONGODB_DB_NAME: process.env.MONGODB_DB_NAME,
 		JWT_SECRET: process.env.JWT_SECRET,
-		MELHOR_ENVIO_ACCESS_TOKEN: process.env.MELHOR_ENVIO_ACCESS_TOKEN,
 	},
 });
 
