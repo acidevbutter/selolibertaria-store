@@ -13,6 +13,8 @@
 - Coupon usage limits and idempotent redemption records now run through FastAPI; the Next redemption helper no longer writes MongoDB.
 - Promotion administration reads and writes now use authenticated Next actions over internal FastAPI promotion endpoints.
 - Public and admin editorial reads/writes now pass through the FastAPI editorial domain; the Alembic migration is created but not executed.
+- Favorite discount alerts now queue and dispatch through FastAPI communications/Butter Relay; Next no longer contains MongoDB promotion or alert code.
+- Removed the Next MongoDB client, package, lockfile entries, environment variables and obsolete Mongo integration tests.
 
 ### Added
 

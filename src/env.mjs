@@ -16,11 +16,6 @@ export const env = createEnv({
 		CLOUDINARY_API_SECRET: z.string().optional(),
 		CLOUDINARY_UPLOAD_FOLDER: z.string().optional(),
 
-		MONGODB_URI: z
-			.string()
-			.min(1)
-			.regex(/^mongodb(\+srv)?:\/\//, "MONGODB_URI must start with mongodb:// or mongodb+srv://"),
-		MONGODB_DB_NAME: z.string(),
 		JWT_SECRET: z.string().min(32),
 	},
 	client: {
@@ -72,8 +67,6 @@ export const env = createEnv({
 		NEXT_PUBLIC_DD_SESSION_REPLAY_SAMPLE_RATE: process.env.NEXT_PUBLIC_DD_SESSION_REPLAY_SAMPLE_RATE,
 		NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL: process.env.NEXT_PUBLIC_DD_DEFAULT_PRIVACY_LEVEL,
 
-		MONGODB_URI: process.env.MONGODB_URI,
-		MONGODB_DB_NAME: process.env.MONGODB_DB_NAME,
 		JWT_SECRET: process.env.JWT_SECRET,
 	},
 });

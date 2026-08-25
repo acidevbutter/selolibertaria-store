@@ -1,22 +1,29 @@
 // @vitest-environment node
 
-import { SignJWT } from "jose";
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { proxy } from "@/proxy";
 
 async function signSessionCookie(role: string, expiresInMs = 60_000) {
-	const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-	const jwt = await new SignJWT({ user: { role }, expires: Date.now() + expiresInMs })
-		.setProtectedHeader({ alg: "HS256" })
-		.sign(secret);
-	return `session=${jwt}`;
+	return `session=${role}:${expiresInMs > 0 ? "valid" : "expired"}`;
 }
 
 // Tests must not depend on whatever MAINTENANCE_MODE happens to be set to in
 // the real .env file — start every test from a known "off" state.
 beforeEach(() => {
 	delete process.env.MAINTENANCE_MODE;
+	vi.stubGlobal(
+		"fetch",
+		vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+			const authorization =
+				input instanceof Request
+					? input.headers.get("authorization")
+					: new Headers(init?.headers).get("authorization");
+			if (authorization?.includes("admin:valid")) return Response.json({ role: "admin" });
+			if (authorization?.includes("customer:valid")) return Response.json({ role: "customer" });
+			return new Response(null, { status: 401 });
+		}),
+	);
 });
 
 describe("proxy public auth paths", () => {
