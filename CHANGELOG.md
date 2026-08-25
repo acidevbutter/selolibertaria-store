@@ -7,6 +7,7 @@
 - Removed two unreferenced legacy notification modules that still contained direct MongoDB access.
 - Admin dashboard data now comes from the FastAPI orders dashboard endpoint; the Next dashboard keeps only presentation aggregation.
 - Added the FastAPI promotions foundation with PostgreSQL models, admin CRUD/status endpoints and an Alembic migration file; migration execution remains pending by design.
+- Added full promotion update support in FastAPI, including coupon metadata and status synchronization.
 
 ### Added
 
