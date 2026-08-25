@@ -1,12 +1,10 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
 import { listOrderAuditEntries, type OrderAuditEntry } from "@/lib/order-audit";
-import { matchesOrderIdentifier, type OrderRelatedIds } from "@/lib/order-identity";
-import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -176,7 +174,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
+	const locale = DEFAULT_LOCALE;
 	const fallbackCurrency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
@@ -184,48 +182,27 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 	const purchaseId = id;
 	if (!purchaseId) redirect("/admin/orders");
 
-	const db = await getDb();
-	const pipeline = [
-		{ $match: { purchases: { $exists: true, $ne: [] } } },
-		{ $project: { email: 1, purchases: 1 } },
-		{ $unwind: "$purchases" },
-		{
-			$match: {
-				$or: [
-					{ "purchases.id": purchaseId },
-					{ "purchases.relatedIds.mercadoPagoPaymentId": purchaseId },
-					{ "purchases.relatedIds.mercadoPagoOrderId": purchaseId },
-				],
-			},
-		},
-		{ $limit: 1 },
-	];
-	const docs = await db.collection("users").aggregate(pipeline).toArray();
-	const doc = docs[0];
-	if (!doc) redirect("/admin/orders");
-
-	const p = doc.purchases as {
+	const token = (await cookies()).get("session")?.value;
+	const response = await fetch(`${env.FASTAPI_API_URL}/orders/${encodeURIComponent(purchaseId)}`, {
+		headers: token ? { authorization: `Bearer ${token}` } : {},
+		cache: "no-store",
+	});
+	if (!response.ok) redirect("/admin/orders");
+	const remote = (await response.json()) as {
 		id: string;
-		amountTotal: number;
+		amount_total: number;
 		currency: string;
 		status: string;
-		createdAt: string | Date;
-		items?: Array<{ name?: string | null; quantity: number; unitAmount?: number | null }>;
-		fulfillment?: { status?: "received" | "producing" | "shipped"; trackingNumber?: string | null };
-		relatedIds?: OrderRelatedIds;
-		deliveryMethod?: "saved-address" | "new-address" | "pickup" | null;
-		deliveryAddress?: {
-			line1?: string | null;
-			line2?: string | null;
-			number?: string | null;
-			complement?: string | null;
-			district?: string | null;
-			city?: string | null;
-			state?: string | null;
-			postalCode?: string | null;
-			country?: string | null;
-		} | null;
-		shippingRate?: {
+		created_at: string;
+		buyer_email: string | null;
+		mercado_pago_order_id: string | null;
+		mercado_pago_payment_id: string | null;
+		items: Array<{ name: string | null; quantity: number; unit_amount: number | null }>;
+		fulfillment_status: "received" | "producing" | "shipped";
+		tracking_number: string | null;
+		delivery_method: "saved-address" | "new-address" | "pickup" | null;
+		delivery_address: Record<string, string | null> | null;
+		shipping_rate: {
 			providerCode?: string | null;
 			serviceCode?: string | null;
 			serviceName?: string | null;
@@ -235,9 +212,24 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 			quotedAt?: string | null;
 		} | null;
 	};
-	if (!matchesOrderIdentifier(p, purchaseId)) redirect("/admin/orders");
+	const p = {
+		id: remote.id,
+		amountTotal: remote.amount_total,
+		currency: remote.currency,
+		status: remote.status,
+		createdAt: remote.created_at,
+		items: remote.items.map((item) => ({ ...item, unitAmount: item.unit_amount })),
+		fulfillment: { status: remote.fulfillment_status, trackingNumber: remote.tracking_number },
+		deliveryMethod: remote.delivery_method,
+		deliveryAddress: remote.delivery_address,
+		shippingRate: remote.shipping_rate,
+		relatedIds: {
+			mercadoPagoOrderId: remote.mercado_pago_order_id,
+			mercadoPagoPaymentId: remote.mercado_pago_payment_id,
+		},
+	};
 	const history = await listOrderAuditEntries(p.id, 15);
-	const itemCount = p.items?.reduce((total, item) => total + (item.quantity || 0), 0) ?? 0;
+	const itemCount = p.items.reduce((total, item) => total + (item.quantity || 0), 0);
 	const auditCount = history.length;
 	const fulfillmentLabel = getFulfillmentLabel(p.fulfillment?.status);
 	const shippingAddressLines = formatShippingAddress(p.deliveryAddress);
@@ -296,7 +288,9 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
 								E-mail do cliente
 							</div>
-							<div className="break-all text-sm text-[color:var(--editorial-ink)]">{doc.email}</div>
+							<div className="break-all text-sm text-[color:var(--editorial-ink)]">
+								{remote.buyer_email || "Não informado"}
+							</div>
 						</div>
 						<div className="space-y-1">
 							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
@@ -454,7 +448,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 						<ul className="space-y-3">
 							{history.map((entry) => (
 								<li
-									key={String(entry._id)}
+									key={`${entry.action}-${entry.createdAt.toISOString()}`}
 									className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
 								>
 									<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
