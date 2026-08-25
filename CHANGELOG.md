@@ -2,6 +2,7 @@
 
 - Added the FastAPI shipping quote boundary for Melhor Envio, keeping the access token and provider HTTP calls server-side; Next now consumes only the internal `/shipping/quote` contract.
 - Admin webhook logs now persist and list through FastAPI; Mercado Pago webhook receipts are stored server-side and the Next admin no longer reads MongoDB.
+- Admin settings and the admin shell theme now read and write through FastAPI; the Next settings route is an authenticated proxy only.
 
 ### Added
 
