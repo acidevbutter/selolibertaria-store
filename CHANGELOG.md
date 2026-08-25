@@ -444,6 +444,8 @@
 
 ### Changed
 
+- adicionado domínio FastAPI de comunicações com logs persistidos e entrega exclusiva via Butter Relay
+- removidos SMTP, Brevo e Nodemailer do Next; o admin de e-mails passou a consultar/reprocessar o FastAPI
 - ligado o backoff persistido de reconciliação Mercado Pago no FastAPI, com limite de tentativas e estados terminal/pending
 
 - documentada a matriz de migração da Payments API legada para a Orders API em DEV-152, incluindo fluxos, persistência, contratos, riscos e ordem de implementação
