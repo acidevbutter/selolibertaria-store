@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -9,7 +8,6 @@ import { getLocale, getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { getDefaultCurrencyForLocale } from "@/lib/currency";
 import { getFavoriteViewModels } from "@/lib/favorites";
-import { getDb } from "@/lib/mongodb";
 import { getDefaultCountrySetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
@@ -133,14 +131,46 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	let favorites: Awaited<ReturnType<typeof getFavoriteViewModels>> | null = null;
 	if (section === "purchases") {
 		try {
-			const db = await getDb();
-			const userDoc = await db
-				.collection("users")
-				.findOne<{ purchases?: typeof purchases }>(
-					{ _id: new ObjectId(user.id) },
-					{ projection: { purchases: 1 } },
-				);
-			purchases = (userDoc?.purchases || []).slice().reverse();
+			const token = (await cookies()).get("session")?.value;
+			const response = token
+				? await fetch(`${env.FASTAPI_API_URL}/orders/me?page=1&page_size=100`, {
+						headers: { authorization: `Bearer ${token}` },
+						cache: "no-store",
+					})
+				: null;
+			if (response?.ok) {
+				const payload = (await response.json()) as {
+					items?: Array<{
+						id: string;
+						created_at: string;
+						status: string;
+						amount_total: number;
+						currency: string;
+						items?: Array<{
+							name?: string | null;
+							quantity: number;
+							unit_amount?: number | null;
+							price_id?: string | null;
+						}>;
+						fulfillment_status?: "received" | "producing" | "shipped";
+						tracking_number?: string | null;
+					}>;
+				};
+				purchases = (payload.items ?? []).map((order) => ({
+					id: order.id,
+					createdAt: new Date(order.created_at),
+					status: order.status,
+					amountTotal: order.amount_total,
+					currency: order.currency,
+					items: (order.items ?? []).map((item) => ({
+						name: item.name,
+						quantity: item.quantity,
+						unitAmount: item.unit_amount,
+						priceId: item.price_id,
+					})),
+					fulfillment: { status: order.fulfillment_status, trackingNumber: order.tracking_number },
+				}));
+			}
 		} catch (e) {
 			console.error("[user/page] load purchases error", e);
 		}
