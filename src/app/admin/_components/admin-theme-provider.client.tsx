@@ -17,7 +17,7 @@ export function AdminThemeProvider({
 }) {
 	const [theme, _setTheme] = useState<AdminTheme>(initialTheme);
 
-	// Reconcile theme from API on mount to ensure client matches Mongo
+	// Reconcile theme from API on mount to ensure client matches FastAPI
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {

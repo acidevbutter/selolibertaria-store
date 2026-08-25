@@ -15,6 +15,7 @@
 - Public and admin editorial reads/writes now pass through the FastAPI editorial domain; the Alembic migration is created but not executed.
 - Favorite discount alerts now queue and dispatch through FastAPI communications/Butter Relay; Next no longer contains MongoDB promotion or alert code.
 - Removed the Next MongoDB client, package, lockfile entries, environment variables and obsolete Mongo integration tests.
+- Guest cart recovery now reads `/carts/guest/{id}` from FastAPI; the last in-memory storefront cart fallback was removed.
 
 ### Added
 

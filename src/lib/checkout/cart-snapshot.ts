@@ -7,7 +7,6 @@ import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { getCartCookieItems, getCartCouponCode, getCartId } from "@/lib/cart-cookies";
 import { buildPricedCartPayload } from "@/lib/cart-pricing";
-import { commerce } from "@/lib/commerce";
 import type { AppliedPromotion } from "@/lib/commerce-types";
 
 interface MinimalItem {
@@ -158,9 +157,24 @@ async function resolveCheckoutItems(existingItems: MinimalItem[]) {
 
 	if (cartId) {
 		try {
-			const guestCart = commerce.cart.get({ cartId });
-			if (guestCart && guestCart.items.length > 0) {
-				for (const item of normalizeMinimalItems(guestCart.items)) {
+			const response = await fetch(`${env.FASTAPI_API_URL}/carts/guest/${encodeURIComponent(cartId)}`, {
+				cache: "no-store",
+			});
+			const guestCart = response.ok
+				? ((await response.json()) as {
+						items?: Array<{ product_id: string; variant_id: string; quantity: number; unit_amount: number }>;
+					})
+				: null;
+			if (guestCart?.items && guestCart.items.length > 0) {
+				for (const item of normalizeMinimalItems(
+					guestCart.items.map((entry) => ({
+						id: entry.variant_id,
+						productId: entry.product_id,
+						variantId: entry.variant_id,
+						quantity: entry.quantity,
+						price: entry.unit_amount,
+					})),
+				)) {
 					const current = imported.get(item.variantId);
 					if (current) current.quantity += item.quantity;
 					else imported.set(item.variantId, item);

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import {
 	type CatalogProductDocument,
 	type CatalogVariantDocument,
@@ -9,18 +8,9 @@ import {
 	getCatalogProductByVariantId,
 	listCatalogProducts,
 } from "@/lib/catalog";
-import type {
-	BrowseResult,
-	Cart,
-	Product,
-	ProductInfo,
-	ProductVariant,
-	YnsProduct,
-} from "@/lib/commerce-types";
+import type { BrowseResult, Product, ProductVariant, YnsProduct } from "@/lib/commerce-types";
 import { resolveSupportedCurrency, type SupportedCurrency } from "@/lib/currency";
 import { applyAutomaticPromotionsToProducts } from "@/lib/promotions";
-
-const carts = new Map<string, Cart>();
 
 function mapVariant(product: CatalogProductDocument, variant: CatalogVariantDocument): ProductVariant {
 	return {
@@ -63,15 +53,11 @@ function mapProduct(
 	};
 }
 
-function toProductInfo(product: Product): ProductInfo {
-	return { id: product.id, name: product.name, images: product.images, summary: product.summary };
-}
-
 function findVariant(product: Product, variantId: string) {
 	return product.variants?.find((variant) => variant.id === variantId) ?? null;
 }
 
-export class MongoCommerce {
+export class FastApiCommerce {
 	async product_get({ slug, currency }: { slug: string; currency?: SupportedCurrency | null }) {
 		try {
 			const document = await getCatalogProductBySlug(slug);
@@ -125,94 +111,20 @@ export class MongoCommerce {
 		if (!variant) throw new Error(`Variant not found: ${variantOrProductId}`);
 		return { product, variant };
 	}
-
-	private ensureCart(cartId?: string, currency = "BRL") {
-		if (cartId && carts.has(cartId)) return carts.get(cartId)!;
-		const id = cartId || `cart_${randomUUID()}`;
-		const cart: Cart = { id, items: [], total: 0, currency };
-		carts.set(id, cart);
-		return cart;
-	}
-
-	cart_get({ cartId }: { cartId: string }) {
-		return carts.get(cartId) || null;
-	}
-
-	async cart_add({ cartId, variantId, quantity }: { cartId?: string; variantId: string; quantity: number }) {
-		const cart = this.ensureCart(cartId);
-		const { product, variant } = await this.lookupVariant(variantId);
-		const existing = cart.items.find((item) => item.variantId === variant.id);
-		if (existing) existing.quantity += quantity;
-		else {
-			cart.items.push({
-				id: variant.id,
-				productId: product.id,
-				variantId: variant.id,
-				quantity,
-				price: variant.price,
-				product: toProductInfo(product),
-			});
-		}
-		this.recalculate(cart);
-		return cart;
-	}
-
-	async cart_update({
-		cartId,
-		variantId,
-		quantity,
-	}: {
-		cartId: string;
-		variantId: string;
-		quantity: number;
-	}) {
-		const cart = this.ensureCart(cartId);
-		if (quantity <= 0) cart.items = cart.items.filter((item) => item.variantId !== variantId);
-		else {
-			const line = cart.items.find((item) => item.variantId === variantId);
-			if (!line) return this.cart_add({ cartId, variantId, quantity });
-			line.quantity = quantity;
-		}
-		this.recalculate(cart);
-		return cart;
-	}
-
-	async cart_remove({ cartId, variantId }: { cartId: string; variantId: string }) {
-		const cart = this.ensureCart(cartId);
-		cart.items = cart.items.filter((item) => item.variantId !== variantId);
-		this.recalculate(cart);
-		return cart;
-	}
-
-	cart_clear({ cartId }: { cartId: string }) {
-		carts.delete(cartId);
-	}
-
-	private recalculate(cart: Cart) {
-		cart.total = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
-	}
 }
 
-const mongoCommerce = new MongoCommerce();
+const fastApiCommerce = new FastApiCommerce();
 export const commerce = {
 	product: {
-		get: (args: { slug: string; currency?: SupportedCurrency | null }) => mongoCommerce.product_get(args),
+		get: (args: { slug: string; currency?: SupportedCurrency | null }) => fastApiCommerce.product_get(args),
 		browse: (args: { first?: number; category?: string; currency?: SupportedCurrency | null }) =>
-			mongoCommerce.product_browse(args),
+			fastApiCommerce.product_browse(args),
 	},
 	variant: {
 		resolve: (args: { id: string; currency?: SupportedCurrency | null }) =>
-			mongoCommerce.lookupVariant(args.id, args.currency),
-	},
-	cart: {
-		get: (args: { cartId: string }) => mongoCommerce.cart_get(args),
-		add: (args: { cartId?: string; variantId: string; quantity: number }) => mongoCommerce.cart_add(args),
-		update: (args: { cartId: string; variantId: string; quantity: number }) =>
-			mongoCommerce.cart_update(args),
-		remove: (args: { cartId: string; variantId: string }) => mongoCommerce.cart_remove(args),
-		clear: (args: { cartId: string }) => mongoCommerce.cart_clear(args),
+			fastApiCommerce.lookupVariant(args.id, args.currency),
 	},
 };
 
-export type { Cart, Product, YnsProduct } from "@/lib/commerce-types";
+export type { Product, YnsProduct } from "@/lib/commerce-types";
 export default commerce;

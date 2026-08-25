@@ -21,7 +21,7 @@ export interface PricePresentation {
 
 export interface ProductVariant {
 	id: string;
-	price: number; // minor units, recalculated from the Mongo catalog
+	price: number; // minor units, recalculated from the FastAPI catalog
 	currency: string;
 	priceId?: string | null;
 	label?: string | null;
@@ -49,7 +49,7 @@ export interface ProductInfo {
 }
 
 export interface Product extends ProductInfo {
-	slug: string; // canonical public slug from the Mongo catalog
+	slug: string; // canonical public slug from the FastAPI catalog
 	price: number; // minor units
 	currency: string; // ISO code
 	stock?: number | null; // from metadata or default
