@@ -1,0 +1,85 @@
+%% Next.js is the UI/BFF and authentication boundary.
+%% FastAPI owns business rules, persistence, integrations and webhooks.
+flowchart LR
+    browser["Browser / Storefront"]
+
+    subgraph next["Next.js — UI, BFF and auth boundary"]
+        ui["Pages, Server Components<br/>and Server Actions"]
+        api["Route handlers / BFF<br/>Authenticated proxy"]
+        auth["Auth callback + session<br/>HTTP-only cookie"]
+        cron["Cron / admin triggers<br/>reconciliation"]
+    end
+
+    subgraph fastapi["FastAPI — API, domain and integration boundary"]
+        authapi["/auth<br/>/me · OAuth · sessions"]
+        catalog["/catalog · /editorial<br/>/settings"]
+        commerce["/carts · /checkout<br/>/orders · /promotions"]
+        shipping["/shipping · /address"]
+        admin["/admin · /communications<br/>/media · /webhooks"]
+        workers["Domain services<br/>Idempotency · audit · retries"]
+    end
+
+    postgres[("PostgreSQL")]
+
+    subgraph providers["External providers — server-side only"]
+        mp["Mercado Pago<br/>Payments / webhooks"]
+        relay["Butter Relay<br/>Transactional e-mail"]
+        melhor["Melhor Envio<br/>Freight"]
+        cloudinary["Cloudinary<br/>Media"]
+        postal["ViaCEP / BrasilAPI<br/>Postal lookup"]
+        oauth["OAuth providers"]
+    end
+
+    browser --> ui
+    browser --> api
+    browser --> auth
+    ui --> api
+    auth --> authapi
+    auth --> oauth
+    api --> authapi
+    api --> catalog
+    api --> commerce
+    api --> shipping
+    api --> admin
+    cron --> api
+
+    authapi --> postgres
+    catalog --> postgres
+    commerce --> postgres
+    shipping --> postgres
+    admin --> postgres
+    authapi --> workers
+    catalog --> workers
+    commerce --> workers
+    shipping --> workers
+    admin --> workers
+
+    commerce --> mp
+    mp -->|"signed webhook"| fastapi
+    cron -->|"reconcile"| commerce
+    shipping --> melhor
+    shipping --> postal
+    admin --> cloudinary
+    workers --> relay
+    admin -->|"read / retry logs"| relay
+
+    checkout["Checkout outcome<br/>Order + payment status"]
+    commerce --> checkout
+    checkout --> ui
+
+    forbidden["Forbidden: MongoDB, SMTP, Brevo<br/>or provider SDK calls in Next"]
+    next -.-> forbidden
+
+    classDef nextNode fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef apiNode fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef dataNode fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef providerNode fill:#fce7f3,stroke:#db2777,color:#831843
+    classDef warningNode fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef resultNode fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+
+    class browser,ui,api,auth,cron nextNode
+    class authapi,catalog,commerce,shipping,admin,workers apiNode
+    class postgres dataNode
+    class mp,relay,melhor,cloudinary,postal,oauth providerNode
+    class forbidden warningNode
+    class checkout resultNode
