@@ -58,7 +58,7 @@ Por isso, não é correto remover `MONGODB_URI`, `MONGODB_DB_NAME` ou `src/lib/m
 | `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | webhook FastAPI valida assinatura, deduplica por evento e finaliza o checkout; falta cutover e homologação Sandbox |
 | `POST /api/admin/orders/[id]/payment` | cancelamento e estorno via Orders API + atualização/auditoria Mongo | Não | operações `cancel/refund` e auditoria no domínio `orders` do FastAPI |
 | `POST /api/admin/mercado-pago/reconcile` | reconciliação manual de pedidos pendentes | Não | serviço FastAPI existe; falta comprovar autorização administrativa e o cutover da rota |
-| `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | worker Compose do backend existe; manter como contingência até comprovar a execução agendada no ambiente-alvo |
+| `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | worker Compose do backend usa lease, backoff e marca terminal persistida; manter como contingência até comprovar a execução agendada no ambiente-alvo |
 | `src/actions/checkout-actions.ts` | criação do draft, Pix/cartão, idempotência e customer cards | Não | checkout e integração Mercado Pago completos no FastAPI |
 | `src/actions/mercado-pago-order-actions.ts` | consulta do pedido, finalização, conta e pedido local | Não | serviço de finalização transacional no FastAPI |
 | `src/lib/mercado-pago.ts` | customer cards e assinatura do webhook | Não | customer cards e assinatura movidos para o FastAPI |
