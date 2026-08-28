@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+- Adicionados prompts coordenados em `docs/prompts/fastapi-bff-migration/` para
+  orientar o Claude na conclusão alinhada do backend FastAPI, frontend BFF,
+  OAuth, jobs, Mercado Pago e validação integrada.
+- Slice P0/P1: removido o endpoint público de teste de e-mail do Next e o proxy de webhook Mercado Pago; o webhook deve apontar diretamente para `POST /payments/mercado-pago/webhook` no FastAPI.
+- Diagrama atualizado para mostrar o webhook direto no FastAPI e OAuth ainda pendente na fronteira Next.
+
 - Added a Mermaid diagram documenting Next.js-to-FastAPI API flows, authentication, checkout, webhooks and server-side provider boundaries.
 
 - Added the FastAPI shipping quote boundary for Melhor Envio, keeping the access token and provider HTTP calls server-side; Next now consumes only the internal `/shipping/quote` contract.
