@@ -4,6 +4,7 @@
   orientar o Claude na conclusão alinhada do backend FastAPI, frontend BFF,
   OAuth, jobs, Mercado Pago e validação integrada.
 - Slice P0/P1: removido o endpoint público de teste de e-mail do Next e o proxy de webhook Mercado Pago; o webhook deve apontar diretamente para `POST /payments/mercado-pago/webhook` no FastAPI.
+- Prompt 03/04: atualizado o mapa de migração FastAPI/BFF com limites de evidência. A matriz adversarial de OAuth vive no backend (`backend/tests/test_oauth.py`); OAuth Instagram, PostgreSQL integrado, Sandbox Mercado Pago e smoke E2E continuam pendentes. Cartões salvos seguem desabilitados por design.
 - Diagrama atualizado para mostrar o webhook direto no FastAPI e OAuth ainda pendente na fronteira Next.
 
 - Added a Mermaid diagram documenting Next.js-to-FastAPI API flows, authentication, checkout, webhooks and server-side provider boundaries.

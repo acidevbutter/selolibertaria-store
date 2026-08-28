@@ -1,76 +1,91 @@
 # Mapa de migração para a API FastAPI
 
-Atualizado em 2026-08-28. Estado verificado no código atual.
+Atualizado em 2026-08-28. Mapa estático do código atual dos dois repositórios
+(`selolibertaria-store` e `backend`); não substitui validação integrada.
 
 ## Regra de destino
 
-O Next.js deve ficar como camada de apresentação/BFF: sessão de browser, cookies, renderização, validação de entrada e proxy para a API. Persistência, regras de negócio, integrações externas e jobs devem ficar no FastAPI.
+O Next.js fica como camada de apresentação/BFF: sessão de browser, cookies,
+renderização, validação de entrada e proxy para a API. Persistência, regras de
+negócio, integrações externas e jobs ficam no FastAPI.
 
-O Next.js não deve importar `mongodb`, `getDb`, `ensureIndexes` ou manter `MONGODB_URI`/`MONGODB_DB_NAME` quando todas as áreas abaixo tiverem contrato equivalente no FastAPI.
+## Estado do frontend (Next.js)
 
-## Estado atual do FastAPI
+Maior parte das superfícies foi movida para o FastAPI. A revisão estática
+identificou:
 
-Já existe em `backend/app/`:
+- `src/` não contém `mongodb`, `getDb`, `ensureIndexes`, `MongoClient` nem
+  `src/lib/mongodb.ts`;
+- `.env`/`.env.example` não têm `MONGODB_URI` nem `MONGODB_DB_NAME`;
+- as rotas migradas consomem o FastAPI por client server-only
+  (`FASTAPI_API_URL` + `FASTAPI_INTERNAL_API_KEY`), com `cache: no-store` e
+  tradução de erro na borda.
 
-- `users`: cadastro, listagem, leitura, perfil, papel e bloqueio;
-- `auth`: cadastro, login, sessão JWT persistida, verificação e reset de senha;
-- `orders`: criação, listagem, leitura e fulfillment;
-- `catalog`: produtos, variantes, publicação e auditoria;
-- `carts`: carrinhos de convidado/autenticados, merge e itens validados pelo catálogo;
-- migração única Mongo→PostgreSQL;
-- PostgreSQL assíncrono, SQLAlchemy, Alembic, paginação e logs de requisição.
+Exceção ativa: cartões salvos do Mercado Pago estão **desabilitados** no Next
+(`src/actions/checkout-actions.ts` devolve `savedCards: []` e recusa
+`savedCardId`). Tema de issue própria; fora do escopo até tokenização e
+contrato de cobrança/remoção existirem no FastAPI.
 
-Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticação e autorização de serviço ainda não estão conectados.
+## Estado do backend (FastAPI)
 
-## O que precisa entrar no FastAPI
+Domínios em `backend/app/` ligados em `app/main.py`: `users`, `auth`,
+`address`, `orders`, `payments`, `promotions`, `catalog`, `communications`,
+`editorial`, `favorites`, `carts`, `checkout`, `settings`, `shipping`,
+`webhooks`, `migrations`, `media`.
 
-| Domínio | Escopo necessário | Estado |
+- PostgreSQL assíncrono (SQLAlchemy 2.0, Pydantic v2), 16 migrations Alembic.
+  A execução contra PostgreSQL integrado e o smoke de registro/login continuam
+  pendentes de evidência reproduzível.
+- RBAC de operador em rotas administrativas (`admin`/`vendor`); chave interna
+  para tráfego server-to-server.
+- Migração única Mongo→PostgreSQL protegida por chave e reivindicada uma vez
+  (`test_migrations.py`, ainda só em SQLite).
+
+## Superfícies por domínio
+
+| Domínio | Estado |
+|---|---|
+| Identidade | Registro, login, sessão JWT persistida, verificação, reset de senha e RBAC no FastAPI. OAuth está parcialmente migrado: o FastAPI controla state hash, PKCE, callback e ticket de uso único; o Next encaminha e troca o ticket pelo cookie. A matriz adversarial em `backend/tests/test_oauth.py` cobre os controles locais. O fluxo Instagram que exige coleta de e-mail ainda precisa ser conciliado com esse contrato antes do corte completo. Magic link não implementado. |
+| Carrinho | Migrado. Carrinho convidado/autenticado, merge e itens validados pelo catálogo no FastAPI; Next consome `/carts`. |
+| Catálogo | Migrado. Produtos, variantes, categorias e leitura pública/admin pelo FastAPI. |
+| Checkout | Migrado no fluxo principal. Draft, comprador, entrega, pagamento Pix/cartão idempotente, finalização transacional e reconciliação no FastAPI. Snapshot/preço e cotação de frete são montados no Next antes do draft. |
+| Pedidos | Migrado. CRUD, fulfillment forward-only, auditoria, dashboard e `POST /orders/{id}/payment-operation` (cancelamento/estorno via Orders API com guarda de estado e auditoria). |
+| Mercado Pago | Implementação pausada por decisão de escopo. O núcleo existente inclui tentativa idempotente, validação/deduplicação de webhook e reconciliação, mas não deve avançar nem ser considerado pronto sem homologação Sandbox integrada. Cartões salvos seguem desabilitados. |
+| Frete | Migrado. Cotação Melhor Envio no FastAPI (`/shipping/quote`); token e HTTP do provedor ficam no servidor. |
+| Editorial | Migrado. Leitura pública e escrita admin pelo domínio `editorial` do FastAPI. |
+| Promoções | Migrado. Promoções, cupons, elegibilidade, `price-cart` e resgate idempotente pelo FastAPI. |
+| Comunicação | Migrado. E-mails transacionais, templates, retries, logs e webhooks admin pelo FastAPI/Butter Relay. |
+| Mídia | Migrado. Upload/delete e newsletter pelo FastAPI; segredos Cloudinary ficam no servidor. |
+| Endereço BR | Migrado. Lookup de CEP no FastAPI; browser não chama ViaCEP/BrasilAPI. |
+
+## Rotas Mercado Pago que ainda existem no Next
+
+Todas hoje são BFF fino sobre o FastAPI (nenhuma toca Mongo). Mantidas até a
+homologação Sandbox integrada:
+
+| Rota/módulo | Papel atual | Pré-requisito para remover |
 |---|---|---|
-| Identidade | login, registro, verificação, recuperação, OAuth, sessões, magic link e RBAC | Parcial; `auth` existe no FastAPI, mas Next.js ainda usa Mongo/JWT local e faltam OAuth, magic link e RBAC |
-| Carrinho | carrinho convidado/autenticado, merge e snapshot imutável de checkout | Parcial; domínio e migração de `users.cart` existem no FastAPI, mas o Next.js ainda usa Mongo/cookies |
-| Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Parcial; Server Actions usam intents, pagamento, Pix, finalização, comprador e entrega no FastAPI; snapshot/preço e cotação ainda dependem do Next.js |
-| Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
-| Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
-| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação idempotente, webhook deduplicado, finalização, retry/backoff persistido e worker Compose estão no FastAPI. Faltam customer cards, cancelamento/estorno e homologação Sandbox/agendamento no ambiente-alvo. |
-| Frete | Melhor Envio, cotação, seleção do menor serviço e snapshot | Pendente; hoje no Next.js |
-| Editorial | home, páginas, eventos, projetos, Sarau Safado e mídia | Pendente; permanece no Next.js/Mongo |
-| Promoções | promoções, cupons, elegibilidade, resgate e alertas | Pendente; permanece no Next.js/Mongo |
-| Comunicação | emails, templates, retries, logs e webhooks administrativos | Pendente; permanece no Next.js/Mongo |
+| `POST /api/admin/mercado-pago/reconcile` | dispara `POST /checkout/reconcile` autenticado | prova do worker agendado no ambiente-alvo |
+| `GET /api/cron/mercado-pago-reconciliation` | contingência de agendamento | evidência de execução periódica do worker Compose no ambiente-alvo |
+| `src/actions/checkout-actions.ts` | monta snapshot e chama checkout/pagamento do FastAPI | mover montagem de snapshot/preço para o backend |
+| `src/actions/mercado-pago-order-actions.ts` | consulta e finalização via FastAPI | — (encerra junto com a homologação Sandbox) |
 
-## Resquícios Mongo no Next.js
+Não há endpoint legado `/v1/payments` ativo. O fluxo é Mercado Pago Orders API.
 
-Ainda existem conexões diretas em rotas e módulos de:
+## Pendências para GO (prompt 04)
 
-- usuários e autenticação;
-- conta e sessões;
-- pedidos, checkout e carrinho;
-- catálogo e categorias;
-- promoções e favoritos;
-- editorial, configurações, emails e webhooks;
-- upload/auditoria e notificações.
+Exigem ambiente integrado real e **não** podem ser fechadas com mock/SQLite/
+render de Compose:
 
-Por isso, não é correto remover `MONGODB_URI`, `MONGODB_DB_NAME` ou `src/lib/mongodb.ts` nesta etapa. A remoção só pode ocorrer depois que os contratos acima estiverem implementados, o proxy estiver ativo e os testes de cutover passarem.
-
-## Rotas Mercado Pago no frontend
-
-| Rota/módulo | Uso atual | Pode remover agora? | Pré-requisito |
-|---|---|---:|---|
-| `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | webhook FastAPI valida assinatura, deduplica por evento e finaliza o checkout; falta cutover e homologação Sandbox |
-| `POST /api/admin/orders/[id]/payment` | cancelamento e estorno via Orders API + atualização/auditoria Mongo | Não | operações `cancel/refund` e auditoria no domínio `orders` do FastAPI |
-| `POST /api/admin/mercado-pago/reconcile` | reconciliação manual de pedidos pendentes | Não | serviço FastAPI existe; falta comprovar autorização administrativa e o cutover da rota |
-| `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | worker Compose do backend usa lease, backoff e marca terminal persistida; manter como contingência até comprovar a execução agendada no ambiente-alvo |
-| `src/actions/checkout-actions.ts` | criação do draft, Pix/cartão, idempotência e customer cards | Não | checkout e integração Mercado Pago completos no FastAPI |
-| `src/actions/mercado-pago-order-actions.ts` | consulta do pedido, finalização, conta e pedido local | Não | serviço de finalização transacional no FastAPI |
-| `src/lib/mercado-pago.ts` | customer cards e assinatura do webhook | Não | customer cards e assinatura movidos para o FastAPI |
-
-Não foi encontrado endpoint legado `/v1/payments` ativo no código atual. O fluxo ativo é Mercado Pago Orders API.
-
-## Critério para retirar Mongo do frontend
-
-1. Implementar o contrato no FastAPI e testes de domínio.
-2. Adicionar autenticação serviço-a-serviço e autorização por papel.
-3. Criar o client server-only do FastAPI no Next.js.
-4. Trocar uma superfície por vez para proxy, preservando o contrato público. Checkout já usa esse caminho para intent, pagamento, Pix, finalização, comprador e entrega; a intent é reutilizada por proprietário e hash do carrinho.
-5. Validar leitura, escrita, idempotência, erros e reload direto.
-6. Executar cutover controlado e confirmar ausência de `mongodb`, `getDb` e `ensureIndexes` em `src/app/api`, `src/actions` e módulos usados por essas rotas.
-7. Só então remover `MONGODB_URI`, `MONGODB_DB_NAME`, dependência `mongodb` e `src/lib/mongodb.ts` do frontend. As variáveis Mongo do script de migração devem permanecer apenas no ambiente operacional do backend até o encerramento da migração.
+1. **Homologação Sandbox Mercado Pago** — Pix e cartão (sucesso, recusa,
+   timeout, retry), URL pública de webhook com recibo duplicado, reconciliação
+   após interrupção controlada. Bloqueada por falta de credencial Sandbox no
+   ambiente. NO-GO até haver evidência reproduzível.
+2. **Migração Mongo→PostgreSQL real** — `--dry-run`, execução real com
+   relatório de contagens/inconsistências e segunda execução retornando 409.
+   Bloqueada por falta de origem Mongo com dados.
+3. **Agendamento do worker de reconciliação** no ambiente-alvo — hoje só há o
+   serviço declarado no Compose.
+4. **Smoke E2E no browser** contra a stack integrada (login, catálogo,
+   carrinho, checkout, admin).
+5. **Cartões salvos** — issue própria; permanecem indisponíveis.
