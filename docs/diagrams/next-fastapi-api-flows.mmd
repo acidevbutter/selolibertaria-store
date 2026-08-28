@@ -1,4 +1,4 @@
-%% Next.js is the UI/BFF and authentication boundary.
+%% Next.js is the UI/BFF boundary. FastAPI is the webhook and domain boundary.
 %% FastAPI owns business rules, persistence, integrations and webhooks.
 flowchart LR
     browser["Browser / Storefront"]
@@ -7,7 +7,7 @@ flowchart LR
         ui["Pages, Server Components<br/>and Server Actions"]
         api["Route handlers / BFF<br/>Authenticated proxy"]
         auth["Auth callback + session<br/>HTTP-only cookie"]
-        cron["Cron / admin triggers<br/>reconciliation"]
+        cron["Admin trigger<br/>reconciliation"]
     end
 
     subgraph fastapi["FastAPI — API, domain and integration boundary"]
@@ -55,8 +55,8 @@ flowchart LR
     admin --> workers
 
     commerce --> mp
-    mp -->|"signed webhook"| fastapi
-    cron -->|"reconcile"| commerce
+    mp -->|"signed webhook<br/>direct public FastAPI endpoint"| fastapi
+    cron -->|"manual reconcile"| commerce
     shipping --> melhor
     shipping --> postal
     admin --> cloudinary
@@ -67,8 +67,10 @@ flowchart LR
     commerce --> checkout
     checkout --> ui
 
-    forbidden["Forbidden: MongoDB, SMTP, Brevo<br/>or provider SDK calls in Next"]
+    pending["Pending: OAuth start/state/PKCE still crosses Next<br/>until callback ownership moves to FastAPI"]
+    forbidden["Forbidden: public test e-mail relay, MongoDB, SMTP, Brevo<br/>or provider SDK calls in Next"]
     next -.-> forbidden
+    auth -.-> pending
 
     classDef nextNode fill:#dbeafe,stroke:#2563eb,color:#172554
     classDef apiNode fill:#dcfce7,stroke:#16a34a,color:#14532d

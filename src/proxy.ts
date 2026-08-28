@@ -14,7 +14,6 @@ function isPublicApiPath(pathname: string) {
 		pathname === "/api/auth/register" ||
 		pathname === "/api/auth/forgot-password" ||
 		pathname === "/api/auth/reset-password" ||
-		pathname === "/api/mercado-pago/webhook" ||
 		pathname === "/api/cart" ||
 		pathname === "/api/cart/merge" ||
 		pathname === "/api/auth/oauth/complete" ||
