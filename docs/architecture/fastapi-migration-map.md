@@ -1,6 +1,6 @@
 # Mapa de migração para a API FastAPI
 
-Atualizado em 2026-08-24. Estado verificado no código atual.
+Atualizado em 2026-08-28. Estado verificado no código atual.
 
 ## Regra de destino
 
@@ -31,7 +31,7 @@ Essas rotas ainda são contratos de referência. O proxy do Next.js, autenticaç
 | Checkout | comprador, endereço BR, frete, cupons, draft e finalização idempotente | Parcial; Server Actions usam intents, pagamento, Pix, finalização, comprador e entrega no FastAPI; snapshot/preço e cotação ainda dependem do Next.js |
 | Pedidos | itens, status de pagamento, fulfillment, auditoria, notificações e consulta administrativa | Parcial; CRUD e fulfillment existem, mas falta autorização e integração |
 | Catálogo | produtos, variantes, categorias, leitura pública e administração | Parcial; domínio existe no FastAPI, mas o storefront ainda lê Mongo |
-| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação, finalização e seleção/reconciliação de checkout estão no FastAPI; webhook processado, customer cards, cancelamento, estorno e retry persistido continuam pendentes |
+| Mercado Pago | Orders API, Pix/cartão, customer cards, webhook, reconciliação, cancelamento e estorno | Parcial; criação idempotente, webhook deduplicado, finalização, retry/backoff persistido e worker Compose estão no FastAPI. Faltam customer cards, cancelamento/estorno e homologação Sandbox/agendamento no ambiente-alvo. |
 | Frete | Melhor Envio, cotação, seleção do menor serviço e snapshot | Pendente; hoje no Next.js |
 | Editorial | home, páginas, eventos, projetos, Sarau Safado e mídia | Pendente; permanece no Next.js/Mongo |
 | Promoções | promoções, cupons, elegibilidade, resgate e alertas | Pendente; permanece no Next.js/Mongo |
@@ -55,10 +55,10 @@ Por isso, não é correto remover `MONGODB_URI`, `MONGODB_DB_NAME` ou `src/lib/m
 
 | Rota/módulo | Uso atual | Pode remover agora? | Pré-requisito |
 |---|---|---:|---|
-| `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | validação existe em `POST /payments/mercado-pago/webhook`; faltam idempotência e finalização PostgreSQL |
+| `POST /api/mercado-pago/webhook` | valida assinatura e sincroniza pedido no Mongo | Não | webhook FastAPI valida assinatura, deduplica por evento e finaliza o checkout; falta cutover e homologação Sandbox |
 | `POST /api/admin/orders/[id]/payment` | cancelamento e estorno via Orders API + atualização/auditoria Mongo | Não | operações `cancel/refund` e auditoria no domínio `orders` do FastAPI |
-| `POST /api/admin/mercado-pago/reconcile` | reconciliação manual de pedidos pendentes | Não | worker/serviço de reconciliação no FastAPI e endpoint administrativo autenticado |
-| `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | scheduler/worker FastAPI, lock, retry/backoff e alerta persistido em PostgreSQL |
+| `POST /api/admin/mercado-pago/reconcile` | reconciliação manual de pedidos pendentes | Não | serviço FastAPI existe; falta comprovar autorização administrativa e o cutover da rota |
+| `GET /api/cron/mercado-pago-reconciliation` | job protegido para reconciliação automática | Não | worker Compose do backend existe; manter como contingência até comprovar a execução agendada no ambiente-alvo |
 | `src/actions/checkout-actions.ts` | criação do draft, Pix/cartão, idempotência e customer cards | Não | checkout e integração Mercado Pago completos no FastAPI |
 | `src/actions/mercado-pago-order-actions.ts` | consulta do pedido, finalização, conta e pedido local | Não | serviço de finalização transacional no FastAPI |
 | `src/lib/mercado-pago.ts` | customer cards e assinatura do webhook | Não | customer cards e assinatura movidos para o FastAPI |
