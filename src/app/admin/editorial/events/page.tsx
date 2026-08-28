@@ -71,6 +71,7 @@ export default async function AdminEditorialEventsPage() {
 					action={updateEditorialEventsPageCopyAction}
 					submitLabel="Salvar textos de /events"
 					base={{ published: page.published }}
+					pageTitle="Eventos"
 					sections={[
 						{
 							title: "Abertura",

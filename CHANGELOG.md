@@ -67,6 +67,7 @@
 
 - Backend FastAPI: domínio `catalog` com produtos, variantes e trilha de auditoria normalizados em PostgreSQL.
 
+- DEV-175: preview live de rascunhos editoriais por sessão, fixo ao lado dos blocos no admin, com página pública inteira em desktop/mobile e descarte sem persistência automática.
 - DEV-58: hero da Home pode usar uma composição personalizada ou um livro publicado, reaproveitando capa, título, resumo e CTA do catálogo.
 - DEV-62: dicas acessíveis por popover nos campos editoriais de endereço público, posição, publicação e imagem.
 - DEV-62: destinos de botões e links agora explicam onde levam; controles de imagem de fundo recebem orientação sobre enquadramento, posição, escurecimento e contraste.

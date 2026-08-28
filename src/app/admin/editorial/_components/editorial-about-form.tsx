@@ -47,7 +47,7 @@ export function EditorialAboutForm({
 				<CardTitle>Editar página sobre</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6 pb-28 md:pb-32">
+				<form id="editorial-about-form" action={action} className="space-y-6 pb-28 md:pb-32">
 					<EditorialAccordionSection
 						title="Abertura da página"
 						defaultOpen

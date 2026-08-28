@@ -80,7 +80,7 @@ export function EditorialEventForm({
 				<CardTitle>{event ? "Editar evento" : "Novo evento"}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={formAction} className="space-y-6 pb-28 md:pb-32">
+				<form id="editorial-event-form" action={formAction} className="space-y-6 pb-28 md:pb-32">
 					{event ? <input type="hidden" name="currentSlug" value={event.slug} /> : null}
 
 					<EditorialAccordionSection

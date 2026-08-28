@@ -61,7 +61,7 @@ export function EditorialSarauForm({
 				<CardTitle>Editar página do Sarau Safado</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<form action={action} className="space-y-6 pb-28 md:pb-32">
+				<form id="editorial-sarau-form" action={action} className="space-y-6 pb-28 md:pb-32">
 					<EditorialAccordionSection
 						title="Abertura da página"
 						description="Controla a abertura principal da página pública do Sarau Safado."
