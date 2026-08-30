@@ -1,4 +1,5 @@
-import { getDb } from "@/lib/mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import {
 	AWAITING_ACTION_STATUSES,
 	getDisputeRelatedStatuses,
@@ -218,70 +219,48 @@ export async function getAdminDashboardData({
 	period,
 	sort,
 }: AdminDashboardParams): Promise<AdminDashboardData> {
-	const db = await getDb();
 	const now = new Date();
 	const since = resolveDashboardSince(period, now);
-
-	const purchasePipeline: Record<string, unknown>[] = [
-		{ $match: { purchases: { $exists: true, $ne: [] } } },
-		{ $project: { email: 1, purchases: 1 } },
-		{ $unwind: "$purchases" },
-	];
-
-	const purchaseMatch: Record<string, unknown> = {};
+	const token = (await cookies()).get("session")?.value;
+	const query = since ? `?since=${encodeURIComponent(since.toISOString())}` : "";
+	const response = token
+		? await fetch(`${env.FASTAPI_API_URL}/orders/dashboard${query}`, {
+				headers: { authorization: `Bearer ${token}` },
+				cache: "no-store",
+			})
+		: null;
+	if (!response?.ok) throw new Error("FastAPI dashboard unavailable");
+	const dashboard = (await response.json()) as {
+		users_count: number;
+		purchases: Array<Record<string, unknown>>;
+		webhooks_failed: number;
+		webhooks_pending: number;
+		email_failed: number;
+		email_pending: number;
+		manual_touches: number;
+	};
 	const statusMatch = resolveDashboardStatusMatch(status);
-	if (statusMatch) purchaseMatch["purchases.status"] = { $in: statusMatch };
-	if (since) purchaseMatch["purchases.createdAt"] = { $gte: since };
-	if (Object.keys(purchaseMatch).length > 0) {
-		purchasePipeline.push({ $match: purchaseMatch });
-	}
-
-	purchasePipeline.push({
-		$project: {
-			userEmail: { $ifNull: ["$email", "(unknown)"] },
-			id: { $toString: "$purchases.id" },
-			amountTotal: { $ifNull: ["$purchases.amountTotal", 0] },
-			currency: {
-				$toUpper: {
-					$ifNull: ["$purchases.currency", "USD"],
-				},
-			},
-			status: { $ifNull: ["$purchases.status", "unknown"] },
-			createdAt: "$purchases.createdAt",
-			discountTotal: { $ifNull: ["$purchases.pricing.discountTotal", 0] },
-			couponCode: { $ifNull: ["$purchases.pricing.couponCode", null] },
-			refundedAmount: { $ifNull: ["$purchases.refundedAmount", 0] },
-			fulfillmentStatus: { $ifNull: ["$purchases.fulfillment.status", null] },
-			trackingNumber: { $ifNull: ["$purchases.fulfillment.trackingNumber", null] },
-		},
-	});
-
-	const queryDate = since ? { $gte: since } : undefined;
-	const [usersCount, purchases, webhooksFailed, webhooksPending, emailFailed, emailPending, manualTouches] =
-		await Promise.all([
-			db.collection("users").countDocuments(),
-			db.collection("users").aggregate<PurchaseRecord>(purchasePipeline).toArray(),
-			db.collection("webhooks").countDocuments({
-				status: "failed",
-				...(queryDate ? { receivedAt: queryDate } : {}),
-			}),
-			db.collection("webhooks").countDocuments({
-				status: "pending",
-				...(queryDate ? { receivedAt: queryDate } : {}),
-			}),
-			db.collection("communication").countDocuments({
-				status: "failed",
-				...(queryDate ? { sentAt: queryDate } : {}),
-			}),
-			db.collection("communication").countDocuments({
-				status: "pending",
-				...(queryDate ? { sentAt: queryDate } : {}),
-			}),
-			db.collection("orderAuditLogs").countDocuments({
-				actorRole: { $in: ["admin", "vendor"] },
-				...(queryDate ? { createdAt: queryDate } : {}),
-			}),
-		]);
+	const purchases: PurchaseRecord[] = dashboard.purchases
+		.filter((purchase) => !statusMatch || statusMatch.includes(String(purchase.status)))
+		.map((purchase) => ({
+			userEmail: String(purchase.user_email ?? "(unknown)"),
+			id: String(purchase.id),
+			amountTotal: Number(purchase.amount_total ?? 0),
+			currency: String(purchase.currency ?? "USD"),
+			status: String(purchase.status ?? "unknown"),
+			createdAt: String(purchase.created_at),
+			discountTotal: Number(purchase.discount_total ?? 0),
+			couponCode: typeof purchase.coupon_code === "string" ? purchase.coupon_code : null,
+			refundedAmount: Number(purchase.refunded_amount ?? 0),
+			fulfillmentStatus: typeof purchase.fulfillment_status === "string" ? purchase.fulfillment_status : null,
+			trackingNumber: typeof purchase.tracking_number === "string" ? purchase.tracking_number : null,
+		}));
+	const usersCount = dashboard.users_count;
+	const webhooksFailed = dashboard.webhooks_failed;
+	const webhooksPending = dashboard.webhooks_pending;
+	const emailFailed = dashboard.email_failed;
+	const emailPending = dashboard.email_pending;
+	const manualTouches = dashboard.manual_touches;
 
 	const normalizedPurchases = purchases.map((purchase) => ({
 		...purchase,

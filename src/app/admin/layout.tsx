@@ -8,7 +8,7 @@ import { AdminTopbar } from "@/app/admin/_components/topbar.client";
 import { getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
+import { getSettingsDoc } from "@/lib/settings-store";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +20,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
 	let initialTheme: "light" | "dark" = "light";
 	const t = await getTranslations("AdminShell");
-	try {
-		const db = await getDb();
-		const doc = await db.collection<{ current?: { theme?: "light" | "dark" } }>("settings").findOne({});
-		if (doc?.current?.theme === "dark" || doc?.current?.theme === "light") initialTheme = doc.current.theme;
-	} catch {}
+	const settings = await getSettingsDoc();
+	if (settings?.current?.theme === "dark" || settings?.current?.theme === "light") {
+		initialTheme = settings.current.theme;
+	}
 
 	return (
 		<AdminThemeProvider initialTheme={initialTheme}>

@@ -1,143 +1,88 @@
-import { type JWTPayload, jwtVerify, SignJWT } from "jose";
-import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { env } from "@/env.mjs";
-import { isUserBlocked, type UserRole } from "@/lib/authz";
-import { generateSid } from "@/lib/session-core";
+import type { UserRole } from "@/lib/authz";
 
-if (!env.JWT_SECRET) {
-	throw new Error("JWT_SECRET must be defined");
-}
-
-const key = new TextEncoder().encode(env.JWT_SECRET);
-const SessionDuration = 5 * 60 * 60 * 1000; // 5h
+const SessionDuration = 5 * 60 * 60 * 1000;
 
 export interface UserPayload {
 	id: string;
 	email: string;
-	name?: string;
+	name?: string | null;
 	role?: UserRole;
 }
 
-export interface SessionData extends JWTPayload {
+export interface SessionData {
 	user: UserPayload;
-	expires: number; // epoch ms
+	expires: number;
 }
 
-export async function encrypt(payload: SessionData): Promise<string> {
-	const expSeconds = Math.floor(payload.expires / 1000);
-	return await new SignJWT(payload)
-		.setProtectedHeader({ alg: "HS256" })
-		.setIssuedAt()
-		.setExpirationTime(expSeconds)
-		.sign(key);
-}
-
-export async function decrypt(input: string): Promise<SessionData | null | undefined> {
+async function getRemoteUser(token: string): Promise<UserPayload | null> {
 	try {
-		const r = await jwtVerify(input, key, { algorithms: ["HS256"] });
-		return r.payload as SessionData;
+		const response = await fetch(`${env.FASTAPI_API_URL}/auth/me`, {
+			headers: { authorization: `Bearer ${token}` },
+			cache: "no-store",
+		});
+		if (!response.ok) return null;
+		const user = (await response.json()) as UserPayload;
+		return { id: user.id, email: user.email, name: user.name, role: user.role };
 	} catch {
 		return null;
 	}
 }
 
-export async function auth() {
-	const token = (await cookies()).get("session")?.value;
-	if (!token) return null;
-	const data = await decrypt(token);
-	if (!data || data.expires < Date.now()) {
-		return null;
-	}
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	const existing = await db.collection("sessions").findOne({ jwt: token, userId: data.user.id });
-	if (!existing) {
-		return null;
-	}
-	const user = await db
-		.collection("users")
-		.findOne<{ access?: { blockedAt?: Date | string | null } | null }>(
-			{ _id: new ObjectId(data.user.id) },
-			{ projection: { access: 1 } },
-		);
-	if (isUserBlocked(user)) {
-		await db.collection("sessions").deleteMany({ userId: data.user.id });
-		return null;
-	}
-	return data;
+export async function decrypt(token: string): Promise<SessionData | null> {
+	const user = await getRemoteUser(token);
+	return user ? { user, expires: Date.now() + SessionDuration } : null;
 }
 
-export async function createPersistentSession(user: {
-	id: string;
-	email: string;
-	name?: string;
-	role?: UserRole;
-}) {
-	const expires = Date.now() + SessionDuration;
-	const payload: SessionData = { user, expires };
-	const jwt = await encrypt(payload);
-	const sid = generateSid();
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	await db
-		.collection("sessions")
-		.insertOne({ sid, userId: user.id, jwt, expires, expiresAt: new Date(expires), createdAt: new Date() });
-	(await cookies()).set("session", jwt, {
+export async function auth() {
+	const token = (await cookies()).get("session")?.value;
+	return token ? decrypt(token) : null;
+}
+
+export async function createPersistentSession(user: UserPayload) {
+	const response = await fetch(`${env.FASTAPI_API_URL}/auth/internal/session`, {
+		method: "POST",
+		headers: {
+			"content-type": "application/json",
+			"x-internal-api-key": env.FASTAPI_INTERNAL_API_KEY,
+		},
+		body: JSON.stringify({ user_id: user.id }),
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Não foi possível criar a sessão");
+	const session = (await response.json()) as { access_token: string; expires_at: string };
+	const expires = new Date(session.expires_at).getTime();
+	(await cookies()).set("session", session.access_token, {
 		expires: new Date(expires),
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
 		sameSite: "lax",
 		path: "/",
 	});
-	return { sid, jwt, expires };
+	return { sid: null, jwt: session.access_token, expires };
 }
 
-export async function revokeSessionByJwt(jwt: string) {
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	await db.collection("sessions").deleteOne({ jwt });
+export async function revokeSessionByJwt(token: string) {
+	await fetch(`${env.FASTAPI_API_URL}/auth/logout`, {
+		method: "POST",
+		headers: { authorization: `Bearer ${token}` },
+		cache: "no-store",
+	});
 }
 
 export async function revokeAllUserSessions(userId: string) {
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	await db.collection("sessions").deleteMany({ userId });
+	await fetch(`${env.FASTAPI_API_URL}/auth/internal/users/${encodeURIComponent(userId)}/revoke-sessions`, {
+		method: "POST",
+		headers: { "x-internal-api-key": env.FASTAPI_INTERNAL_API_KEY },
+		cache: "no-store",
+	});
 }
 
-export async function updateSession(_request: NextRequest) {
-	const jwt = (await cookies()).get("session")?.value;
-	if (!jwt) return NextResponse.next();
-	const data = await decrypt(jwt);
-	if (!data) return NextResponse.next();
-	const { getDb } = await import("@/lib/mongodb");
-	const db = await getDb();
-	const existing = await db.collection("sessions").findOne({ jwt, userId: data.user.id });
-	if (!existing) {
-		(await cookies()).delete("session");
-		return NextResponse.next();
-	}
-	if (data.expires - Date.now() < 60 * 60 * 1000) {
-		data.expires = Date.now() + SessionDuration;
-		const newJwt = await encrypt(data);
-		await db
-			.collection("sessions")
-			.updateOne(
-				{ jwt },
-				{ $set: { jwt: newJwt, expires: data.expires, expiresAt: new Date(data.expires) } },
-			);
-		const res = NextResponse.next();
-		res.cookies.set({
-			name: "session",
-			value: newJwt,
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			expires: new Date(data.expires),
-		});
-		return res;
-	}
+export async function updateSession(_request: Request) {
+	const token = (await cookies()).get("session")?.value;
+	if (token && !(await getRemoteUser(token))) (await cookies()).delete("session");
 	return NextResponse.next();
 }
 

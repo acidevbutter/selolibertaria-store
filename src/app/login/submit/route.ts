@@ -26,5 +26,15 @@ export async function POST(req: Request) {
 		return buildLoginRedirect(req, query);
 	}
 
-	return NextResponse.redirect(new URL(isBackofficeRole(result.role) ? "/admin" : "/", req.url), 303);
+	const response = NextResponse.redirect(
+		new URL(isBackofficeRole(result.role) ? "/admin" : "/", req.url),
+		303,
+	);
+	response.cookies.set("session", result.token, {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax",
+		path: "/",
+	});
+	return response;
 }

@@ -6,7 +6,6 @@ import {
 	type OAuthProviderDefinition,
 	type OAuthProviderId,
 } from "@/lib/oauth/catalog";
-import { decryptStoredSecret, maskStoredSecret } from "@/lib/oauth/secrets";
 import type { OAuthProviderSettings, SettingsDoc } from "@/lib/settings";
 import { getSettingsDoc } from "@/lib/settings-store";
 
@@ -21,14 +20,12 @@ export type ResolvedOAuthProviderConfig = OAuthProviderDefinition & {
 function normalizeProviderSettings(
 	value: OAuthProviderSettings | undefined,
 ): Required<Pick<OAuthProviderSettings, "enabled">> & OAuthProviderSettings {
-	const clientId = decryptStoredSecret(value?.clientIdEncrypted ?? null) ?? value?.clientId?.trim() ?? "";
+	const clientId = value?.clientId?.trim() ?? "";
 	return {
 		enabled: value?.enabled === true,
 		clientId,
-		clientIdEncrypted: value?.clientIdEncrypted ?? null,
-		clientIdMasked: value?.clientIdMasked ?? maskStoredSecret(value?.clientIdEncrypted ?? null),
-		clientSecretEncrypted: value?.clientSecretEncrypted ?? null,
-		clientSecretMasked: value?.clientSecretMasked ?? maskStoredSecret(value?.clientSecretEncrypted ?? null),
+		clientIdMasked: value?.clientIdMasked ?? null,
+		clientSecretMasked: value?.clientSecretMasked ?? null,
 		lastUpdatedAt: value?.lastUpdatedAt ?? null,
 		lastUpdatedBy: value?.lastUpdatedBy ?? null,
 	};
@@ -40,7 +37,7 @@ export async function getResolvedOAuthProviderConfig(
 	const settings = await getSettingsDoc();
 	const raw = settings?.current?.oauthProviders?.[providerId];
 	const normalized = normalizeProviderSettings(raw);
-	const clientSecret = decryptStoredSecret(normalized.clientSecretEncrypted);
+	const clientSecret = normalized.clientSecretMasked ? "configured" : null;
 	return {
 		...OAUTH_PROVIDER_DEFINITIONS[providerId],
 		enabled: normalized.enabled,

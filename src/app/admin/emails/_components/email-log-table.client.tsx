@@ -44,8 +44,6 @@ export type EmailLogTableItem = {
 	textBody: string | null;
 };
 
-type RetryVia = "api" | "smtp";
-
 function formatJson(value: unknown) {
 	try {
 		return JSON.stringify(value, null, 2);
@@ -55,9 +53,7 @@ function formatJson(value: unknown) {
 }
 
 function providerLabel(provider: string | null) {
-	if (provider === "brevo") return "API do Brevo";
-	if (provider === "smtp") return "SMTP";
-	return "-";
+	return provider ? "Butter Relay" : "-";
 }
 
 export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; limit: number }) {
@@ -65,13 +61,12 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 	const [selected, setSelected] = useState<EmailLogTableItem | null>(null);
 	const [retryingKey, setRetryingKey] = useState<string | null>(null);
 
-	async function retryEmail(item: EmailLogTableItem, via: RetryVia) {
-		setRetryingKey(`${item.id}:${via}`);
+	async function retryEmail(item: EmailLogTableItem) {
+		setRetryingKey(item.id);
 		try {
 			const res = await fetch(`/api/admin/emails/${item.id}/retry`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ via }),
 			});
 			const payload = (await res.json().catch(() => null)) as {
 				error?: string;
@@ -85,13 +80,13 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 
 			toast.success("E-mail reenviado", {
 				description: item.email
-					? `Uma nova tentativa pelo canal ${via === "api" ? "API" : "SMTP"} foi enviada para ${item.email}.`
-					: `Uma nova tentativa pelo canal ${via === "api" ? "API" : "SMTP"} foi enviada com sucesso.`,
+					? `Uma nova tentativa pelo Butter Relay foi enviada para ${item.email}.`
+					: "Uma nova tentativa pelo Butter Relay foi enviada com sucesso.",
 			});
 			router.refresh();
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Não foi possível reenviar o e-mail.";
-			toast.error(`Falha no reenvio pelo canal ${via === "api" ? "API" : "SMTP"}`, { description: message });
+			toast.error("Falha no reenvio pelo Butter Relay", { description: message });
 		} finally {
 			setRetryingKey(null);
 		}
@@ -188,18 +183,9 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 											size="sm"
 											variant="secondary"
 											disabled={retryingKey !== null || !canRetry(selected)}
-											onClick={() => void retryEmail(selected, "api")}
+											onClick={() => void retryEmail(selected)}
 										>
-											{retryingKey === `${selected.id}:api` ? "Reenviando API..." : "Reenviar via API"}
-										</Button>
-										<Button
-											type="button"
-											size="sm"
-											variant="outline"
-											disabled={retryingKey !== null || !canRetry(selected)}
-											onClick={() => void retryEmail(selected, "smtp")}
-										>
-											{retryingKey === `${selected.id}:smtp` ? "Reenviando SMTP..." : "Reenviar via SMTP"}
+											{retryingKey === selected.id ? "Reenviando..." : "Reenviar pelo Butter Relay"}
 										</Button>
 									</div>
 									<div>

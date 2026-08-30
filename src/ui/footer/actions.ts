@@ -9,11 +9,7 @@ export async function signForNewsletter(formData: FormData) {
 		return null;
 	}
 
-	if (!env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT) {
-		return null;
-	}
-
-	const result = await fetch(env.NEXT_PUBLIC_NEWSLETTER_ENDPOINT, {
+	const result = await fetch(`${env.FASTAPI_API_URL}/communications/newsletter`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -21,6 +17,6 @@ export async function signForNewsletter(formData: FormData) {
 		body: JSON.stringify({ email }),
 	});
 
-	const json = await result.json();
-	return json as { status: number };
+	if (!result.ok) return null;
+	return { status: result.status };
 }

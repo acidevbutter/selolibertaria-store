@@ -1,6 +1,7 @@
 import "server-only";
 
-import { getDb } from "@/lib/mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 
 export type OrderAuditAction =
 	| "order_fulfillment_updated"
@@ -18,17 +19,40 @@ export interface OrderAuditEntry {
 	createdAt: Date;
 }
 
-export async function recordOrderAuditEntry(entry: OrderAuditEntry) {
-	const db = await getDb();
-	await db.collection<OrderAuditEntry>("orderAuditLogs").insertOne(entry);
+async function authorization() {
+	const token = (await cookies()).get("session")?.value;
+	if (!token) throw new Error("Autenticação obrigatória");
+	return { authorization: `Bearer ${token}` };
 }
 
-export async function listOrderAuditEntries(orderId: string, limit = 20) {
-	const db = await getDb();
-	return await db
-		.collection<OrderAuditEntry>("orderAuditLogs")
-		.find({ orderId })
-		.sort({ createdAt: -1 })
-		.limit(limit)
-		.toArray();
+export async function recordOrderAuditEntry(entry: OrderAuditEntry) {
+	const response = await fetch(`${env.FASTAPI_API_URL}/orders/${encodeURIComponent(entry.orderId)}/audit`, {
+		method: "POST",
+		headers: { ...(await authorization()), "content-type": "application/json" },
+		body: JSON.stringify({ action: entry.action, details: entry.details }),
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Não foi possível registrar a auditoria do pedido");
+}
+
+export async function listOrderAuditEntries(orderId: string, limit = 20): Promise<OrderAuditEntry[]> {
+	const target = new URL(`${env.FASTAPI_API_URL}/orders/${encodeURIComponent(orderId)}/audit`);
+	target.searchParams.set("limit", String(limit));
+	const response = await fetch(target, { headers: await authorization(), cache: "no-store" });
+	if (!response.ok) return [];
+	const items = (await response.json()) as Array<{
+		order_id: string;
+		action: OrderAuditAction;
+		actor: string | null;
+		payload: Record<string, unknown> | null;
+		created_at: string;
+	}>;
+	return items.map((item) => ({
+		orderId: item.order_id,
+		action: item.action,
+		actorId: item.actor ?? "system",
+		actorRole: "system",
+		details: item.payload,
+		createdAt: new Date(item.created_at),
+	}));
 }

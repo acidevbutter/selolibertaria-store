@@ -1,16 +1,10 @@
-import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { matchLocale } from "@/i18n/config";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
-type ProxySessionPayload = {
-	expires?: number;
-	user?: {
-		role?: string | null;
-	};
-};
+type ProxySessionPayload = { role?: string | null };
 
 function isPublicApiPath(pathname: string) {
 	return (
@@ -20,7 +14,6 @@ function isPublicApiPath(pathname: string) {
 		pathname === "/api/auth/register" ||
 		pathname === "/api/auth/forgot-password" ||
 		pathname === "/api/auth/reset-password" ||
-		pathname === "/api/mercado-pago/webhook" ||
 		pathname === "/api/cart" ||
 		pathname === "/api/cart/merge" ||
 		pathname === "/api/auth/oauth/complete" ||
@@ -29,18 +22,15 @@ function isPublicApiPath(pathname: string) {
 	);
 }
 
-function getJwtSecret() {
-	const secret = process.env.JWT_SECRET?.trim();
-	if (!secret) {
-		throw new Error("JWT_SECRET must be defined");
-	}
-	return new TextEncoder().encode(secret);
-}
-
 async function decryptProxySession(token: string): Promise<ProxySessionPayload | null> {
 	try {
-		const result = await jwtVerify(token, getJwtSecret(), { algorithms: ["HS256"] });
-		return result.payload as ProxySessionPayload;
+		const response = await fetch(`${process.env.FASTAPI_API_URL || "http://localhost:8000"}/auth/me`, {
+			headers: { Authorization: `Bearer ${token}` },
+			cache: "no-store",
+		});
+		if (!response.ok) return null;
+		const user = (await response.json()) as { role?: string };
+		return { role: user.role };
 	} catch {
 		return null;
 	}
@@ -48,21 +38,9 @@ async function decryptProxySession(token: string): Promise<ProxySessionPayload |
 
 async function verifyAuth(request: NextRequest) {
 	const auth = request.headers.get("authorization") || request.headers.get("Authorization");
-	if (auth?.startsWith("Bearer ")) {
-		const token = auth.slice(7).trim();
-		try {
-			await jwtVerify(token, getJwtSecret(), { algorithms: ["HS256"] });
-			return { ok: true as const, clearSession: false as const };
-		} catch {
-			/* ignore */
-		}
-	}
-	const session = request.cookies.get("session")?.value;
-	if (session) {
-		const data = await decryptProxySession(session);
-		if (data?.expires && data.expires > Date.now()) {
-			return { ok: true as const, clearSession: false as const };
-		}
+	const token = auth?.replace(/^Bearer\s+/i, "") || request.cookies.get("session")?.value;
+	if (token) {
+		if (await decryptProxySession(token)) return { ok: true as const, clearSession: false as const };
 		return { ok: false as const, clearSession: true as const };
 	}
 	return { ok: false as const, clearSession: false as const };
@@ -105,8 +83,7 @@ export async function proxy(request: NextRequest) {
 	if (isMaintenanceModeEnabled() && !isMaintenanceAllowedPath(pathname)) {
 		const session = request.cookies.get("session")?.value;
 		const data = session ? await decryptProxySession(session) : null;
-		const isAuthenticatedAdmin =
-			!!data?.expires && data.expires > Date.now() && normalizeUserRole(data.user?.role) === "admin";
+		const isAuthenticatedAdmin = normalizeUserRole(data?.role) === "admin";
 		if (!isAuthenticatedAdmin) {
 			if (pathname.startsWith("/api")) {
 				return NextResponse.json({ error: "Site em manutenção", code: "MAINTENANCE_MODE" }, { status: 503 });
@@ -141,12 +118,12 @@ export async function proxy(request: NextRequest) {
 		const session = request.cookies.get("session")?.value;
 		if (!session) return NextResponse.redirect(new URL("/login", request.url));
 		const data = await decryptProxySession(session);
-		if (!data || !data.expires || data.expires <= Date.now()) {
+		if (!data) {
 			const response = NextResponse.redirect(new URL("/login", request.url));
 			response.cookies.delete("session");
 			return response;
 		}
-		if (!isBackofficeRole(data.user?.role)) {
+		if (!isBackofficeRole(data.role)) {
 			return NextResponse.redirect(new URL("/forbidden", request.url));
 		}
 		return NextResponse.next();

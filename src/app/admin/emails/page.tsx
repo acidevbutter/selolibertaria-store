@@ -1,12 +1,10 @@
 import { Mail } from "lucide-react";
-import type { ObjectId } from "mongodb";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmailLogTable } from "@/app/admin/emails/_components/email-log-table.client";
+import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
-import { getDb } from "@/lib/mongodb";
-import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -18,38 +16,38 @@ import { Input } from "@/ui/shadcn/input";
 
 export const dynamic = "force-dynamic";
 
-interface CommunicationLogDoc {
-	_id: ObjectId;
-	email?: string | null;
-	subject?: string | null;
-	status?: string | null;
-	kind?: string | null;
-	source?: string | null;
-	userId?: string | null;
-	purchaseId?: string | null;
-	orderStatus?: string | null;
-	template?: string | null;
-	messageId?: string | null;
-	provider?: string | null;
-	attempts?: Array<unknown> | null;
-	error?: string | null;
-	emailBody?: string | null;
-	textBody?: string | null;
-	sentAt?: Date | string | null;
-	updatedAt?: Date | string | null;
-	recipients?: {
-		to?: string[];
-		cc?: string[];
-		bcc?: string[];
-	} | null;
-}
-
 type SearchParams = {
 	kind?: string | string[];
 	limit?: string | string[];
 	q?: string | string[];
 	skip?: string | string[];
 	status?: string | string[];
+};
+
+type CommunicationPageResponse = {
+	items: Array<{
+		id: string;
+		recipient: string;
+		subject: string | null;
+		text_body: string | null;
+		html_body: string | null;
+		template_key: string;
+		kind: string;
+		source: string | null;
+		user_id: string | null;
+		order_id: string | null;
+		status: string;
+		provider: string;
+		provider_message_id: string | null;
+		error: string | null;
+		attempts: Array<unknown> | null;
+		created_at: string;
+		sent_at: string | null;
+	}>;
+	total: number;
+	sent_count: number;
+	failed_count: number;
+	pending_count: number;
 };
 
 function asString(value: string | string[] | undefined) {
@@ -64,46 +62,6 @@ function toDateString(value: Date | string | null | undefined, locale: string) {
 		dateStyle: "short",
 		timeStyle: "medium",
 	}).format(date);
-}
-
-function escapeRegex(value: string) {
-	return value.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function buildQuery({ status, kind, q }: { status?: string; kind?: string; q?: string }) {
-	const filters: Array<Record<string, unknown>> = [];
-
-	if (status && status !== "all") filters.push({ status });
-
-	if (kind && kind !== "all") {
-		if (kind === "unknown") {
-			filters.push({
-				$or: [{ kind: { $exists: false } }, { kind: null }, { kind: "" }],
-			});
-		} else {
-			filters.push({ kind });
-		}
-	}
-
-	if (q) {
-		const regex = new RegExp(escapeRegex(q), "i");
-		filters.push({
-			$or: [
-				{ email: regex },
-				{ subject: regex },
-				{ messageId: regex },
-				{ purchaseId: regex },
-				{ userId: regex },
-				{ orderStatus: regex },
-				{ source: regex },
-				{ template: regex },
-			],
-		});
-	}
-
-	if (filters.length === 0) return {};
-	if (filters.length === 1) return filters[0] ?? {};
-	return { $and: filters };
 }
 
 function formatKindLabel(kind?: string | null) {
@@ -163,7 +121,7 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
-	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
+	const locale = DEFAULT_LOCALE;
 
 	const resolved = (await searchParams) || {};
 	const status = (asString(resolved.status) || "all").toLowerCase();
@@ -172,18 +130,22 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 	const limit = Math.min(Math.max(Number(asString(resolved.limit) || "50"), 1), 200);
 	const skip = Math.max(Number(asString(resolved.skip) || "0"), 0);
 
-	const db = await getDb();
-	const summaryQuery = buildQuery({ kind, q });
-	const listQuery = buildQuery({ status, kind, q });
-
-	const communication = db.collection<CommunicationLogDoc>("communication");
-	const [items, totalMatching, sentCount, failedCount, pendingCount] = await Promise.all([
-		communication.find(listQuery).sort({ sentAt: -1 }).skip(skip).limit(limit).toArray(),
-		communication.countDocuments(summaryQuery),
-		communication.countDocuments(buildQuery({ status: "sent", kind, q })),
-		communication.countDocuments(buildQuery({ status: "failed", kind, q })),
-		communication.countDocuments(buildQuery({ status: "pending", kind, q })),
-	]);
+	const page = Math.floor(skip / limit) + 1;
+	const queryParams = new URLSearchParams({ page: String(page), page_size: String(limit) });
+	if (status !== "all") queryParams.set("status", status);
+	if (kind !== "all" && kind !== "unknown") queryParams.set("kind", kind);
+	if (q) queryParams.set("q", q);
+	const response = await fetch(`${env.FASTAPI_API_URL}/communications?${queryParams}`, {
+		headers: { "x-internal-api-key": env.FASTAPI_INTERNAL_API_KEY },
+		cache: "no-store",
+	});
+	if (!response.ok) throw new Error("Não foi possível carregar os registros de e-mail.");
+	const communicationPage = (await response.json()) as CommunicationPageResponse;
+	const items = communicationPage.items;
+	const totalMatching = communicationPage.total;
+	const sentCount = communicationPage.sent_count;
+	const failedCount = communicationPage.failed_count;
+	const pendingCount = communicationPage.pending_count;
 
 	const previousHref =
 		skip > 0 ? buildPageHref({ status, kind, q, limit, skip: Math.max(skip - limit, 0) }) : null;
@@ -192,25 +154,25 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 			? buildPageHref({ status, kind, q, limit, skip: skip + limit })
 			: null;
 	const tableItems = items.map((item) => ({
-		id: String(item._id),
-		sentAtLabel: toDateString(item.sentAt, locale),
+		id: item.id,
+		sentAtLabel: toDateString(item.sent_at || item.created_at, locale),
 		status: item.status || "unknown",
 		kindLabel: formatKindLabel(item.kind),
-		email: item.email || "-",
+		email: item.recipient || "-",
 		subject: item.subject || "Assunto não informado",
-		previewBody: summarizeBody(item.emailBody),
-		purchaseId: item.purchaseId || null,
-		userId: item.userId || null,
-		orderStatus: item.orderStatus || null,
+		previewBody: summarizeBody(item.html_body || item.text_body),
+		purchaseId: item.order_id || null,
+		userId: item.user_id || null,
+		orderStatus: null,
 		source: item.source || null,
 		error: item.error || null,
-		template: item.template || null,
-		messageId: item.messageId || null,
+		template: item.template_key || null,
+		messageId: item.provider_message_id || null,
 		provider: item.provider || null,
 		attempts: item.attempts || null,
-		recipients: item.recipients || null,
-		emailBody: item.emailBody || null,
-		textBody: item.textBody || null,
+		recipients: { to: [item.recipient] },
+		emailBody: item.html_body || null,
+		textBody: item.text_body || null,
 	}));
 
 	return (

@@ -5,7 +5,7 @@ const requireCapabilityMock = vi.fn();
 const getDbMock = vi.fn();
 const getEditorialRecordForAdminMock = vi.fn();
 const updateOneMock = vi.fn();
-const uploadImageFileToCloudinaryMock = vi.fn();
+const uploadImageFileToFastAPIMock = vi.fn();
 const redirectMock = vi.fn((path: string) => {
 	throw new Error(`NEXT_REDIRECT:${path}`);
 });
@@ -18,12 +18,12 @@ vi.mock("@/lib/api-auth", () => ({
 	requireCapability: () => requireCapabilityMock(),
 }));
 
-vi.mock("@/lib/cloudinary-upload", () => ({
-	uploadImageFileToCloudinary: (file: File) => uploadImageFileToCloudinaryMock(file),
+vi.mock("@/lib/media-upload", () => ({
+	uploadImageFileToFastAPI: (file: File) => uploadImageFileToFastAPIMock(file),
 }));
 
-vi.mock("@/lib/mongodb", () => ({
-	getDb: () => getDbMock(),
+vi.mock("@/lib/editorial-api-store", () => ({
+	getEditorialApiStore: () => getDbMock(),
 }));
 
 vi.mock("@/lib/editorial-content-store", () => ({
@@ -114,7 +114,7 @@ describe("editorial item image persistence", () => {
 				updateOne: updateOneMock,
 			}),
 		});
-		uploadImageFileToCloudinaryMock.mockReset();
+		uploadImageFileToFastAPIMock.mockReset();
 		redirectMock.mockClear();
 		revalidatePathMock.mockClear();
 	});
@@ -126,7 +126,7 @@ describe("editorial item image persistence", () => {
 			updateEditorialEventAction(actionState, buildEventFormData({ title: "Sarau revisado" })),
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
-		expect(uploadImageFileToCloudinaryMock).not.toHaveBeenCalled();
+		expect(uploadImageFileToFastAPIMock).not.toHaveBeenCalled();
 		const update = updateOneMock.mock.calls[0]?.[1] as {
 			$set: { image: unknown; description: string | null };
 		};
@@ -169,7 +169,7 @@ describe("editorial item image persistence", () => {
 
 	it("uploads a confirmed file on save and persists the returned public URL", async () => {
 		const uploadedFile = new File(["nova-imagem"], "evento-novo.jpg", { type: "image/jpeg" });
-		uploadImageFileToCloudinaryMock.mockResolvedValue({
+		uploadImageFileToFastAPIMock.mockResolvedValue({
 			secure_url: "https://res.cloudinary.com/selo/evento-novo.jpg",
 		});
 		const { updateEditorialEventAction } = await import("./actions");
@@ -178,7 +178,7 @@ describe("editorial item image persistence", () => {
 			updateEditorialEventAction(actionState, buildEventFormData({ imageSrcFile: uploadedFile })),
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
-		expect(uploadImageFileToCloudinaryMock).toHaveBeenCalledWith(uploadedFile);
+		expect(uploadImageFileToFastAPIMock).toHaveBeenCalledWith(uploadedFile);
 		const update = updateOneMock.mock.calls[0]?.[1] as { $set: { image: unknown } };
 		expect(update.$set.image).toEqual({
 			src: "https://res.cloudinary.com/selo/evento-novo.jpg",
@@ -187,7 +187,7 @@ describe("editorial item image persistence", () => {
 		});
 	});
 
-	it("rejects images above the editorial upload limit before calling Cloudinary", async () => {
+	it("rejects images above the editorial upload limit before calling the media API", async () => {
 		const oversizedFile = new File([new Uint8Array(ADMIN_IMAGE_UPLOAD_MAX_BYTES + 1)], "evento-grande.jpg", {
 			type: "image/jpeg",
 		});
@@ -204,7 +204,7 @@ describe("editorial item image persistence", () => {
 			fieldErrors: {},
 		});
 
-		expect(uploadImageFileToCloudinaryMock).not.toHaveBeenCalled();
+		expect(uploadImageFileToFastAPIMock).not.toHaveBeenCalled();
 		expect(updateOneMock).not.toHaveBeenCalled();
 	});
 

@@ -1,6 +1,7 @@
+import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
+import { env } from "@/env.mjs";
 import { requireAdmin } from "@/lib/api-auth";
-import { getDb } from "@/lib/mongodb";
 
 export async function GET(req: NextRequest) {
 	const auth = await requireAdmin();
@@ -8,11 +9,14 @@ export async function GET(req: NextRequest) {
 	const url = new URL(req.url);
 	const limit = Math.min(Number(url.searchParams.get("limit") || "50"), 200);
 	const skip = Math.max(Number(url.searchParams.get("skip") || "0"), 0);
-	const db = await getDb();
-	const col = db.collection("webhooks");
-	const items = await col.find().sort({ receivedAt: -1 }).skip(skip).limit(limit).toArray();
-	return new Response(JSON.stringify({ items }), {
-		status: 200,
+	const status = url.searchParams.get("status");
+	const token = (await cookies()).get("session")?.value;
+	const response = await fetch(
+		`${env.FASTAPI_API_URL}/webhooks?page=${Math.floor(skip / limit) + 1}&page_size=${limit}${status ? `&status=${encodeURIComponent(status)}` : ""}`,
+		{ headers: { authorization: token ? `Bearer ${token}` : "" }, cache: "no-store" },
+	);
+	return new Response(await response.text(), {
+		status: response.status,
 		headers: { "Content-Type": "application/json" },
 	});
 }

@@ -3,7 +3,7 @@ import { createInternalOrderId, matchesOrderIdentifier } from "@/lib/order-ident
 
 describe("createInternalOrderId", () => {
 	it("generates an ord_ prefixed identifier", () => {
-		expect(createInternalOrderId()).toMatch(/^ord_[a-f0-9]{24}$/);
+		expect(createInternalOrderId()).toMatch(/^ord_[a-f0-9]{32}$/);
 	});
 });
 

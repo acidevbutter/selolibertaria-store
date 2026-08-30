@@ -21,7 +21,7 @@ export async function updateSession(request: Request) {
 	return mod.updateSession(request);
 }
 
-// Login Server Action authenticates against MongoDB
+// Login Server Action authenticates against FastAPI
 export async function login(_state: unknown, formData: FormData): Promise<{ error?: string } | undefined> {
 	"use server";
 	const emailRaw = formData.get("email");

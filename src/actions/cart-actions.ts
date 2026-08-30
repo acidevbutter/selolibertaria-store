@@ -1,341 +1,179 @@
 "use server";
 
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
-import {
-	clearCartId,
-	getCartCookieItems,
-	getCartCouponCode,
-	getCartId,
-	persistCartSnapshot,
-	setCartId,
-} from "@/lib/cart-cookies";
-import { buildPricedCartPayload } from "@/lib/cart-pricing";
-import { commerce } from "@/lib/commerce";
+import { clearCartId, getCartCookieItems, getCartCouponCode, getCartId, setCartId } from "@/lib/cart-cookies";
 import type { Cart } from "@/lib/commerce-types";
-import { getDb } from "@/lib/mongodb";
-import { normalizeCouponCode } from "@/lib/promotions";
 
-interface MinimalItem {
-	productId: string;
-	variantId: string;
+interface FastApiCartItem {
+	product_id: string;
+	variant_id: string;
+	product_name: string;
+	variant_label: string | null;
+	unit_amount: number;
+	currency: string;
 	quantity: number;
 }
 
-interface StoredUserCart {
-	items: MinimalItem[];
-	couponCode?: string | null;
-	lastMergedGuestCartId?: string | null;
+interface FastApiCart {
+	id: string;
+	coupon_code: string | null;
+	items: FastApiCartItem[];
 }
 
-type SelolibertariaAuthContext = { kind: "guest" } | { kind: "blocked" } | { kind: "buyer"; userId: string };
+type CartAuth = { kind: "guest" } | { kind: "blocked" } | { kind: "buyer"; token: string };
 
-async function getSelolibertariaAuthContext(): Promise<SelolibertariaAuthContext> {
+function normalizeCouponCode(value: string) {
+	return value.trim().toUpperCase();
+}
+
+function isCartId(value: string | null): value is string {
+	return Boolean(
+		value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value),
+	);
+}
+
+async function getCartAuth(): Promise<CartAuth> {
 	const auth = await requireAuth();
 	if ("error" in auth) return { kind: "guest" };
 	if (!canBuyOnSelolibertaria(auth.session.role)) return { kind: "blocked" };
-	return { kind: "buyer", userId: auth.session.sub as string };
+	const token = (await cookies()).get("session")?.value;
+	return token ? { kind: "buyer", token } : { kind: "guest" };
 }
 
-function toMinimalItems(items: { productId: string; variantId: string; quantity: number }[]): MinimalItem[] {
-	const map = new Map<string, MinimalItem>();
-	for (const item of items) {
-		if (!item) continue;
-		const { productId, variantId } = item;
-		const quantity = Number.isFinite(item.quantity)
-			? item.quantity
-			: Number.parseInt(String(item.quantity), 10);
-		if (!productId || !variantId || !Number.isFinite(quantity) || quantity <= 0) continue;
-		const key = variantId;
-		const existing = map.get(key);
-		if (existing) existing.quantity += quantity;
-		else map.set(key, { productId, variantId, quantity });
+async function api<T>(path: string, options: RequestInit = {}, token?: string): Promise<T | null> {
+	const headers = new Headers(options.headers);
+	if (options.body) headers.set("content-type", "application/json");
+	if (token) headers.set("authorization", `Bearer ${token}`);
+	const response = await fetch(`${env.FASTAPI_API_URL}${path}`, { ...options, headers, cache: "no-store" });
+	if (response.status === 404 || response.status === 204) return null;
+	if (!response.ok) {
+		const body = (await response.json().catch(() => null)) as { detail?: string } | null;
+		throw new Error(body?.detail || "Carrinho indisponível");
 	}
-	return Array.from(map.values());
+	return (await response.json()) as T;
 }
 
-async function buildCartFromMinimalItems(args: {
-	cartId: string;
-	items: MinimalItem[];
-	couponCode?: string | null;
-	userId?: string | null;
-}): Promise<Cart | null> {
-	if (args.items.length === 0) return null;
-	const { cart } = await buildPricedCartPayload({
-		cartId: args.cartId,
-		minimalItems: args.items,
-		couponCode: args.couponCode,
-		userId: args.userId,
-	});
-	return cart;
-}
-
-function upsertMinimalItem(
-	items: MinimalItem[],
-	nextItem: { productId: string; variantId: string },
-	quantityDelta: number,
-): MinimalItem[] {
-	const updated = [...items];
-	const existing = updated.find((item) => item.variantId === nextItem.variantId);
-
-	if (existing) {
-		existing.quantity += quantityDelta;
-		if (existing.quantity <= 0) {
-			updated.splice(updated.indexOf(existing), 1);
-		}
-		return updated;
-	}
-
-	if (quantityDelta <= 0) {
-		return updated;
-	}
-
-	updated.push({
-		productId: nextItem.productId,
-		variantId: nextItem.variantId,
-		quantity: quantityDelta,
-	});
-
-	return updated;
-}
-
-async function getGuestSnapshotState() {
-	const [cartId, cookieItems, couponCode] = await Promise.all([
-		getCartId(),
-		getCartCookieItems(),
-		getCartCouponCode(),
-	]);
-
-	let items = toMinimalItems(cookieItems ?? []);
-
-	if (items.length === 0 && cartId) {
-		try {
-			const cart = commerce.cart.get({ cartId });
-			if (cart?.items.length) {
-				items = toMinimalItems(cart.items);
-				await persistCartSnapshot({ ...cart, couponCode });
-			}
-		} catch {
-			// Fall back to the cookie snapshot only.
-		}
-	}
-
+function toCart(cart: FastApiCart): Cart | null {
+	if (!cart.items.length) return null;
+	const subtotal = cart.items.reduce((sum, item) => sum + item.unit_amount * item.quantity, 0);
 	return {
-		cartId,
-		couponCode,
-		items,
+		id: cart.id,
+		items: cart.items.map((item) => ({
+			id: item.variant_id,
+			productId: item.product_id,
+			variantId: item.variant_id,
+			quantity: item.quantity,
+			price: item.unit_amount,
+			product: { id: item.product_id, name: item.product_name, images: [] },
+		})),
+		total: subtotal,
+		subtotal,
+		discountTotal: 0,
+		currency: cart.items[0]?.currency.toUpperCase() || "BRL",
+		couponCode: cart.coupon_code,
+		couponError: null,
+		appliedPromotions: [],
 	};
 }
 
-async function persistGuestSnapshot(args: {
-	cartId: string | null;
-	items: MinimalItem[];
-	couponCode?: string | null;
-}): Promise<Cart | null> {
-	if (args.items.length === 0) {
+async function persistGuest(cart: FastApiCart): Promise<Cart | null> {
+	const result = toCart(cart);
+	if (!result) {
 		await clearCartId();
 		return null;
 	}
+	await setCartId(
+		cart.id,
+		result.items.map((item) => ({
+			productId: item.productId,
+			variantId: item.variantId,
+			quantity: item.quantity,
+		})),
+		cart.coupon_code,
+	);
+	return result;
+}
 
-	const snapshotId = args.cartId || `guest_${Math.random().toString(36).slice(2)}`;
-	await setCartId(snapshotId, args.items, args.couponCode ?? null);
-	return buildCartFromMinimalItems({
-		cartId: snapshotId,
-		items: args.items,
-		couponCode: args.couponCode ?? null,
-	});
+async function createGuestFromCookie(): Promise<FastApiCart> {
+	const [items, couponCode] = await Promise.all([getCartCookieItems(), getCartCouponCode()]);
+	let cart = await api<FastApiCart>("/carts/guest", { method: "POST" });
+	if (!cart) throw new Error("Não foi possível criar o carrinho");
+	for (const item of items ?? []) {
+		cart = await api<FastApiCart>(`/carts/guest/${cart.id}/items`, {
+			method: "POST",
+			body: JSON.stringify({ variant_id: item.variantId, quantity: item.quantity }),
+		});
+		if (!cart) throw new Error("Não foi possível recuperar o carrinho");
+	}
+	if (couponCode) {
+		cart = await api<FastApiCart>(`/carts/guest/${cart.id}/coupon`, {
+			method: "PUT",
+			body: JSON.stringify({ coupon_code: couponCode }),
+		});
+		if (!cart) throw new Error("Não foi possível recuperar o carrinho");
+	}
+	return cart;
+}
+
+async function getGuest(): Promise<FastApiCart | null> {
+	const cartId = await getCartId();
+	if (isCartId(cartId)) {
+		const cart = await api<FastApiCart>(`/carts/guest/${cartId}`);
+		if (cart) return cart;
+	}
+	return (await getCartCookieItems())?.length ? createGuestFromCookie() : null;
+}
+
+async function ensureGuest(): Promise<FastApiCart> {
+	return (await getGuest()) ?? (await createGuestFromCookie());
 }
 
 export async function getCartAction(): Promise<Cart | null> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") return null;
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-
-		if (user?.cart?.items && user.cart.items.length > 0) {
-			return await buildCartFromMinimalItems({
-				cartId: "user-cart",
-				items: user.cart.items,
-				couponCode: user.cart.couponCode ?? null,
-				userId,
-			});
-		}
-
-		const [cookieCartId, cookieItems, cookieCouponCode] = await Promise.all([
-			getCartId(),
-			getCartCookieItems(),
-			getCartCouponCode(),
-		]);
-
-		if (cookieCartId || (cookieItems && cookieItems.length > 0)) {
-			let minimal: MinimalItem[] | null = null;
-			if (cookieCartId) {
-				const cookieCart = commerce.cart.get({ cartId: cookieCartId });
-				if (cookieCart && cookieCart.items.length > 0) {
-					minimal = toMinimalItems(cookieCart.items);
-					await persistCartSnapshot({ ...cookieCart, couponCode: cookieCouponCode });
-				}
-			}
-			if ((!minimal || minimal.length === 0) && cookieItems && cookieItems.length > 0) {
-				minimal = toMinimalItems(cookieItems);
-			}
-			if (minimal && minimal.length > 0) {
-				await db.collection("users").updateOne(
-					{ _id: new ObjectId(userId) },
-					{
-						$set: {
-							cart: {
-								items: minimal,
-								couponCode: cookieCouponCode ?? null,
-								lastMergedGuestCartId: cookieCartId ?? "guest-cookie",
-							},
-							updatedAt: new Date(),
-						},
-					},
-				);
-				if (cookieCartId) {
-					try {
-						await commerce.cart.clear({ cartId: cookieCartId });
-					} catch {}
-				}
-				await clearCartId();
-				return await buildCartFromMinimalItems({
-					cartId: "user-cart",
-					items: minimal,
-					couponCode: cookieCouponCode ?? null,
-					userId,
-				});
-			}
-		}
-		return null;
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return null;
+	if (auth.kind === "buyer") {
+		const cart = await api<FastApiCart>("/carts/me", {}, auth.token);
+		return cart ? toCart(cart) : null;
 	}
-
-	const guestSnapshot = await getGuestSnapshotState();
-	if (guestSnapshot.items.length === 0) return null;
-
-	return await buildCartFromMinimalItems({
-		cartId: guestSnapshot.cartId || "guest-cookie",
-		items: guestSnapshot.items,
-		couponCode: guestSnapshot.couponCode,
-	});
+	const cart = await getGuest();
+	return cart ? persistGuest(cart) : null;
 }
 
 export async function addToCartAction(variantId: string, quantity = 1): Promise<Cart | null> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") return null;
-	const { product, variant } = await commerce.variant.resolve({ id: variantId });
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-		const items: MinimalItem[] = [...(user?.cart?.items || [])];
-		let entry = items.find((item) => item.variantId === variant.id);
-		if (!entry) {
-			entry = { productId: product.id, variantId: variant.id, quantity: 0 };
-			items.push(entry);
-		} else {
-			entry.productId = product.id;
-		}
-		entry.quantity += quantity;
-		if (entry.quantity <= 0) items.splice(items.indexOf(entry), 1);
-		await db.collection("users").updateOne(
-			{ _id: new ObjectId(userId) },
-			{
-				$set: {
-					cart: {
-						items,
-						couponCode: user?.cart?.couponCode ?? null,
-						lastMergedGuestCartId: user?.cart?.lastMergedGuestCartId ?? null,
-					},
-					updatedAt: new Date(),
-				},
-			},
-		);
-		return await buildCartFromMinimalItems({
-			cartId: "user-cart",
-			items,
-			couponCode: user?.cart?.couponCode ?? null,
-			userId,
-		});
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return null;
+	const payload = { method: "POST", body: JSON.stringify({ variant_id: variantId, quantity }) };
+	if (auth.kind === "buyer") {
+		const cart = await api<FastApiCart>("/carts/me/items", payload, auth.token);
+		return cart ? toCart(cart) : null;
 	}
-
-	const guestSnapshot = await getGuestSnapshotState();
-	const items = upsertMinimalItem(
-		guestSnapshot.items,
-		{ productId: product.id, variantId: variant.id },
-		quantity,
-	);
-
-	return await persistGuestSnapshot({
-		cartId: guestSnapshot.cartId,
-		items,
-		couponCode: guestSnapshot.couponCode,
-	});
+	const guest = await ensureGuest();
+	const cart = await api<FastApiCart>(`/carts/guest/${guest.id}/items`, payload);
+	return cart ? persistGuest(cart) : null;
 }
 
 export async function updateCartItemAction(variantId: string, quantity: number): Promise<Cart | null> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") return null;
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-		if (!user?.cart?.items) return null;
-		const items = [...user.cart.items];
-		const index = items.findIndex((item) => item.variantId === variantId);
-		if (index === -1) return await getCartAction();
-		if (quantity <= 0) items.splice(index, 1);
-		else items[index]!.quantity = quantity;
-		await db.collection("users").updateOne(
-			{ _id: new ObjectId(userId) },
-			{
-				$set: {
-					cart: {
-						items,
-						couponCode: user.cart.couponCode ?? null,
-						lastMergedGuestCartId: user.cart.lastMergedGuestCartId ?? null,
-					},
-					updatedAt: new Date(),
-				},
-			},
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return null;
+	const payload = { method: "PUT", body: JSON.stringify({ quantity }) };
+	if (auth.kind === "buyer") {
+		const cart = await api<FastApiCart>(
+			`/carts/me/items/${encodeURIComponent(variantId)}`,
+			payload,
+			auth.token,
 		);
-		return await buildCartFromMinimalItems({
-			cartId: "user-cart",
-			items,
-			couponCode: user.cart.couponCode ?? null,
-			userId,
-		});
+		return cart ? toCart(cart) : null;
 	}
-
-	const guestSnapshot = await getGuestSnapshotState();
-	if (!guestSnapshot.cartId && guestSnapshot.items.length === 0) return null;
-
-	const nextItems = guestSnapshot.items.flatMap((item) => {
-		if (item.variantId !== variantId) {
-			return [item];
-		}
-
-		if (quantity <= 0) {
-			return [];
-		}
-
-		return [{ ...item, quantity }];
-	});
-
-	return await persistGuestSnapshot({
-		cartId: guestSnapshot.cartId,
-		items: nextItems,
-		couponCode: guestSnapshot.couponCode,
-	});
+	const guest = await getGuest();
+	if (!guest) return null;
+	const cart = await api<FastApiCart>(
+		`/carts/guest/${guest.id}/items/${encodeURIComponent(variantId)}`,
+		payload,
+	);
+	return cart ? persistGuest(cart) : null;
 }
 
 export async function removeFromCartAction(variantId: string): Promise<Cart | null> {
@@ -343,127 +181,59 @@ export async function removeFromCartAction(variantId: string): Promise<Cart | nu
 }
 
 export async function clearCartAction(): Promise<void> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") return;
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		await db
-			.collection("users")
-			.updateOne({ _id: new ObjectId(userId) }, { $unset: { cart: "" }, $set: { updatedAt: new Date() } });
-		await clearCartId();
-		return;
-	}
-	const cartId = await getCartId();
-	if (cartId) {
-		await commerce.cart.clear({ cartId });
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return;
+	if (auth.kind === "buyer") await api("/carts/me", { method: "DELETE" }, auth.token);
+	else {
+		const guest = await getGuest();
+		if (guest) await api(`/carts/guest/${guest.id}`, { method: "DELETE" });
 	}
 	await clearCartId();
 }
 
 export async function applyCartCouponAction(rawCode: string): Promise<{ cart: Cart | null; error?: string }> {
-	const code = normalizeCouponCode(rawCode);
-	if (!code) return { cart: null, error: "Digite um cupom válido." };
-
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") {
-		return { cart: null, error: "Usuárias do backoffice não podem aplicar cupons nem realizar compras." };
-	}
-
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-		const items = user?.cart?.items ?? [];
-		if (items.length === 0) return { cart: null, error: "Seu carrinho está vazio." };
-		try {
-			const { cart } = await buildPricedCartPayload({
-				cartId: "user-cart",
-				minimalItems: items,
-				couponCode: code,
-				userId,
-				strictCoupon: true,
-			});
-			await db.collection("users").updateOne(
-				{ _id: new ObjectId(userId) },
-				{
-					$set: {
-						cart: {
-							items,
-							couponCode: code,
-							lastMergedGuestCartId: user?.cart?.lastMergedGuestCartId ?? null,
-						},
-						updatedAt: new Date(),
-					},
-				},
-			);
-			return { cart };
-		} catch (error) {
-			return { cart: null, error: error instanceof Error ? error.message : "Cupom inválido." };
-		}
-	}
-
-	const [cartId, cookieItems] = await Promise.all([getCartId(), getCartCookieItems()]);
-	const minimal =
-		cookieItems && cookieItems.length > 0
-			? toMinimalItems(cookieItems)
-			: cartId
-				? toMinimalItems((commerce.cart.get({ cartId })?.items ?? []) as MinimalItem[])
-				: [];
-	if (minimal.length === 0) return { cart: null, error: "Seu carrinho está vazio." };
-	const nextCartId = cartId || "guest-cookie";
+	const couponCode = normalizeCouponCode(rawCode);
+	if (!couponCode) return { cart: null, error: "Digite um cupom válido." };
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return { cart: null, error: "Usuárias do backoffice não podem comprar." };
 	try {
-		const { cart } = await buildPricedCartPayload({
-			cartId: nextCartId,
-			minimalItems: minimal,
-			couponCode: code,
-			strictCoupon: true,
+		if (auth.kind === "buyer") {
+			const cart = await api<FastApiCart>(
+				"/carts/me/coupon",
+				{ method: "PUT", body: JSON.stringify({ coupon_code: couponCode }) },
+				auth.token,
+			);
+			return { cart: cart ? toCart(cart) : null };
+		}
+		const guest = await ensureGuest();
+		const cart = await api<FastApiCart>(`/carts/guest/${guest.id}/coupon`, {
+			method: "PUT",
+			body: JSON.stringify({ coupon_code: couponCode }),
 		});
-		await setCartId(nextCartId, minimal, code);
-		return { cart };
+		return { cart: cart ? await persistGuest(cart) : null };
 	} catch (error) {
 		return { cart: null, error: error instanceof Error ? error.message : "Cupom inválido." };
 	}
 }
 
 export async function removeCartCouponAction(): Promise<Cart | null> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind === "blocked") return null;
-	if (authContext.kind === "buyer") {
-		const userId = authContext.userId;
-		const db = await getDb();
-		const user = await db
-			.collection("users")
-			.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-		const items = user?.cart?.items ?? [];
-		await db
-			.collection("users")
-			.updateOne({ _id: new ObjectId(userId) }, { $set: { "cart.couponCode": null, updatedAt: new Date() } });
-		if (items.length === 0) return null;
-		return await buildCartFromMinimalItems({
-			cartId: "user-cart",
-			items,
-			couponCode: null,
-			userId,
-		});
+	const auth = await getCartAuth();
+	if (auth.kind === "blocked") return null;
+	if (auth.kind === "buyer") {
+		const cart = await api<FastApiCart>(
+			"/carts/me/coupon",
+			{ method: "PUT", body: JSON.stringify({ coupon_code: null }) },
+			auth.token,
+		);
+		return cart ? toCart(cart) : null;
 	}
-
-	const [cartId, cookieItems] = await Promise.all([getCartId(), getCartCookieItems()]);
-	if (!cartId && (!cookieItems || cookieItems.length === 0)) return null;
-	const minimal =
-		cookieItems && cookieItems.length > 0
-			? toMinimalItems(cookieItems)
-			: toMinimalItems((commerce.cart.get({ cartId: cartId! })?.items ?? []) as MinimalItem[]);
-	const nextCartId = cartId || "guest-cookie";
-	await setCartId(nextCartId, minimal, null);
-	if (minimal.length === 0) return null;
-	return await buildCartFromMinimalItems({
-		cartId: nextCartId,
-		items: minimal,
-		couponCode: null,
+	const guest = await getGuest();
+	if (!guest) return null;
+	const cart = await api<FastApiCart>(`/carts/guest/${guest.id}/coupon`, {
+		method: "PUT",
+		body: JSON.stringify({ coupon_code: null }),
 	});
+	return cart ? persistGuest(cart) : null;
 }
 
 export async function getCartItemCount(): Promise<number> {
@@ -472,85 +242,15 @@ export async function getCartItemCount(): Promise<number> {
 }
 
 export async function mergeGuestCartIntoUser(): Promise<Cart | null> {
-	const authContext = await getSelolibertariaAuthContext();
-	if (authContext.kind !== "buyer") return null;
-	const userId = authContext.userId;
-	const [cookieCartId, cookieItems, cookieCouponCode] = await Promise.all([
-		getCartId(),
-		getCartCookieItems(),
-		getCartCouponCode(),
-	]);
-	if (!cookieCartId && (!cookieItems || cookieItems.length === 0)) return null;
-
-	let guestItems: MinimalItem[] = [];
-	if (cookieCartId) {
-		try {
-			const cookieCart = commerce.cart.get({ cartId: cookieCartId });
-			if (cookieCart && cookieCart.items.length > 0) {
-				guestItems = toMinimalItems(cookieCart.items);
-			}
-		} catch (error) {
-			console.warn("[cart merge] failed to read guest cart", error);
-		}
-	}
-	if (guestItems.length === 0 && cookieItems && cookieItems.length > 0) {
-		guestItems = toMinimalItems(cookieItems);
-	}
-	if (guestItems.length === 0) {
-		await clearCartId();
-		return null;
-	}
-
-	const db = await getDb();
-	const user = await db
-		.collection("users")
-		.findOne<{ cart?: StoredUserCart }>({ _id: new ObjectId(userId) }, { projection: { cart: 1 } });
-	const mergeSourceId = cookieCartId ?? "guest-cookie";
-	if (user?.cart?.lastMergedGuestCartId === mergeSourceId) {
-		await clearCartId();
-		return await buildCartFromMinimalItems({
-			cartId: "user-cart",
-			items: user.cart.items ?? [],
-			couponCode: user.cart.couponCode ?? null,
-			userId,
-		});
-	}
-
-	const mergedMap = new Map<string, MinimalItem>();
-	for (const existing of user?.cart?.items || []) {
-		mergedMap.set(existing.variantId, { ...existing });
-	}
-	for (const line of guestItems) {
-		const current = mergedMap.get(line.variantId);
-		if (current) current.quantity += line.quantity;
-		else mergedMap.set(line.variantId, { ...line });
-	}
-	const mergedItems = Array.from(mergedMap.values()).filter((item) => item.quantity > 0);
-	const mergedCouponCode = cookieCouponCode ?? user?.cart?.couponCode ?? null;
-
-	await db.collection("users").updateOne(
-		{ _id: new ObjectId(userId) },
-		{
-			$set: {
-				cart: {
-					items: mergedItems,
-					couponCode: mergedCouponCode,
-					lastMergedGuestCartId: mergeSourceId,
-				},
-				updatedAt: new Date(),
-			},
-		},
+	const auth = await getCartAuth();
+	if (auth.kind !== "buyer") return null;
+	const guest = await getGuest();
+	if (!guest) return getCartAction();
+	const cart = await api<FastApiCart>(
+		"/carts/me/merge",
+		{ method: "POST", body: JSON.stringify({ guest_cart_id: guest.id }) },
+		auth.token,
 	);
-
-	try {
-		if (cookieCartId) await commerce.cart.clear({ cartId: cookieCartId });
-	} catch {}
 	await clearCartId();
-
-	return await buildCartFromMinimalItems({
-		cartId: "user-cart",
-		items: mergedItems,
-		couponCode: mergedCouponCode,
-		userId,
-	});
+	return cart ? toCart(cart) : null;
 }

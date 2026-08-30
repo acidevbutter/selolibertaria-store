@@ -1,13 +1,13 @@
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PasswordResetMenuButton } from "@/app/user/password-reset-menu-button.client";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { getDefaultCurrencyForLocale } from "@/lib/currency";
 import { getFavoriteViewModels } from "@/lib/favorites";
-import { getDb } from "@/lib/mongodb";
 import { getDefaultCountrySetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
@@ -38,7 +38,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	const defaultCurrency = getDefaultCurrencyForLocale(locale);
 
 	interface FullUserDoc {
-		_id: ObjectId;
+		_id: string;
 		email: string;
 		name?: string;
 		phone?: string;
@@ -53,6 +53,9 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		address?: {
 			line1?: string;
 			line2?: string;
+			number?: string;
+			complement?: string;
+			district?: string;
 			city?: string;
 			state?: string;
 			postalCode?: string;
@@ -67,10 +70,45 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	let fullUser: FullUserDoc | null = null;
 	if (section === "profile") {
 		try {
-			const db = await getDb();
-			fullUser = await db
-				.collection<FullUserDoc>("users")
-				.findOne({ _id: new ObjectId(user.id) }, { projection: { passwordHash: 0 } });
+			const token = (await cookies()).get("session")?.value;
+			const response = token
+				? await fetch(`${env.FASTAPI_API_URL}/users/${encodeURIComponent(user.id)}`, {
+						headers: { authorization: `Bearer ${token}` },
+						cache: "no-store",
+					})
+				: null;
+			if (response?.ok) {
+				const remote = (await response.json()) as Record<string, unknown>;
+				fullUser = {
+					_id: user.id,
+					email: String(remote.email ?? user.email),
+					name: typeof remote.name === "string" ? remote.name : undefined,
+					phone: typeof remote.phone === "string" ? remote.phone : undefined,
+					cpf: typeof remote.cpf === "string" ? remote.cpf : undefined,
+					preferredCurrency:
+						typeof remote.preferred_currency === "string"
+							? (remote.preferred_currency as FullUserDoc["preferredCurrency"])
+							: undefined,
+					phoneDetails: {
+						country: remote.phone_country as string | undefined,
+						dialCode: remote.phone_dial_code as string | undefined,
+						national: remote.phone_national as string | undefined,
+						display: remote.phone_display as string | undefined,
+					},
+					address: {
+						line1: remote.address_line1 as string | undefined,
+						line2: remote.address_line2 as string | undefined,
+						number: remote.address_number as string | undefined,
+						complement: remote.address_complement as string | undefined,
+						district: remote.address_district as string | undefined,
+						city: remote.address_city as string | undefined,
+						state: remote.address_state as string | undefined,
+						postalCode: remote.address_postal_code as string | undefined,
+						country: remote.address_country as string | undefined,
+					},
+					marketing: { email: { optIn: remote.marketing_email_opt_in as boolean | undefined } },
+				};
+			}
 		} catch (e) {
 			console.error("[user/page] Failed to load full user data", e);
 		}
@@ -96,14 +134,46 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 	let favorites: Awaited<ReturnType<typeof getFavoriteViewModels>> | null = null;
 	if (section === "purchases") {
 		try {
-			const db = await getDb();
-			const userDoc = await db
-				.collection("users")
-				.findOne<{ purchases?: typeof purchases }>(
-					{ _id: new ObjectId(user.id) },
-					{ projection: { purchases: 1 } },
-				);
-			purchases = (userDoc?.purchases || []).slice().reverse();
+			const token = (await cookies()).get("session")?.value;
+			const response = token
+				? await fetch(`${env.FASTAPI_API_URL}/orders/me?page=1&page_size=100`, {
+						headers: { authorization: `Bearer ${token}` },
+						cache: "no-store",
+					})
+				: null;
+			if (response?.ok) {
+				const payload = (await response.json()) as {
+					items?: Array<{
+						id: string;
+						created_at: string;
+						status: string;
+						amount_total: number;
+						currency: string;
+						items?: Array<{
+							name?: string | null;
+							quantity: number;
+							unit_amount?: number | null;
+							price_id?: string | null;
+						}>;
+						fulfillment_status?: "received" | "producing" | "shipped";
+						tracking_number?: string | null;
+					}>;
+				};
+				purchases = (payload.items ?? []).map((order) => ({
+					id: order.id,
+					createdAt: new Date(order.created_at),
+					status: order.status,
+					amountTotal: order.amount_total,
+					currency: order.currency,
+					items: (order.items ?? []).map((item) => ({
+						name: item.name,
+						quantity: item.quantity,
+						unitAmount: item.unit_amount,
+						priceId: item.price_id,
+					})),
+					fulfillment: { status: order.fulfillment_status, trackingNumber: order.tracking_number },
+				}));
+			}
 		} catch (e) {
 			console.error("[user/page] load purchases error", e);
 		}
@@ -121,7 +191,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 			case "profile": {
 				const initial = {
 					_id: user.id,
-					name: fullUser?.name ?? user.name,
+					name: fullUser?.name ?? user.name ?? undefined,
 					email: fullUser?.email ?? user.email,
 					phone: fullUser?.phone,
 					cpf: fullUser?.cpf,

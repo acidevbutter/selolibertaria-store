@@ -23,3 +23,15 @@ Arquivos principais:
 - `SELOLIBERTARIA_SITE_MAP.md` — mapa de navegação/conteúdo.
 - `AUTH_SOCIAL_BUTTON_PATTERN.md` — padrão OAuth.
 - `CODEX_PROMPTS.md` — prompts separados por fase.
+
+## Docker para desenvolvimento
+
+Com a rede compartilhada criada, suba o frontend com autoreload e bind mount:
+
+```bash
+docker network create devbutter_shared 2>/dev/null || true
+docker compose up -d --build frontend
+```
+
+O frontend fica em `http://localhost:3001`. Alterações nos arquivos locais são detectadas pelo
+Next.js; `node_modules` e `.next` permanecem em volumes Docker.

@@ -1,10 +1,10 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getDb } from "@/lib/mongodb";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import {
 	AdminEditorialHero,
@@ -34,7 +34,6 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	if (!hasCapability(session.user.role, "orders.read")) redirect("/forbidden");
 	const locale = (await getDefaultLocaleSetting()) ?? DEFAULT_LOCALE;
 
-	const db = await getDb();
 	const sp = (await searchParams) || {};
 	const asStr = (v: unknown): string | undefined =>
 		typeof v === "string"
@@ -48,43 +47,40 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 	const period = (asStr(sp?.period) ?? "30d").toLowerCase();
 	const sort = (asStr(sp?.sort) ?? "date-desc").toLowerCase();
 
-	const now = new Date();
-	let since: Date | null = null;
-	if (period === "7d") since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-	else if (period === "30d") since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-	else if (period === "90d") since = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-	else if (period === "365d") since = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-
-	const pipeline: Record<string, unknown>[] = [
-		{ $match: { purchases: { $exists: true, $ne: [] } } },
-		{ $project: { email: 1, purchases: 1 } },
-		{ $unwind: "$purchases" },
-	];
-
-	const match: Record<string, unknown> = {};
-	if (status !== "all") match["purchases.status"] = status;
-	if (since) match["purchases.createdAt"] = { $gte: since };
-	if (Object.keys(match).length) pipeline.push({ $match: match });
-
-	let sortStage: Record<string, 1 | -1> = { "purchases.createdAt": -1 };
-	if (sort === "date-asc") sortStage = { "purchases.createdAt": 1 };
-	if (sort === "amount-desc") sortStage = { "purchases.amountTotal": -1 };
-	if (sort === "amount-asc") sortStage = { "purchases.amountTotal": 1 };
-	pipeline.push({ $sort: sortStage }, { $limit: 50 });
-
-	interface AggOrderItem {
-		email: string;
-		purchases: {
+	const token = (await cookies()).get("session")?.value;
+	if (!token) redirect("/login");
+	const response = await fetch(`${env.FASTAPI_API_URL}/orders/?page=1&page_size=200`, {
+		headers: { authorization: `Bearer ${token}` },
+		cache: "no-store",
+	});
+	if (!response.ok) redirect("/forbidden");
+	const remote = (await response.json()) as {
+		items: Array<{
 			id: string;
-			amountTotal: number;
+			buyer_email: string | null;
+			amount_total: number;
 			currency: string;
 			status: string;
-			createdAt: string | Date;
-		};
-	}
-	const items = (await db.collection("users").aggregate(pipeline).toArray()) as unknown as AggOrderItem[];
-	const paidCount = items.filter((item) => item.purchases.status === "paid").length;
-	const processingCount = items.filter((item) => item.purchases.status === "processing").length;
+			created_at: string;
+		}>;
+	};
+	const now = Date.now();
+	const periodMs = { "7d": 7, "30d": 30, "90d": 90, "365d": 365 }[period] ?? null;
+	const items = remote.items
+		.filter((item) => status === "all" || item.status === status)
+		.filter((item) => !periodMs || new Date(item.created_at).getTime() >= now - periodMs * 86400000)
+		.sort((left, right) => {
+			const byAmount = sort.startsWith("amount");
+			const comparison = byAmount
+				? left.amount_total - right.amount_total
+				: new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+			return sort.endsWith("asc") ? comparison : -comparison;
+		})
+		.slice(0, 50);
+	const paidCount = items.filter((item) => item.status === "paid" || item.status === "approved").length;
+	const processingCount = items.filter(
+		(item) => item.status === "processing" || item.status === "pending",
+	).length;
 	const defaultCurrency = String(env.CATALOG_CURRENCY ?? "BRL")
 		.trim()
 		.toUpperCase();
@@ -138,24 +134,24 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{items.map((it: AggOrderItem) => (
-									<TableRow key={it.purchases.id}>
-										<TableCell className="break-all">{it.email}</TableCell>
+								{items.map((it) => (
+									<TableRow key={it.id}>
+										<TableCell className="break-all">{it.buyer_email || "Não informado"}</TableCell>
 										<TableCell>
 											{new Intl.NumberFormat(locale, {
 												style: "currency",
-												currency: it.purchases.currency?.toUpperCase?.() || defaultCurrency,
-											}).format((it.purchases.amountTotal || 0) / 100)}
+												currency: it.currency?.toUpperCase?.() || defaultCurrency,
+											}).format((it.amount_total || 0) / 100)}
 										</TableCell>
 										<TableCell className="capitalize">
-											<StatusBadge status={it.purchases.status} />
+											<StatusBadge status={it.status} />
 										</TableCell>
-										<TableCell>{new Date(it.purchases.createdAt).toLocaleString(locale)}</TableCell>
-										<TableCell className="font-mono text-xs break-all">{it.purchases.id}</TableCell>
+										<TableCell>{new Date(it.created_at).toLocaleString(locale)}</TableCell>
+										<TableCell className="font-mono text-xs break-all">{it.id}</TableCell>
 										<TableCell className="text-right">
 											<Link
 												className="font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-												href={`/admin/orders/${it.purchases.id}`}
+												href={`/admin/orders/${it.id}`}
 											>
 												Ver pedido
 											</Link>

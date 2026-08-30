@@ -7,9 +7,8 @@ import { afterEach, expect } from "vitest";
 loadEnvConfig(".");
 process.env.NEXT_PUBLIC_URL ??= "http://localhost:3000";
 process.env.CATALOG_CURRENCY ??= "BRL";
-process.env.MONGODB_URI ??= "mongodb://localhost:27017";
-process.env.MONGODB_DB_NAME ??= "selolibertaria";
-process.env.JWT_SECRET ??= "dev_super_secret_change_me_please_123456";
+process.env.FASTAPI_INTERNAL_API_KEY ??= "test-internal-key";
+process.env.OAUTH_STATE_SECRET ??= "dev_oauth_state_secret_change_me_please_123456";
 
 expect.extend(matchers);
 

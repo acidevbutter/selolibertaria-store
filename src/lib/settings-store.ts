@@ -1,9 +1,9 @@
 import "server-only";
 
 import { cache } from "react";
+import { env } from "@/env.mjs";
 import { type AppLocale, DEFAULT_LOCALE, getDefaultCountryForLocale, matchLocale } from "@/i18n/config";
 import { getCountryOption } from "@/lib/location/countries";
-import { getDb } from "@/lib/mongodb";
 import type { SettingsDoc } from "@/lib/settings";
 
 const SETTINGS_READ_TIMEOUT_MS = 1800;
@@ -24,14 +24,19 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: str
 
 export const getSettingsDoc = cache(async (): Promise<SettingsDoc | null> => {
 	try {
-		const db = await withTimeout(getDb(), SETTINGS_READ_TIMEOUT_MS, "Mongo settings connection");
-		return await withTimeout(
-			db.collection<SettingsDoc>("settings").findOne({}),
+		const response = await withTimeout(
+			fetch(`${env.FASTAPI_API_URL}/settings/public`, { cache: "no-store" }),
 			SETTINGS_READ_TIMEOUT_MS,
-			"Mongo settings read",
+			"FastAPI settings read",
 		);
+		if (!response.ok) return null;
+		const payload = (await response.json()) as {
+			current?: SettingsDoc["current"];
+			history?: SettingsDoc["history"];
+		};
+		return { current: payload.current ?? {}, history: payload.history ?? [] } as SettingsDoc;
 	} catch (error) {
-		console.warn("[settings-store] Falling back to defaults:", error);
+		console.warn("[settings-store] FastAPI unavailable; falling back to defaults:", error);
 		return null;
 	}
 });

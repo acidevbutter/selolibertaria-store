@@ -1,6 +1,72 @@
 ## [Unreleased]
 
+- Corrigido o fallback da URL pública para usar as variáveis automáticas da Vercel (`VERCEL_URL` e `VERCEL_PROJECT_PRODUCTION_URL`) durante o build.
+- Adicionados prompts coordenados em `docs/prompts/fastapi-bff-migration/` para
+  orientar o Claude na conclusão alinhada do backend FastAPI, frontend BFF,
+  OAuth, jobs, Mercado Pago e validação integrada.
+- Slice P0/P1: removido o endpoint público de teste de e-mail do Next e o proxy de webhook Mercado Pago; o webhook deve apontar diretamente para `POST /payments/mercado-pago/webhook` no FastAPI.
+- Prompt 03/04: atualizado o mapa de migração FastAPI/BFF com limites de evidência. A matriz adversarial de OAuth vive no backend (`backend/tests/test_oauth.py`); OAuth Instagram, PostgreSQL integrado, Sandbox Mercado Pago e smoke E2E continuam pendentes. Cartões salvos seguem desabilitados por design.
+- Diagrama atualizado para mostrar o webhook direto no FastAPI e OAuth ainda pendente na fronteira Next.
+
+- Added a Mermaid diagram documenting Next.js-to-FastAPI API flows, authentication, checkout, webhooks and server-side provider boundaries.
+
+- Added the FastAPI shipping quote boundary for Melhor Envio, keeping the access token and provider HTTP calls server-side; Next now consumes only the internal `/shipping/quote` contract.
+- Admin webhook logs now persist and list through FastAPI; Mercado Pago webhook receipts are stored server-side and the Next admin no longer reads MongoDB.
+- Admin settings and the admin shell theme now read and write through FastAPI; the Next settings route is an authenticated proxy only.
+- OAuth identity creation and linking now use the internal FastAPI auth endpoint; Next no longer persists OAuth users in MongoDB.
+- Removed two unreferenced legacy notification modules that still contained direct MongoDB access.
+- Admin dashboard data now comes from the FastAPI orders dashboard endpoint; the Next dashboard keeps only presentation aggregation.
+- Added the FastAPI promotions foundation with PostgreSQL models, admin CRUD/status endpoints and an Alembic migration file; migration execution remains pending by design.
+- Added full promotion update support in FastAPI, including coupon metadata and status synchronization.
+- Active automatic promotions and coupon lookup for cart pricing now resolve through internal FastAPI endpoints instead of MongoDB reads in Next.
+- Cart pricing, automatic discount application and coupon discount allocation now run through the internal FastAPI `/promotions/price-cart` contract.
+- Coupon usage limits and idempotent redemption records now run through FastAPI; the Next redemption helper no longer writes MongoDB.
+- Promotion administration reads and writes now use authenticated Next actions over internal FastAPI promotion endpoints.
+- Public and admin editorial reads/writes now pass through the FastAPI editorial domain; the Alembic migration is created but not executed.
+- Favorite discount alerts now queue and dispatch through FastAPI communications/Butter Relay; Next no longer contains MongoDB promotion or alert code.
+- Removed the Next MongoDB client, package, lockfile entries, environment variables and obsolete Mongo integration tests.
+- Guest cart recovery now reads `/carts/guest/{id}` from FastAPI; the last in-memory storefront cart fallback was removed.
+- Admin media uploads/deletes, newsletter subscriptions and OAuth provider code exchange now pass through FastAPI; provider secrets are no longer handled by Next.
+- Brazilian postal-code lookup now runs in the FastAPI address boundary; Next only proxies the response and the browser no longer calls ViaCEP/BrasilAPI directly.
+- Backend test fixtures now authenticate catalog setup through the protected admin contract, and Mercado Pago webhook handling accepts an empty signed payload without an uncaught JSON error.
+- Removed the obsolete local JWT and OAuth secret-encryption requirements from Next; only the OAuth state cookie secret remains at the web boundary.
+
 ### Added
+
+- FastAPI: domínio de checkout para criar/reutilizar drafts, submeter pagamentos Mercado Pago com idempotência e reconciliar/finalizar pedidos em PostgreSQL; nenhuma migration foi executada.
+- FastAPI: operações de pagamento e finalização exigem a chave privada do checkout associada ao draft.
+- Frontend: Server Actions de checkout passaram a usar o contrato FastAPI para intents, pagamentos, consulta Pix, finalização, comprador e entrega; snapshot/preço e frete permanecem em migração.
+- FastAPI: intents reutilizam drafts pelo proprietário e hash do carrinho, evitando duplicação ao recarregar o checkout.
+- FastAPI: seleção e reconciliação de drafts Mercado Pago pendentes passaram para `POST /checkout/reconcile`, protegido por chave interna.
+- Frontend: reconciliação admin/cron e processamento pós-checkout deixaram de consultar Mongo e passaram a usar o FastAPI.
+
+- Frontend: leituras de catálogo público e gestão delegadas ao FastAPI.
+
+- Frontend: middleware de rotas valida sessão no FastAPI.
+
+- Frontend: guards de API e RBAC delegados a `GET /auth/me` do FastAPI.
+
+- Frontend: login por formulário delegado ao FastAPI, com cookie bearer server-only.
+
+- Frontend: leitura de sessão delegada a `GET /auth/me` do FastAPI.
+
+- Frontend: endpoint JSON de login delegado ao FastAPI.
+
+- Frontend: consulta de disponibilidade de e-mail delegada ao FastAPI.
+
+- FastAPI: validação assinada do webhook Mercado Pago com segredo exclusivo do backend.
+
+- FastAPI: carrinhos de convidado e autenticados em PostgreSQL, com merge no login, itens validados pelo catálogo e migração de `users.cart`.
+
+- FastAPI: categorias canônicas de catálogo em PostgreSQL, com endpoints e migração de `productCategories`.
+
+- FastAPI: domínio `auth` com cadastro, login, JWT persistido, sessão, verificação de e-mail e reset de senha em PostgreSQL.
+
+- Mapa de migração do Next.js para FastAPI, incluindo responsabilidades de domínio, resíduos Mongo e avaliação das rotas Mercado Pago em `docs/architecture/fastapi-migration-map.md`.
+
+- Diagrama Mermaid da API FastAPI atual em `docs/diagrams/fastapi-api-current.mmd`, com rotas, camadas, persistência e limites de integração.
+
+- Backend FastAPI: domínio `catalog` com produtos, variantes e trilha de auditoria normalizados em PostgreSQL.
 
 - DEV-175: preview live de rascunhos editoriais por sessão, fixo ao lado dos blocos no admin, com página pública inteira em desktop/mobile e descarte sem persistência automática.
 - DEV-58: hero da Home pode usar uma composição personalizada ou um livro publicado, reaproveitando capa, título, resumo e CTA do catálogo.
@@ -409,6 +475,11 @@
 # Unreleased
 
 ### Changed
+
+- adicionado domínio FastAPI de comunicações com logs persistidos e entrega exclusiva via Butter Relay
+- removidos SMTP, Brevo e Nodemailer do Next; o admin de e-mails passou a consultar/reprocessar o FastAPI
+- migrados detalhe de pedido e operações administrativas de cancelamento/estorno para o domínio FastAPI
+- ligado o backoff persistido de reconciliação Mercado Pago no FastAPI, com limite de tentativas e estados terminal/pending
 
 - documentada a matriz de migração da Payments API legada para a Orders API em DEV-152, incluindo fluxos, persistência, contratos, riscos e ordem de implementação
 - validado `mercadopago@3.2.0` para Orders API, com prova sandbox de criação/consulta, cobertura de ciclo de vida e decisão de uso exclusivo do SDK no adapter

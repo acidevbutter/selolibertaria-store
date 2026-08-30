@@ -1,29 +1,22 @@
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { issuePasswordSetupToken } from "@/lib/account-access";
-import { requireAuth } from "@/lib/api-auth";
-import { getDb } from "@/lib/mongodb";
+import { env } from "@/env.mjs";
 
-export async function GET(req: Request) {
-	const auth = await requireAuth();
-	if ("error" in auth) {
-		return NextResponse.redirect(new URL("/login", req.url));
-	}
-
-	const userId = auth.session.sub as string;
-	const db = await getDb();
-	const user = await db
-		.collection("users")
-		.findOne<{ passwordHash?: string }>({ _id: new ObjectId(userId) }, { projection: { passwordHash: 1 } });
-
-	const next = new URL(req.url).searchParams.get("next");
-	if (user?.passwordHash) {
-		return NextResponse.redirect(new URL(next || "/user?section=purchases", req.url));
-	}
-
-	const { token } = await issuePasswordSetupToken(userId);
-	const redirectUrl = new URL("/reset-password", req.url);
-	redirectUrl.searchParams.set("token", token);
-	if (next) redirectUrl.searchParams.set("next", next);
-	return NextResponse.redirect(redirectUrl);
+export async function GET(request: Request) {
+	const token = (await cookies()).get("session")?.value;
+	if (!token) return NextResponse.redirect(new URL("/login", request.url));
+	const response = await fetch(`${env.FASTAPI_API_URL}/auth/password-setup`, {
+		method: "POST",
+		headers: { authorization: `Bearer ${token}` },
+		cache: "no-store",
+	});
+	const next = new URL(request.url).searchParams.get("next");
+	if (response.status === 409)
+		return NextResponse.redirect(new URL(next || "/user?section=purchases", request.url));
+	if (!response.ok) return NextResponse.redirect(new URL("/login", request.url));
+	const body = (await response.json()) as { token: string };
+	const redirect = new URL("/reset-password", request.url);
+	redirect.searchParams.set("token", body.token);
+	if (next) redirect.searchParams.set("next", next);
+	return NextResponse.redirect(redirect);
 }

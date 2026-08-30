@@ -18,16 +18,17 @@ import {
 	parseImageList,
 	parseOptionalString,
 	parsePriceAmount,
-	updateProductsCategory,
 } from "@/lib/admin-products";
 import { requireCapability } from "@/lib/api-auth";
 import { normalizeUserRole } from "@/lib/authz";
 import {
-	type CatalogProductDocument,
+	addCatalogVariant,
 	catalogProductId,
 	catalogVariantId,
-	getCatalogCollection,
-	getCatalogProductBySlug,
+	createCatalogProduct,
+	getCatalogManagementProductBySlug,
+	updateCatalogProduct,
+	updateCatalogVariant,
 } from "@/lib/catalog";
 import { recordProductAuditEntry } from "@/lib/product-audit";
 import {
@@ -131,12 +132,7 @@ async function reorderProductGroups(targetSlug: string, targetOrder: number, exc
 	const ordered = [...remaining];
 	const target = groups.find((group) => group.slug === targetSlug);
 	if (target) ordered.splice(boundedOrder - 1, 0, target);
-	const products = await getCatalogCollection();
-	await Promise.all(
-		ordered.map((group, index) =>
-			products.updateOne({ slug: group.slug }, { $set: { order: index + 1, updatedAt: new Date() } }),
-		),
-	);
+	await Promise.all(ordered.map((group, index) => updateCatalogProduct(group.slug, { order: index + 1 })));
 }
 
 export async function createProductAction(formData: FormData) {
@@ -149,8 +145,7 @@ export async function createProductAction(formData: FormData) {
 	const variantOrder = parseOptionalString(formData.get("variantOrder"));
 	const productId = catalogProductId(fields.slug);
 	const variantId = catalogVariantId(fields.slug, variantLabel);
-	const now = new Date();
-	const product: CatalogProductDocument = {
+	await createCatalogProduct({
 		id: productId,
 		slug: fields.slug,
 		name: fields.name,
@@ -176,10 +171,7 @@ export async function createProductAction(formData: FormData) {
 				order: variantOrder ? Number.parseFloat(variantOrder.replace(",", ".")) : null,
 			},
 		],
-		createdAt: now,
-		updatedAt: now,
-	};
-	await getCatalogCollection().then((products) => products.insertOne(product));
+	});
 	await reorderProductGroups(fields.slug, parseDisplayOrder(fields.order));
 	await recordProductAuditEntry({
 		slug: fields.slug,
@@ -198,36 +190,30 @@ export async function createProductAction(formData: FormData) {
 export async function updateProductGroupAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
 	const currentSlug = required(formData, "currentSlug");
-	const existing = await getCatalogProductBySlug(currentSlug);
+	const existing = await getCatalogManagementProductBySlug(currentSlug);
 	if (!existing) throw new Error("Produto não encontrado no catálogo administrativo.");
 	const fields = parseProductFields(formData);
 	const category = await resolveCategoryName(formData);
-	const products = await getCatalogCollection();
-	const nextVariants = existing.variants.map((variant) => ({
-		...variant,
-		images: fields.images,
+	await updateCatalogProduct(currentSlug, {
+		slug: fields.slug,
+		name: fields.name,
 		description: fields.description || null,
-		published: fields.published && variant.published,
-	}));
-	await products.updateOne(
-		{ _id: existing._id },
-		{
-			$set: {
-				id: existing.id,
-				slug: fields.slug,
-				name: fields.name,
-				description: fields.description || null,
+		images: fields.images,
+		category: category ? { name: category, slug: slugify(category) } : null,
+		stock: fields.stock,
+		productType: fields.productType,
+		format: fields.format,
+		order: fields.order,
+		published: fields.published,
+	});
+	await Promise.all(
+		existing.variants.map((variant) =>
+			updateCatalogVariant(fields.slug, variant.id, {
 				images: fields.images,
-				category: category ? { name: category, slug: slugify(category) } : null,
-				stock: fields.stock,
-				productType: fields.productType,
-				format: fields.format,
-				order: fields.order,
-				published: fields.published,
-				variants: nextVariants,
-				updatedAt: new Date(),
-			},
-		},
+				description: fields.description || null,
+				published: fields.published && variant.published,
+			}),
+		),
 	);
 	await reorderProductGroups(
 		fields.slug,
@@ -254,7 +240,7 @@ export async function createVariantAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
 	const currentSlug = required(formData, "currentSlug");
 	const group = await getAdminProductGroup(currentSlug);
-	const product = await getCatalogProductBySlug(currentSlug);
+	const product = await getCatalogManagementProductBySlug(currentSlug);
 	if (!group || !product) throw new Error("Produto não encontrado no catálogo administrativo.");
 	const values = parseVariantFields(formData);
 	parseSchema(variantPricingSchema, {
@@ -276,12 +262,7 @@ export async function createVariantAction(formData: FormData) {
 		published: values.published,
 		order: values.order,
 	};
-	await getCatalogCollection().then((products) =>
-		products.updateOne(
-			{ _id: product._id },
-			{ $push: { variants: variant }, $set: { updatedAt: new Date() } },
-		),
-	);
+	await addCatalogVariant(currentSlug, variant);
 	await recordProductAuditEntry({
 		slug: currentSlug,
 		action: "product_variant_created",
@@ -309,22 +290,15 @@ export async function updateVariantAction(formData: FormData) {
 		basePrice: formData.get("basePrice"),
 	});
 	const currency = parseCurrencyCode(null, group.variants[0]?.currency || "BRL");
-	const products = await getCatalogCollection();
-	await products.updateOne(
-		{ slug: currentSlug, "variants.id": variantId },
-		{
-			$set: {
-				"variants.$.label": values.label,
-				"variants.$.slug": values.label ? slugify(values.label) : variantId,
-				"variants.$.stock": values.stock,
-				"variants.$.published": values.published,
-				"variants.$.order": values.order,
-				"variants.$.price": resolveVariantAmount({ group, formData, currency }),
-				"variants.$.currency": currency,
-				updatedAt: new Date(),
-			},
-		},
-	);
+	await updateCatalogVariant(currentSlug, variantId, {
+		label: values.label,
+		slug: values.label ? slugify(values.label) : variantId,
+		stock: values.stock,
+		published: values.published,
+		order: values.order,
+		price: resolveVariantAmount({ group, formData, currency }),
+		currency,
+	});
 	await recordProductAuditEntry({
 		slug: currentSlug,
 		action: "product_variant_updated",
@@ -343,10 +317,7 @@ export async function archiveVariantAction(formData: FormData) {
 	const session = await requireCatalogManagerSession();
 	const variantId = required(formData, "productId");
 	const currentSlug = required(formData, "currentSlug");
-	await (await getCatalogCollection()).updateOne(
-		{ slug: currentSlug, "variants.id": variantId },
-		{ $set: { "variants.$.published": false, updatedAt: new Date() } },
-	);
+	await updateCatalogVariant(currentSlug, variantId, { published: false });
 	await recordProductAuditEntry({
 		slug: currentSlug,
 		action: "product_variant_archived",
@@ -366,7 +337,6 @@ export async function renameProductCategoryAction(formData: FormData) {
 	const oldCategory = required(formData, "oldCategory");
 	const newCategory = required(formData, "newCategory");
 	await renameSystemCategory(oldCategory, newCategory);
-	await updateProductsCategory(oldCategory, newCategory);
 	refreshCatalog();
 	revalidatePath(`/category/${slugify(oldCategory)}`);
 	revalidatePath(`/category/${slugify(newCategory)}`);

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
-import { uploadImageFileToCloudinary } from "@/lib/cloudinary-upload";
+import { getEditorialApiStore as getDb } from "@/lib/editorial-api-store";
 import type {
 	EditorialAboutPage,
 	EditorialBackground,
@@ -25,7 +25,7 @@ import {
 	listEditorialRecordsForAdmin,
 } from "@/lib/editorial-content-store";
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
-import { getDb } from "@/lib/mongodb";
+import { uploadImageFileToFastAPI } from "@/lib/media-upload";
 import { slugify } from "@/lib/utils";
 
 const COLLECTION = "editorialContent";
@@ -173,7 +173,7 @@ async function resolveImageField({
 	let uploadedSrc: string | null = null;
 	if (fileEntry instanceof File && fileEntry.size > 0) {
 		assertAdminImageUploadFile(fileEntry);
-		uploadedSrc = (await uploadImageFileToCloudinary(fileEntry)).secure_url;
+		uploadedSrc = (await uploadImageFileToFastAPI(fileEntry)).secure_url;
 	}
 	const src = uploadedSrc ?? existingSrc;
 	if (process.env.NODE_ENV !== "production") {

@@ -1,67 +1,42 @@
-import type { NextRequest } from "next/server";
+import { cookies } from "next/headers";
+import { env } from "@/env.mjs";
 import { requireCapability } from "@/lib/api-auth";
-import { getDb } from "@/lib/mongodb";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: Request) {
 	const auth = await requireCapability("orders.read");
 	if ("error" in auth) return auth.error;
-
-	const { searchParams } = new URL(req.url);
-	const limit = Math.max(1, Math.min(100, Number(searchParams.get("limit") || 20)));
-	const page = Math.max(1, Number(searchParams.get("page") || 1));
-	const status = (searchParams.get("status") || "").trim().toLowerCase();
-	const sort = (searchParams.get("sort") || "date-desc").toLowerCase();
-	const period = (searchParams.get("period") || "").toLowerCase();
-
-	const now = new Date();
-	let since: Date | null = null;
-	if (period === "7d") since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-	else if (period === "30d") since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-	else if (period === "90d") since = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-	else if (period === "365d") since = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-
-	const db = await getDb();
-	const pipeline: Record<string, unknown>[] = [
-		{ $match: { purchases: { $exists: true, $ne: [] } } },
-		{ $project: { email: 1, purchases: 1 } },
-		{ $unwind: "$purchases" },
-	];
-
-	const match: Record<string, unknown> = {};
-	if (status) match["purchases.status"] = status;
-	if (since) match["purchases.createdAt"] = { $gte: since };
-	if (Object.keys(match).length) pipeline.push({ $match: match });
-
-	let sortStage: Record<string, 1 | -1> = { "purchases.createdAt": -1 };
-	if (sort === "date-asc") sortStage = { "purchases.createdAt": 1 };
-	if (sort === "amount-desc") sortStage = { "purchases.amountTotal": -1 };
-	if (sort === "amount-asc") sortStage = { "purchases.amountTotal": 1 };
-	pipeline.push({ $sort: sortStage });
-
-	const skip = (page - 1) * limit;
-	pipeline.push({ $skip: skip }, { $limit: limit });
-
-	const cursor = db.collection("users").aggregate(pipeline);
-	const items = await cursor.toArray();
-
-	// Count total matching
-	const countPipeline = pipeline
-		.filter((s) => !("$skip" in s) && !("$limit" in s))
-		.concat([{ $count: "total" }]);
-	const countRes = await db.collection("users").aggregate(countPipeline).toArray();
-	const total = countRes[0]?.total || 0;
-
+	const token = (await cookies()).get("session")?.value;
+	if (!token) return Response.json({ error: "Não autorizado" }, { status: 401 });
+	const source = new URL(request.url);
+	const page = Math.max(1, Number(source.searchParams.get("page") || 1));
+	const limit = Math.max(1, Math.min(100, Number(source.searchParams.get("limit") || 20)));
+	const response = await fetch(`${env.FASTAPI_API_URL}/orders/?page=${page}&page_size=${limit}`, {
+		headers: { authorization: `Bearer ${token}` },
+		cache: "no-store",
+	});
+	if (!response.ok) return Response.json({ error: "Pedidos indisponíveis" }, { status: response.status });
+	const body = (await response.json()) as {
+		items: Array<{
+			id: string;
+			buyer_email: string | null;
+			amount_total: number;
+			currency: string;
+			status: string;
+			created_at: string;
+		}>;
+		total: number;
+	};
 	return Response.json({
 		page,
 		limit,
-		total,
-		items: items.map((d) => ({
-			id: d.purchases.id,
-			userEmail: d.email,
-			amountTotal: d.purchases.amountTotal,
-			currency: d.purchases.currency,
-			status: d.purchases.status,
-			createdAt: d.purchases.createdAt,
+		total: body.total,
+		items: body.items.map((item) => ({
+			id: item.id,
+			userEmail: item.buyer_email,
+			amountTotal: item.amount_total,
+			currency: item.currency,
+			status: item.status,
+			createdAt: item.created_at,
 		})),
 	});
 }

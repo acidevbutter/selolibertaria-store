@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { env } from "@/env.mjs";
 import { findOrCreateOAuthUser } from "@/lib/auth/oauth-users";
 import { mergeGuestCartIntoUserCart, resolvePostAuthRedirect } from "@/lib/auth/post-auth";
 import { clearOAuthPendingCookie, readOAuthPendingCookie } from "@/lib/oauth/state";
@@ -9,6 +10,35 @@ const schema = z.object({
 	email: z.string().email(),
 	name: z.string().min(1).optional(),
 });
+
+export async function GET(req: Request) {
+	const ticket = new URL(req.url).searchParams.get("ticket");
+	if (!ticket) return NextResponse.redirect(new URL("/login?oauth_error=ticket", req.url));
+	const backend = await fetch(`${env.FASTAPI_API_URL}/auth/oauth/complete`, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ ticket }),
+		cache: "no-store",
+	});
+	if (!backend.ok) return NextResponse.redirect(new URL("/login?oauth_error=callback", req.url));
+	const session = (await backend.json()) as {
+		access_token: string;
+		expires_at: string;
+		user: { role: string; id: string };
+	};
+	const target = await resolvePostAuthRedirect(session.user.id, session.user.role as never);
+	const response = NextResponse.redirect(new URL(target, req.url));
+	response.cookies.set({
+		name: "session",
+		value: session.access_token,
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax",
+		path: "/",
+		expires: new Date(session.expires_at),
+	});
+	return response;
+}
 
 export async function POST(req: Request) {
 	const pending = await readOAuthPendingCookie();

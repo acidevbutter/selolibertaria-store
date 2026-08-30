@@ -10,7 +10,7 @@ import {
 	normalizeCatalogStock,
 } from "@/lib/catalog";
 
-describe("catalog Mongo contract", () => {
+describe("catalog FastAPI contract", () => {
 	it("creates stable internal product and variant ids", () => {
 		expect(catalogProductId("Virus do Beijo")).toBe("product_virus-do-beijo");
 		expect(catalogVariantId("virus-do-beijo", "Impresso")).toBe("variant_virus-do-beijo_impresso");

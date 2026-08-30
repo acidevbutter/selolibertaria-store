@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash, randomBytes } from "crypto";
-import { publicUrl } from "@/env.mjs";
+import { env, publicUrl } from "@/env.mjs";
 import { OAUTH_PROVIDER_DEFINITIONS, type OAuthProviderId } from "@/lib/oauth/catalog";
 
 export type OAuthProfile = {
@@ -48,110 +48,43 @@ export function buildAuthorizationUrl(
 	return url;
 }
 
-async function assertOkJson<T>(response: Response) {
-	const data = (await response.json().catch(() => ({}))) as T & { error?: unknown };
-	if (!response.ok) {
-		throw new Error(typeof data.error === "string" ? data.error : "OAuth request failed");
-	}
-	return data;
-}
-
 export async function exchangeCodeForProfile(input: {
 	providerId: OAuthProviderId;
 	code: string;
-	clientId: string;
-	clientSecret: string;
+	redirectUri?: string;
 	codeVerifier?: string;
 }) {
-	const callbackUrl = getOAuthCallbackUrl(input.providerId);
-
-	if (input.providerId === "google") {
-		const body = new URLSearchParams({
-			client_id: input.clientId,
-			client_secret: input.clientSecret,
-			code: input.code,
-			code_verifier: input.codeVerifier || "",
-			grant_type: "authorization_code",
-			redirect_uri: callbackUrl,
-		});
-		const tokenRes = await fetch(OAUTH_PROVIDER_DEFINITIONS.google.tokenUrl, {
-			method: "POST",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body,
-		});
-		const tokenData = await assertOkJson<{ access_token?: string }>(tokenRes);
-		const profileRes = await fetch(OAUTH_PROVIDER_DEFINITIONS.google.userInfoUrl, {
-			headers: { Authorization: `Bearer ${tokenData.access_token}` },
-			cache: "no-store",
-		});
-		const profile = await assertOkJson<{
-			sub: string;
-			email?: string;
-			email_verified?: boolean;
-			name?: string;
-			picture?: string;
-		}>(profileRes);
-		return {
-			provider: "google" as const,
-			providerAccountId: profile.sub,
-			email: profile.email,
-			emailVerified: profile.email_verified === true,
-			name: profile.name,
-			avatarUrl: profile.picture,
-		};
-	}
-
-	if (input.providerId === "facebook") {
-		const tokenUrl = new URL(OAUTH_PROVIDER_DEFINITIONS.facebook.tokenUrl);
-		tokenUrl.searchParams.set("client_id", input.clientId);
-		tokenUrl.searchParams.set("client_secret", input.clientSecret);
-		tokenUrl.searchParams.set("redirect_uri", callbackUrl);
-		tokenUrl.searchParams.set("code", input.code);
-		const tokenRes = await fetch(tokenUrl, { cache: "no-store" });
-		const tokenData = await assertOkJson<{ access_token?: string }>(tokenRes);
-		const profileUrl = new URL(OAUTH_PROVIDER_DEFINITIONS.facebook.userInfoUrl);
-		profileUrl.searchParams.set("fields", "id,name,email,picture");
-		profileUrl.searchParams.set("access_token", tokenData.access_token || "");
-		const profileRes = await fetch(profileUrl, { cache: "no-store" });
-		const profile = await assertOkJson<{
-			id: string;
-			email?: string;
-			name?: string;
-			picture?: { data?: { url?: string } };
-		}>(profileRes);
-		return {
-			provider: "facebook" as const,
-			providerAccountId: profile.id,
-			email: profile.email,
-			emailVerified: Boolean(profile.email),
-			name: profile.name,
-			avatarUrl: profile.picture?.data?.url,
-		};
-	}
-
-	const body = new URLSearchParams({
-		client_id: input.clientId,
-		client_secret: input.clientSecret,
-		grant_type: "authorization_code",
-		redirect_uri: callbackUrl,
-		code: input.code,
-	});
-	const tokenRes = await fetch(OAUTH_PROVIDER_DEFINITIONS.instagram.tokenUrl, {
+	const response = await fetch(`${env.FASTAPI_API_URL}/auth/internal/oauth/${input.providerId}/exchange`, {
 		method: "POST",
-		body,
+		headers: {
+			"Content-Type": "application/json",
+			"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+		},
+		body: JSON.stringify({
+			code: input.code,
+			redirect_uri: input.redirectUri ?? getOAuthCallbackUrl(input.providerId),
+			code_verifier: input.codeVerifier ?? null,
+		}),
+		cache: "no-store",
 	});
-	const tokenData = await assertOkJson<{ access_token?: string; user_id?: number }>(tokenRes);
-	const profileUrl = new URL(OAUTH_PROVIDER_DEFINITIONS.instagram.userInfoUrl);
-	profileUrl.searchParams.set("fields", "id,username");
-	profileUrl.searchParams.set("access_token", tokenData.access_token || "");
-	const profileRes = await fetch(profileUrl, { cache: "no-store" });
-	const profile = await assertOkJson<{ id: string; username?: string }>(profileRes);
+	const payload = (await response.json().catch(() => ({}))) as {
+		provider?: OAuthProviderId;
+		provider_account_id?: string;
+		email?: string | null;
+		email_verified?: boolean;
+		name?: string | null;
+		avatar_url?: string | null;
+		detail?: string;
+	};
+	if (!response.ok || !payload.provider_account_id) {
+		throw new Error(payload.detail || "OAuth request failed");
+	}
 	return {
-		provider: "instagram" as const,
-		providerAccountId: profile.id,
-		email: null,
-		emailVerified: false,
-		name: profile.username,
-		avatarUrl: null,
+		provider: payload.provider ?? input.providerId,
+		providerAccountId: payload.provider_account_id,
+		email: payload.email,
+		emailVerified: payload.email_verified === true,
+		name: payload.name,
+		avatarUrl: payload.avatar_url,
 	};
 }

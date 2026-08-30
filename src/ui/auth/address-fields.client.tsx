@@ -316,11 +316,6 @@ async function resolvePostalLookup(country: string, postalCode: string): Promise
 	if (internalLookup.status === "success" || internalLookup.status === "not-found") {
 		return internalLookup;
 	}
-
-	if (country === "BR") {
-		return lookupBrazilianPostalCodeDirect(postalCode);
-	}
-
 	return { status: "unavailable" };
 }
 
@@ -338,82 +333,6 @@ async function lookupPostalCodeFromApi(country: string, postalCode: string): Pro
 			return { status: "not-found" };
 		}
 		return { status: "unavailable" };
-	} catch {
-		return { status: "unavailable" };
-	}
-}
-
-async function lookupBrazilianPostalCodeDirect(postalCode: string): Promise<PostalLookupOutcome> {
-	const digits = postalCode.replace(/\D+/g, "");
-	let sawUnavailableProvider = false;
-
-	for (const provider of [lookupBrazilianPostalCodeFromViaCep, lookupBrazilianPostalCodeFromBrasilApi]) {
-		const result = await provider(digits);
-		if (result.status === "success") return result;
-		if (result.status === "unavailable") sawUnavailableProvider = true;
-	}
-
-	return sawUnavailableProvider ? { status: "unavailable" } : { status: "not-found" };
-}
-
-async function lookupBrazilianPostalCodeFromViaCep(digits: string): Promise<PostalLookupOutcome> {
-	try {
-		const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, { cache: "no-store" });
-		if (!res.ok) return res.status === 404 ? { status: "not-found" } : { status: "unavailable" };
-
-		const data = (await res.json()) as {
-			erro?: boolean;
-			logradouro?: string;
-			bairro?: string;
-			localidade?: string;
-			uf?: string;
-			cep?: string;
-		};
-
-		if (data.erro) return { status: "not-found" };
-
-		return {
-			status: "success",
-			result: {
-				line1: data.logradouro || "",
-				line2: "",
-				district: data.bairro || "",
-				city: data.localidade || "",
-				state: data.uf || "",
-				postalCode: data.cep || normalizePostalCode("BR", digits),
-				country: "BR",
-			},
-		};
-	} catch {
-		return { status: "unavailable" };
-	}
-}
-
-async function lookupBrazilianPostalCodeFromBrasilApi(digits: string): Promise<PostalLookupOutcome> {
-	try {
-		const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${digits}`, { cache: "no-store" });
-		if (!res.ok) return res.status === 404 ? { status: "not-found" } : { status: "unavailable" };
-
-		const data = (await res.json()) as {
-			cep?: string;
-			state?: string;
-			city?: string;
-			neighborhood?: string;
-			street?: string;
-		};
-
-		return {
-			status: "success",
-			result: {
-				line1: data.street || "",
-				line2: "",
-				district: data.neighborhood || "",
-				city: data.city || "",
-				state: data.state || "",
-				postalCode: data.cep || normalizePostalCode("BR", digits),
-				country: "BR",
-			},
-		};
 	} catch {
 		return { status: "unavailable" };
 	}
