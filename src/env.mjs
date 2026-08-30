@@ -55,9 +55,9 @@ export const env = createEnv({
 });
 
 const vercelHost =
-	process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-		? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
-		: process.env.NEXT_PUBLIC_VERCEL_URL;
+	process.env.VERCEL_ENV === "production"
+		? (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)
+		: process.env.VERCEL_URL;
 const vercelUrl = vercelHost ? `https://${vercelHost}` : undefined;
 const publicUrl = process.env.NEXT_PUBLIC_URL || vercelUrl;
 

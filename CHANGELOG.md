@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Corrigido o fallback da URL pública para usar as variáveis automáticas da Vercel (`VERCEL_URL` e `VERCEL_PROJECT_PRODUCTION_URL`) durante o build.
 - Adicionados prompts coordenados em `docs/prompts/fastapi-bff-migration/` para
   orientar o Claude na conclusão alinhada do backend FastAPI, frontend BFF,
   OAuth, jobs, Mercado Pago e validação integrada.
