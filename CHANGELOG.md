@@ -153,18 +153,18 @@
 
 - Cobertura de regressão para o fluxo editorial de texto e imagem, validando prévia/descartar no admin, preservação de imagem existente e persistência de nova imagem ao salvar.
 - Controles editoriais de imagem com prévia local, substituição, descarte antes de salvar e persistência pelos campos públicos já existentes.
-- Registro do contrato de idioma único `pt-BR` em `AGENTS.md`, `spec.md`, `userinterface.md` e `userexperience.md` para evitar retorno de multilíngue público.
+- Registro do contrato de idioma único `pt-BR` em `AGENTS.md`, `docs/product/spec.md`, `docs/design/userinterface.md` e `docs/design/userexperience.md` para evitar retorno de multilíngue público.
 - Biblioteca final de ativos editoriais em `public/images/selolibertaria/`, com mocks do livro `Virus do Beijo` e ilustrações convertidas de `temp_assets` para arquivos `png` com nomes estáveis.
 - Pasta `documentacao/` com proposta comercial em PDF para apresentação do site do Selo Libertária, incluindo argumento de valor, escopo resumido e condições de pagamento por Pix ou cartão em até 12x.
 - Escolha de entrega no checkout, com opção de usar o endereço salvo, informar um novo endereço ou retirar na loja, além de recálculo server-side do frete antes do pagamento.
 - Sistema de cálculo de fretes por provedor com contrato interno único, fallback seguro e administração de prioridade, credenciais e serviços no painel de settings.
 - Presets de provider para `Correios`, `Jadlog`, `EasyPost` e `Custom HTTP`, com adapters server-side específicos, credenciais mascaradas por campo e configuração administrativa guiada por tipo de API.
 - Chave global no admin para ativar ou desativar o cálculo de frete inteiro, cobrindo tanto providers manuais quanto integrações por API.
-- Planejamento técnico para um sistema de cálculo de fretes por provedor, com contrato interno único, fallback seguro e administração de prioridade e credenciais documentados em `spec.md` e nos guias de UI/UX.
+- Planejamento técnico para um sistema de cálculo de fretes por provedor, com contrato interno único, fallback seguro e administração de prioridade e credenciais documentados em `docs/product/spec.md` e nos guias de UI/UX.
 - Identidade interna de pedido para o fluxo com `PaymentIntent`, usando `orderId` próprio da aplicação como referência canônica e mantendo ids da Stripe apenas para reconciliação técnica.
 - Auditoria explícita em `Order details` do admin, registrando alterações manuais de fulfillment com ator, papel, data e valores anteriores/novos, além da exibição desse histórico na própria tela do pedido.
 - Planejamento e documentação do novo padrão de UX para o admin de produtos, com seções curtas no formulário, linguagem de disponibilidade sem termos técnicos de Stripe e edição de variantes em modal focado.
-- Planejamento técnico para RBAC de backoffice com bloqueio de compra para perfis internos, papel global de `admin` e introdução futura de `vendor`, documentado em `spec.md`, `AGENTS.md` e guias auxiliares de UI/UX.
+- Planejamento técnico para RBAC de backoffice com bloqueio de compra para perfis internos, papel global de `admin` e introdução futura de `vendor`, documentado em `docs/product/spec.md`, `AGENTS.md` e guias auxiliares de UI/UX.
 - Gestão administrativa de acesso de usuários, com promoção e rebaixamento de papéis por `admin`, bloqueio e desbloqueio de conta, revogação imediata de sessões e negação de login para contas bloqueadas.
 - Permissões de catálogo ampliadas para `vendor`, com criação e edição de produtos/variantes no admin e histórico auditável de mutações de catálogo por produto.
 - Infraestrutura de locale por requisição para DevButterStore com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
@@ -175,8 +175,8 @@
 - Atalho de override manual de locale por URL de entrada, aceitando prefixos como `/en`, `/en-us`, `/pt-br` e `/es`, persistindo o cookie `storefront_locale` antes de redirecionar para a rota canônica sem prefixo.
 - Infraestrutura de locale por requisição para storefront com suporte ativo a `en-US`, `pt-BR` e `es-ES`, fallback seguro para inglês e catálogo ampliado de mensagens para navegação, autenticação, conta, carrinho, checkout e páginas institucionais.
 - Configuração administrativa de idioma padrão da storefront em `settings`, integrada às configurações regionais já existentes.
-- Planejamento técnico para implementação de checkout transparente Stripe com PaymentIntent, Stripe Elements, webhooks idempotentes e critérios de segurança em `spec.md`.
-- Planejamento técnico para mecanismo profissional de cupons, promoções, favoritos e alertas de desconto por email em `spec.md`, com padrões arquiteturais registrados em `AGENTS.md`.
+- Planejamento técnico para implementação de checkout transparente Stripe com PaymentIntent, Stripe Elements, webhooks idempotentes e critérios de segurança em `docs/product/spec.md`.
+- Planejamento técnico para mecanismo profissional de cupons, promoções, favoritos e alertas de desconto por email em `docs/product/spec.md`, com padrões arquiteturais registrados em `AGENTS.md`.
 - Mecanismo de promoções automáticas e cupons com persistência em Mongo, painel administrativo em `/admin/promotions`, cálculo servidor de descontos e snapshot promocional no checkout transparente.
 - Sistema de favoritos para clientes autenticados, com toggle em produto/grade, seção dedicada em `/user`, preferência de marketing no cadastro/perfil e fila de alertas por desconto.
 - Template de email `favorite-discount-alert` e processamento auditável de alertas de favoritos em promoção, usando `promotionNotifications` e `communication`.
@@ -186,7 +186,7 @@
 - Tela administrativa de Webhooks com histórico dos eventos Stripe recebidos, incluindo status de processamento, erro, headers e payload.
 - Tela administrativa de Emails com histórico dos envios transacionais, filtros por status/tipo e vínculo com pedido ou usuário quando disponível.
 - Seleção explícita de método de pagamento salvo no checkout, reutilizando cartões já armazenados pelo cliente sem sair do fluxo transparente.
-- Technical-only scope documentation in `TODO.md` and `spec.md` to preserve the current UI while addressing functional requirements.
+- Technical-only scope documentation in `docs/product/TODO.md` and `docs/product/spec.md` to preserve the current UI while addressing functional requirements.
 - `/user` page showing logged in user data and mock order list.
 - Auto-login after registration: `/api/auth/register` now creates a 5h `session` cookie and the flow redirects user to `/user`.
 
@@ -235,8 +235,8 @@
 - O seletor de acúmulo de cupom no formulário administrativo de promoções recebeu textos mais curtos e uma ajuda contextual para evitar deslocamento ou transbordo no layout.
 - O formulário administrativo de promoções e cupons foi reorganizado em grupos tipo sanfona, com categorias visuais para dados básicos, desconto, regras, validade, alvos e alertas, reduzindo confusão no cadastro.
 - Corrigido o bug visual em que aplicar ou remover cupom fazia os itens sumirem temporariamente do carrinho até recarregar a página; a sidebar agora sincroniza imediatamente o snapshot retornado pela Server Action.
-- Documentação de UI/UX consolidada em `UI_UX_PATTERNS.md`, cobrindo padrões atuais de auth, cadastro, carrinho, checkout, favoritos, conta do usuário e superfícies administrativas.
-- `AUTH_SOCIAL_BUTTON_PATTERN.md` alinhado ao estado atual do cluster social e referenciando a nova documentação canônica de UI/UX.
+- Documentação de UI/UX consolidada em `docs/design/UI_UX_PATTERNS.md`, cobrindo padrões atuais de auth, cadastro, carrinho, checkout, favoritos, conta do usuário e superfícies administrativas.
+- `docs/patterns/AUTH_SOCIAL_BUTTON_PATTERN.md` alinhado ao estado atual do cluster social e referenciando a nova documentação canônica de UI/UX.
 
 ### Fixed
 - Corrigido o predicado de tipagem na ação editorial de `about`, preservando `eyebrow` como `string | null | undefined` durante o `filter` e destravando o `yarn build` no mesmo ponto que falhava na Vercel.

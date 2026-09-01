@@ -25,7 +25,7 @@ Sobre essa base, aplicar:
 - peso institucional e cultural;
 - livros e publicações como centro visual;
 - eventos, projetos e Sarau Safado como camada viva;
-- identidade Editorial V2.
+- identidade Canvas Selo Libertaria (Claude Design).
 
 ## Frete — Melhor Envio
 
@@ -80,7 +80,7 @@ A loja deve levar ao universo editorial. O editorial deve levar ao catálogo.
 ## Menu público oficial
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -116,12 +116,12 @@ Evitar:
 - SaaS visual no público;
 - e-commerce frio;
 - festival/site institucional sem compra clara;
-- excesso de blocos antes do footer na Home Figma V2;
+- excesso de blocos antes do footer na Home Canvas Selo Libertaria;
 - hardcode excessivo sem fallback/admin quando a superfície já é administrável.
 
 ## Home — escopo visual atual
 
-A Home deve seguir, quando o foco for Figma V2:
+A Home deve seguir, quando o foco for o Canvas Selo Libertaria:
 
 1. Header.
 2. Hero preto/papel com capa dominante e CTA de compra.

@@ -5,7 +5,7 @@ Este pacote contém versões limpas dos documentos enviados, reorganizadas a par
 - projeto herdado de fork;
 - storefront/admin já funcional;
 - Selo Libertária como identidade final;
-- Figma Editorial V2 como referência visual;
+- Canvas Selo Libertaria (Claude Design) como referência visual;
 - menu público oficial;
 - rotas existentes preservadas;
 - admin editorial já existente;
@@ -14,14 +14,14 @@ Este pacote contém versões limpas dos documentos enviados, reorganizadas a par
 Arquivos principais:
 
 - `AGENTS.md` — instruções limpas para Codex.
-- `spec.md` — spec de produto consolidada.
-- `site-overview.md` — estado real do site/app.
-- `TODO.md` — backlog P0–P6.
-- `UI_UX_PATTERNS.md` — padrões de UI/UX.
-- `userinterface.md` — resumo visual rápido.
-- `userexperience.md` — resumo de experiência.
-- `SELOLIBERTARIA_SITE_MAP.md` — mapa de navegação/conteúdo.
-- `AUTH_SOCIAL_BUTTON_PATTERN.md` — padrão OAuth.
+- `docs/product/spec.md` — spec de produto consolidada.
+- `docs/product/site-overview.md` — estado real do site/app.
+- `docs/product/TODO.md` — backlog P0–P6.
+- `docs/design/UI_UX_PATTERNS.md` — padrões de UI/UX.
+- `docs/design/userinterface.md` — resumo visual rápido.
+- `docs/design/userexperience.md` — resumo de experiência.
+- `docs/product/SELOLIBERTARIA_SITE_MAP.md` — mapa de navegação/conteúdo.
+- `docs/patterns/AUTH_SOCIAL_BUTTON_PATTERN.md` — padrão OAuth.
 - `CODEX_PROMPTS.md` — prompts separados por fase.
 
 ## Docker para desenvolvimento

@@ -118,7 +118,7 @@ function toAdminGroup(product: CatalogProductDocument): AdminProductGroup {
 }
 
 export async function listAdminProductGroups() {
-	const products = await listCatalogProducts({ first: 500, includeUnpublished: true });
+	const products = await listCatalogProducts({ first: 200, includeUnpublished: true });
 	return products.map(toAdminGroup).sort((a, b) => {
 		const orderDiff = parseDisplayOrder(a.order) - parseDisplayOrder(b.order);
 		return orderDiff || a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
