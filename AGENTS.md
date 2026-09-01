@@ -49,7 +49,7 @@ Notes:
 The public header menu must be:
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -69,7 +69,7 @@ Do not aggressively rename routes without a dedicated routing/SEO task.
 
 Current route labels may be localized while preserving existing route paths. For example:
 
-- `Livros` can point to the current catalog/products route.
+- `Loja` can point to the current catalog/products route.
 - `Projetos` can point to `/projects`.
 - `Sarau Safado` can point to `/sarau-safado`.
 - `Sobre` can point to `/about`.
@@ -97,16 +97,16 @@ The site should feel like a contemporary literary publisher/bookstore: adult, wa
 - excessive ornamental effects;
 - unrelated starter/demo assets.
 
-## Figma guidance
+## Canvas Selo Libertaria guidance
 
-Figma Prototype V2 is a visual reference, especially for:
+`Canvas Selo Libertaria` (Claude Design, `.dc.html`) is the visual reference, especially for:
 
 - Home Desktop;
 - Mobile Home;
 - Book/PDP page;
 - Admin editorial shell direction.
 
-Do not copy absolute Figma-generated code. Translate the reference into reusable project components.
+Do not copy absolute canvas-generated markup. Translate the reference into reusable project components.
 
 For the public home, prioritize:
 
@@ -118,7 +118,7 @@ For the public home, prioritize:
 6. Sarau Safado panel
 7. Newsletter/footer
 
-Avoid adding many extra blocks before the footer when the task is strict Figma fidelity.
+Avoid adding many extra blocks before the footer when the task is strict Canvas Selo Libertaria fidelity.
 
 ## Public storefront rules
 
@@ -231,7 +231,7 @@ Also validate:
 
 ## AI patterns
 
-- 2026-06-24: public navigation must stay identical across desktop and mobile with only `Livros`, `Projetos`, `Sarau Safado`, `Sobre` and `Contato`; keep `Comprar` as a separate CTA and never leak `Eventos`, `Início` or dynamic categories into the primary public menu.
+- 2026-06-24: public navigation must stay identical across desktop and mobile with only `Loja`, `Projetos`, `Sarau Safado`, `Sobre` and `Contato`; keep `Comprar` as a separate CTA and never leak `Eventos`, `Início` or dynamic categories into the primary public menu.
 - 2026-06-24: when polishing public storefront copy, prefer `livros` over generic `produtos` in search, catalogue and empty-state labels, and route fallback CTAs toward primary editorial surfaces such as `Projetos` instead of promoting `Eventos` in the main navigation path.
 - 2026-06-24: public editorial pages after Home should follow the Editorial V2 hierarchy of one dominant hero, one short explanatory band, a concise content block and a single strong closing CTA strip before the newsletter/footer; avoid stacking many generic panels.
 - 2026-06-24: in the public header, the final CTA must be session-oriented (`Entrar`, `Conta` or `Minha conta`) and never `Comprar`; purchase language belongs to product and catalog surfaces, especially the PDP.
@@ -250,7 +250,7 @@ Also validate:
 - 2026-06-29: ao documentar o Melhor Envio em arquivos de ambiente do Selo Libertária, mantenha apenas segredos em `env`, com `MELHOR_ENVIO_ACCESS_TOKEN` como chave ativa atual e opções operacionais fora do `.env.example`.
 - 2026-06-29: no Selo admin, o frete deve aparecer como um único bloco fixo do Melhor Envio: segredo/token apenas em `env`, opções operacionais em `current.shippingMelhorEnvio`, `shippingEnabled` separado e `shippingProviders` preservado só como legado invisível para fallback.
 
-@RTK.md
+@docs/patterns/RTK.md
 ## Addendum — P3.75B
 
 - copy pública editorial e comercial deve sair de documentos editoriais dedicados no Mongo/admin; não recolocar esses textos em `messages/pt-BR.json`.
@@ -271,7 +271,7 @@ Also validate:
 - 2026-07-01: em projetos com Yarn Classic e hooks Git via Husky, o `prepare` deve falhar com segurança quando `devDependencies` não estiverem instaladas; mantenha a instalação automática dos hooks apenas quando o binário local do `husky` estiver disponível.
 - 2026-07-01: no storefront do Selo Libertária, uma leitura antiga e vazia de `/api/cart` nunca pode sobrescrever um estado de carrinho mais novo disparado por `Adicionar ao carrinho`; badge do header, drawer e atalho flutuante devem responder ao mesmo contexto cliente e preservar a contagem otimista até o snapshot atualizado chegar.
 - 2026-07-01: nos cards públicos de livros, os fluxos `Adicionar ao carrinho` e `Comprar` não podem cancelar a própria mutação por causa do estado local de loading; esse estado só deve bloquear cliques concorrentes, enquanto badge, drawer e checkout continuam espelhando o mesmo snapshot ativo.
-- 2026-07-01: em `/products`, a primeira dobra de `Livros` deve seguir a composição preta editorial do Figma e o CTA `Ver catálogo` precisa levar para a grade publicada na mesma rota; quando houver só um livro, o layout deve evitar stretch e vazios de marketplace genérico.
+- 2026-07-01: em `/products`, a primeira dobra de `Livros` deve seguir a composição preta editorial do Canvas Selo Libertaria e o CTA `Ver catálogo` precisa levar para a grade publicada na mesma rota; quando houver só um livro, o layout deve evitar stretch e vazios de marketplace genérico.
 - 2026-07-02: no shell do admin, o bloco de marca da sidebar e da navegação móvel deve usar o logo oficial do Selo Libertária no lugar de quadrado vazio, preservando fundo preto, superfície papel e leitura editorial discreta do backoffice.
 - 2026-07-02: em páginas singleton do admin editorial, não exponha `Título interno`, `Ordem`, `Resumo` ou `Corpo principal` quando esses campos não controlarem a saída pública; preserve no formulário apenas publicação e blocos realmente renderizados no site.
 - 2026-07-02: no admin editorial, prefira um CTA de `Salvar` flutuante e persistente no viewport em vez de repetir botão por bloco; isso reduz rolagem de retorno sem fragmentar o envio do formulário.

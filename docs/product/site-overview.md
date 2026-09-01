@@ -165,7 +165,7 @@ Home:
 Usar visualmente:
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -177,7 +177,7 @@ Não forçar mudança de rota sem tarefa específica. Ajustar labels e links de 
 ## Próximos passos reais
 
 1. Auditar menu/header/footer e copy pública em `pt-BR`.
-2. Alinhar a Home ao Figma Editorial V2.
+2. Alinhar a Home ao Canvas Selo Libertaria (Claude Design).
 3. Melhorar uso visual das imagens de `events` e `projects`.
 4. Revisar páginas institucionais para reduzir copy fixa e fortalecer ritmo editorial.
 5. Auditar campo a campo o hub editorial: tudo que salva precisa aparecer no site.

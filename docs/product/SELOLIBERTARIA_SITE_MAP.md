@@ -16,7 +16,7 @@ Consolidar o mapa editorial e comercial do Selo Libertária sem misturar a naveg
 O menu principal atual deve ser:
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -33,7 +33,7 @@ Regras:
 
 | Item visual | Rota provável atual | Função |
 | --- | --- | --- |
-| Livros | catálogo/produtos existente | Comprar e explorar livros/produtos |
+| Loja | catálogo/produtos existente | Comprar e explorar livros e demais produtos |
 | Projetos | `/projects` | Portfólio cultural e ações editoriais |
 | Sarau Safado | `/sarau-safado` | Página dedicada ao sarau, agenda/memória/contexto |
 | Sobre | `/about` | Manifesto, autoria, selo, linha editorial |
@@ -53,7 +53,7 @@ Não renomear rotas para português sem tarefa explícita de redirects/canonical
 - Apresentação como editora/produtora cultural dedicada à literatura.
 - Convite para loja, eventos, projetos e trajetória do selo.
 
-### Loja / Livros
+### Loja
 
 - Livros impressos e sonoros.
 - Destaque para publicações de Natália Nolli Sasso.
@@ -118,7 +118,7 @@ Modernizar:
 ## Estrutura pública recomendada
 
 1. Home
-2. Catálogo/Livros
+2. Catálogo/Loja
 3. PDP/Página de livro
 4. Projetos
 5. Sarau Safado

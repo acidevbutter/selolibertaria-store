@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Consolidar os padrões de interface e experiência para o Selo Libertária, evitando conflito entre fork herdado, Figma Editorial V2, admin existente e prompts soltos.
+Consolidar os padrões de interface e experiência para o Selo Libertária, evitando conflito entre fork herdado, Canvas Selo Libertaria (Claude Design), admin existente e prompts soltos.
 
 ## Princípios globais
 
@@ -47,7 +47,7 @@ Evitar:
 Menu público oficial:
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -80,7 +80,7 @@ A primeira dobra precisa unir:
 - CTA de compra;
 - atmosfera editorial.
 
-Evitar empilhar blocos institucionais extras antes do footer quando a tarefa for fidelidade ao Figma.
+Evitar empilhar blocos institucionais extras antes do footer quando a tarefa for fidelidade ao Canvas Selo Libertaria.
 
 ## Catálogo / Livros
 

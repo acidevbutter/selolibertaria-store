@@ -4,7 +4,7 @@
 
 Manter os botões de OAuth no login com linguagem visual consistente, centralizada e subordinada ao login por email/senha.
 
-Este documento é específico do cluster de autenticação social e complementa `UI_UX_PATTERNS.md`.
+Este documento é específico do cluster de autenticação social e complementa `docs/design/UI_UX_PATTERNS.md`.
 
 ## Princípios
 
@@ -60,4 +60,4 @@ Em `en-US`, manter traduções via i18n, não hardcode solto.
 - Não quebrar em múltiplas colunas no desktop.
 - O botão principal de login e o trilho social devem ter largura compatível.
 - Não exibir `error` cru vindo de OAuth callback; mapear por código estável quando possível.
-- Se alterar este padrão, atualizar também `UI_UX_PATTERNS.md`, `userinterface.md`, `userexperience.md`, `spec.md` e `AGENTS.md`.
+- Se alterar este padrão, atualizar também `docs/design/UI_UX_PATTERNS.md`, `docs/design/userinterface.md`, `docs/design/userexperience.md`, `docs/product/spec.md` e `AGENTS.md`.

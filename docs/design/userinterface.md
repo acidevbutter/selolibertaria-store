@@ -2,7 +2,7 @@
 
 ## Fonte canônica
 
-Este arquivo resume decisões visuais rápidas. Para regras completas, usar `UI_UX_PATTERNS.md`. Para escopo de produto, usar `spec.md`.
+Este arquivo resume decisões visuais rápidas. Para regras completas, usar `docs/design/UI_UX_PATTERNS.md`. Para escopo de produto, usar `docs/product/spec.md`.
 
 ## Direção visual
 
@@ -41,7 +41,7 @@ Evitar:
 Menu oficial:
 
 ```text
-Livros
+Loja
 Projetos
 Sarau Safado
 Sobre
@@ -57,7 +57,7 @@ Elementos:
 
 ## Home
 
-Ordem visual recomendada para Figma Editorial V2:
+Ordem visual recomendada para o Canvas Selo Libertaria (Claude Design):
 
 1. Header.
 2. Hero escuro/papel com capa dominante.
@@ -173,7 +173,7 @@ Sem overflow horizontal. Menu mobile precisa abrir/fechar e manter os cinco iten
 - Header e menu mobile devem repetir exatamente os cinco itens oficiais, sem `Início`, sem `Eventos` e sem categorias dinâmicas no bloco principal.
 - CTA `Comprar` continua separada da navegação principal em desktop e mobile.
 - Busca, catálogo e estados vazios públicos devem preferir `livros` no lugar de `produtos` quando o contexto for storefront editorial.
-- Catálogo, Projetos, Sarau Safado, Sobre e Contato devem repetir a gramática visual do Figma Editorial V2: hero dominante, poucas seções, alternância entre papel e preto e fechamento único antes do footer.
+- Catálogo, Projetos, Sarau Safado, Sobre e Contato devem repetir a gramática visual do Canvas Selo Libertaria: hero dominante, poucas seções, alternância entre papel e preto e fechamento único antes do footer.
 - Na PDP, a capa deve liderar a primeira dobra, com bloco de compra enxuto à direita, botões retos de `Comprar` e `Ler trecho`, sinopse com leitura confortável e faixa preta para trecho/citação.
 - O CTA final do header público deve ser `Entrar` ou `Conta`/`Minha conta`; `Comprar` não deve aparecer no header.
 - Em fases de estabilização pública, o locale renderizado do storefront pode ser congelado em `pt-BR` sem desmontar a infraestrutura de i18n.
