@@ -22,57 +22,6 @@ services:
       - default
       - devbutter_shared
 
-  mongo:
-    image: mongo:7.0
-    container_name: selolibertaria-mongo
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_DATABASE: selolibertaria
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  postgres:
-    image: postgres:16
-    container_name: selolibertaria-backend-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: selolibertaria_backend
-    ports:
-      - "5432:5432"
-    volumes:
-      - backend_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  # Opcional: serviço da app se quiser orquestrar junto
-  # app:
-  #   build: .
-  #   depends_on:
-  #     mongo:
-  #       condition: service_healthy
-  #   environment:
-  #     MONGODB_URI: mongodb://mongo:27017
-  #     MONGODB_DB_NAME: selolibertaria
-  #     CATALOG_CURRENCY: BRL
-  #     NEXT_PUBLIC_URL: http://localhost:3000
-  #     JWT_SECRET: dev_super_secret_change_me_please_123456
-  #   ports:
-  #     - "3000:3000"
-
   mailpit:
     image: axllent/mailpit:latest
     container_name: selolibertaria-mailpit
@@ -90,8 +39,6 @@ volumes:
   mongo_data:
     driver: local
   mailpit_data:
-    driver: local
-  backend_postgres_data:
     driver: local
   frontend_node_modules:
     driver: local
