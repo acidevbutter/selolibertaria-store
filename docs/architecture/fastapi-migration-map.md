@@ -39,7 +39,9 @@ Domínios em `backend/app/` ligados em `app/main.py`: `users`, `auth`,
 - RBAC de operador em rotas administrativas (`admin`/`vendor`); chave interna
   para tráfego server-to-server.
 - Migração única Mongo→PostgreSQL protegida por chave e reivindicada uma vez
-  (`test_migrations.py`, ainda só em SQLite).
+  (`test_migrations.py`, ainda só em SQLite). A rota `/admin/migrations/*` fica
+  dormente (`404`) a menos que `MIGRATIONS_ENABLED=true`; sem a flag o serviço
+  não abre conexão Mongo.
 
 ## Superfícies por domínio
 
@@ -52,7 +54,7 @@ Domínios em `backend/app/` ligados em `app/main.py`: `users`, `auth`,
 | Pedidos | Migrado. CRUD, fulfillment forward-only, auditoria, dashboard e `POST /orders/{id}/payment-operation` (cancelamento/estorno via Orders API com guarda de estado e auditoria). |
 | Mercado Pago | Implementação pausada por decisão de escopo. O núcleo existente inclui tentativa idempotente, validação/deduplicação de webhook e reconciliação, mas não deve avançar nem ser considerado pronto sem homologação Sandbox integrada. Cartões salvos seguem desabilitados. |
 | Frete | Migrado. Cotação Melhor Envio no FastAPI (`/shipping/quote`); token e HTTP do provedor ficam no servidor. |
-| Editorial | Migrado. Leitura pública e escrita admin pelo domínio `editorial` do FastAPI. |
+| Editorial | Migrado. Leitura pública e escrita admin pelo domínio `editorial` do FastAPI. O admin não tem mais shim com forma de Mongo: `src/lib/editorial-admin-api.ts` faz `fetch` a endpoints de domínio (`PUT` upsert com `previous_slug` para rename atômico, `POST .../reorder`, `PATCH .../{slug}/publish`); a lógica de ordenação/rename vive em `app/editorial/service.py`. |
 | Promoções | Migrado. Promoções, cupons, elegibilidade, `price-cart` e resgate idempotente pelo FastAPI. |
 | Comunicação | Migrado. E-mails transacionais, templates, retries, logs e webhooks admin pelo FastAPI/Butter Relay. |
 | Mídia | Migrado. Upload/delete e newsletter pelo FastAPI; segredos Cloudinary ficam no servidor. |

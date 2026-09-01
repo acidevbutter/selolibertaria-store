@@ -2,15 +2,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ADMIN_IMAGE_UPLOAD_MAX_BYTES } from "@/lib/admin-image-upload";
 
 const requireCapabilityMock = vi.fn();
-const getDbMock = vi.fn();
 const getEditorialRecordForAdminMock = vi.fn();
-const updateOneMock = vi.fn();
+const upsertEditorialMock = vi.fn();
+const deleteEditorialMock = vi.fn();
+const reorderEditorialMock = vi.fn();
+const setEditorialPublishedMock = vi.fn();
 const uploadImageFileToFastAPIMock = vi.fn();
 const redirectMock = vi.fn((path: string) => {
 	throw new Error(`NEXT_REDIRECT:${path}`);
 });
 const revalidatePathMock = vi.fn();
 const actionState = { status: "idle" as const, message: null, fieldErrors: {} };
+
+type UpsertCall = {
+	content: Record<string, unknown>;
+	previousSlug?: string | null;
+	slug: string;
+	type: string;
+};
+
+function lastUpsert(): UpsertCall {
+	return upsertEditorialMock.mock.calls.at(-1)?.[0] as UpsertCall;
+}
 
 vi.mock("server-only", () => ({}));
 
@@ -22,8 +35,11 @@ vi.mock("@/lib/media-upload", () => ({
 	uploadImageFileToFastAPI: (file: File) => uploadImageFileToFastAPIMock(file),
 }));
 
-vi.mock("@/lib/editorial-api-store", () => ({
-	getEditorialApiStore: () => getDbMock(),
+vi.mock("@/lib/editorial-admin-api", () => ({
+	upsertEditorial: (...args: unknown[]) => upsertEditorialMock(...args),
+	deleteEditorial: (...args: unknown[]) => deleteEditorialMock(...args),
+	reorderEditorial: (...args: unknown[]) => reorderEditorialMock(...args),
+	setEditorialPublished: (...args: unknown[]) => setEditorialPublishedMock(...args),
 }));
 
 vi.mock("@/lib/editorial-content-store", () => ({
@@ -107,13 +123,11 @@ describe("editorial item image persistence", () => {
 			order: 1,
 			hero: null,
 		});
-		updateOneMock.mockReset();
-		updateOneMock.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
-		getDbMock.mockResolvedValue({
-			collection: () => ({
-				updateOne: updateOneMock,
-			}),
-		});
+		upsertEditorialMock.mockReset();
+		upsertEditorialMock.mockResolvedValue(undefined);
+		deleteEditorialMock.mockReset().mockResolvedValue(undefined);
+		reorderEditorialMock.mockReset().mockResolvedValue(undefined);
+		setEditorialPublishedMock.mockReset().mockResolvedValue(undefined);
 		uploadImageFileToFastAPIMock.mockReset();
 		redirectMock.mockClear();
 		revalidatePathMock.mockClear();
@@ -127,15 +141,14 @@ describe("editorial item image persistence", () => {
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
 		expect(uploadImageFileToFastAPIMock).not.toHaveBeenCalled();
-		const update = updateOneMock.mock.calls[0]?.[1] as {
-			$set: { image: unknown; description: string | null };
-		};
-		expect(update.$set.description).toBe("Descrição com **Markdown** preservado");
-		expect(update.$set.image).toEqual({
+		const content = lastUpsert().content as { image: unknown; description: string | null };
+		expect(content.description).toBe("Descrição com **Markdown** preservado");
+		expect(content.image).toEqual({
 			src: "https://cdn.example.com/evento-legado.jpg",
 			alt: "Foto legada",
 			caption: "Legenda legada",
 		});
+		expect(lastUpsert().previousSlug).toBe("sarau-antigo");
 	});
 
 	it("keeps the form data in place and returns a field error when a new event has no title", async () => {
@@ -147,7 +160,7 @@ describe("editorial item image persistence", () => {
 			message: "Revise os campos destacados antes de salvar.",
 			fieldErrors: { title: "Informe o título do evento." },
 		});
-		expect(updateOneMock).not.toHaveBeenCalled();
+		expect(upsertEditorialMock).not.toHaveBeenCalled();
 	});
 
 	it("creates a new event and redirects to its editable record", async () => {
@@ -158,12 +171,15 @@ describe("editorial item image persistence", () => {
 				actionState,
 				buildEventFormData({ currentSlug: undefined, slug: undefined, title: "Novo Sarau" }),
 			),
-		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/");
+		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/novo-sarau");
 
-		expect(updateOneMock).toHaveBeenCalledWith(
-			{ type: "event", slug: "novo-sarau" },
-			expect.objectContaining({ $set: expect.objectContaining({ title: "Novo Sarau" }) }),
-			{ upsert: true },
+		expect(upsertEditorialMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "event",
+				slug: "novo-sarau",
+				content: expect.objectContaining({ title: "Novo Sarau" }),
+			}),
+			"admin-1",
 		);
 	});
 
@@ -179,8 +195,8 @@ describe("editorial item image persistence", () => {
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/events/sarau-antigo");
 
 		expect(uploadImageFileToFastAPIMock).toHaveBeenCalledWith(uploadedFile);
-		const update = updateOneMock.mock.calls[0]?.[1] as { $set: { image: unknown } };
-		expect(update.$set.image).toEqual({
+		const content = lastUpsert().content as { image: unknown };
+		expect(content.image).toEqual({
 			src: "https://res.cloudinary.com/selo/evento-novo.jpg",
 			alt: "Foto legada",
 			caption: "Legenda legada",
@@ -205,7 +221,7 @@ describe("editorial item image persistence", () => {
 		});
 
 		expect(uploadImageFileToFastAPIMock).not.toHaveBeenCalled();
-		expect(updateOneMock).not.toHaveBeenCalled();
+		expect(upsertEditorialMock).not.toHaveBeenCalled();
 	});
 
 	it("persists only allowed background options for Sarau hero", async () => {
@@ -222,8 +238,8 @@ describe("editorial item image persistence", () => {
 			),
 		).rejects.toThrow("NEXT_REDIRECT:/admin/editorial/sarau-safado");
 
-		const update = updateOneMock.mock.calls[0]?.[1] as { $set: { hero: { background: unknown } } };
-		expect(update.$set.hero.background).toEqual({
+		const content = lastUpsert().content as { hero: { background: unknown } };
+		expect(content.hero.background).toEqual({
 			image: {
 				src: "https://cdn.example.com/sarau.jpg",
 				alt: "Hero",
@@ -293,13 +309,8 @@ describe("editorial contact fixed channels", () => {
 				],
 			},
 		});
-		updateOneMock.mockReset();
-		updateOneMock.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
-		getDbMock.mockResolvedValue({
-			collection: () => ({
-				updateOne: updateOneMock,
-			}),
-		});
+		upsertEditorialMock.mockReset();
+		upsertEditorialMock.mockResolvedValue(undefined);
 		redirectMock.mockClear();
 		revalidatePathMock.mockClear();
 	});
@@ -311,20 +322,18 @@ describe("editorial contact fixed channels", () => {
 			"NEXT_REDIRECT:/admin/editorial/contact",
 		);
 
-		const update = updateOneMock.mock.calls[0]?.[1] as {
-			$set: {
-				direct: { links: Array<{ label: string; href: string; text: string }> };
-				hero: { featuredLabel: string | null; featuredValue: string | null };
-			};
+		const content = lastUpsert().content as {
+			direct: { links: Array<{ label: string; href: string; text: string }> };
+			hero: { featuredLabel: string | null; featuredValue: string | null };
 		};
 
-		expect(update.$set.direct.links).toEqual([
+		expect(content.direct.links).toEqual([
 			{
 				label: "Email",
 				href: "mailto:contato-legado@selo.test",
 				text: "contato-legado@selo.test",
 			},
 		]);
-		expect(update.$set.hero.featuredValue).toBe("contato-legado@selo.test");
+		expect(content.hero.featuredValue).toBe("contato-legado@selo.test");
 	});
 });
