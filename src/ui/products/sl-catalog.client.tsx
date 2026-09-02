@@ -17,26 +17,31 @@ export function SlCatalog({ rows, categories }: { rows: SlProductRow[]; categori
 		[rows, active],
 	);
 
+	// "Tudo" + at least two real categories makes the bar worth showing.
+	const showCategoryBar = categories.length > 2;
+
 	return (
 		<>
-			<div
-				role="tablist"
-				aria-label="Categorias da loja"
-				className="flex overflow-x-auto border-b border-[color:rgba(11,11,11,0.16)] bg-[color:var(--sl-surface-band)] px-4 sm:px-8 lg:px-12"
-			>
-				{categories.map((category) => (
-					<button
-						key={category.key}
-						type="button"
-						role="tab"
-						aria-selected={active === category.key}
-						className="sl-tab"
-						onClick={() => setActive(category.key)}
-					>
-						{category.label} · {category.count}
-					</button>
-				))}
-			</div>
+			{showCategoryBar ? (
+				<div
+					role="tablist"
+					aria-label="Categorias da loja"
+					className="flex overflow-x-auto border-b border-[color:rgba(11,11,11,0.16)] bg-[color:var(--sl-surface-band)] px-4 sm:px-8 lg:px-12"
+				>
+					{categories.map((category) => (
+						<button
+							key={category.key}
+							type="button"
+							role="tab"
+							aria-selected={active === category.key}
+							className="sl-tab"
+							onClick={() => setActive(category.key)}
+						>
+							{category.label} · {category.count}
+						</button>
+					))}
+				</div>
+			) : null}
 
 			{visible.length > 0 ? (
 				<div className="grid grid-cols-2 gap-[var(--sl-grid-gap-sm)] px-4 py-10 sm:px-8 md:gap-[var(--sl-grid-gap)] lg:grid-cols-3 lg:px-12 lg:py-14 xl:grid-cols-4">

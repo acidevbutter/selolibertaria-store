@@ -1,21 +1,22 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
-import { getTranslations } from "@/i18n/server";
+import { getLocale, getTranslations } from "@/i18n/server";
+import { auth } from "@/lib/auth";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { deslugify } from "@/lib/utils";
-import { EditorialShell } from "@/ui/editorial/editorial-primitives";
-import { CatalogIntro } from "@/ui/products/catalog-intro";
-import { ProductList } from "@/ui/products/product-list";
+import { SlCatalog } from "@/ui/products/sl-catalog.client";
+import { SlPageHero } from "@/ui/sl/sl-page-hero";
 
 export const generateMetadata = async (props: { params: Promise<{ slug: string }> }): Promise<Metadata> => {
 	const params = await props.params;
-	const preferredCurrency = await getRequestPreferredCurrency();
 	const result = await commerce.product.browse({
 		first: 100,
-		category: params.slug, // YNS SDK uses direct category parameter
-		currency: preferredCurrency,
+		category: params.slug,
+		currency: await getRequestPreferredCurrency(),
 	});
 
 	if (!result.data || result.data.length === 0) {
@@ -23,7 +24,6 @@ export const generateMetadata = async (props: { params: Promise<{ slug: string }
 	}
 
 	const t = await getTranslations("/category.metadata");
-
 	return {
 		title: t("title", { categoryName: deslugify(params.slug) }),
 		alternates: { canonical: `${publicUrl}/category/${params.slug}` },
@@ -32,47 +32,34 @@ export const generateMetadata = async (props: { params: Promise<{ slug: string }
 
 export default async function CategoryPage(props: { params: Promise<{ slug: string }> }) {
 	const params = await props.params;
-	const preferredCurrency = await getRequestPreferredCurrency();
-	const result = await commerce.product.browse({
-		first: 100,
-		category: params.slug, // YNS SDK uses direct category parameter
-		currency: preferredCurrency,
-	});
+	const [currency, locale, session, seloT] = await Promise.all([
+		getRequestPreferredCurrency(),
+		getLocale(),
+		auth(),
+		getTranslations("Selo"),
+	]);
 
+	const result = await commerce.product.browse({ first: 100, category: params.slug, currency });
 	if (!result.data || result.data.length === 0) {
 		return notFound();
 	}
 
-	const products = result.data;
-
-	const t = await getTranslations("/category.page");
-	const seloT = await getTranslations("Selo");
+	const rows = buildSlProductRows(result.data, {
+		locale,
+		canPurchase: canBuyOnSelolibertaria(session?.user.role),
+	});
+	const categories = deriveSlCategories(rows);
+	const name = result.data[0]?.category?.name ?? deslugify(params.slug);
+	const count = rows.length;
 
 	return (
-		<main className="space-y-8 pb-8">
-			<CatalogIntro
+		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
+			<SlPageHero
 				eyebrow={seloT("category.eyebrow")}
-				title={deslugify(params.slug)}
-				description={t("title", { categoryName: deslugify(params.slug) })}
-				highlight="A categoria mantém o mesmo pulso editorial do catálogo, com recorte mais preciso."
-				cards={[
-					{
-						label: "Recorte",
-						body: "A seleção agrupa livros e edições por afinidade sem perder a sensação de descoberta.",
-					},
-					{
-						label: "Ritmo",
-						body: "O bloco de abertura prepara a leitura antes da grade, em vez de jogar a pessoa direto na listagem.",
-					},
-					{
-						label: "Conexão",
-						body: "Cada resultado ainda funciona como porta de entrada para autores, eventos e contexto do selo.",
-					},
-				]}
+				title={name}
+				lead={`${count} ${count === 1 ? "item" : "itens"} nesta categoria — mesma mesa de curadoria, recorte mais preciso.`}
 			/>
-			<EditorialShell>
-				<ProductList products={products} />
-			</EditorialShell>
-		</main>
+			<SlCatalog rows={rows} categories={categories} />
+		</div>
 	);
 }
