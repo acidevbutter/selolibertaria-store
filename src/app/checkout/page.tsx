@@ -3,7 +3,9 @@ import { createTransparentCheckoutIntent } from "@/actions/checkout-actions";
 import { CheckoutForm } from "@/app/checkout/checkout-form.client";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { getCartCookiePayload } from "@/lib/cart-cookies";
+import { isAsaasActive, isMercadoPagoActive } from "@/lib/payments";
 import { formatMoney } from "@/lib/utils";
+import { SlButton } from "@/ui/sl/sl-button";
 import { SlCheckoutStepper } from "@/ui/sl/sl-checkout-stepper";
 import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
 
@@ -28,6 +30,34 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 	}
 
 	const [locale, t] = await Promise.all([getLocale(), getTranslations("Checkout.page")]);
+
+	// Mercado Pago is kept in the codebase but only wired when it is the active
+	// provider. Any other value shows a maintenance notice instead of the form.
+	if (!isMercadoPagoActive) {
+		return (
+			<main
+				className="sl-scope mx-auto flex max-w-lg flex-col gap-4 px-6 py-20"
+				style={{ color: "var(--sl-text)" }}
+			>
+				<p className="sl-eyebrow m-0 text-[color:var(--sl-accent)]">Checkout</p>
+				<h1 className="sl-head m-0 text-[clamp(28px,5vw,40px)] leading-[0.98]">Pagamento em manutenção</h1>
+				<p className="m-0 text-[15px] leading-[1.7] text-[color:var(--sl-text-muted)]">
+					{isAsaasActive
+						? "Estamos migrando o checkout para a Asaas. O carrinho fica salvo — tente de novo em instantes ou fale com a gente."
+						: "O checkout está temporariamente indisponível. O carrinho fica salvo — tente de novo em instantes."}
+				</p>
+				<div className="flex flex-wrap gap-3">
+					<SlButton href="/products" variant="secondary">
+						Continuar na loja
+					</SlButton>
+					<SlButton href="/contact" variant="secondary">
+						Falar com a loja
+					</SlButton>
+				</div>
+			</main>
+		);
+	}
+
 	const res = await createTransparentCheckoutIntent();
 
 	if ("error" in res) {
