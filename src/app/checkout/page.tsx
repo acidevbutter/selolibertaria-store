@@ -4,11 +4,13 @@ import { CheckoutForm } from "@/app/checkout/checkout-form.client";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { getCartCookiePayload } from "@/lib/cart-cookies";
 import { isAsaasActive, isMercadoPagoActive } from "@/lib/payments";
+import { getPaymentBoletoEnabledSetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import { SlButton } from "@/ui/sl/sl-button";
 import { SlCheckoutStepper } from "@/ui/sl/sl-checkout-stepper";
 import { SlMiniProductRow } from "@/ui/sl/sl-mini-product-row";
 import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
+import { economyShippingLabel } from "@/ui/sl/sl-shipping-option";
 
 interface CheckoutStartPageProps {
 	searchParams: Promise<{ prepared?: string }>;
@@ -30,7 +32,11 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 		redirect("/checkout");
 	}
 
-	const [locale, t] = await Promise.all([getLocale(), getTranslations("Checkout.page")]);
+	const [locale, t, boletoEnabled] = await Promise.all([
+		getLocale(),
+		getTranslations("Checkout.page"),
+		getPaymentBoletoEnabledSetting(),
+	]);
 
 	// Mercado Pago is kept in the codebase but only wired when it is the active
 	// provider. Any other value shows a maintenance notice instead of the form.
@@ -79,7 +85,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 	];
 	if (res.shippingRate) {
 		summaryLines.push({
-			label: `${res.shippingRate.providerLabel}${res.shippingRate.serviceName ? ` · ${res.shippingRate.serviceName}` : ""}`,
+			label: economyShippingLabel(res.shippingRate.estimated_days),
 			value: money(res.shippingRate.fixed_amount.amount),
 		});
 	}
@@ -118,7 +124,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 
 			<div className="mx-auto grid w-full max-w-[var(--sl-w-narrow)] gap-8 px-4 py-9 sm:px-8 lg:grid-cols-[1fr_400px] lg:items-start lg:px-10">
 				<section>
-					<CheckoutForm checkout={res} locale={locale} />
+					<CheckoutForm checkout={res} locale={locale} boletoEnabled={boletoEnabled} />
 				</section>
 
 				<aside className="flex flex-col gap-4">

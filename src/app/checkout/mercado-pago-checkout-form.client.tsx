@@ -25,6 +25,7 @@ import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/me
 import { formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
+import { SlBoletoPanel } from "@/ui/sl/sl-boleto-panel";
 import { SlCardBrandRow } from "@/ui/sl/sl-card-brand-row";
 import { SlField } from "@/ui/sl/sl-field";
 import { SlInstallmentList, type SlInstallmentOption } from "@/ui/sl/sl-installment-list";
@@ -32,7 +33,7 @@ import { SlPaymentMethodTabs } from "@/ui/sl/sl-payment-method-tabs";
 import { SlPaymentState } from "@/ui/sl/sl-payment-state";
 import { SlPixPanel } from "@/ui/sl/sl-pix-panel";
 import { SlSavedCard } from "@/ui/sl/sl-saved-card";
-import { SlShippingOption } from "@/ui/sl/sl-shipping-option";
+import { economyShippingLabel, SlShippingOption } from "@/ui/sl/sl-shipping-option";
 
 type MercadoPagoFormData = {
 	payment_method_id?: string;
@@ -146,9 +147,11 @@ function sanitizeMercadoPagoFormData(formData: MercadoPagoFormData) {
 export function MercadoPagoCheckoutForm({
 	checkout,
 	locale,
+	boletoEnabled = false,
 }: {
 	checkout: TransparentCheckoutIntent;
 	locale: AppLocale;
+	boletoEnabled?: boolean;
 }) {
 	const router = useRouter();
 	const t = useTranslations("Checkout.form");
@@ -173,7 +176,11 @@ export function MercadoPagoCheckoutForm({
 	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
 	const [isCheckingPixPayment, setIsCheckingPixPayment] = useState(false);
 	const [pixPaymentMessage, setPixPaymentMessage] = useState<string | null>(null);
-	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card">("pix");
+	const [boletoPayment, setBoletoPayment] = useState<{ line?: string | null; pdfUrl?: string | null } | null>(
+		null,
+	);
+	const [boletoCopyMessage, setBoletoCopyMessage] = useState<string | null>(null);
+	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card" | "boleto">("pix");
 	const [savedCards, setSavedCards] = useState<SavedMercadoPagoCard[]>(checkout.savedCards ?? []);
 	const [selectedSavedCardId, setSelectedSavedCardId] = useState<string | null>(null);
 	const [savePaymentMethod, setSavePaymentMethod] = useState(false);
@@ -298,6 +305,7 @@ export function MercadoPagoCheckoutForm({
 		setDeliveryMessage(null);
 		setMessage(null);
 		setPixPayment(null);
+		setBoletoPayment(null);
 		setPixCopyMessage(null);
 		if (nextMethod === "new-address") {
 			setSelectedDeliveryMethod(nextMethod);
@@ -315,6 +323,7 @@ export function MercadoPagoCheckoutForm({
 		setMessage(null);
 		setDeliveryMessage(null);
 		setPixPayment(null);
+		setBoletoPayment(null);
 		setPixCopyMessage(null);
 
 		const normalizedBuyer = {
@@ -383,6 +392,26 @@ export function MercadoPagoCheckoutForm({
 		setMessage("Não foi possível gerar o Pix. Tente novamente em alguns instantes.");
 	}
 
+	async function handleBoletoPayment() {
+		const ready = await prepareCheckoutBeforePayment();
+		if (!ready) return;
+		const result = await submitMercadoPagoCheckoutPayment({
+			orderId: checkout.orderId,
+			paymentData: { payment_method_id: "boleto" },
+		});
+		stopSubmitting();
+		if ("error" in result) {
+			setMessage(result.error ?? null);
+			return;
+		}
+		if (result.barcode || result.ticketUrl) {
+			setBoletoPayment({ line: result.barcode ?? result.qrCode, pdfUrl: result.ticketUrl });
+			setBoletoCopyMessage(null);
+			return;
+		}
+		setMessage("Não foi possível gerar o boleto. Tente novamente em alguns instantes.");
+	}
+
 	async function handleSavedCardPayment() {
 		if (!selectedSavedCardId) return;
 		const ready = await prepareCheckoutBeforePayment();
@@ -433,6 +462,7 @@ export function MercadoPagoCheckoutForm({
 		}
 		if (result.payment.status === "failed") {
 			setPixPayment(null);
+			setBoletoPayment(null);
 			setMessage("Este Pix não está mais disponível. Gere uma nova cobrança para continuar.");
 			return;
 		}
@@ -703,6 +733,7 @@ export function MercadoPagoCheckoutForm({
 									setDeliveryError(null);
 									setDeliveryMessage(null);
 									setPixPayment(null);
+									setBoletoPayment(null);
 								}}
 								onResolvedAddress={(value) => {
 									setNewAddress(value);
@@ -737,13 +768,7 @@ export function MercadoPagoCheckoutForm({
 					{deliveryRate ? (
 						<SlShippingOption
 							selected
-							label={`${deliveryRate.providerLabel}${
-								deliveryRate.serviceName ? ` · ${deliveryRate.serviceName}` : ""
-							}${
-								deliveryRate.estimated_days
-									? ` · ${deliveryRate.estimated_days} ${deliveryRate.estimated_days === 1 ? "dia útil" : "dias úteis"}`
-									: ""
-							}`}
+							label={economyShippingLabel(deliveryRate.estimated_days)}
 							price={formatMoney({
 								amount: deliveryRate.fixed_amount.amount,
 								currency: deliveryRate.fixed_amount.currency,
@@ -807,15 +832,34 @@ export function MercadoPagoCheckoutForm({
 								</div>
 							}
 						/>
+					) : boletoPayment ? (
+						<SlBoletoPanel
+							line={boletoPayment.line}
+							pdfUrl={boletoPayment.pdfUrl}
+							copyMessage={boletoCopyMessage}
+							onCopyLine={
+								boletoPayment.line
+									? () => {
+											void navigator.clipboard
+												?.writeText(boletoPayment.line as string)
+												.then(() => setBoletoCopyMessage("Linha digitável copiada."))
+												.catch(() => setBoletoCopyMessage("Selecione a linha acima para copiar."));
+										}
+									: undefined
+							}
+						/>
 					) : deliveryReady ? (
 						<>
 							<SlPaymentMethodTabs
 								methods={[
 									{ id: "pix", label: "Pix", note: "Aprovação imediata" },
 									{ id: "card", label: "Cartão", note: "Até 6x sem juros" },
+									...(boletoEnabled
+										? [{ id: "boleto", label: "Boleto", note: "Vence em 3 dias úteis" }]
+										: []),
 								]}
 								active={selectedPaymentMethod}
-								onSelect={(id) => setSelectedPaymentMethod(id as "pix" | "card")}
+								onSelect={(id) => setSelectedPaymentMethod(id as "pix" | "card" | "boleto")}
 							/>
 							{selectedPaymentMethod === "pix" ? (
 								<div className="flex flex-col gap-3">
@@ -830,6 +874,21 @@ export function MercadoPagoCheckoutForm({
 										onClick={() => void handlePixPayment()}
 									>
 										Gerar código Pix
+									</button>
+								</div>
+							) : selectedPaymentMethod === "boleto" ? (
+								<div className="flex flex-col gap-3">
+									<p className="m-0 text-[13px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+										O boleto vence em 3 dias úteis. O pedido só é separado após a confirmação do banco (até 2
+										dias úteis) — escolha Pix se precisar de agilidade.
+									</p>
+									<button
+										type="button"
+										className="sl-btn sl-btn-buy w-full"
+										disabled={isSubmitting || isUpdatingDelivery}
+										onClick={() => void handleBoletoPayment()}
+									>
+										Gerar boleto
 									</button>
 								</div>
 							) : (

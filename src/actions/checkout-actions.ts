@@ -59,6 +59,8 @@ type FastApiPayment = {
 	qr_code_base64: string | null;
 	ticket_url: string | null;
 	expires_at: string | null;
+	/** Boleto "linha digitável" — present only when the backend supports boleto. */
+	barcode?: string | null;
 };
 
 type SavedMercadoPagoCard = {
@@ -199,7 +201,11 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 	const snapshotResult = await getCheckoutSnapshot();
 	if (!snapshotResult.ok) return { error: snapshotResult.error } as const;
 	const snapshot = snapshotResult.snapshot;
-	const isPix = paymentMethodId.toLowerCase() === "pix";
+	const method = paymentMethodId.toLowerCase();
+	const isPix = method === "pix";
+	// Boleto is opt-in via admin; the backend must accept `type: "boleto"`.
+	const isBoleto = method === "boleto" || method === "bolbradesco";
+	const isOffline = isPix || isBoleto;
 	try {
 		const remote = await fastApiRequest<FastApiPayment>(
 			`/checkout/intents/${encodeURIComponent(input.orderId)}/payment`,
@@ -208,10 +214,10 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 				headers: { "X-Checkout-Owner-Key": snapshot.checkoutOwnerKey },
 				body: JSON.stringify({
 					payment_method: {
-						type: isPix ? "pix" : "card",
-						id: isPix ? "pix" : paymentMethodId,
-						token: isPix ? null : input.paymentData.token,
-						installments: input.paymentData.installments ?? null,
+						type: isPix ? "pix" : isBoleto ? "boleto" : "card",
+						id: isPix ? "pix" : isBoleto ? "boleto" : paymentMethodId,
+						token: isOffline ? null : input.paymentData.token,
+						installments: isOffline ? null : (input.paymentData.installments ?? null),
 					},
 					idempotency_key: buildMercadoPagoPaymentAttemptIdempotencyKey({
 						orderId: input.orderId,
@@ -237,6 +243,7 @@ export async function submitMercadoPagoCheckoutPayment(input: {
 			qrCodeBase64: remote.qr_code_base64,
 			ticketUrl: remote.ticket_url,
 			expiresAt: remote.expires_at,
+			barcode: remote.barcode ?? null,
 		};
 	} catch (error) {
 		return { error: error instanceof Error ? error.message : "Não foi possível criar o pagamento" } as const;

@@ -15,12 +15,14 @@ import { PAYMENTS_PROVIDER } from "@/lib/payments";
 export function CheckoutForm({
 	checkout,
 	locale,
+	boletoEnabled = false,
 }: {
 	checkout: TransparentCheckoutIntent;
 	locale: AppLocale;
+	boletoEnabled?: boolean;
 }) {
 	if (PAYMENTS_PROVIDER === "mercado_pago") {
-		return <MercadoPagoCheckoutForm checkout={checkout} locale={locale} />;
+		return <MercadoPagoCheckoutForm checkout={checkout} locale={locale} boletoEnabled={boletoEnabled} />;
 	}
 
 	// The page gates non-Mercado-Pago providers before reaching here; this is a

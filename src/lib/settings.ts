@@ -89,6 +89,9 @@ export type SettingsCurrent = {
 	shippingEnabled?: boolean;
 	shippingMelhorEnvio?: MelhorEnvioSettings | null;
 	shippingProviders?: ShippingProvidersSettings;
+	/** Whether boleto is offered at checkout. Off by default; the backend must
+	 * also accept `payment_method: { type: "boleto" }` for it to work. */
+	paymentBoletoEnabled?: boolean;
 };
 
 export type SettingsDoc = {

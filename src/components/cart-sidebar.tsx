@@ -12,7 +12,7 @@ import { SlCouponField } from "@/ui/sl/sl-coupon-field";
 import { SlFreeShippingMeter } from "@/ui/sl/sl-free-shipping-meter";
 import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
 import { SlQuantityStepper } from "@/ui/sl/sl-quantity-stepper";
-import { SlShippingOption } from "@/ui/sl/sl-shipping-option";
+import { economyShippingLabel, SlShippingOption } from "@/ui/sl/sl-shipping-option";
 
 interface CartSidebarProps {
 	isOpen: boolean;
@@ -78,7 +78,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
 	const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 	const shippingLabel = cart?.shippingRate
-		? `${cart.shippingRate.providerLabel}${cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""}`
+		? economyShippingLabel(cart.shippingRate.estimated_days)
 		: "Calculado no checkout";
 
 	return (
@@ -189,13 +189,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 								{cart?.shippingRate ? (
 									<SlShippingOption
 										selected
-										label={`${cart.shippingRate.providerLabel}${
-											cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""
-										}${
-											cart.shippingRate.estimated_days
-												? ` · ${cart.shippingRate.estimated_days} ${cart.shippingRate.estimated_days === 1 ? "dia útil" : "dias úteis"}`
-												: ""
-										}`}
+										label={economyShippingLabel(cart.shippingRate.estimated_days)}
 										price={money(cart.shippingRate.fixed_amount.amount)}
 									/>
 								) : (
