@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/ui/footer/footer";
 import { accountToWebsiteJsonLd, JsonLd } from "@/ui/json-ld";
 import { Nav } from "@/ui/nav/nav";
-import NavScroll from "@/ui/nav/nav-scroll.client";
 
 export default async function StoreLayout({
 	children,
@@ -18,7 +17,6 @@ export default async function StoreLayout({
 		<>
 			<CartMergeOnAuth />
 			<Nav />
-			<NavScroll />
 			<TooltipProvider>
 				<main className="flex w-full flex-1 flex-col">{children}</main>
 				<MobileFloatingCart />
