@@ -62,3 +62,13 @@ export const getSupportEmailSetting = cache(async (): Promise<string | null> => 
 		return null;
 	}
 });
+
+/** Boleto is opt-in via admin and off by default. */
+export const getPaymentBoletoEnabledSetting = cache(async (): Promise<boolean> => {
+	try {
+		const settings = await getSettingsDoc();
+		return settings?.current?.paymentBoletoEnabled === true;
+	} catch {
+		return false;
+	}
+});

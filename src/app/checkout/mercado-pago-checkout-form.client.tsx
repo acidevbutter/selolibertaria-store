@@ -1,6 +1,5 @@
 "use client";
 
-import { Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -23,12 +22,18 @@ import {
 	normalizeBuyerName,
 } from "@/lib/checkout-buyer";
 import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/mercado-pago-orders/card";
-import { cn, formatMoney } from "@/lib/utils";
+import { formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/ui/shadcn/tooltip";
+import { SlBoletoPanel } from "@/ui/sl/sl-boleto-panel";
+import { SlCardBrandRow } from "@/ui/sl/sl-card-brand-row";
+import { SlField } from "@/ui/sl/sl-field";
+import { SlInstallmentList, type SlInstallmentOption } from "@/ui/sl/sl-installment-list";
+import { SlPaymentMethodTabs } from "@/ui/sl/sl-payment-method-tabs";
+import { SlPaymentState } from "@/ui/sl/sl-payment-state";
+import { SlPixPanel } from "@/ui/sl/sl-pix-panel";
+import { SlSavedCard } from "@/ui/sl/sl-saved-card";
+import { economyShippingLabel, SlShippingOption } from "@/ui/sl/sl-shipping-option";
 
 type MercadoPagoFormData = {
 	payment_method_id?: string;
@@ -142,9 +147,11 @@ function sanitizeMercadoPagoFormData(formData: MercadoPagoFormData) {
 export function MercadoPagoCheckoutForm({
 	checkout,
 	locale,
+	boletoEnabled = false,
 }: {
 	checkout: TransparentCheckoutIntent;
 	locale: AppLocale;
+	boletoEnabled?: boolean;
 }) {
 	const router = useRouter();
 	const t = useTranslations("Checkout.form");
@@ -167,10 +174,13 @@ export function MercadoPagoCheckoutForm({
 		expiresAt?: string | null;
 	} | null>(null);
 	const [pixCopyMessage, setPixCopyMessage] = useState<string | null>(null);
-	const [isPixCopyTooltipOpen, setIsPixCopyTooltipOpen] = useState(false);
 	const [isCheckingPixPayment, setIsCheckingPixPayment] = useState(false);
 	const [pixPaymentMessage, setPixPaymentMessage] = useState<string | null>(null);
-	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card">("pix");
+	const [boletoPayment, setBoletoPayment] = useState<{ line?: string | null; pdfUrl?: string | null } | null>(
+		null,
+	);
+	const [boletoCopyMessage, setBoletoCopyMessage] = useState<string | null>(null);
+	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "card" | "boleto">("pix");
 	const [savedCards, setSavedCards] = useState<SavedMercadoPagoCard[]>(checkout.savedCards ?? []);
 	const [selectedSavedCardId, setSelectedSavedCardId] = useState<string | null>(null);
 	const [savePaymentMethod, setSavePaymentMethod] = useState(false);
@@ -295,6 +305,7 @@ export function MercadoPagoCheckoutForm({
 		setDeliveryMessage(null);
 		setMessage(null);
 		setPixPayment(null);
+		setBoletoPayment(null);
 		setPixCopyMessage(null);
 		if (nextMethod === "new-address") {
 			setSelectedDeliveryMethod(nextMethod);
@@ -312,6 +323,7 @@ export function MercadoPagoCheckoutForm({
 		setMessage(null);
 		setDeliveryMessage(null);
 		setPixPayment(null);
+		setBoletoPayment(null);
 		setPixCopyMessage(null);
 
 		const normalizedBuyer = {
@@ -380,6 +392,26 @@ export function MercadoPagoCheckoutForm({
 		setMessage("Não foi possível gerar o Pix. Tente novamente em alguns instantes.");
 	}
 
+	async function handleBoletoPayment() {
+		const ready = await prepareCheckoutBeforePayment();
+		if (!ready) return;
+		const result = await submitMercadoPagoCheckoutPayment({
+			orderId: checkout.orderId,
+			paymentData: { payment_method_id: "boleto" },
+		});
+		stopSubmitting();
+		if ("error" in result) {
+			setMessage(result.error ?? null);
+			return;
+		}
+		if (result.barcode || result.ticketUrl) {
+			setBoletoPayment({ line: result.barcode ?? result.qrCode, pdfUrl: result.ticketUrl });
+			setBoletoCopyMessage(null);
+			return;
+		}
+		setMessage("Não foi possível gerar o boleto. Tente novamente em alguns instantes.");
+	}
+
 	async function handleSavedCardPayment() {
 		if (!selectedSavedCardId) return;
 		const ready = await prepareCheckoutBeforePayment();
@@ -430,6 +462,7 @@ export function MercadoPagoCheckoutForm({
 		}
 		if (result.payment.status === "failed") {
 			setPixPayment(null);
+			setBoletoPayment(null);
 			setMessage("Este Pix não está mais disponível. Gere uma nova cobrança para continuar.");
 			return;
 		}
@@ -563,46 +596,47 @@ export function MercadoPagoCheckoutForm({
 		confirmationFailedMessage,
 	]);
 
+	const installmentPreview = buildInstallmentPreview(amountTotal, checkout.currency, locale);
+
 	return (
-		<div className="space-y-6">
-			<section className="space-y-4 rounded-xl border bg-background p-4">
-				<div className="space-y-1">
-					<h2 className="text-base font-semibold">Dados para sua compra</h2>
-					<p className="text-sm leading-6 text-muted-foreground">
-						Informe seus dados para concluir compra. Sua conta será criada automaticamente e enviaremos o
-						acesso por e-mail após confirmação do pagamento.
+		<div className="sl-scope flex flex-col gap-4">
+			<section style={{ border: "1px solid var(--sl-line)", background: "var(--sl-surface-card)" }}>
+				<CheckoutStepHeader step="1" label="Identificação" />
+				<div className="flex flex-col gap-4 p-6">
+					<p className="m-0 text-[14px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+						Informe seus dados para concluir a compra. Sua conta é criada automaticamente e o acesso vai por
+						e-mail após a confirmação do pagamento.
 					</p>
-				</div>
-				<div className="grid gap-4 md:grid-cols-2">
-					<BuyerInput
-						id="checkout-full-name-mp"
-						label="Nome completo"
-						error={buyerErrors.fullName}
-						className="md:col-span-2"
-					>
-						<Input
+					<div className="grid gap-4 md:grid-cols-2">
+						<SlField
 							id="checkout-full-name-mp"
+							label="Nome completo"
+							className="md:col-span-2"
+							state={buyerErrors.fullName ? "error" : "default"}
+							hint={buyerErrors.fullName}
 							value={buyer.fullName}
 							onChange={(event) => setBuyerField("fullName", event.currentTarget.value)}
 							onBlur={() => normalizeBuyerField("fullName")}
 							autoComplete="name"
 							required
 						/>
-					</BuyerInput>
-					<BuyerInput id="checkout-email-mp" label="E-mail" error={buyerErrors.email}>
-						<Input
+						<SlField
 							id="checkout-email-mp"
+							label="E-mail"
 							type="email"
+							state={buyerErrors.email ? "error" : "default"}
+							hint={buyerErrors.email}
 							value={buyer.email}
 							onChange={(event) => setBuyerField("email", event.currentTarget.value)}
 							onBlur={() => normalizeBuyerField("email")}
 							autoComplete="email"
 							required
 						/>
-					</BuyerInput>
-					<BuyerInput id="checkout-cpf-mp" label="CPF ou CNPJ" error={buyerErrors.cpf}>
-						<Input
+						<SlField
 							id="checkout-cpf-mp"
+							label="CPF ou CNPJ"
+							state={buyerErrors.cpf ? "error" : "default"}
+							hint={buyerErrors.cpf}
 							value={buyer.cpf}
 							onChange={(event) => setBuyerField("cpf", formatCpf(event.currentTarget.value))}
 							onBlur={() => normalizeBuyerField("cpf")}
@@ -611,16 +645,13 @@ export function MercadoPagoCheckoutForm({
 							placeholder="000.000.000-00 ou 00.000.000/0000-00"
 							required
 						/>
-					</BuyerInput>
-					<BuyerInput
-						id="checkout-phone-mp"
-						label="Telefone"
-						error={buyerErrors.phone}
-						className="md:col-span-2"
-					>
-						<Input
+						<SlField
 							id="checkout-phone-mp"
+							label="Telefone"
+							className="md:col-span-2"
 							type="tel"
+							state={buyerErrors.phone ? "error" : "default"}
+							hint={buyerErrors.phone}
 							value={buyer.phone}
 							onChange={(event) => setBuyerField("phone", formatCheckoutPhone(event.currentTarget.value))}
 							onBlur={() => normalizeBuyerField("phone")}
@@ -630,349 +661,390 @@ export function MercadoPagoCheckoutForm({
 							placeholder="(11) 99999-9999"
 							required
 						/>
-					</BuyerInput>
+					</div>
 				</div>
 			</section>
 
-			<section className="space-y-4 rounded-xl border bg-background p-4">
-				<div className="space-y-1">
-					<h2 className="text-sm font-semibold">{t("delivery.title")}</h2>
-					<p className="text-xs leading-5 text-muted-foreground">{t("delivery.description")}</p>
-				</div>
-				<RadioGroup
-					value={selectedDeliveryMethod}
-					onValueChange={(value) =>
-						void handleDeliveryMethodChange(value as TransparentCheckoutIntent["deliveryMethod"])
-					}
-					className="gap-3"
-				>
-					{hasSavedAddress && checkout.deliveryAddress ? (
+			<section style={{ border: "1px solid var(--sl-line)", background: "var(--sl-surface-card)" }}>
+				<CheckoutStepHeader step="2" label="Entrega" />
+				<div className="flex flex-col gap-4 p-6">
+					<p className="m-0 text-[14px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+						{t("delivery.description")}
+					</p>
+					<RadioGroup
+						value={selectedDeliveryMethod}
+						onValueChange={(value) =>
+							void handleDeliveryMethodChange(value as TransparentCheckoutIntent["deliveryMethod"])
+						}
+						className="gap-3"
+					>
+						{hasSavedAddress && checkout.deliveryAddress ? (
+							<DeliveryOptionCard
+								id="saved-address"
+								value="saved-address"
+								selected={selectedDeliveryMethod === "saved-address"}
+								title={t("delivery.savedAddress.title")}
+								description={t("delivery.savedAddress.description")}
+								summary={
+									selectedDeliveryMethod === "saved-address"
+										? selectedDeliverySummary
+										: formatAddressBrief(checkout.deliveryAddress)
+								}
+								radioLabel={t("delivery.savedAddress.label")}
+							/>
+						) : null}
 						<DeliveryOptionCard
-							id="saved-address"
-							value="saved-address"
-							selected={selectedDeliveryMethod === "saved-address"}
-							title={t("delivery.savedAddress.title")}
-							description={t("delivery.savedAddress.description")}
+							id="new-address"
+							value="new-address"
+							selected={selectedDeliveryMethod === "new-address"}
+							title={t("delivery.newAddress.title")}
+							description={t("delivery.newAddress.description")}
 							summary={
-								selectedDeliveryMethod === "saved-address"
+								selectedDeliveryMethod === "new-address"
 									? selectedDeliverySummary
-									: formatAddressBrief(checkout.deliveryAddress)
+									: t("delivery.newAddress.summary")
 							}
-							radioLabel={t("delivery.savedAddress.label")}
+							radioLabel={t("delivery.newAddress.label")}
+						/>
+						<DeliveryOptionCard
+							id="pickup"
+							value="pickup"
+							selected={selectedDeliveryMethod === "pickup"}
+							title={t("delivery.pickup.title")}
+							description={t("delivery.pickup.description")}
+							summary={
+								selectedDeliveryMethod === "pickup" ? selectedDeliverySummary : t("delivery.pickup.summary")
+							}
+							radioLabel={t("delivery.pickup.label")}
+						/>
+					</RadioGroup>
+					{selectedDeliveryMethod === "new-address" ? (
+						<div
+							className="flex flex-col gap-4 p-4"
+							style={{ border: "1px solid var(--sl-line-strong)", background: "var(--sl-sand)" }}
+						>
+							<AddressFields
+								idPrefix="checkout-delivery-mp"
+								countryMode="br-only"
+								value={newAddress}
+								onChange={(value) => {
+									setNewAddress(value);
+									setDeliveryRate(null);
+									setDeliveryError(null);
+									setDeliveryMessage(null);
+									setPixPayment(null);
+									setBoletoPayment(null);
+								}}
+								onResolvedAddress={(value) => {
+									setNewAddress(value);
+									void applyDeliverySelection("new-address", value);
+								}}
+							/>
+							<button
+								type="button"
+								className="sl-btn sl-btn-secondary self-start"
+								disabled={isUpdatingDelivery}
+								onClick={() => void applyDeliverySelection("new-address", newAddress)}
+							>
+								{isUpdatingDelivery ? t("delivery.actions.updating") : t("delivery.actions.calculate")}
+							</button>
+						</div>
+					) : null}
+					{deliveryMessage && isUpdatingDelivery ? (
+						<p className="m-0 text-[12px] text-[color:var(--sl-text-soft)]">{deliveryMessage}</p>
+					) : null}
+					{deliveryError ? (
+						<p
+							className="m-0 px-3 py-2 text-[12px]"
+							style={{
+								border: "1px solid var(--sl-wine)",
+								background: "var(--sl-danger-wash)",
+								color: "var(--sl-accent)",
+							}}
+						>
+							{deliveryError}
+						</p>
+					) : null}
+					{deliveryRate ? (
+						<SlShippingOption
+							selected
+							label={economyShippingLabel(deliveryRate.estimated_days)}
+							price={formatMoney({
+								amount: deliveryRate.fixed_amount.amount,
+								currency: deliveryRate.fixed_amount.currency,
+								locale,
+							})}
 						/>
 					) : null}
-					<DeliveryOptionCard
-						id="new-address"
-						value="new-address"
-						selected={selectedDeliveryMethod === "new-address"}
-						title={t("delivery.newAddress.title")}
-						description={t("delivery.newAddress.description")}
-						summary={
-							selectedDeliveryMethod === "new-address"
-								? selectedDeliverySummary
-								: t("delivery.newAddress.summary")
-						}
-						radioLabel={t("delivery.newAddress.label")}
-					/>
-					<DeliveryOptionCard
-						id="pickup"
-						value="pickup"
-						selected={selectedDeliveryMethod === "pickup"}
-						title={t("delivery.pickup.title")}
-						description={t("delivery.pickup.description")}
-						summary={
-							selectedDeliveryMethod === "pickup" ? selectedDeliverySummary : t("delivery.pickup.summary")
-						}
-						radioLabel={t("delivery.pickup.label")}
-					/>
-				</RadioGroup>
-				{selectedDeliveryMethod === "new-address" ? (
-					<div className="space-y-4 rounded-lg border bg-muted/20 p-4">
-						<AddressFields
-							idPrefix="checkout-delivery-mp"
-							countryMode="br-only"
-							value={newAddress}
-							onChange={(value) => {
-								setNewAddress(value);
-								setDeliveryRate(null);
-								setDeliveryError(null);
-								setDeliveryMessage(null);
-								setPixPayment(null);
-							}}
-							onResolvedAddress={(value) => {
-								setNewAddress(value);
-								void applyDeliverySelection("new-address", value);
-							}}
-						/>
-						<Button
-							type="button"
-							variant="outline"
-							disabled={isUpdatingDelivery}
-							onClick={() => void applyDeliverySelection("new-address", newAddress)}
-						>
-							{isUpdatingDelivery ? t("delivery.actions.updating") : t("delivery.actions.calculate")}
-						</Button>
+					<div
+						className="flex items-center justify-between px-3.5 py-3 text-[14px]"
+						style={{ background: "var(--sl-surface-band)" }}
+					>
+						<span className="font-bold">Total</span>
+						<span className="sl-price text-[22px]">
+							{formatMoney({ amount: amountTotal, currency: checkout.currency, locale })}
+						</span>
 					</div>
-				) : null}
-				{deliveryMessage && isUpdatingDelivery ? (
-					<p className="text-xs text-muted-foreground">{deliveryMessage}</p>
-				) : null}
-				{deliveryError ? (
-					<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-						{deliveryError}
-					</p>
-				) : null}
-				{deliveryRate ? (
-					<div className="rounded-lg border bg-muted/20 px-3 py-3 text-sm">
-						<div className="flex items-start justify-between gap-4">
-							<div>
-								<span className="block font-medium">Frete</span>
-								<span className="block text-xs text-muted-foreground">
-									{deliveryRate.providerLabel}
-									{deliveryRate.serviceName ? ` · ${deliveryRate.serviceName}` : ""}
-									{deliveryRate.estimated_days
-										? ` · até ${deliveryRate.estimated_days} ${deliveryRate.estimated_days === 1 ? "dia útil" : "dias úteis"}`
-										: ""}
-								</span>
-							</div>
-							<span className="font-medium">
-								{formatMoney({
-									amount: deliveryRate.fixed_amount.amount,
-									currency: deliveryRate.fixed_amount.currency,
-									locale,
-								})}
-							</span>
-						</div>
-					</div>
-				) : null}
-				<div className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-3 text-sm">
-					<span>Total</span>
-					<span className="text-base font-semibold">
-						{formatMoney({ amount: amountTotal, currency: checkout.currency, locale })}
+				</div>
+			</section>
+
+			<section style={{ border: "1px solid var(--sl-ink)", background: "var(--sl-surface-card)" }}>
+				<div
+					className="flex items-center gap-3.5 px-6 py-4"
+					style={{ background: "var(--sl-ink)", color: "var(--sl-text-on-ink)" }}
+				>
+					<span
+						className="inline-flex h-7 w-7 items-center justify-center text-[13px] font-black"
+						style={{ background: "var(--sl-buy)" }}
+					>
+						3
 					</span>
+					<p className="sl-u m-0 text-[12px] tracking-[0.24em]">Pagamento</p>
 				</div>
-			</section>
-
-			<section className="space-y-4 rounded-xl border bg-background p-4">
-				<div className="space-y-1">
-					<h2 className="text-sm font-semibold">Pagamento</h2>
-					<p className="text-xs leading-5 text-muted-foreground">
-						Escolha Pix ou cartão no formulário seguro do Mercado Pago. Dados do cartão não passam pelo site.
-					</p>
-				</div>
-				{pixPayment ? (
-					<div className="flex flex-col items-center space-y-4 rounded-lg border bg-muted/20 p-4 text-center">
-						<p className="text-sm font-medium">Pix gerado. Pague pelo QR Code ou copie o código abaixo.</p>
-						{pixPayment.qrCodeBase64 ? (
-							<img
-								alt="QR Code Pix"
-								className="h-56 w-56 bg-white p-2"
-								src={`data:image/png;base64,${pixPayment.qrCodeBase64}`}
-							/>
-						) : null}
-						{pixPayment.qrCode ? (
-							<div className="w-full max-w-xl rounded-lg border bg-background/70 p-3 text-left shadow-sm">
-								<div className="mb-2 flex items-center justify-between gap-3">
-									<label className="text-xs font-medium" htmlFor="pix-copy-paste-code">
-										Código Pix copia e cola
-									</label>
-									<TooltipProvider delayDuration={0}>
-										<Tooltip open={isPixCopyTooltipOpen} onOpenChange={setIsPixCopyTooltipOpen}>
-											<TooltipTrigger asChild>
-												<Button
-													type="button"
-													variant="outline"
-													size="icon"
-													aria-label="Copiar código Pix"
-													onClick={() => {
-														void copyPixCode(pixPayment.qrCode!, setPixCopyMessage).then((copied) => {
-															if (!copied) return;
-															setIsPixCopyTooltipOpen(true);
-															window.setTimeout(() => setIsPixCopyTooltipOpen(false), 1800);
-														});
-													}}
-												>
-													<Copy aria-hidden="true" />
-												</Button>
-											</TooltipTrigger>
-											<TooltipContent>
-												{pixCopyMessage === "Código Pix copiado." ? "Copiado!" : "Copiar código Pix"}
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
+				<div className="flex flex-col gap-5 p-6">
+					{pixPayment ? (
+						<SlPixPanel
+							qrCodeBase64={pixPayment.qrCodeBase64}
+							code={pixPayment.qrCode}
+							expiresLabel={pixPayment.expiresAt ? formatPixExpiration(pixPayment.expiresAt) : undefined}
+							ticketUrl={pixPayment.ticketUrl}
+							onCopy={
+								pixPayment.qrCode
+									? () => void copyPixCode(pixPayment.qrCode as string, setPixCopyMessage)
+									: undefined
+							}
+							copyMessage={pixCopyMessage}
+							footer={
+								<div className="flex flex-col gap-2">
+									<button
+										type="button"
+										className="sl-btn sl-btn-primary w-full"
+										disabled={isCheckingPixPayment}
+										onClick={() => void handlePixPaymentCheck()}
+									>
+										{isCheckingPixPayment ? "Verificando pagamento…" : "Já paguei"}
+									</button>
+									{pixPaymentMessage ? (
+										<p className="m-0 text-[12px] text-[color:var(--sl-text-soft)]" role="status">
+											{pixPaymentMessage}
+										</p>
+									) : null}
 								</div>
-								<textarea
-									id="pix-copy-paste-code"
-									readOnly
-									className="min-h-24 w-full resize-none rounded-md border-0 bg-muted/50 p-3 font-mono text-xs leading-relaxed"
-									value={pixPayment.qrCode}
-								/>
-								{pixCopyMessage ? (
-									<p className="text-xs text-muted-foreground" role="status">
-										{pixCopyMessage}
+							}
+						/>
+					) : boletoPayment ? (
+						<SlBoletoPanel
+							line={boletoPayment.line}
+							pdfUrl={boletoPayment.pdfUrl}
+							copyMessage={boletoCopyMessage}
+							onCopyLine={
+								boletoPayment.line
+									? () => {
+											void navigator.clipboard
+												?.writeText(boletoPayment.line as string)
+												.then(() => setBoletoCopyMessage("Linha digitável copiada."))
+												.catch(() => setBoletoCopyMessage("Selecione a linha acima para copiar."));
+										}
+									: undefined
+							}
+						/>
+					) : deliveryReady ? (
+						<>
+							<SlPaymentMethodTabs
+								methods={[
+									{ id: "pix", label: "Pix", note: "Aprovação imediata" },
+									{ id: "card", label: "Cartão", note: "Até 6x sem juros" },
+									...(boletoEnabled
+										? [{ id: "boleto", label: "Boleto", note: "Vence em 3 dias úteis" }]
+										: []),
+								]}
+								active={selectedPaymentMethod}
+								onSelect={(id) => setSelectedPaymentMethod(id as "pix" | "card" | "boleto")}
+							/>
+							{selectedPaymentMethod === "pix" ? (
+								<div className="flex flex-col gap-3">
+									<p className="m-0 text-[13px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+										Usaremos o e-mail informado acima para gerar seu código Pix. O pedido é liberado em
+										segundos após o pagamento.
 									</p>
-								) : null}
-							</div>
-						) : null}
-						{pixPayment.expiresAt ? (
-							<p className="text-xs text-muted-foreground">{formatPixExpiration(pixPayment.expiresAt)}</p>
-						) : null}
-						<div className="flex flex-col items-center gap-3">
-							{pixPayment.ticketUrl ? (
-								<a className="text-sm underline" href={pixPayment.ticketUrl} rel="noreferrer" target="_blank">
-									Abrir Pix no Mercado Pago
-								</a>
-							) : null}
-							<Button
-								type="button"
-								disabled={isCheckingPixPayment}
-								onClick={() => void handlePixPaymentCheck()}
-							>
-								{isCheckingPixPayment ? "Verificando pagamento…" : "Já paguei"}
-							</Button>
-						</div>
-						{pixPaymentMessage ? (
-							<p className="text-xs text-muted-foreground" role="status">
-								{pixPaymentMessage}
-							</p>
-						) : null}
-					</div>
-				) : deliveryReady ? (
-					<div className="space-y-3">
-						<RadioGroup
-							value={selectedPaymentMethod}
-							onValueChange={(value) => setSelectedPaymentMethod(value as "pix" | "card")}
-							className="grid gap-3 sm:grid-cols-2"
-						>
-							<PaymentMethodOption
-								id="checkout-payment-pix"
-								value="pix"
-								selected={selectedPaymentMethod === "pix"}
-								title="Pix"
-								description="QR Code e código copia e cola"
-							/>
-							<PaymentMethodOption
-								id="checkout-payment-card"
-								value="card"
-								selected={selectedPaymentMethod === "card"}
-								title="Cartão"
-								description="Crédito ou débito no formulário seguro"
-							/>
-						</RadioGroup>
-						{selectedPaymentMethod === "pix" ? (
-							<div className="rounded-lg border bg-muted/20 p-3">
-								<p className="text-sm font-medium">Pix</p>
-								<p className="mt-1 text-xs leading-5 text-muted-foreground">
-									Usaremos o e-mail informado acima para gerar seu código Pix.
-								</p>
-								<Button
-									type="button"
-									className="mt-3"
-									disabled={isSubmitting || isUpdatingDelivery}
-									onClick={() => void handlePixPayment()}
-								>
-									Gerar código Pix
-								</Button>
-							</div>
-						) : (
-							<div className="space-y-3 rounded-lg border bg-muted/20 p-3">
-								<p className="text-sm font-medium">Cartão</p>
-								{checkout.isAuthenticated && savedCards.length > 0 ? (
-									<div className="space-y-2 rounded-md border bg-background p-3">
-										<p className="text-xs font-medium">Cartões salvos no Mercado Pago</p>
-										{savedCards.map((card) => (
-											<div key={card.id} className="flex items-center justify-between gap-2 text-xs">
-												<label className="flex items-center gap-2">
-													<input
-														type="radio"
-														name="saved-mercado-pago-card"
-														checked={selectedSavedCardId === card.id}
-														onChange={() => setSelectedSavedCardId(card.id)}
-													/>
-													<span>
-														{card.brand ?? "Cartão"} · final {card.lastFourDigits ?? "****"}
-													</span>
-												</label>
-												<button
-													type="button"
-													className="underline"
-													onClick={() => void handleRemoveSavedCard(card.id)}
-												>
-													Remover
-												</button>
-											</div>
-										))}
-										<Button
-											type="button"
-											className="w-full"
-											disabled={!selectedSavedCardId || isSubmitting}
-											onClick={() => void handleSavedCardPayment()}
+									<button
+										type="button"
+										className="sl-btn sl-btn-buy w-full"
+										disabled={isSubmitting || isUpdatingDelivery}
+										onClick={() => void handlePixPayment()}
+									>
+										Gerar código Pix
+									</button>
+								</div>
+							) : selectedPaymentMethod === "boleto" ? (
+								<div className="flex flex-col gap-3">
+									<p className="m-0 text-[13px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+										O boleto vence em 3 dias úteis. O pedido só é separado após a confirmação do banco (até 2
+										dias úteis) — escolha Pix se precisar de agilidade.
+									</p>
+									<button
+										type="button"
+										className="sl-btn sl-btn-buy w-full"
+										disabled={isSubmitting || isUpdatingDelivery}
+										onClick={() => void handleBoletoPayment()}
+									>
+										Gerar boleto
+									</button>
+								</div>
+							) : (
+								<div className="flex flex-col gap-4">
+									{checkout.isAuthenticated && savedCards.length > 0 ? (
+										<div
+											className="flex flex-col gap-2 p-3"
+											style={{ border: "1px solid var(--sl-line-strong)" }}
 										>
-											Pagar com cartão salvo
-										</Button>
-									</div>
-								) : null}
-								<p className="text-xs leading-5 text-muted-foreground">
-									Informe os dados do cartão no formulário seguro do Mercado Pago.
-								</p>
-								{isLoadingPaymentBrick ? (
-									<p className="text-sm text-muted-foreground" role="status">
-										Carregando pagamento do Mercado Pago…
+											<p className="sl-lbl">Cartões salvos no Mercado Pago</p>
+											{savedCards.map((card) => (
+												<SlSavedCard
+													key={card.id}
+													brandName={card.brand ?? "Cartão"}
+													last4={card.lastFourDigits}
+													expiry={
+														card.expirationMonth && card.expirationYear
+															? `${String(card.expirationMonth).padStart(2, "0")}/${String(card.expirationYear).slice(-2)}`
+															: null
+													}
+													selected={selectedSavedCardId === card.id}
+													onSelect={() => setSelectedSavedCardId(card.id)}
+													onRemove={() => void handleRemoveSavedCard(card.id)}
+												/>
+											))}
+											<button
+												type="button"
+												className="sl-btn sl-btn-primary w-full"
+												disabled={!selectedSavedCardId || isSubmitting}
+												onClick={() => void handleSavedCardPayment()}
+											>
+												Pagar com cartão salvo
+											</button>
+										</div>
+									) : null}
+									<SlCardBrandRow />
+									{installmentPreview.length > 0 ? <SlInstallmentList options={installmentPreview} /> : null}
+									<p className="m-0 text-[13px] leading-[1.6] text-[color:var(--sl-text-muted)]">
+										Os dados do cartão são informados no formulário seguro do Mercado Pago e não passam pelo
+										site.
 									</p>
-								) : null}
-								<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
-								{checkout.isAuthenticated ? (
-									<label className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
-										<input
-											type="checkbox"
-											checked={savePaymentMethod}
-											onChange={(event) => setSavePaymentMethod(event.currentTarget.checked)}
-										/>
-										<span>Salvar este cartão no Mercado Pago para compras futuras (opcional).</span>
-									</label>
-								) : null}
-							</div>
-						)}
-					</div>
-				) : (
-					<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-						Calcule a entrega antes de escolher o pagamento.
-					</p>
-				)}
-			</section>
+									{isLoadingPaymentBrick ? (
+										<p className="m-0 text-[13px] text-[color:var(--sl-text-soft)]" role="status">
+											Carregando pagamento do Mercado Pago…
+										</p>
+									) : null}
+									<div id="mercado-pago-payment-brick" aria-busy={isLoadingPaymentBrick} />
+									{checkout.isAuthenticated ? (
+										<label className="flex items-start gap-2 text-[12px] leading-[1.5] text-[color:var(--sl-text-soft)]">
+											<input
+												type="checkbox"
+												checked={savePaymentMethod}
+												onChange={(event) => setSavePaymentMethod(event.currentTarget.checked)}
+											/>
+											<span>Salvar este cartão no Mercado Pago para compras futuras (opcional).</span>
+										</label>
+									) : null}
+								</div>
+							)}
+						</>
+					) : (
+						<p
+							className="m-0 px-3 py-2 text-[13px]"
+							style={{
+								border: "1px solid var(--sl-line-strong)",
+								background: "var(--sl-sand)",
+								color: "var(--sl-text-muted)",
+							}}
+						>
+							Calcule a entrega antes de escolher o pagamento — o total não muda depois disso.
+						</p>
+					)}
 
-			{message ? (
-				<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
-					{message}
-				</p>
-			) : null}
-			{isSubmitting ? <p className="text-sm text-muted-foreground">{t("actions.processing")}</p> : null}
+					<div className="flex flex-col gap-3 border-t border-[color:var(--sl-line-hairline)] pt-5">
+						<p className="m-0 text-center text-[13px] leading-[1.6] text-[color:var(--sl-text-soft)]">
+							Ao concluir você concorda com os <span className="underline">termos de compra</span>. Cobrança
+							única, sem assinatura.
+						</p>
+						{message ? (
+							<SlPaymentState
+								kind="declined"
+								title="Não foi possível concluir o pagamento"
+								body={message}
+								actions={
+									<>
+										<button
+											type="button"
+											className="sl-btn h-11 px-3 text-[10px]"
+											style={{ background: "var(--sl-wine)", color: "var(--sl-text-on-ink)" }}
+											onClick={() => {
+												setSelectedPaymentMethod("pix");
+												setMessage(null);
+											}}
+										>
+											Pagar com Pix
+										</button>
+										<button
+											type="button"
+											className="sl-btn h-11 px-3 text-[10px]"
+											style={{ border: "1px solid var(--sl-wine)", color: "var(--sl-accent)" }}
+											onClick={() => setMessage(null)}
+										>
+											Tentar outro cartão
+										</button>
+									</>
+								}
+							/>
+						) : null}
+						{isSubmitting ? (
+							<SlPaymentState
+								kind="processing"
+								title={t("actions.processing")}
+								body="Autorizando com o banco emissor… não feche a página."
+							/>
+						) : null}
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 }
 
-function BuyerInput({
-	id,
-	label,
-	error,
-	className,
-	children,
-}: {
-	id: string;
-	label: string;
-	error?: string;
-	className?: string;
-	children: React.ReactNode;
-}) {
+/** Numbered ink header bar for the checkout's Identificação / Entrega steps. */
+function CheckoutStepHeader({ step, label }: { step: string; label: string }) {
 	return (
-		<div className={cn("grid content-start gap-2", className)}>
-			<label className="text-sm font-medium" htmlFor={id}>
-				{label}
-			</label>
-			{children}
-			<p className={cn("min-h-4 text-xs", error ? "text-destructive" : "text-transparent")}>{error ?? " "}</p>
+		<div
+			className="flex items-center gap-3.5 px-6 py-4"
+			style={{ background: "var(--sl-ink)", color: "var(--sl-text-on-ink)" }}
+		>
+			<span className="inline-flex h-7 w-7 items-center justify-center text-[13px] font-black">{step}</span>
+			<p className="sl-u m-0 text-[12px] tracking-[0.24em]">{label}</p>
 		</div>
 	);
+}
+
+/** Up to three interest-free installment rows, previewed beside the MP Brick. */
+function buildInstallmentPreview(
+	amountMinor: number,
+	currency: string,
+	locale: string,
+): SlInstallmentOption[] {
+	// Below R$100 the split isn't worth showing — the buyer just pays in one go.
+	if (!amountMinor || amountMinor < 10000) return [];
+	// Never advertise an installment smaller than R$20.
+	const affordableMax = Math.max(1, Math.floor(amountMinor / 2000));
+	const max = Math.min(6, affordableMax, Math.max(1, getMaxCardInstallments(amountMinor)));
+	if (max <= 1) return [];
+	const times = [...new Set([max, max >= 6 ? 3 : Math.max(2, Math.floor(max / 2)), 1])]
+		.filter((n) => n >= 1 && n <= max)
+		.sort((a, b) => b - a);
+	return times.map((n) => ({
+		times: `${n}x`,
+		value: formatMoney({ amount: Math.round(amountMinor / n), currency, locale }),
+		note: n === 1 ? "à vista" : "sem juros",
+		highlight: n === max || n === 1,
+	}));
 }
 
 function DeliveryOptionCard({
@@ -995,49 +1067,25 @@ function DeliveryOptionCard({
 	return (
 		<label
 			htmlFor={id}
-			className={cn(
-				"flex cursor-pointer items-start gap-3 rounded-lg border p-4 text-sm transition-colors",
-				selected && "border-foreground bg-muted/30",
-			)}
+			className="flex cursor-pointer items-start gap-3 p-4 text-[14px] transition-[border-color] duration-150"
+			style={{
+				border: `1px solid ${selected ? "var(--sl-ink)" : "var(--sl-line-strong)"}`,
+				background: selected ? "var(--sl-sand)" : "transparent",
+			}}
 		>
 			<RadioGroupItem id={id} value={value} className="mt-0.5" />
 			<span className="block flex-1">
-				<span className="block font-medium">{title}</span>
-				<span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
-				<span className="mt-3 block rounded-md bg-background px-3 py-2 text-xs leading-5 text-muted-foreground">
-					<span className="block font-medium text-foreground">{radioLabel}</span>
+				<span className="block font-bold">{title}</span>
+				<span className="mt-1 block text-[12px] leading-[1.5] text-[color:var(--sl-text-muted)]">
+					{description}
+				</span>
+				<span
+					className="mt-3 block px-3 py-2 text-[12px] leading-[1.5] text-[color:var(--sl-text-muted)]"
+					style={{ background: "var(--sl-surface-card)" }}
+				>
+					<span className="block font-bold text-[color:var(--sl-text)]">{radioLabel}</span>
 					<span className="block">{summary}</span>
 				</span>
-			</span>
-		</label>
-	);
-}
-
-function PaymentMethodOption({
-	id,
-	value,
-	selected,
-	title,
-	description,
-}: {
-	id: string;
-	value: "pix" | "card";
-	selected: boolean;
-	title: string;
-	description: string;
-}) {
-	return (
-		<label
-			htmlFor={id}
-			className={cn(
-				"flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors",
-				selected && "border-foreground bg-muted/30",
-			)}
-		>
-			<RadioGroupItem id={id} value={value} className="mt-0.5" />
-			<span>
-				<span className="block font-medium">{title}</span>
-				<span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
 			</span>
 		</label>
 	);

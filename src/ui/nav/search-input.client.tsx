@@ -14,10 +14,16 @@ const inputClasses = cn(
 	"lg:pl-4 lg:pr-10",
 );
 
-export const SearchInputPlaceholder = ({ placeholder }: { placeholder: string }) => {
+export const SearchInputPlaceholder = ({
+	placeholder,
+	className,
+}: {
+	placeholder: string;
+	className?: string;
+}) => {
 	return (
 		<Input
-			className={cn("pointer-events-none", inputClasses)}
+			className={className ? cn("pointer-events-none", className) : cn("pointer-events-none", inputClasses)}
 			placeholder={placeholder}
 			type="search"
 			aria-busy
@@ -26,7 +32,7 @@ export const SearchInputPlaceholder = ({ placeholder }: { placeholder: string })
 	);
 };
 
-export const SearchInput = ({ placeholder }: { placeholder: string }) => {
+export const SearchInput = ({ placeholder, className }: { placeholder: string; className?: string }) => {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -64,7 +70,7 @@ export const SearchInput = ({ placeholder }: { placeholder: string }) => {
 				const query = e.target.value;
 				setQuery(query);
 			}}
-			className={inputClasses}
+			className={className ?? inputClasses}
 			placeholder={placeholder}
 			type="search"
 			enterKeyHint="search"

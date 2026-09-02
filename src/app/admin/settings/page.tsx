@@ -9,6 +9,7 @@ import {
 } from "@/ui/editorial/editorial-primitives";
 import { Card, CardContent } from "@/ui/shadcn/card";
 import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
+import AdminPaymentMethods from "../_components/admin-payment-methods.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
 import AdminShippingProviders from "../_components/admin-shipping-providers.client";
 import AdminSupportEmail from "../_components/admin-support-email.client";
@@ -29,7 +30,7 @@ export default async function AdminSettingsPage() {
 				description="Centralize idioma, suporte, autenticação e frete em blocos curtos, com contexto claro antes de cada ajuste."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Blocos" value="5" helper="Ajustes organizados por tema." />
+				<AdminEditorialStat label="Blocos" value="6" helper="Ajustes organizados por tema." />
 				<AdminEditorialStat
 					label="Padrão regional"
 					value="Idioma e país"
@@ -123,6 +124,35 @@ export default async function AdminSettingsPage() {
 						<Card className="border-none bg-transparent shadow-none">
 							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
 								<AdminSupportEmail />
+							</CardContent>
+						</Card>
+					</details>
+				</EditorialPanel>
+
+				<EditorialPanel className="p-0">
+					<details className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+									Pagamento
+								</p>
+								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
+									Métodos de pagamento
+								</div>
+								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+									Pix e cartão ficam sempre ativos; o boleto é opcional.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+								Expandir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+								Recolher
+							</span>
+						</summary>
+						<Card className="border-none bg-transparent shadow-none">
+							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
+								<AdminPaymentMethods />
 							</CardContent>
 						</Card>
 					</details>

@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertAdminImageUploadFile } from "@/lib/admin-image-upload";
 import { requireCapability } from "@/lib/api-auth";
-import { getEditorialApiStore as getDb } from "@/lib/editorial-api-store";
+import {
+	deleteEditorial,
+	reorderEditorial,
+	setEditorialPublished,
+	upsertEditorial,
+} from "@/lib/editorial-admin-api";
 import type {
 	EditorialAboutPage,
 	EditorialBackground,
@@ -27,8 +32,6 @@ import {
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
 import { uploadImageFileToFastAPI } from "@/lib/media-upload";
 import { slugify } from "@/lib/utils";
-
-const COLLECTION = "editorialContent";
 
 export type EditorialItemFormActionState = {
 	status: "idle" | "error";
@@ -291,57 +294,6 @@ function refreshHomePaths() {
 	revalidatePath("/admin/editorial/home");
 }
 
-async function moveEditorialItem(
-	type: "event" | "project",
-	slug: string,
-	direction: "up" | "down",
-	actor: string,
-) {
-	const db = await getDb();
-	const items = await db
-		.collection<EditorialEvent | EditorialProject>(COLLECTION)
-		.find({ type })
-		.sort({ order: 1, updatedAt: -1 })
-		.toArray();
-
-	const currentIndex = items.findIndex((item) => item.slug === slug);
-	if (currentIndex === -1) return;
-
-	const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-	const target = items[targetIndex];
-	const current = items[currentIndex];
-	if (!target || !current) return;
-
-	const now = new Date().toISOString();
-
-	await db.collection<EditorialEvent | EditorialProject>(COLLECTION).bulkWrite([
-		{
-			updateOne: {
-				filter: { type, slug: current.slug },
-				update: {
-					$set: {
-						order: target.order,
-						updatedAt: now,
-						updatedBy: actor,
-					},
-				},
-			},
-		},
-		{
-			updateOne: {
-				filter: { type, slug: target.slug },
-				update: {
-					$set: {
-						order: current.order,
-						updatedAt: now,
-						updatedBy: actor,
-					},
-				},
-			},
-		},
-	]);
-}
-
 export async function createEditorialEventAction(
 	_previousState: EditorialItemFormActionState,
 	formData: FormData,
@@ -351,10 +303,8 @@ export async function createEditorialEventAction(
 
 	try {
 		const session = await requireEditorialManager();
-		const db = await getDb();
 		const title = requiredString(formData, "title");
 		const slug = slugify(optionalString(formData.get("slug")) || title);
-		const now = new Date().toISOString();
 
 		const doc: EditorialEvent = {
 			type: "event",
@@ -369,18 +319,18 @@ export async function createEditorialEventAction(
 			published: parseBoolean(formData.get("published"), true),
 			order: parseOrder(formData.get("order"), 1),
 			image: await parseImage(formData),
-			updatedAt: now,
-			updatedBy: String(session.sub),
-			createdAt: now,
-			createdBy: String(session.sub),
 		};
 
-		await db.collection<EditorialEvent>(COLLECTION).updateOne(
-			{ type: "event", slug },
+		await upsertEditorial(
 			{
-				$set: doc,
+				type: "event",
+				slug,
+				title,
+				content: doc,
+				published: doc.published ?? true,
+				order: doc.order ?? 1,
 			},
-			{ upsert: true },
+			String(session.sub),
 		);
 
 		refreshEventPaths(slug);
@@ -400,31 +350,36 @@ export async function updateEditorialEventAction(
 
 	try {
 		const session = await requireEditorialManager();
-		const db = await getDb();
 		const currentSlug = requiredString(formData, "currentSlug");
 		const title = requiredString(formData, "title");
 		const slug = slugify(optionalString(formData.get("slug")) || title);
-		const now = new Date().toISOString();
 
-		await db.collection<EditorialEvent>(COLLECTION).updateOne(
-			{ type: "event", slug: currentSlug },
+		const doc: EditorialEvent = {
+			type: "event",
+			slug,
+			title,
+			summary: optionalString(formData.get("summary")),
+			description: optionalString(formData.get("description")),
+			status: optionalString(formData.get("status")),
+			period: optionalString(formData.get("period")),
+			location: optionalString(formData.get("location")),
+			eyebrow: optionalString(formData.get("eyebrow")),
+			published: parseBoolean(formData.get("published"), true),
+			order: parseOrder(formData.get("order"), 1),
+			image: await parseImage(formData),
+		};
+
+		await upsertEditorial(
 			{
-				$set: {
-					title,
-					slug,
-					summary: optionalString(formData.get("summary")),
-					description: optionalString(formData.get("description")),
-					status: optionalString(formData.get("status")),
-					period: optionalString(formData.get("period")),
-					location: optionalString(formData.get("location")),
-					eyebrow: optionalString(formData.get("eyebrow")),
-					published: parseBoolean(formData.get("published"), true),
-					order: parseOrder(formData.get("order"), 1),
-					image: await parseImage(formData),
-					updatedAt: now,
-					updatedBy: String(session.sub),
-				},
+				type: "event",
+				slug,
+				title,
+				content: doc,
+				published: doc.published ?? true,
+				order: doc.order ?? 1,
+				previousSlug: currentSlug,
 			},
+			String(session.sub),
 		);
 
 		refreshEventPaths(currentSlug);
@@ -438,20 +393,10 @@ export async function updateEditorialEventAction(
 
 export async function toggleEditorialEventPublishedAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
 	const slug = requiredString(formData, "slug");
 	const published = parseBoolean(formData.get("published"), false);
 
-	await db.collection<EditorialEvent>(COLLECTION).updateOne(
-		{ type: "event", slug },
-		{
-			$set: {
-				published,
-				updatedAt: new Date().toISOString(),
-				updatedBy: String(session.sub),
-			},
-		},
-	);
+	await setEditorialPublished("event", slug, published, String(session.sub));
 
 	refreshEventPaths(slug);
 }
@@ -464,16 +409,15 @@ export async function moveEditorialEventAction(formData: FormData) {
 		throw new Error("Direção inválida.");
 	}
 
-	await moveEditorialItem("event", slug, direction, String(session.sub));
+	await reorderEditorial("event", slug, direction, String(session.sub));
 	refreshEventPaths(slug);
 }
 
 export async function deleteEditorialEventAction(formData: FormData) {
 	await requireEditorialManager();
-	const db = await getDb();
 	const slug = requiredString(formData, "slug");
 
-	await db.collection<EditorialEvent>(COLLECTION).deleteOne({ type: "event", slug });
+	await deleteEditorial("event", slug);
 
 	refreshEventPaths(slug);
 	redirect("/admin/editorial/events");
@@ -489,10 +433,8 @@ export async function listEditorialEventRecords() {
 
 export async function createEditorialProjectAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
 	const title = requiredString(formData, "title");
 	const slug = slugify(optionalString(formData.get("slug")) || title);
-	const now = new Date().toISOString();
 
 	const doc: EditorialProject = {
 		type: "project",
@@ -506,15 +448,19 @@ export async function createEditorialProjectAction(formData: FormData) {
 		published: parseBoolean(formData.get("published"), true),
 		order: parseOrder(formData.get("order"), 1),
 		image: await parseImage(formData),
-		updatedAt: now,
-		updatedBy: String(session.sub),
-		createdAt: now,
-		createdBy: String(session.sub),
 	};
 
-	await db
-		.collection<EditorialProject>(COLLECTION)
-		.updateOne({ type: "project", slug }, { $set: doc }, { upsert: true });
+	await upsertEditorial(
+		{
+			type: "project",
+			slug,
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+		},
+		String(session.sub),
+	);
 
 	refreshProjectPaths(slug);
 	redirect(`/admin/editorial/projects/${encodeURIComponent(slug)}`);
@@ -522,30 +468,35 @@ export async function createEditorialProjectAction(formData: FormData) {
 
 export async function updateEditorialProjectAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
 	const currentSlug = requiredString(formData, "currentSlug");
 	const title = requiredString(formData, "title");
 	const slug = slugify(optionalString(formData.get("slug")) || title);
-	const now = new Date().toISOString();
 
-	await db.collection<EditorialProject>(COLLECTION).updateOne(
-		{ type: "project", slug: currentSlug },
+	const doc: EditorialProject = {
+		type: "project",
+		slug,
+		title,
+		summary: optionalString(formData.get("summary")),
+		description: optionalString(formData.get("description")),
+		period: optionalString(formData.get("period")),
+		location: optionalString(formData.get("location")),
+		eyebrow: optionalString(formData.get("eyebrow")),
+		published: parseBoolean(formData.get("published"), true),
+		order: parseOrder(formData.get("order"), 1),
+		image: await parseImage(formData),
+	};
+
+	await upsertEditorial(
 		{
-			$set: {
-				title,
-				slug,
-				summary: optionalString(formData.get("summary")),
-				description: optionalString(formData.get("description")),
-				period: optionalString(formData.get("period")),
-				location: optionalString(formData.get("location")),
-				eyebrow: optionalString(formData.get("eyebrow")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
-				image: await parseImage(formData),
-				updatedAt: now,
-				updatedBy: String(session.sub),
-			},
+			type: "project",
+			slug,
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+			previousSlug: currentSlug,
 		},
+		String(session.sub),
 	);
 
 	refreshProjectPaths(currentSlug);
@@ -555,20 +506,10 @@ export async function updateEditorialProjectAction(formData: FormData) {
 
 export async function toggleEditorialProjectPublishedAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
 	const slug = requiredString(formData, "slug");
 	const published = parseBoolean(formData.get("published"), false);
 
-	await db.collection<EditorialProject>(COLLECTION).updateOne(
-		{ type: "project", slug },
-		{
-			$set: {
-				published,
-				updatedAt: new Date().toISOString(),
-				updatedBy: String(session.sub),
-			},
-		},
-	);
+	await setEditorialPublished("project", slug, published, String(session.sub));
 
 	refreshProjectPaths(slug);
 }
@@ -581,16 +522,15 @@ export async function moveEditorialProjectAction(formData: FormData) {
 		throw new Error("Direção inválida.");
 	}
 
-	await moveEditorialItem("project", slug, direction, String(session.sub));
+	await reorderEditorial("project", slug, direction, String(session.sub));
 	refreshProjectPaths(slug);
 }
 
 export async function deleteEditorialProjectAction(formData: FormData) {
 	await requireEditorialManager();
-	const db = await getDb();
 	const slug = requiredString(formData, "slug");
 
-	await db.collection<EditorialProject>(COLLECTION).deleteOne({ type: "project", slug });
+	await deleteEditorial("project", slug);
 
 	refreshProjectPaths(slug);
 	redirect("/admin/editorial/projects");
@@ -610,8 +550,6 @@ export async function getEditorialSarauRecord() {
 
 export async function updateEditorialSarauAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
-	const now = new Date().toISOString();
 	const current = await getEditorialRecordForAdmin("page_sarau");
 	const title = optionalString(formData.get("title")) ?? current?.title ?? "Sarau Safado";
 
@@ -640,52 +578,48 @@ export async function updateEditorialSarauAction(formData: FormData) {
 		heroImage,
 	);
 
-	await db.collection<EditorialSarauPage>(COLLECTION).updateOne(
-		{ type: "page_sarau", slug: "sarau-safado" },
-		{
-			$set: {
-				type: "page_sarau",
-				slug: "sarau-safado",
-				title,
-				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
-				body: optionalString(formData.get("body")) ?? current?.body ?? null,
-				published: parseBoolean(formData.get("published"), current?.published ?? true),
-				order: parseOrder(formData.get("order"), current?.order ?? 1),
-				hero: {
-					eyebrow: optionalString(formData.get("heroEyebrow")),
-					title: optionalString(formData.get("heroTitle")),
-					body: optionalString(formData.get("heroBody")),
-					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
-					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-					secondaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"heroSecondaryCtaHref",
-						"Hero · CTA secundário",
-					),
-					image: heroImage,
-					background: heroBackground,
-				},
-				why: {
-					title: optionalString(formData.get("whyTitle")),
-					body: optionalString(formData.get("whyBody")),
-				},
-				signals: parseStringList(formData, "signals"),
-				programNotes,
-				continueLinks: [
-					{ label: "Eventos", href: "/events" },
-					{ label: "Projetos", href: "/projects" },
-					{ label: "Loja", href: "/products" },
-				],
-				updatedAt: now,
-				updatedBy: String(session.sub),
-			},
-			$setOnInsert: {
-				createdAt: now,
-				createdBy: String(session.sub),
-			},
+	const doc: EditorialSarauPage = {
+		type: "page_sarau",
+		slug: "sarau-safado",
+		title,
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+		body: optionalString(formData.get("body")) ?? current?.body ?? null,
+		published: parseBoolean(formData.get("published"), current?.published ?? true),
+		order: parseOrder(formData.get("order"), current?.order ?? 1),
+		hero: {
+			eyebrow: optionalString(formData.get("heroEyebrow")),
+			title: optionalString(formData.get("heroTitle")),
+			body: optionalString(formData.get("heroBody")),
+			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
+			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
+			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Hero · CTA secundário"),
+			image: heroImage,
+			background: heroBackground,
 		},
-		{ upsert: true },
+		why: {
+			title: optionalString(formData.get("whyTitle")),
+			body: optionalString(formData.get("whyBody")),
+		},
+		signals: parseStringList(formData, "signals"),
+		programNotes,
+		continueLinks: [
+			{ label: "Eventos", href: "/events" },
+			{ label: "Projetos", href: "/projects" },
+			{ label: "Loja", href: "/products" },
+		],
+	};
+
+	await upsertEditorial(
+		{
+			type: "page_sarau",
+			slug: "sarau-safado",
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+		},
+		String(session.sub),
 	);
 
 	refreshSarauPaths();
@@ -698,8 +632,6 @@ export async function getEditorialAboutRecord() {
 
 export async function updateEditorialAboutAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
-	const now = new Date().toISOString();
 	const current = await getEditorialRecordForAdmin("page_about");
 	const title = optionalString(formData.get("title")) ?? current?.title ?? "Sobre";
 
@@ -713,52 +645,48 @@ export async function updateEditorialAboutAction(formData: FormData) {
 			Boolean(card.title?.trim() && card.body?.trim()),
 		);
 
-	await db.collection<EditorialAboutPage>(COLLECTION).updateOne(
-		{ type: "page_about", slug: "about" },
-		{
-			$set: {
-				type: "page_about",
-				slug: "about",
-				title,
-				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
-				body: optionalString(formData.get("body")) ?? current?.body ?? null,
-				published: parseBoolean(formData.get("published"), current?.published ?? true),
-				order: parseOrder(formData.get("order"), current?.order ?? 1),
-				hero: {
-					eyebrow: optionalString(formData.get("heroEyebrow")),
-					title: optionalString(formData.get("heroTitle")),
-					body: optionalString(formData.get("heroBody")),
-				},
-				section: {
-					eyebrow: optionalString(formData.get("sectionEyebrow")),
-					title: optionalString(formData.get("sectionTitle")),
-					body: optionalString(formData.get("sectionBody")),
-					extended: optionalString(formData.get("sectionExtended")),
-					primaryCtaLabel: optionalString(formData.get("sectionPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"sectionPrimaryCtaHref",
-						"Sobre · CTA principal",
-					),
-					image: await parseImageByPrefix(formData, "sectionImage"),
-				},
-				cards,
-				closing: {
-					eyebrow: optionalString(formData.get("closingEyebrow")),
-					title: optionalString(formData.get("closingTitle")),
-					body: optionalString(formData.get("closingBody")),
-					coreEyebrow: optionalString(formData.get("coreEyebrow")),
-					coreTitle: optionalString(formData.get("coreTitle")),
-				},
-				updatedAt: now,
-				updatedBy: String(session.sub),
-			},
-			$setOnInsert: {
-				createdAt: now,
-				createdBy: String(session.sub),
-			},
+	const doc: EditorialAboutPage = {
+		type: "page_about",
+		slug: "about",
+		title,
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+		body: optionalString(formData.get("body")) ?? current?.body ?? null,
+		published: parseBoolean(formData.get("published"), current?.published ?? true),
+		order: parseOrder(formData.get("order"), current?.order ?? 1),
+		hero: {
+			eyebrow: optionalString(formData.get("heroEyebrow")),
+			title: optionalString(formData.get("heroTitle")),
+			body: optionalString(formData.get("heroBody")),
 		},
-		{ upsert: true },
+		section: {
+			eyebrow: optionalString(formData.get("sectionEyebrow")),
+			title: optionalString(formData.get("sectionTitle")),
+			body: optionalString(formData.get("sectionBody")),
+			extended: optionalString(formData.get("sectionExtended")),
+			primaryCtaLabel: optionalString(formData.get("sectionPrimaryCtaLabel")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "sectionPrimaryCtaHref", "Sobre · CTA principal"),
+			image: await parseImageByPrefix(formData, "sectionImage"),
+		},
+		cards,
+		closing: {
+			eyebrow: optionalString(formData.get("closingEyebrow")),
+			title: optionalString(formData.get("closingTitle")),
+			body: optionalString(formData.get("closingBody")),
+			coreEyebrow: optionalString(formData.get("coreEyebrow")),
+			coreTitle: optionalString(formData.get("coreTitle")),
+		},
+	};
+
+	await upsertEditorial(
+		{
+			type: "page_about",
+			slug: "about",
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+		},
+		String(session.sub),
 	);
 
 	refreshAboutPaths();
@@ -771,8 +699,6 @@ export async function getEditorialContactRecord() {
 
 export async function updateEditorialContactAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
-	const now = new Date().toISOString();
 	const current = await getEditorialRecordForAdmin("page_contact");
 	const title = optionalString(formData.get("title")) ?? current?.title ?? "Contato";
 	const subjects = [1, 2, 3, 4, 5, 6]
@@ -788,50 +714,50 @@ export async function updateEditorialContactAction(formData: FormData) {
 			Boolean(link.label?.trim() && link.href?.trim()),
 		);
 
-	await db.collection<EditorialContactPage>(COLLECTION).updateOne(
-		{ type: "page_contact", slug: "contact" },
-		{
-			$set: {
-				type: "page_contact",
-				slug: "contact",
-				title,
-				summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
-				published: parseBoolean(formData.get("published"), current?.published ?? true),
-				order: parseOrder(formData.get("order"), current?.order ?? 1),
-				hero: {
-					eyebrow: optionalString(formData.get("heroEyebrow")),
-					title: optionalString(formData.get("heroTitle")),
-					body: optionalString(formData.get("heroBody")),
-					featuredLabel: current?.hero?.featuredLabel ?? "Email",
-					featuredValue: current?.hero?.featuredValue ?? null,
-				},
-				form: {
-					title: optionalString(formData.get("formTitle")),
-					description: optionalString(formData.get("formDescription")),
-					subjects,
-				},
-				direct: {
-					title: optionalString(formData.get("directTitle")),
-					description: optionalString(formData.get("directDescription")),
-					links: current?.direct?.links ?? [],
-				},
-				paths: {
-					title: optionalString(formData.get("pathsTitle")),
-					description: optionalString(formData.get("pathsDescription")),
-					links: pathLinks,
-				},
-				closing: {
-					title: optionalString(formData.get("closingTitle")),
-				},
-				updatedAt: now,
-				updatedBy: String(session.sub),
-			},
-			$setOnInsert: {
-				createdAt: now,
-				createdBy: String(session.sub),
-			},
+	const doc: EditorialContactPage = {
+		type: "page_contact",
+		slug: "contact",
+		title,
+		summary: optionalString(formData.get("summary")) ?? current?.summary ?? null,
+		published: parseBoolean(formData.get("published"), current?.published ?? true),
+		order: parseOrder(formData.get("order"), current?.order ?? 1),
+		hero: {
+			eyebrow: optionalString(formData.get("heroEyebrow")),
+			title: optionalString(formData.get("heroTitle")),
+			body: optionalString(formData.get("heroBody")),
+			featuredLabel: current?.hero?.featuredLabel ?? "Email",
+			featuredValue: current?.hero?.featuredValue ?? null,
 		},
-		{ upsert: true },
+		form: {
+			title: optionalString(formData.get("formTitle")),
+			description: optionalString(formData.get("formDescription")),
+			subjects,
+		},
+		direct: {
+			title: optionalString(formData.get("directTitle")),
+			description: optionalString(formData.get("directDescription")),
+			links: current?.direct?.links ?? [],
+		},
+		paths: {
+			title: optionalString(formData.get("pathsTitle")),
+			description: optionalString(formData.get("pathsDescription")),
+			links: pathLinks,
+		},
+		closing: {
+			title: optionalString(formData.get("closingTitle")),
+		},
+	};
+
+	await upsertEditorial(
+		{
+			type: "page_contact",
+			slug: "contact",
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+		},
+		String(session.sub),
 	);
 
 	refreshContactPaths();
@@ -844,8 +770,6 @@ export async function getEditorialHomeRecord() {
 
 export async function updateEditorialHomeAction(formData: FormData) {
 	const session = await requireEditorialManager();
-	const db = await getDb();
-	const now = new Date().toISOString();
 	const title = requiredString(formData, "title");
 	const current = await getEditorialRecordForAdmin("page_home");
 
@@ -858,86 +782,78 @@ export async function updateEditorialHomeAction(formData: FormData) {
 			Boolean(link.label?.trim() && link.href?.trim()),
 		);
 
-	await db.collection<EditorialHomePage>(COLLECTION).updateOne(
-		{ type: "page_home", slug: "home" },
-		{
-			$set: {
-				type: "page_home",
-				slug: "home",
-				title,
-				summary: optionalString(formData.get("summary")),
-				published: parseBoolean(formData.get("published"), true),
-				order: parseOrder(formData.get("order"), 1),
-				hero: {
-					eyebrow: optionalString(formData.get("heroEyebrow")),
-					title: optionalString(formData.get("heroTitle")),
-					description: optionalString(formData.get("heroDescription")),
-					primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
-					secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
-					secondaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"heroSecondaryCtaHref",
-						"Hero · CTA secundária",
-					),
-					supportingLine: optionalString(formData.get("heroSupportingLine")),
-					featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
-					featureTitle: optionalString(formData.get("heroFeatureTitle")),
-					featureBody: optionalString(formData.get("heroFeatureBody")),
-					featureQuote: optionalString(formData.get("heroFeatureQuote")),
-					featureImage: await parseImageByPrefix(formData, "heroFeatureImage"),
-					background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
-				},
-				manifesto: {
-					title: optionalString(formData.get("manifestoTitle")),
-					body: optionalString(formData.get("manifestoBody")),
-					linkLabel: optionalString(formData.get("manifestoLinkLabel")),
-					linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Manifesto · Link"),
-					background: await parseBackgroundByPrefix(
-						formData,
-						"manifestoBackground",
-						current?.manifesto?.background,
-					),
-				},
-				author: {
-					eyebrow: optionalString(formData.get("authorEyebrow")),
-					title: optionalString(formData.get("authorTitle")),
-					body: optionalString(formData.get("authorBody")),
-					secondaryBody: optionalString(formData.get("authorSecondaryBody")),
-					primaryCtaLabel: optionalString(formData.get("authorPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"authorPrimaryCtaHref",
-						"Autoria · CTA principal",
-					),
-					secondaryCtaLabel: optionalString(formData.get("authorSecondaryCtaLabel")),
-					secondaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"authorSecondaryCtaHref",
-						"Autoria · CTA secundária",
-					),
-					image: await parseImageByPrefix(formData, "authorImage"),
-				},
-				community: {
-					title: optionalString(formData.get("communityTitle")),
-					body: optionalString(formData.get("communityBody")),
-					primaryCtaLabel: optionalString(formData.get("communityPrimaryCtaLabel")),
-					primaryCtaHref: parseEditorialHrefChoice(
-						formData,
-						"communityPrimaryCtaHref",
-						"CTA final · CTA principal",
-					),
-					secondaryLinks: communityLinks,
-				},
-				updatedAt: now,
-				updatedBy: String(session.sub),
-			},
-			$setOnInsert: {
-				createdAt: now,
-				createdBy: String(session.sub),
-			},
+	const doc: EditorialHomePage = {
+		type: "page_home",
+		slug: "home",
+		title,
+		summary: optionalString(formData.get("summary")),
+		published: parseBoolean(formData.get("published"), true),
+		order: parseOrder(formData.get("order"), 1),
+		hero: {
+			eyebrow: optionalString(formData.get("heroEyebrow")),
+			title: optionalString(formData.get("heroTitle")),
+			description: optionalString(formData.get("heroDescription")),
+			primaryCtaLabel: optionalString(formData.get("heroPrimaryCtaLabel")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "heroPrimaryCtaHref", "Hero · CTA principal"),
+			secondaryCtaLabel: optionalString(formData.get("heroSecondaryCtaLabel")),
+			secondaryCtaHref: parseEditorialHrefChoice(formData, "heroSecondaryCtaHref", "Hero · CTA secundária"),
+			supportingLine: optionalString(formData.get("heroSupportingLine")),
+			featureEyebrow: optionalString(formData.get("heroFeatureEyebrow")),
+			featureTitle: optionalString(formData.get("heroFeatureTitle")),
+			featureBody: optionalString(formData.get("heroFeatureBody")),
+			featureQuote: optionalString(formData.get("heroFeatureQuote")),
+			featureImage: await parseImageByPrefix(formData, "heroFeatureImage"),
+			background: await parseBackgroundByPrefix(formData, "heroBackground", current?.hero?.background),
 		},
-		{ upsert: true },
+		manifesto: {
+			title: optionalString(formData.get("manifestoTitle")),
+			body: optionalString(formData.get("manifestoBody")),
+			linkLabel: optionalString(formData.get("manifestoLinkLabel")),
+			linkHref: parseEditorialHrefChoice(formData, "manifestoLinkHref", "Manifesto · Link"),
+			background: await parseBackgroundByPrefix(
+				formData,
+				"manifestoBackground",
+				current?.manifesto?.background,
+			),
+		},
+		author: {
+			eyebrow: optionalString(formData.get("authorEyebrow")),
+			title: optionalString(formData.get("authorTitle")),
+			body: optionalString(formData.get("authorBody")),
+			secondaryBody: optionalString(formData.get("authorSecondaryBody")),
+			primaryCtaLabel: optionalString(formData.get("authorPrimaryCtaLabel")),
+			primaryCtaHref: parseEditorialHrefChoice(formData, "authorPrimaryCtaHref", "Autoria · CTA principal"),
+			secondaryCtaLabel: optionalString(formData.get("authorSecondaryCtaLabel")),
+			secondaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"authorSecondaryCtaHref",
+				"Autoria · CTA secundária",
+			),
+			image: await parseImageByPrefix(formData, "authorImage"),
+		},
+		community: {
+			title: optionalString(formData.get("communityTitle")),
+			body: optionalString(formData.get("communityBody")),
+			primaryCtaLabel: optionalString(formData.get("communityPrimaryCtaLabel")),
+			primaryCtaHref: parseEditorialHrefChoice(
+				formData,
+				"communityPrimaryCtaHref",
+				"CTA final · CTA principal",
+			),
+			secondaryLinks: communityLinks,
+		},
+	};
+
+	await upsertEditorial(
+		{
+			type: "page_home",
+			slug: "home",
+			title,
+			content: doc,
+			published: doc.published ?? true,
+			order: doc.order ?? 1,
+		},
+		String(session.sub),
 	);
 
 	refreshHomePaths();

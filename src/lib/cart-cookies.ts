@@ -4,6 +4,18 @@ import type { Cart } from "@/lib/commerce-types";
 export const CART_COOKIE = "yns_cart_id";
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 
+/**
+ * `cookies().set()` throws when called during render (outside a Server Action or
+ * Route Handler). Some read paths — e.g. the checkout page calling
+ * `createTransparentCheckoutIntent()` during render — try to refresh the cart
+ * cookie opportunistically; that failure is expected and harmless (the cookie is
+ * written for real by /checkout/prepare and the cart actions), so it should not
+ * surface as an error.
+ */
+function isReadOnlyCookieError(error: unknown): boolean {
+	return error instanceof Error && /can only be modified in a Server Action/i.test(error.message);
+}
+
 export interface CartCookieItem {
 	productId: string;
 	variantId: string;
@@ -186,6 +198,7 @@ export async function setCartId(
 			path: "/",
 		});
 	} catch (error) {
+		if (isReadOnlyCookieError(error)) return;
 		console.error("Failed to set cart ID cookie", error);
 	}
 }
@@ -227,6 +240,7 @@ export async function clearCartId(): Promise<void> {
 			path: "/",
 		});
 	} catch (error) {
+		if (isReadOnlyCookieError(error)) return;
 		console.error("Failed to clear cart ID cookie", error);
 	}
 }

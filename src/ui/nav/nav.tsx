@@ -1,11 +1,13 @@
-import { UserIcon } from "lucide-react";
-import Image from "next/image";
+import { Suspense } from "react";
 import { CartIcon } from "@/components/cart-icon";
 import { CartSidebarHost } from "@/components/cart-sidebar-host";
+import { getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
-import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { NavMenu } from "@/ui/nav/nav-menu";
+import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
+import { NavMobileMenu } from "@/ui/nav/nav-mobile-menu.client";
+import { SearchInput, SearchInputPlaceholder } from "@/ui/nav/search-input.client";
+import { type SlNavLink, SlNavLinks } from "@/ui/nav/sl-nav.client";
 import { YnsLink } from "@/ui/yns-link";
 
 type NavProps = {
@@ -13,68 +15,103 @@ type NavProps = {
 	lightweight?: boolean;
 };
 
+const SL_SEARCH_CLASS =
+	"h-11 w-[200px] rounded-none border border-[color:var(--sl-line-on-ink)] bg-transparent px-3.5 text-[13px] text-[color:var(--sl-text-on-ink)] outline-none placeholder:text-[color:var(--sl-text-on-ink-soft)] focus-visible:ring-0";
+
+/** SL SiteHeader — ink header for the whole public site. Wine cart is the only colour block. */
 export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps = {}) => {
 	const session = hideAuthCta || lightweight ? null : await auth();
 	const isAdminSession = isBackofficeRole(session?.user.role);
 	const authHref = !session ? "/login" : isAdminSession ? "/admin" : "/user";
+	const [navT, searchT, authT] = await Promise.all([
+		getTranslations("Selo"),
+		getTranslations("Global.nav.search"),
+		getTranslations("Global.nav.auth"),
+	]);
+	const authLabel = !session ? authT("signIn") : isAdminSession ? authT("admin") : authT("myAccount");
+
+	const links: SlNavLink[] = [
+		{ label: navT("nav.shop"), href: PUBLIC_NAVIGATION.shop },
+		{ label: navT("nav.sarau"), href: PUBLIC_NAVIGATION.sarau },
+		{ label: navT("nav.projects"), href: PUBLIC_NAVIGATION.projects },
+		{ label: navT("nav.about"), href: PUBLIC_NAVIGATION.about },
+		{ label: navT("nav.contact"), href: PUBLIC_NAVIGATION.contact },
+	];
 
 	return (
-		<header className="sticky top-0 z-50 bg-[color:rgba(247,244,239,0.98)] backdrop-blur-xs">
-			<div className="w-full bg-[color:var(--editorial-paper)] px-4 pt-5 sm:px-8 lg:px-12">
-				<div className="flex items-center justify-between gap-6 pb-5">
-					<YnsLink
-						href="/"
-						className="flex min-w-0 shrink-0 items-center gap-3 text-[color:var(--editorial-ink)]"
-					>
-						<div className="relative h-11 w-11 shrink-0 overflow-hidden border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)]">
-							<Image
-								src="/images/selolibertaria.png"
-								alt={seloSiteMeta.name}
-								fill
-								className="object-cover"
-								sizes="44px"
-							/>
-						</div>
-						<div className="min-w-0">
-							<div className="text-[0.7rem] font-black uppercase tracking-[0.34em] text-[color:var(--editorial-ink)]">
-								Selo
-							</div>
-							<div className="text-sm font-black uppercase tracking-[0.28em] text-[color:var(--editorial-ink)] sm:text-base">
-								Libertária
-							</div>
-						</div>
-					</YnsLink>
+		<header
+			className="sl-scope sticky top-0 z-50"
+			style={{ background: "var(--sl-ink)", color: "var(--sl-text-on-ink)" }}
+		>
+			<div className="mx-auto flex h-[var(--sl-h-header)] w-full max-w-[var(--sl-w-desktop)] items-center justify-between gap-6 px-4 sm:px-8 lg:px-12">
+				<YnsLink href="/" className="flex shrink-0 items-center gap-3.5">
+					<span className="block h-10 w-10 shrink-0 overflow-hidden">
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img
+							src="/images/selolibertaria.png"
+							alt="Selo Libertária"
+							className="h-full w-full object-cover"
+						/>
+					</span>
+					<span className="hidden flex-col leading-none sm:flex">
+						<span className="sl-u text-[10px] tracking-[0.34em] text-[color:var(--sl-text-on-ink-label)]">
+							Selo
+						</span>
+						<span className="sl-u text-[15px] tracking-[0.28em]">Libertária</span>
+					</span>
+				</YnsLink>
 
-					<div className="flex items-center gap-5">
-						<div className="min-w-0 flex-1 lg:flex lg:justify-end">
-							<NavMenu
-								includeDynamicCategories={!lightweight}
-								includeSessionLink={!hideAuthCta && !lightweight}
-							/>
-						</div>
+				<SlNavLinks links={links} />
 
-						{hideAuthCta || isAdminSession ? null : (
-							<div className="hidden lg:flex lg:items-center">
-								<CartIcon />
-							</div>
-						)}
+				<div className="flex items-center gap-2.5">
+					<label className="hidden items-center md:flex">
+						<span className="sr-only">{searchT("title")}</span>
+						<Suspense
+							fallback={
+								<SearchInputPlaceholder placeholder={searchT("placeholder")} className={SL_SEARCH_CLASS} />
+							}
+						>
+							<SearchInput placeholder={searchT("placeholder")} className={SL_SEARCH_CLASS} />
+						</Suspense>
+					</label>
 
-						{hideAuthCta ? null : (
-							<div className="flex items-center gap-2 lg:hidden">
-								{!isAdminSession ? <CartIcon /> : null}
-								<YnsLink
-									href={authHref}
-									className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--editorial-ink)] text-[color:var(--editorial-ink)]"
-								>
-									<UserIcon className="h-4 w-4" />
-								</YnsLink>
-							</div>
-						)}
+					{hideAuthCta ? null : (
+						<YnsLink
+							href={authHref}
+							className="hidden text-[11px] font-black uppercase tracking-[0.2em] text-[color:var(--sl-text-on-ink-soft)] transition-colors hover:text-[color:var(--sl-text-on-ink)] lg:inline"
+						>
+							{authLabel}
+						</YnsLink>
+					)}
+
+					{!isAdminSession && !hideAuthCta ? <CartIcon /> : null}
+
+					<div className="lg:hidden" style={{ color: "var(--sl-text-on-ink)" }}>
+						<NavMobileMenu>
+							<ul className="m-0 flex list-none flex-col gap-1 p-0 pb-8">
+								{links.map((link) => (
+									<li key={link.href}>
+										<YnsLink
+											href={link.href}
+											className="block border-b border-[color:var(--sl-line-hairline)] py-3 text-[18px] font-black uppercase tracking-[0.08em] text-[color:var(--sl-text)]"
+										>
+											{link.label}
+										</YnsLink>
+									</li>
+								))}
+								{hideAuthCta ? null : (
+									<li className="pt-3">
+										<YnsLink href={authHref} className="sl-btn sl-btn-secondary w-full">
+											{authLabel}
+										</YnsLink>
+									</li>
+								)}
+							</ul>
+						</NavMobileMenu>
 					</div>
 				</div>
 			</div>
 			{!hideAuthCta && !isAdminSession ? <CartSidebarHost /> : null}
-			<div className="border-b border-[color:var(--editorial-ink)]" />
 		</header>
 	);
 };
