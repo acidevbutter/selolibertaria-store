@@ -49,9 +49,12 @@ export function SlPixPanel({
 					expira.
 				</p>
 				{code ? (
-					<div className="sl-field overflow-hidden text-[13px] text-[color:var(--sl-text-soft)]">
-						<span className="truncate">{code}</span>
-					</div>
+					<input
+						readOnly
+						value={code}
+						aria-label="Código Pix copia e cola"
+						className="sl-field w-full truncate bg-[color:var(--sl-surface-card)] text-[13px] text-[color:var(--sl-text-soft)] outline-none"
+					/>
 				) : null}
 				{onCopy ? (
 					<button type="button" className="sl-btn sl-btn-primary w-full" onClick={onCopy}>

@@ -15,10 +15,12 @@ import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils"
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
+import { SlBreadcrumb } from "@/ui/sl/sl-breadcrumb";
 import { SlButton } from "@/ui/sl/sl-button";
+import { SlMiniProductRow } from "@/ui/sl/sl-mini-product-row";
 import { SlPriceTag } from "@/ui/sl/sl-price-tag";
-import { SlProductCard } from "@/ui/sl/sl-product-card.client";
 import { SlSectionHead } from "@/ui/sl/sl-section-head";
+import { SlTrustList } from "@/ui/sl/sl-trust-list";
 import { YnsLink } from "@/ui/yns-link";
 
 export const generateMetadata = async (props: { params: Promise<{ slug: string }> }): Promise<Metadata> => {
@@ -147,12 +149,13 @@ export default async function SingleProductPage(props: {
 	return (
 		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
 			<div className="mx-auto flex w-full max-w-[var(--sl-w-narrow)] flex-col gap-7 px-4 py-8 sm:px-8 lg:px-10 lg:py-12">
-				<p className="m-0 text-[12px] uppercase tracking-[0.18em] text-[color:var(--sl-text-soft)]">
-					<YnsLink href="/products" className="sl-link">
-						Loja
-					</YnsLink>{" "}
-					/ {categoryName} / <span className="text-[color:var(--sl-accent)]">{product.name}</span>
-				</p>
+				<SlBreadcrumb
+					segments={[
+						{ label: "Loja", href: "/products" },
+						{ label: categoryName, href: category ? `/category/${category}` : undefined },
+						{ label: product.name },
+					]}
+				/>
 
 				<div className="grid items-start gap-10 lg:grid-cols-[1fr_420px]">
 					<div className="flex flex-col gap-5">
@@ -287,17 +290,7 @@ export default async function SingleProductPage(props: {
 							</div>
 						</div>
 
-						<div
-							className="flex flex-col gap-3 p-5"
-							style={{ border: "1px solid var(--sl-line)", background: "var(--sl-surface-card)" }}
-						>
-							{trust.map((line) => (
-								<div key={line} className="flex items-baseline gap-3">
-									<span className="font-black text-[color:var(--sl-accent)]">✓</span>
-									<p className="m-0 text-[14px] leading-[1.6]">{line}</p>
-								</div>
-							))}
-						</div>
+						<SlTrustList items={trust} framed />
 					</div>
 				</div>
 
@@ -311,9 +304,21 @@ export default async function SingleProductPage(props: {
 								</SlButton>
 							}
 						/>
-						<div className="grid grid-cols-2 gap-[var(--sl-grid-gap-sm)] md:gap-[var(--sl-grid-gap)] lg:grid-cols-4">
+						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 							{relatedRows.map((row) => (
-								<SlProductCard key={row.id} row={row} />
+								<SlMiniProductRow
+									key={row.id}
+									href={row.href}
+									category={row.category}
+									title={row.name}
+									price={row.priceLabel}
+									image={
+										row.imageUrl ? (
+											// eslint-disable-next-line @next/next/no-img-element
+											<img src={row.imageUrl} alt={row.imageAlt} className="h-full w-full object-cover" />
+										) : undefined
+									}
+								/>
 							))}
 						</div>
 					</div>

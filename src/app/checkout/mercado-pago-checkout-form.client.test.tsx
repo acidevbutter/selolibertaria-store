@@ -108,7 +108,11 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		);
 
 		await waitFor(() => {
-			expect(screen.getByText("Pix gerado. Pague pelo QR Code ou copie o código abaixo.")).toBeVisible();
+			expect(
+				screen.getByText(
+					"Escaneie no app do banco ou copie o código. Reservamos os itens do carrinho enquanto o Pix não expira.",
+				),
+			).toBeVisible();
 		});
 		expect(getPendingMercadoPagoPixPayment).toHaveBeenCalledWith({ orderId: "ord_123" });
 		expect(screen.getByRole("img", { name: "QR Code Pix" })).toHaveAttribute(
@@ -309,7 +313,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		);
 
 		const button = await screen.findByRole("button", { name: "Gerar código Pix" });
-		expect(screen.getByRole("radio", { name: "CartãoCrédito ou débito no formulário seguro" })).toBeVisible();
+		expect(screen.getByRole("tab", { name: "CartãoAté 6x sem juros" })).toBeVisible();
 		fireEvent.click(button);
 		await waitFor(() => {
 			expect(submitMercadoPagoCheckoutPayment).toHaveBeenCalledWith({
@@ -329,13 +333,13 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 			</IntlClientProvider>,
 		);
 
-		const card = await screen.findByRole("radio", {
-			name: "CartãoCrédito ou débito no formulário seguro",
-		});
+		const card = await screen.findByRole("tab", { name: "CartãoAté 6x sem juros" });
 		fireEvent.click(card);
 		await waitFor(() =>
 			expect(
-				screen.getByText("Informe os dados do cartão no formulário seguro do Mercado Pago."),
+				screen.getByText(
+					"Os dados do cartão são informados no formulário seguro do Mercado Pago e não passam pelo site.",
+				),
 			).toBeVisible(),
 		);
 	});
@@ -350,9 +354,7 @@ describe("MercadoPagoCheckoutForm Pix", () => {
 		);
 
 		fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "novo@selo.test" } });
-		const card = await screen.findByRole("radio", {
-			name: "CartãoCrédito ou débito no formulário seguro",
-		});
+		const card = await screen.findByRole("tab", { name: "CartãoAté 6x sem juros" });
 		fireEvent.click(card);
 
 		await waitFor(() =>

@@ -22,15 +22,16 @@ import {
 	normalizeBuyerName,
 } from "@/lib/checkout-buyer";
 import { getMaxCardInstallments, getMercadoPagoCardErrorMessage } from "@/lib/mercado-pago-orders/card";
-import { cn, formatMoney } from "@/lib/utils";
+import { formatMoney } from "@/lib/utils";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
-import { Input } from "@/ui/shadcn/input";
 import { RadioGroup, RadioGroupItem } from "@/ui/shadcn/radio-group";
 import { SlCardBrandRow } from "@/ui/sl/sl-card-brand-row";
+import { SlField } from "@/ui/sl/sl-field";
 import { SlInstallmentList, type SlInstallmentOption } from "@/ui/sl/sl-installment-list";
 import { SlPaymentMethodTabs } from "@/ui/sl/sl-payment-method-tabs";
 import { SlPaymentState } from "@/ui/sl/sl-payment-state";
 import { SlPixPanel } from "@/ui/sl/sl-pix-panel";
+import { SlSavedCard } from "@/ui/sl/sl-saved-card";
 import { SlShippingOption } from "@/ui/sl/sl-shipping-option";
 
 type MercadoPagoFormData = {
@@ -577,63 +578,59 @@ export function MercadoPagoCheckoutForm({
 						e-mail após a confirmação do pagamento.
 					</p>
 					<div className="grid gap-4 md:grid-cols-2">
-						<BuyerInput
+						<SlField
 							id="checkout-full-name-mp"
 							label="Nome completo"
-							error={buyerErrors.fullName}
 							className="md:col-span-2"
-						>
-							<Input
-								id="checkout-full-name-mp"
-								value={buyer.fullName}
-								onChange={(event) => setBuyerField("fullName", event.currentTarget.value)}
-								onBlur={() => normalizeBuyerField("fullName")}
-								autoComplete="name"
-								required
-							/>
-						</BuyerInput>
-						<BuyerInput id="checkout-email-mp" label="E-mail" error={buyerErrors.email}>
-							<Input
-								id="checkout-email-mp"
-								type="email"
-								value={buyer.email}
-								onChange={(event) => setBuyerField("email", event.currentTarget.value)}
-								onBlur={() => normalizeBuyerField("email")}
-								autoComplete="email"
-								required
-							/>
-						</BuyerInput>
-						<BuyerInput id="checkout-cpf-mp" label="CPF ou CNPJ" error={buyerErrors.cpf}>
-							<Input
-								id="checkout-cpf-mp"
-								value={buyer.cpf}
-								onChange={(event) => setBuyerField("cpf", formatCpf(event.currentTarget.value))}
-								onBlur={() => normalizeBuyerField("cpf")}
-								inputMode="numeric"
-								maxLength={18}
-								placeholder="000.000.000-00 ou 00.000.000/0000-00"
-								required
-							/>
-						</BuyerInput>
-						<BuyerInput
+							state={buyerErrors.fullName ? "error" : "default"}
+							hint={buyerErrors.fullName}
+							value={buyer.fullName}
+							onChange={(event) => setBuyerField("fullName", event.currentTarget.value)}
+							onBlur={() => normalizeBuyerField("fullName")}
+							autoComplete="name"
+							required
+						/>
+						<SlField
+							id="checkout-email-mp"
+							label="E-mail"
+							type="email"
+							state={buyerErrors.email ? "error" : "default"}
+							hint={buyerErrors.email}
+							value={buyer.email}
+							onChange={(event) => setBuyerField("email", event.currentTarget.value)}
+							onBlur={() => normalizeBuyerField("email")}
+							autoComplete="email"
+							required
+						/>
+						<SlField
+							id="checkout-cpf-mp"
+							label="CPF ou CNPJ"
+							state={buyerErrors.cpf ? "error" : "default"}
+							hint={buyerErrors.cpf}
+							value={buyer.cpf}
+							onChange={(event) => setBuyerField("cpf", formatCpf(event.currentTarget.value))}
+							onBlur={() => normalizeBuyerField("cpf")}
+							inputMode="numeric"
+							maxLength={18}
+							placeholder="000.000.000-00 ou 00.000.000/0000-00"
+							required
+						/>
+						<SlField
 							id="checkout-phone-mp"
 							label="Telefone"
-							error={buyerErrors.phone}
 							className="md:col-span-2"
-						>
-							<Input
-								id="checkout-phone-mp"
-								type="tel"
-								value={buyer.phone}
-								onChange={(event) => setBuyerField("phone", formatCheckoutPhone(event.currentTarget.value))}
-								onBlur={() => normalizeBuyerField("phone")}
-								autoComplete="tel-national"
-								inputMode="tel"
-								maxLength={15}
-								placeholder="(11) 99999-9999"
-								required
-							/>
-						</BuyerInput>
+							type="tel"
+							state={buyerErrors.phone ? "error" : "default"}
+							hint={buyerErrors.phone}
+							value={buyer.phone}
+							onChange={(event) => setBuyerField("phone", formatCheckoutPhone(event.currentTarget.value))}
+							onBlur={() => normalizeBuyerField("phone")}
+							autoComplete="tel-national"
+							inputMode="tel"
+							maxLength={15}
+							placeholder="(11) 99999-9999"
+							required
+						/>
 					</div>
 				</div>
 			</section>
@@ -844,26 +841,19 @@ export function MercadoPagoCheckoutForm({
 										>
 											<p className="sl-lbl">Cartões salvos no Mercado Pago</p>
 											{savedCards.map((card) => (
-												<div key={card.id} className="flex items-center justify-between gap-2 text-[13px]">
-													<label className="flex items-center gap-2">
-														<input
-															type="radio"
-															name="saved-mercado-pago-card"
-															checked={selectedSavedCardId === card.id}
-															onChange={() => setSelectedSavedCardId(card.id)}
-														/>
-														<span>
-															{card.brand ?? "Cartão"} · final {card.lastFourDigits ?? "****"}
-														</span>
-													</label>
-													<button
-														type="button"
-														className="text-[11px] font-black uppercase tracking-[0.16em] text-[color:var(--sl-accent)] underline"
-														onClick={() => void handleRemoveSavedCard(card.id)}
-													>
-														Remover
-													</button>
-												</div>
+												<SlSavedCard
+													key={card.id}
+													brandName={card.brand ?? "Cartão"}
+													last4={card.lastFourDigits}
+													expiry={
+														card.expirationMonth && card.expirationYear
+															? `${String(card.expirationMonth).padStart(2, "0")}/${String(card.expirationYear).slice(-2)}`
+															: null
+													}
+													selected={selectedSavedCardId === card.id}
+													onSelect={() => setSelectedSavedCardId(card.id)}
+													onRemove={() => void handleRemoveSavedCard(card.id)}
+												/>
 											))}
 											<button
 												type="button"
@@ -996,32 +986,6 @@ function buildInstallmentPreview(
 		note: n === 1 ? "à vista" : "sem juros",
 		highlight: n === max || n === 1,
 	}));
-}
-
-function BuyerInput({
-	id,
-	label,
-	error,
-	className,
-	children,
-}: {
-	id: string;
-	label: string;
-	error?: string;
-	className?: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className={cn("grid content-start gap-2", className)}>
-			<label className="sl-lbl" htmlFor={id}>
-				{label}
-			</label>
-			{children}
-			<p className="m-0 min-h-4 text-[12px]" style={{ color: error ? "var(--sl-danger)" : "transparent" }}>
-				{error ?? " "}
-			</p>
-		</div>
-	);
 }
 
 function DeliveryOptionCard({

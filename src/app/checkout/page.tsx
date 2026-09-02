@@ -7,6 +7,7 @@ import { isAsaasActive, isMercadoPagoActive } from "@/lib/payments";
 import { formatMoney } from "@/lib/utils";
 import { SlButton } from "@/ui/sl/sl-button";
 import { SlCheckoutStepper } from "@/ui/sl/sl-checkout-stepper";
+import { SlMiniProductRow } from "@/ui/sl/sl-mini-product-row";
 import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
 
 interface CheckoutStartPageProps {
@@ -133,24 +134,19 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 						</div>
 						<div className="flex flex-col gap-3.5 border-b border-[color:var(--sl-line-hairline)] px-5 py-4">
 							{res.items.map((item) => (
-								<div key={item.variantId} className="flex items-center gap-3">
-									<div
-										className="h-12 w-12 flex-none overflow-hidden"
-										style={{ background: "var(--sl-sand)" }}
-									>
-										{item.image ? (
+								<SlMiniProductRow
+									key={item.variantId}
+									framed={false}
+									title={item.name}
+									meta={t("summary.quantity", { quantity: item.quantity })}
+									price={money(item.lineFinalTotal)}
+									image={
+										item.image ? (
 											// eslint-disable-next-line @next/next/no-img-element
 											<img src={item.image} alt="" className="h-full w-full object-cover" />
-										) : null}
-									</div>
-									<div className="min-w-0 flex-1">
-										<p className="m-0 truncate text-[14px] font-bold">{item.name}</p>
-										<p className="m-0 mt-0.5 text-[12px] text-[color:var(--sl-text-soft)]">
-											{t("summary.quantity", { quantity: item.quantity })}
-										</p>
-									</div>
-									<span className="text-[14px]">{money(item.lineFinalTotal)}</span>
-								</div>
+										) : undefined
+									}
+								/>
 							))}
 						</div>
 						<div className="border-b border-[color:var(--sl-line-hairline)] px-5 py-4">
