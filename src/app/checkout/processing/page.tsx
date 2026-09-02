@@ -7,6 +7,7 @@ import { finalizeCheckoutCleanup } from "@/actions/order-actions";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import { isResolvedCheckoutStatus, isWarningCheckoutStatus } from "@/lib/payment-status";
+import { SlPaymentState } from "@/ui/sl/sl-payment-state";
 
 const PROCESSING_POLL_INTERVAL_MS = 1500;
 const PROCESSING_TIMEOUT_MS = 15000;
@@ -161,25 +162,26 @@ export default function ProcessingPage() {
 					? t(`${warningKey}.description`)
 					: t("error.description");
 
+	const stateKind = done ? "approved" : phase === "error" ? "declined" : isWarning ? "waiting" : "processing";
+
 	return (
-		<main className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center px-6 py-12">
-			<div className="w-full rounded-2xl border bg-card p-8 text-center shadow-sm">
-				<div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border bg-background">
-					{phase === "processing" ? (
-						<span className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-					) : phase === "finalized" ? (
-						<span className="text-2xl">✓</span>
-					) : (
-						<span className="text-2xl">!</span>
-					)}
-				</div>
-				<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-				<p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
-				{isGuest && done ? (
-					<p className="mt-4 text-sm leading-6 text-muted-foreground">
-						Sua conta já está pronta. Você também vai receber por e-mail o link seguro para definir sua senha.
-					</p>
-				) : null}
+		<main
+			className="sl-scope mx-auto flex min-h-[60vh] w-full max-w-lg items-center px-6 py-16"
+			style={{ color: "var(--sl-text)" }}
+		>
+			<div className="w-full">
+				<SlPaymentState
+					kind={stateKind}
+					title={title}
+					body={
+						<>
+							{description}
+							{isGuest && done ? (
+								<> Sua conta já está pronta — o link seguro para definir a senha vai por e-mail.</>
+							) : null}
+						</>
+					}
+				/>
 			</div>
 		</main>
 	);
