@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../styles/glitch.css";
+@import "../styles/sl-tokens.css";
 
 /* Neutral typography helpers for the generic selolibertaria baseline. */
 .display-font {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next/types";
 import { publicUrl } from "@/env.mjs";
-import { getTranslations } from "@/i18n/server";
+import { getLocale } from "@/i18n/server";
+import { auth } from "@/lib/auth";
+import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import {
@@ -8,11 +10,12 @@ import {
 	getEditorialSarauPage,
 	listEditorialEvents,
 } from "@/lib/editorial-content-store";
-import { HomeFeaturedBooks } from "@/ui/home/home-featured-books";
-import { HomeHero } from "@/ui/home/home-hero";
-import { HomeManifesto } from "@/ui/home/home-manifesto";
-import { HomeProgramGrid } from "@/ui/home/home-program-grid";
-import { YnsLink } from "@/ui/yns-link";
+import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
+import { formatMoney } from "@/lib/utils";
+import { SlHomeCategoryBand } from "@/ui/home/sl/sl-home-category-band";
+import { SlHomeFeatured } from "@/ui/home/sl/sl-home-featured";
+import { SlHomeHero } from "@/ui/home/sl/sl-home-hero";
+import { SlHomeManifesto } from "@/ui/home/sl/sl-home-manifesto";
 
 export const metadata: Metadata = {
 	alternates: { canonical: publicUrl },
@@ -20,56 +23,100 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+const HERO_FALLBACK_IMAGE = "/images/selolibertaria/virus-do-beijo-cover.png";
+
 export default async function Home() {
-	const homeContent = await getEditorialHomePage();
-	const [featuredEvents, sarauPage, t, featuredProduct, heroProduct] = await Promise.all([
+	const [homeContent, locale, session, currency] = await Promise.all([
+		getEditorialHomePage(),
+		getLocale(),
+		auth(),
+		getRequestPreferredCurrency(),
+	]);
+
+	const [featuredEvents, sarauPage, heroProduct, featuredProduct, browse] = await Promise.all([
 		listEditorialEvents(),
 		getEditorialSarauPage(),
-		getTranslations("Selo.home.fallback"),
-		homeContent.featuredBook?.productSlug
-			? commerce.product.get({ slug: homeContent.featuredBook.productSlug }).catch(() => null)
-			: Promise.resolve(null),
 		homeContent.hero?.mode === "product" && homeContent.hero.productSlug
-			? commerce.product.get({ slug: homeContent.hero.productSlug }).catch(() => null)
+			? commerce.product.get({ slug: homeContent.hero.productSlug, currency }).catch(() => null)
 			: Promise.resolve(null),
+		homeContent.featuredBook?.productSlug
+			? commerce.product.get({ slug: homeContent.featuredBook.productSlug, currency }).catch(() => null)
+			: Promise.resolve(null),
+		commerce.product.browse({ first: 100, currency }).catch(() => ({ data: [] })),
 	]);
-	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
-	try {
-		const result = await commerce.product.browse({ first: 6, currency: await getRequestPreferredCurrency() });
-		const products = result.data || [];
 
-		return (
-			<div className="space-y-8 md:space-y-12">
-				<HomeHero content={homeContent.hero} product={heroProduct} />
-				<div className="space-y-8 md:space-y-12">
-					<HomeManifesto content={homeContent.manifesto} />
-					<HomeFeaturedBooks products={products} content={homeContent} featuredProduct={featuredProduct} />
-					<HomeProgramGrid event={featuredEvent} sarau={sarauPage} content={homeContent.program} />
-				</div>
-			</div>
-		);
-	} catch (error) {
-		return (
-			<div className="space-y-8 md:space-y-12">
-				<HomeHero content={homeContent.hero} product={heroProduct} />
-				<div className="space-y-8 md:space-y-12">
-					<section className="border border-red-500/30 bg-red-500/8 p-4 text-center text-sm text-red-700 dark:text-red-300">
-						{t("catalogUnavailable")}
-						<br />
-						<small>{error instanceof Error ? error.message : t("unknownError")}</small>
-					</section>
-					<div className="flex justify-center">
-						<YnsLink
-							className="inline-flex h-11 items-center justify-center rounded-full border border-border px-6 text-sm font-medium transition-colors hover:bg-accent"
-							href="/projects"
-						>
-							{t("viewProjects")}
-						</YnsLink>
-					</div>
-					<HomeManifesto content={homeContent.manifesto} />
-					<HomeProgramGrid event={featuredEvent} sarau={sarauPage} content={homeContent.program} />
-				</div>
-			</div>
-		);
-	}
+	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
+	const rows = buildSlProductRows(browse.data, { locale, canPurchase });
+	const categories = deriveSlCategories(rows);
+	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
+
+	// --- Hero resolution: product-backed when possible, editorial copy otherwise.
+	const hero = homeContent.hero ?? null;
+	const heroSource = heroProduct ?? featuredProduct ?? null;
+	const heroPrice = heroSource
+		? formatMoney({
+				amount: heroSource.variants?.[0]?.price ?? heroSource.price ?? 0,
+				currency: heroSource.currency,
+				locale,
+			})
+		: null;
+	const heroPriceMinor = heroSource ? (heroSource.variants?.[0]?.price ?? heroSource.price ?? 0) : 0;
+	const heroInstallment =
+		heroSource && heroPriceMinor >= 15000
+			? `ou 6x de ${formatMoney({
+					amount: Math.round(heroPriceMinor / 6),
+					currency: heroSource.currency,
+					locale,
+				})} sem juros`
+			: null;
+
+	return (
+		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
+			<SlHomeHero
+				eyebrow={hero?.eyebrow || "Lançamento"}
+				tags={hero?.supportingLine ? [hero.supportingLine] : ["Catálogo do selo"]}
+				title={heroSource?.name || hero?.title || "little fish, big fish"}
+				blurb={
+					heroSource?.summary ||
+					hero?.description ||
+					"Editora e produtora cultural dedicada à literatura erótica, à performance e aos encontros."
+				}
+				imageUrl={heroSource?.images[0] || hero?.featureImage?.src || HERO_FALLBACK_IMAGE}
+				imageAlt={hero?.featureImage?.alt || heroSource?.name || "Selo Libertária"}
+				priceLabel={heroPrice}
+				installmentLabel={heroInstallment}
+				primaryHref={heroSource ? `/product/${heroSource.slug}` : hero?.primaryCtaHref || "/products"}
+				primaryLabel={heroSource ? "Comprar agora" : hero?.primaryCtaLabel || "Ver a loja"}
+				secondaryHref={hero?.secondaryCtaHref || "/products"}
+				secondaryLabel={hero?.secondaryCtaLabel || "Ver o catálogo"}
+				metaItems={[
+					"Pix, cartão ou boleto",
+					"Frete calculado no carrinho",
+					"Envio com rastreio pelo Melhor Envio",
+				]}
+			/>
+
+			<SlHomeCategoryBand categories={categories} />
+
+			<SlHomeFeatured rows={rows} />
+
+			<SlHomeManifesto
+				title={homeContent.manifesto?.title || "Literatura que acende presença"}
+				body={
+					homeContent.manifesto?.body ||
+					"Editora e produtora cultural de São Paulo. Publicamos livros, edições sonoras, zines e objetos — e produzimos saraus e laboratórios de escrita."
+				}
+				linkLabel={homeContent.manifesto?.linkLabel || "Conhecer o selo"}
+				linkHref={homeContent.manifesto?.linkHref || "/about"}
+				sarau={{
+					eyebrow: "Sarau Safado · próxima edição",
+					data: featuredEvent?.period || sarauPage?.agenda?.title || "Agenda em breve",
+					local: featuredEvent?.location || "São Paulo · centro",
+					entrada: "R$ 30,00",
+					ctaLabel: "Garantir ingresso",
+					ctaHref: featuredEvent ? "/events" : "/sarau-safado",
+				}}
+			/>
+		</div>
+	);
 }

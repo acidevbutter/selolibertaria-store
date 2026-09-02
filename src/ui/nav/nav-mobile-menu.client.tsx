@@ -18,7 +18,7 @@ export const NavMobileMenu = ({ children }: { children: ReactNode }) => {
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
 			<DrawerTrigger aria-label={t("title")} title={t("title")}>
-				<MenuIcon className="h-5 w-5 text-[color:var(--editorial-ink)]" />
+				<MenuIcon className="h-5 w-5" />
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>

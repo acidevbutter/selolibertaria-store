@@ -1,33 +1,27 @@
-import Image from "next/image";
 import type { Metadata } from "next/types";
 import { ProductImageGallery } from "@/app/(store)/product/[slug]/product-image-gallery.client";
-import { AddToCart } from "@/components/add-to-cart";
+import { SlAddToCart } from "@/components/sl-add-to-cart.client";
 import { publicUrl } from "@/env.mjs";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
-import type { Product, YnsProduct } from "@/lib/commerce-types";
+import type { YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { getEditorialProductPage } from "@/lib/editorial-content-store";
-import { buildFavoriteKey, isFavorite, listFavoriteKeysForUser } from "@/lib/favorites";
-import { getProductCardActionState } from "@/lib/product-card-action-state";
-import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
+import { isFavorite } from "@/lib/favorites";
+import { buildSlProductRows } from "@/lib/sl-catalog";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
-import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
-import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
-import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
-import { ProductTeaserActions } from "@/ui/products/product-teaser-actions.client";
-import { Badge } from "@/ui/shadcn/badge";
+import { SlButton } from "@/ui/sl/sl-button";
+import { SlPriceTag } from "@/ui/sl/sl-price-tag";
+import { SlProductCard } from "@/ui/sl/sl-product-card.client";
+import { SlSectionHead } from "@/ui/sl/sl-section-head";
 import { YnsLink } from "@/ui/yns-link";
 
-export const generateMetadata = async (props: {
-	params: Promise<{ slug: string }>;
-	searchParams: Promise<{ variant?: string }>;
-}): Promise<Metadata> => {
+export const generateMetadata = async (props: { params: Promise<{ slug: string }> }): Promise<Metadata> => {
 	const params = await props.params;
 	const pageContent = await getEditorialProductPage();
 	const product = await commerce.product.get({
@@ -37,75 +31,59 @@ export const generateMetadata = async (props: {
 
 	if (!product) {
 		return {
-			title: `${pageContent.notFound?.title || "Produto não encontrado"} · ${publicUrl
-				.replace(/^https?:\/\//, "")
-				.replace(/\/$/, "")}`,
+			title: `${pageContent.notFound?.title || "Produto não encontrado"} · Selo Libertária`,
 			description:
 				pageContent.notFound?.body ||
 				"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo.",
 		};
 	}
 
-	const productName = product.name;
-	const description = product.summary ?? "Produto do catálogo do Selo Libertária.";
-	const canonical = `${publicUrl}/product/${product.slug}`;
-
 	return {
-		title: `${productName} · Selo Libertária`,
-		description,
-		alternates: { canonical },
+		title: `${product.name} · Selo Libertária`,
+		description: product.summary ?? "Produto do catálogo do Selo Libertária.",
+		alternates: { canonical: `${publicUrl}/product/${product.slug}` },
 	};
 };
 
 export default async function SingleProductPage(props: {
 	params: Promise<{ slug: string }>;
-	searchParams: Promise<{ variant?: string; image?: string }>;
+	searchParams: Promise<{ variant?: string }>;
 }) {
 	const params = await props.params;
 	const searchParams = await props.searchParams;
-	const [product, t, locale, pageContent] = await Promise.all([
-		commerce.product.get({
-			slug: params.slug,
-			currency: await getRequestPreferredCurrency(),
-		}),
+	const currency = await getRequestPreferredCurrency();
+	const [product, t, locale, pageContent, session] = await Promise.all([
+		commerce.product.get({ slug: params.slug, currency }),
 		getTranslations("/product.page"),
 		getLocale(),
 		getEditorialProductPage(),
+		auth(),
 	]);
 
 	if (!product) {
 		return (
-			<article className="bg-[color:var(--editorial-paper)]">
-				<EditorialShell className="grid min-h-[60vh] gap-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-					<div className="space-y-5">
-						<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Catálogo</EditorialEyebrow>
-						<h1 className="title-font text-5xl leading-[0.92] font-black tracking-[-0.06em] text-[color:var(--editorial-ink)] sm:text-6xl">
+			<div className="sl-scope" style={{ background: "var(--sl-surface-invert)" }}>
+				<div className="mx-auto grid min-h-[60vh] w-full max-w-[var(--sl-w-narrow)] gap-6 px-4 py-20 text-[color:var(--sl-text-on-ink)] sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-12">
+					<div className="flex flex-col gap-5">
+						<p className="sl-eyebrow m-0 text-[color:var(--sl-text-on-ink-label)]">Catálogo</p>
+						<h1 className="sl-head m-0 text-[clamp(40px,7vw,var(--sl-size-hero-md))] leading-[0.92]">
 							{pageContent.notFound?.title || "Produto não encontrado"}
 						</h1>
-						<EditorialRichText
-							source={
-								pageContent.notFound?.body ||
-								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."
-							}
-							className="max-w-2xl text-base leading-8 text-[color:var(--editorial-muted)]"
-						/>
+						<p className="m-0 max-w-2xl text-[16px] leading-[1.8] text-[color:var(--sl-text-on-ink-muted)]">
+							{pageContent.notFound?.body ||
+								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."}
+						</p>
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
-						<YnsLink
-							href={pageContent.notFound?.primaryCtaHref || "/products"}
-							className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
-						>
-							{pageContent.notFound?.primaryCtaLabel || "Ver catálogo"}
-						</YnsLink>
-						<YnsLink
-							href="/contact"
-							className="inline-flex min-h-12 items-center justify-center border border-[color:var(--editorial-border)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-						>
+						<SlButton href={pageContent.notFound?.primaryCtaHref || "/products"} variant="buy">
+							{pageContent.notFound?.primaryCtaLabel || "Ver a loja"}
+						</SlButton>
+						<SlButton href="/contact" variant="secondary" onInk>
 							Falar com o selo
-						</YnsLink>
+						</SlButton>
 					</div>
-				</EditorialShell>
-			</article>
+				</div>
+			</div>
 		);
 	}
 
@@ -114,22 +92,16 @@ export default async function SingleProductPage(props: {
 	const variantParam = searchParams.variant?.toLowerCase();
 	const selectedVariant =
 		variants.find((variant) => {
-			if (!variantParam) {
-				return false;
-			}
-
+			if (!variantParam) return false;
 			const identifiers = [variant.slug, variant.id, variant.label]
 				.filter((value): value is string => Boolean(value))
 				.map((value) => value.toLowerCase());
-
-			if (variant.label) {
-				identifiers.push(slugify(variant.label).toLowerCase());
-			}
-
+			if (variant.label) identifiers.push(slugify(variant.label).toLowerCase());
 			return identifiers.includes(variantParam);
 		}) ?? variants[0];
 
 	const category = ynsProduct.category?.slug;
+	const categoryName = ynsProduct.category?.name ?? (category ? deslugify(category) : "Produto");
 	const images =
 		selectedVariant?.images && selectedVariant.images.length > 0 ? selectedVariant.images : product.images;
 	const description = selectedVariant?.description ?? product.summary ?? "";
@@ -139,379 +111,216 @@ export default async function SingleProductPage(props: {
 	const displayStock = typeof selectedVariant?.stock === "number" ? selectedVariant.stock : product.stock;
 	const isOutOfStock = displayStock === 0;
 	const selectedVariantId = selectedVariant?.id ?? ynsProduct.variants?.[0]?.id ?? product.id;
-	const excerpt = buildEditorialExcerpt(description);
-	const excerptHref = excerpt ? "#trecho" : "#sinopse";
-	const relatedProducts = (
-		await commerce.product.browse({
-			first: 3,
-			currency: await getRequestPreferredCurrency(),
-		})
-	).data
-		.filter((candidate) => candidate.slug !== product.slug)
-		.slice(0, 2);
+	const displayName = selectedVariant?.label
+		? formatProductName(product.name, selectedVariant.label)
+		: product.name;
 
-	const session = await auth();
-	const favoriteKeys = session ? await listFavoriteKeysForUser(session.user.id) : new Set<string>();
+	const priceLabel = formatMoney({ amount: displayPrice, currency: displayCurrency, locale });
+	// Only pitch installments when 6x lands above ~R$25 each.
+	const installmentLabel =
+		displayPrice >= 15000
+			? `ou 6x de ${formatMoney({
+					amount: Math.round(displayPrice / 6),
+					currency: displayCurrency,
+					locale,
+				})} sem juros`
+			: undefined;
+
 	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
 	const favoriteActive = session
-		? await isFavorite({
-				userId: session.user.id,
-				productSlug: product.slug,
-				variantId: selectedVariantId,
-			})
+		? await isFavorite({ userId: session.user.id, productSlug: product.slug, variantId: selectedVariantId })
 		: false;
 
-	const taxonomy = [
-		category ? deslugify(category) : null,
-		selectedVariant?.label ? deslugify(selectedVariant.label) : null,
-		"Poesia",
-		"Corpo",
-	].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
-
-	const details = [
-		category ? { label: "Categoria", value: deslugify(category) } : null,
-		selectedVariant?.label
-			? {
-					label: "Formato",
-					value: deslugify(selectedVariant.label),
-				}
-			: null,
-		{
-			label: "Selo / editora",
-			value: "Selo Libertária",
-		},
-		typeof displayStock === "number"
-			? {
-					label: "Disponibilidade",
-					value: displayStock > 0 ? "Disponível" : "Fora de estoque",
-				}
-			: null,
-	].filter(Boolean) as Array<{ label: string; value: string }>;
-
-	const continuityLinks = pageContent.continuity?.links?.length
-		? pageContent.continuity.links
-		: [
-				{ href: "/sarau-safado", label: "Ver Sarau Safado" },
-				{ href: "/projects", label: "Ver projetos" },
-				{ href: "/products", label: "Ver catálogo" },
-			];
-
-	return (
-		<article>
-			<div className="flex flex-col">
-				<section className="bg-[color:var(--editorial-paper)]">
-					<EditorialShell className="grid gap-10 py-12 lg:grid-cols-[430px_minmax(0,1fr)] lg:items-start lg:gap-20 lg:py-16">
-						<Reveal>
-							<div className="max-w-[430px]">
-								<h2 className="sr-only">{t("imagesTitle")}</h2>
-								<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
-									<ProductImageGallery images={images} alt={product.name} />
-								</div>
-							</div>
-						</Reveal>
-
-						<Reveal delay={0.08}>
-							<div className="space-y-8 pt-2">
-								<div className="flex items-start justify-between gap-4">
-									<div className="space-y-5">
-										<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-											{category ? deslugify(category) : "Produto"}
-										</EditorialEyebrow>
-										<h1 className="title-font max-w-[12ch] text-[3.4rem] leading-[0.9] font-black tracking-[-0.07em] sm:text-[4.5rem] xl:text-[4.9rem]">
-											{selectedVariant?.label
-												? formatProductName(product.name, selectedVariant.label)
-												: product.name}
-										</h1>
-										{taxonomy.length > 0 ? (
-											<p className="text-lg text-[color:var(--editorial-muted)]">{taxonomy.join(" / ")}</p>
-										) : null}
-										<p className="price-font text-4xl font-black text-[color:var(--editorial-ink)]">
-											{formatMoney({
-												amount: displayPrice,
-												currency: displayCurrency,
-												locale,
-											})}
-										</p>
-										{displayBasePrice > displayPrice ? (
-											<p className="text-base text-[color:var(--editorial-muted)] line-through">
-												{formatMoney({
-													amount: displayBasePrice,
-													currency: displayCurrency,
-													locale,
-												})}
-											</p>
-										) : null}
-										<div className="flex flex-wrap gap-4">
-											<AddToCart
-												variantId={selectedVariantId}
-												productInfo={{
-													id: product.id,
-													name: selectedVariant?.label
-														? formatProductName(product.name, selectedVariant.label)
-														: product.name,
-													images,
-													summary: product.summary ?? null,
-												}}
-												redirectTo="/checkout"
-												className={`${isOutOfStock ? "cursor-not-allowed opacity-50" : ""} inline-flex h-12 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]`}
-											>
-												{isOutOfStock ? t("outOfStock") : "Comprar"}
-											</AddToCart>
-											<YnsLink
-												href={excerptHref}
-												className="inline-flex h-12 items-center justify-center border border-[color:var(--editorial-ink)] px-6 text-xs font-black uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
-											>
-												Ler trecho
-											</YnsLink>
-										</div>
-
-										{variants.length > 1 ? (
-											<div className="flex flex-wrap gap-2">
-												{variants.map((variant) => {
-													const currentSlug =
-														variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
-													const isActive = selectedVariant?.id === variant.id;
-													const href = currentSlug ? `?variant=${currentSlug}` : `?variant=${variant.id}`;
-													const label = variant.label ? deslugify(variant.label) : deslugify(currentSlug);
-
-													return (
-														<YnsLink key={variant.id} href={href} scroll={false}>
-															<Badge
-																className={
-																	isActive
-																		? "rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]"
-																		: "rounded-none border-[color:var(--editorial-border)] bg-transparent text-[color:var(--editorial-muted)]"
-																}
-																variant={isActive ? "default" : "outline"}
-															>
-																{label}
-															</Badge>
-														</YnsLink>
-													);
-												})}
-											</div>
-										) : null}
-
-										{typeof displayStock === "number" ? (
-											<p className="text-sm text-[color:var(--editorial-muted)]">
-												{displayStock > 0 ? "Disponível para compra" : t("outOfStock")}
-											</p>
-										) : null}
-									</div>
-
-									<FavoriteToggle
-										productSlug={product.slug}
-										variantId={selectedVariantId}
-										initialActive={favoriteActive}
-									/>
-								</div>
-
-								<div className="border-t border-[color:var(--editorial-border)] pt-8" id="sinopse">
-									<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-										Sinopse
-									</EditorialEyebrow>
-									<div className="mt-6 max-w-3xl text-xl leading-[1.55] text-[color:var(--editorial-muted)] sm:text-2xl">
-										<Markdown source={description} />
-									</div>
-								</div>
-							</div>
-						</Reveal>
-					</EditorialShell>
-				</section>
-
-				{excerpt ? (
-					<Reveal>
-						<section
-							className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]"
-							id="trecho"
-						>
-							<EditorialShell className="grid gap-6 px-8 py-12 lg:grid-cols-[1.4fr_0.6fr] lg:items-end lg:py-16">
-								<div className="border-l-[10px] border-[color:var(--editorial-accent)] pl-6">
-									<EditorialEyebrow className="text-[color:rgba(247,244,239,0.62)]">
-										{pageContent.excerpt?.title || "Trecho"}
-									</EditorialEyebrow>
-									<h2 className="mt-4 title-font max-w-3xl text-5xl leading-[0.95] font-black tracking-[-0.06em]">
-										{excerpt}
-									</h2>
-								</div>
-								<EditorialRichText
-									source={
-										pageContent.excerpt?.bodyFallback ||
-										"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido."
-									}
-									className="max-w-sm text-xl leading-8 text-[color:rgba(247,244,239,0.72)]"
-								/>
-							</EditorialShell>
-						</section>
-					</Reveal>
-				) : null}
-
-				<EditorialShell className="grid gap-10 py-12 lg:grid-cols-[1fr_0.95fr] lg:py-16">
-					<Reveal>
-						<div>
-							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Ficha técnica
-							</EditorialEyebrow>
-							<ul className="mt-10 border-t border-[color:var(--editorial-border)]">
-								{details.map((detail) => (
-									<li
-										key={detail.label}
-										className="flex flex-col gap-3 border-b border-[color:var(--editorial-border)] py-5 sm:flex-row sm:items-center sm:justify-between"
-									>
-										<span className="text-2xl leading-tight text-[color:var(--editorial-ink)]">
-											{detail.label}
-										</span>
-										<span className="text-sm uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
-											{detail.value}
-										</span>
-									</li>
-								))}
-							</ul>
-						</div>
-					</Reveal>
-
-					<Reveal delay={0.08}>
-						<div>
-							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">
-								Outros produtos
-							</EditorialEyebrow>
-							{pageContent.related?.body ? (
-								<EditorialRichText
-									source={pageContent.related.body}
-									className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--editorial-muted)]"
-								/>
-							) : null}
-							<div className="mt-10 grid gap-8 sm:grid-cols-2">
-								{relatedProducts.map((related) => (
-									<RelatedBookCard
-										key={related.id}
-										product={related}
-										fallbackSummary={pageContent.related?.fallbackSummary || "Novo título em breve"}
-										favoriteActive={favoriteKeys.has(
-											buildFavoriteKey(related.slug, getProductCardActionState(related).variantId),
-										)}
-										canPurchase={canPurchase}
-									/>
-								))}
-							</div>
-						</div>
-					</Reveal>
-				</EditorialShell>
-
-				<Reveal>
-					<section className="bg-[color:var(--editorial-beige)]">
-						<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-							<div className="max-w-3xl">
-								<h2 className="text-3xl leading-[0.95] font-black sm:text-4xl">
-									{pageContent.continuity?.title ||
-										"Um produto pode levar ao Sarau, aos projetos e de volta ao catálogo."}
-								</h2>
-							</div>
-							<div className="space-y-4 text-sm leading-7 text-[color:var(--editorial-ink)]">
-								<EditorialRichText
-									source={
-										pageContent.continuity?.body ||
-										"A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural."
-									}
-								/>
-								<div className="flex flex-wrap gap-3">
-									{continuityLinks.map((link, index) => (
-										<YnsLink
-											key={link.href}
-											href={link.href}
-											className={
-												index === 0
-													? "inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:var(--editorial-accent)]"
-													: "inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
-											}
-										>
-											{link.label}
-										</YnsLink>
-									))}
-								</div>
-							</div>
-						</EditorialShell>
-					</section>
-				</Reveal>
-
-				<JsonLd jsonLd={mappedProductToJsonLd(product)} />
-			</div>
-		</article>
+	const relatedRows = buildSlProductRows(
+		(await commerce.product.browse({ first: 5, currency })).data
+			.filter((candidate) => candidate.slug !== product.slug)
+			.slice(0, 4),
+		{ locale, canPurchase },
 	);
-}
 
-function RelatedBookCard({
-	product,
-	fallbackSummary,
-	favoriteActive,
-	canPurchase,
-}: {
-	product: Product;
-	fallbackSummary: string;
-	favoriteActive: boolean;
-	canPurchase: boolean;
-}) {
-	const actionState = getProductCardActionState(product);
+	const trust = [
+		"Envio em até 2 dias úteis após a confirmação, com rastreio pelo Melhor Envio.",
+		"Troca ou devolução em até 7 dias após o recebimento.",
+		"Pagamento processado pelo Mercado Pago — não guardamos dados de cartão.",
+	];
 
 	return (
-		<LiftOnHover>
-			<article className="group h-full">
-				<YnsLink href={`/product/${product.slug}`} className="block">
-					<div className="border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-beige)] p-3">
-						<div className="aspect-[0.72] overflow-hidden border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]">
-							{product.images[0] ? (
-								<Image
-									src={product.images[0]}
-									alt={product.name}
-									width={420}
-									height={580}
-									className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-									sizes="220px"
-									{...getProductImageOptimizationProps(product.images[0])}
+		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
+			<div className="mx-auto flex w-full max-w-[var(--sl-w-narrow)] flex-col gap-7 px-4 py-8 sm:px-8 lg:px-10 lg:py-12">
+				<p className="m-0 text-[12px] uppercase tracking-[0.18em] text-[color:var(--sl-text-soft)]">
+					<YnsLink href="/products" className="sl-link">
+						Loja
+					</YnsLink>{" "}
+					/ {categoryName} / <span className="text-[color:var(--sl-accent)]">{product.name}</span>
+				</p>
+
+				<div className="grid items-start gap-10 lg:grid-cols-[1fr_420px]">
+					<div className="flex flex-col gap-5">
+						<div
+							className="overflow-hidden p-3"
+							style={{ border: "1px solid var(--sl-ink)", background: "var(--sl-sand)" }}
+						>
+							<ProductImageGallery images={images} alt={displayName} />
+						</div>
+						{description ? (
+							<div className="flex flex-col gap-3 border-t border-[color:var(--sl-line-hairline)] pt-6">
+								<h2 className="sl-price m-0 text-[30px]">Sobre a edição</h2>
+								<div className="max-w-[60ch] text-[16px] leading-[1.8] text-[color:var(--sl-text-muted)]">
+									<Markdown source={description} />
+								</div>
+							</div>
+						) : null}
+					</div>
+
+					<div className="flex flex-col gap-4">
+						<div
+							className="flex flex-col gap-5 p-7"
+							style={{ background: "var(--sl-surface-invert)", color: "var(--sl-text-on-ink)" }}
+						>
+							<div className="flex items-start justify-between gap-3">
+								<div className="flex flex-col gap-2">
+									<span className="text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--sl-text-on-ink-label)]">
+										{categoryName}
+									</span>
+									<h1
+										className="sl-head m-0 text-[clamp(30px,5vw,var(--sl-size-hero-sm))] leading-[0.98]"
+										style={{ letterSpacing: "var(--sl-track-head)" }}
+									>
+										{displayName}
+									</h1>
+								</div>
+								<FavoriteToggle
+									productSlug={product.slug}
+									variantId={selectedVariantId}
+									initialActive={favoriteActive}
 								/>
+							</div>
+
+							<SlPriceTag value={priceLabel} aside={installmentLabel} size="lg" onInk />
+							{displayBasePrice > displayPrice ? (
+								<span className="text-[13px] text-[color:var(--sl-text-on-ink-soft)] line-through">
+									{formatMoney({ amount: displayBasePrice, currency: displayCurrency, locale })}
+								</span>
 							) : null}
+
+							{variants.length > 1 ? (
+								<div className="flex flex-col gap-2">
+									<span className="text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--sl-text-on-ink-label)]">
+										Formato
+									</span>
+									<div className="flex flex-wrap gap-2">
+										{variants.map((variant) => {
+											const currentSlug =
+												variant.slug ?? (variant.label ? slugify(variant.label) : variant.id);
+											const isActive = selectedVariant?.id === variant.id;
+											return (
+												<YnsLink
+													key={variant.id}
+													href={`?variant=${currentSlug}`}
+													scroll={false}
+													className="inline-flex h-12 items-center px-[18px] text-[12px] font-black uppercase tracking-[0.18em]"
+													style={
+														isActive
+															? { background: "var(--sl-paper)", color: "var(--sl-ink)" }
+															: {
+																	border: "1px solid var(--sl-line-on-ink-mid)",
+																	color: "var(--sl-text-on-ink)",
+																}
+													}
+												>
+													{variant.label ? deslugify(variant.label) : deslugify(currentSlug)}
+												</YnsLink>
+											);
+										})}
+									</div>
+								</div>
+							) : null}
+
+							<div className="flex flex-col gap-2">
+								<span className="text-[10px] font-black uppercase tracking-[0.24em] text-[color:var(--sl-text-on-ink-label)]">
+									Entrega
+								</span>
+								<p className="m-0 text-[14px] leading-[1.6] text-[color:var(--sl-text-on-ink-soft)]">
+									Frete calculado no carrinho pelo CEP — o valor final não muda no checkout.
+								</p>
+							</div>
+
+							<div className="flex flex-col gap-2.5">
+								{canPurchase ? (
+									<>
+										<SlAddToCart
+											variantId={selectedVariantId}
+											productInfo={{
+												id: product.id,
+												name: displayName,
+												images,
+												summary: product.summary ?? null,
+											}}
+											redirectTo="/checkout"
+											variant="buy"
+											disabled={isOutOfStock}
+											className="w-full"
+										>
+											{isOutOfStock ? t("outOfStock") : "Comprar agora"}
+										</SlAddToCart>
+										<SlAddToCart
+											variantId={selectedVariantId}
+											productInfo={{
+												id: product.id,
+												name: displayName,
+												images,
+												summary: product.summary ?? null,
+											}}
+											variant="secondary"
+											onInk
+											disabled={isOutOfStock}
+											className="w-full"
+										>
+											{t("addToCart")}
+										</SlAddToCart>
+									</>
+								) : (
+									<SlButton href="/contact" variant="secondary" onInk fullWidth>
+										Falar com o selo
+									</SlButton>
+								)}
+							</div>
+						</div>
+
+						<div
+							className="flex flex-col gap-3 p-5"
+							style={{ border: "1px solid var(--sl-line)", background: "var(--sl-surface-card)" }}
+						>
+							{trust.map((line) => (
+								<div key={line} className="flex items-baseline gap-3">
+									<span className="font-black text-[color:var(--sl-accent)]">✓</span>
+									<p className="m-0 text-[14px] leading-[1.6]">{line}</p>
+								</div>
+							))}
 						</div>
 					</div>
-					<h3 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[color:var(--editorial-ink)] transition-colors duration-300 group-hover:text-[color:var(--editorial-accent)]">
-						{product.name}
-					</h3>
-				</YnsLink>
-				<EditorialRichText
-					source={product.summary ?? fallbackSummary}
-					className="mt-2 text-sm leading-7 text-[color:var(--editorial-muted)]"
-				/>
-				<ProductTeaserActions
-					href={`/product/${product.slug}`}
-					productSlug={product.slug}
-					variantId={actionState.variantId}
-					favoriteActive={favoriteActive}
-					canPurchase={canPurchase}
-					allowQuickAdd={actionState.quickAddAllowed}
-					productInfo={actionState.productInfo}
-					className="mt-4"
-					favoriteClassName="border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)]"
-					addToCartClassName="min-h-11 rounded-none bg-[color:var(--editorial-ink)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-					viewLinkClassName="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-4 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)]"
-					addToCartLabel="Adicionar ao carrinho"
-					viewLabel="Ver produto"
-				/>
-			</article>
-		</LiftOnHover>
+				</div>
+
+				{relatedRows.length > 0 ? (
+					<div className="flex flex-col gap-6 border-t border-[color:var(--sl-line-hairline)] pt-8">
+						<SlSectionHead
+							title="Quem levou também levou"
+							action={
+								<SlButton href="/products" variant="secondary">
+									Ver a loja
+								</SlButton>
+							}
+						/>
+						<div className="grid grid-cols-2 gap-[var(--sl-grid-gap-sm)] md:gap-[var(--sl-grid-gap)] lg:grid-cols-4">
+							{relatedRows.map((row) => (
+								<SlProductCard key={row.id} row={row} />
+							))}
+						</div>
+					</div>
+				) : null}
+			</div>
+
+			<JsonLd jsonLd={mappedProductToJsonLd(product)} />
+		</div>
 	);
-}
-
-function buildEditorialExcerpt(source: string) {
-	const plain = source
-		.replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
-		.replace(/\[[^\]]+\]\([^)]+\)/g, " ")
-		.replace(/[#>*_`~-]/g, " ")
-		.replace(/\s+/g, " ")
-		.trim();
-
-	if (!plain) {
-		return "";
-	}
-
-	const excerpt = plain.slice(0, 240).trim();
-	return excerpt.length < plain.length ? `${excerpt}…` : excerpt;
 }

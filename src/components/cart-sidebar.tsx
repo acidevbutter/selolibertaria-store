@@ -1,20 +1,27 @@
 "use client";
 
-import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { applyCartCouponAction, removeCartCouponAction } from "@/actions/cart-actions";
 import { useCart } from "@/context/cart-context";
 import { useLocale, useTranslations } from "@/i18n/client";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { formatMoney } from "@/lib/utils";
-import { Input } from "@/ui/shadcn/input";
+import { SlCouponField } from "@/ui/sl/sl-coupon-field";
+import { SlFreeShippingMeter } from "@/ui/sl/sl-free-shipping-meter";
+import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
+import { SlQuantityStepper } from "@/ui/sl/sl-quantity-stepper";
+import { SlShippingOption } from "@/ui/sl/sl-shipping-option";
 
 interface CartSidebarProps {
 	isOpen: boolean;
 	onClose: () => void;
 }
+
+// Display-only threshold for the free-shipping meter (minor units). The real
+// total is computed server-side and unaffected by this value.
+const FREE_SHIPPING_THRESHOLD = 20000;
 
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 	const { cart, itemCount, optimisticUpdate, optimisticRemove, replaceCart } = useCart();
@@ -24,11 +31,6 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [couponCode, setCouponCode] = useState(cart?.couponCode ?? "");
-
-	useEffect(() => {
-		setCouponCode(cart?.couponCode ?? "");
-	}, [cart?.couponCode]);
 
 	if (!isOpen) {
 		return null;
@@ -50,9 +52,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 		}
 	}
 
-	async function handleApplyCoupon() {
+	async function handleApplyCoupon(code: string) {
 		setError(null);
-		const result = await applyCartCouponAction(couponCode);
+		const result = await applyCartCouponAction(code);
 		if (result.error) {
 			setError(result.error);
 			return;
@@ -68,262 +70,203 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
 	const hasItems = Boolean(cart?.items?.length);
 	const cartItems = cart?.items ?? [];
-	const cartCurrency = cart?.currency || "USD";
+	const cartCurrency = cart?.currency || "BRL";
 	const subtotal = typeof cart?.subtotal === "number" ? cart.subtotal : cart?.total || 0;
 	const total = cart?.total || 0;
+	const discountTotal = cart?.discountTotal ?? 0;
+	const money = (amount: number) => formatMoney({ amount, currency: cartCurrency, locale });
+
+	const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+	const shippingLabel = cart?.shippingRate
+		? `${cart.shippingRate.providerLabel}${cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""}`
+		: "Calculado no checkout";
 
 	return (
-		<>
+		<div className="sl-scope">
 			<button
 				type="button"
 				aria-label={t("actions.close")}
-				className="fixed inset-0 z-40 bg-[color:rgba(11,11,11,0.16)] backdrop-blur-[2px]"
+				className="fixed inset-0 z-40"
+				style={{ background: "rgba(11,11,11,0.5)" }}
 				onClick={onClose}
 			/>
 
-			<aside className="fixed right-0 top-0 z-50 flex h-screen w-full max-w-[26rem] flex-col border-l border-[color:rgba(11,11,11,0.12)] bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] shadow-[-18px_0_48px_rgba(11,11,11,0.14)]">
-				<div className="flex items-center justify-between bg-[color:var(--editorial-ink)] px-5 py-4 text-[color:var(--editorial-paper)]">
-					<div className="flex items-center gap-3">
-						<ShoppingBag className="h-4 w-4" />
-						<div>
-							<p className="text-[10px] uppercase tracking-[0.24em] text-[color:rgba(247,244,239,0.7)]">
-								Carrinho
-							</p>
-							<h2 className="text-base font-semibold">{t("title", { count: itemCount })}</h2>
-						</div>
-					</div>
-					<button
-						type="button"
-						onClick={onClose}
-						aria-label={t("actions.close")}
-						className="inline-flex h-9 w-9 items-center justify-center border border-[color:rgba(247,244,239,0.16)] text-[color:var(--editorial-paper)] transition-colors hover:border-[color:rgba(122,30,34,0.6)] hover:text-[color:var(--editorial-paper)]"
-					>
-						<X className="h-4 w-4" />
+			<aside
+				className="fixed right-0 top-0 z-50 flex h-screen w-full max-w-[416px] flex-col overflow-y-auto"
+				style={{
+					background: "var(--sl-paper)",
+					color: "var(--sl-text)",
+					borderLeft: "1px solid var(--sl-ink)",
+				}}
+			>
+				<div
+					className="flex h-16 items-center justify-between px-5"
+					style={{ background: "var(--sl-ink)", color: "var(--sl-text-on-ink)" }}
+				>
+					<span className="sl-price text-[22px]">{t("title", { count: itemCount })}</span>
+					<button type="button" onClick={onClose} aria-label={t("actions.close")} className="text-[18px]">
+						✕
 					</button>
 				</div>
 
-				<div className="flex-1 overflow-y-auto">
-					{hasItems ? (
-						<div className="space-y-5 px-5 py-5">
+				{hasItems ? (
+					<>
+						<SlFreeShippingMeter
+							remainingLabel={money(remaining)}
+							thresholdLabel={money(FREE_SHIPPING_THRESHOLD)}
+							progress={subtotal / FREE_SHIPPING_THRESHOLD}
+						/>
+
+						<div className="flex flex-col px-5">
 							{cartItems.map((item) => {
 								const product = item.product;
 								const linePrice = (item.finalPrice ?? item.price) * item.quantity;
 								const quantityKey = item.variantId || item.productId;
 
 								return (
-									<article
+									<div
 										key={item.id}
-										className="border-b border-[color:rgba(11,11,11,0.1)] pb-5 last:border-b-0"
+										className="flex gap-3.5 border-b border-[color:var(--sl-line-hairline)]"
+										style={{ paddingTop: "18px", paddingBottom: "18px" }}
 									>
-										<div className="flex items-start gap-4">
-											<div className="relative h-[6.6rem] w-[4.4rem] shrink-0 overflow-hidden border border-[color:rgba(11,11,11,0.12)] bg-[color:rgba(216,208,196,0.34)]">
-												{product?.images?.[0] ? (
-													<Image
-														src={product.images[0]}
-														alt={product.name || t("fallback.product")}
-														fill
-														className="object-cover"
-														sizes="72px"
-														{...getProductImageOptimizationProps(product.images[0])}
-													/>
-												) : (
-													<div className="flex h-full items-center justify-center text-[color:var(--editorial-muted)]">
-														<ShoppingBag className="h-5 w-5" />
-													</div>
-												)}
-											</div>
-
-											<div className="min-w-0 flex-1 space-y-3">
-												<div className="space-y-1">
-													<h3 className="line-clamp-2 text-base font-semibold leading-tight text-[color:var(--editorial-ink)]">
-														{product?.name || t("fallback.product")}
-													</h3>
-													<p className="text-[10px] uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]">
-														Edição selecionada
-													</p>
-													<p className="text-sm font-medium text-[color:var(--editorial-ink)]">
-														{formatMoney({
-															amount: linePrice,
-															currency: cartCurrency,
-															locale,
-														})}
-													</p>
-												</div>
-
-												<div className="flex items-center justify-between gap-3">
-													<div className="inline-flex items-center border border-[color:rgba(11,11,11,0.14)] bg-[color:rgba(247,244,239,0.82)]">
-														<button
-															type="button"
-															onClick={() => handleUpdateQuantity(quantityKey, item.quantity - 1)}
-															aria-label={t("actions.decreaseQuantity")}
-															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
-															disabled={item.quantity <= 1}
-														>
-															<Minus className="h-3 w-3" />
-														</button>
-														<span className="min-w-8 text-center text-sm font-medium">{item.quantity}</span>
-														<button
-															type="button"
-															onClick={() => handleUpdateQuantity(quantityKey, item.quantity + 1)}
-															aria-label={t("actions.increaseQuantity")}
-															className="inline-flex h-9 w-9 items-center justify-center text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]"
-														>
-															<Plus className="h-3 w-3" />
-														</button>
-													</div>
-
-													<button
-														type="button"
-														onClick={() => handleRemoveItem(quantityKey)}
-														className="text-[11px] font-medium uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-accent)]"
-													>
-														{t("actions.removeItem")}
-													</button>
-												</div>
-											</div>
+										<div
+											className="relative h-16 w-16 flex-none overflow-hidden"
+											style={{ background: "var(--sl-sand)" }}
+										>
+											{product?.images?.[0] ? (
+												<Image
+													src={product.images[0]}
+													alt={product.name || t("fallback.product")}
+													fill
+													className="object-cover"
+													sizes="64px"
+													{...getProductImageOptimizationProps(product.images[0])}
+												/>
+											) : null}
 										</div>
-									</article>
+
+										<div className="flex flex-1 flex-col gap-2">
+											<p className="m-0 text-[10px] uppercase tracking-[0.2em] text-[color:var(--sl-text-quiet)]">
+												Edição selecionada
+											</p>
+											<p className="sl-price m-0 text-[18px] leading-tight">
+												{product?.name || t("fallback.product")}
+											</p>
+											<div className="flex items-center justify-between">
+												<SlQuantityStepper
+													value={item.quantity}
+													onDecrement={() => void handleUpdateQuantity(quantityKey, item.quantity - 1)}
+													onIncrement={() => void handleUpdateQuantity(quantityKey, item.quantity + 1)}
+													decrementLabel={t("actions.decreaseQuantity")}
+													incrementLabel={t("actions.increaseQuantity")}
+												/>
+												<span className="sl-price text-[18px]">{money(linePrice)}</span>
+											</div>
+											<button
+												type="button"
+												onClick={() => void handleRemoveItem(quantityKey)}
+												className="self-start text-[11px] font-black uppercase tracking-[0.18em] text-[color:var(--sl-text-quiet)] transition-colors hover:text-[color:var(--sl-accent)]"
+											>
+												{t("actions.removeItem")}
+											</button>
+										</div>
+									</div>
 								);
 							})}
 						</div>
-					) : (
-						<div className="flex h-full flex-col justify-between px-5 py-6">
-							<div className="space-y-4">
-								<div className="inline-flex h-12 w-12 items-center justify-center border border-[color:rgba(11,11,11,0.12)] bg-[color:rgba(216,208,196,0.22)] text-[color:var(--editorial-ink)]">
-									<ShoppingBag className="h-5 w-5" />
-								</div>
-								<div className="space-y-2">
-									<h3 className="text-xl font-semibold text-[color:var(--editorial-ink)]">
-										{t("empty.title")}
-									</h3>
-									<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">
-										{t("empty.description")}
-									</p>
-								</div>
+
+						<div className="flex flex-col gap-3.5 p-5">
+							<SlCouponField
+								appliedCode={cart?.couponCode ?? null}
+								discountLabel={discountTotal > 0 ? `−${money(discountTotal)}` : null}
+								errorMessage={error ?? cart?.couponError ?? null}
+								onApply={handleApplyCoupon}
+								onRemove={handleRemoveCoupon}
+							/>
+
+							<div className="flex flex-col gap-2">
+								<span className="sl-lbl">Frete</span>
+								{cart?.shippingRate ? (
+									<SlShippingOption
+										selected
+										label={`${cart.shippingRate.providerLabel}${
+											cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""
+										}${
+											cart.shippingRate.estimated_days
+												? ` · ${cart.shippingRate.estimated_days} ${cart.shippingRate.estimated_days === 1 ? "dia útil" : "dias úteis"}`
+												: ""
+										}`}
+										price={money(cart.shippingRate.fixed_amount.amount)}
+									/>
+								) : (
+									<div
+										className="flex h-[52px] items-center px-3.5 text-[14px] text-[color:var(--sl-text-muted)]"
+										style={{ border: "1px solid var(--sl-line-strong)" }}
+									>
+										{shippingLabel}
+									</div>
+								)}
 							</div>
+
+							<SlOrderSummary
+								className="border-t border-[color:var(--sl-line-hairline)] pt-3.5"
+								lines={[
+									{ label: t("summary.subtotal"), value: money(subtotal) },
+									...(discountTotal > 0
+										? [{ label: "Desconto", value: `−${money(discountTotal)}`, tone: "accent" as const }]
+										: []),
+									{
+										label: "Frete",
+										value: cart?.shippingRate ? money(cart.shippingRate.fixed_amount.amount) : "no checkout",
+									},
+								]}
+								total={money(total)}
+								footnote={null}
+							/>
 
 							<button
 								type="button"
+								className="sl-btn sl-btn-buy w-full"
+								disabled={loading}
 								onClick={() => {
+									if (loading) return;
+									setLoading(true);
+									setError(null);
 									onClose();
-									router.push("/products");
+									router.push("/checkout");
 								}}
-								className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
 							>
-								Ver produtos
+								{loading ? t("actions.openingCheckout") : t("actions.checkout")}
 							</button>
+							<button type="button" className="sl-btn sl-btn-secondary w-full" onClick={onClose}>
+								Continuar comprando
+							</button>
+							<p className="m-0 text-center text-[12px] leading-[1.6] text-[color:var(--sl-text-soft)]">
+								Pagamento seguro Mercado Pago · Pix, cartão em até 6x ou boleto
+							</p>
 						</div>
-					)}
-				</div>
-
-				<div className="border-t border-[color:rgba(11,11,11,0.1)] bg-[color:rgba(247,244,239,0.96)] px-5 py-5">
-					{hasItems ? (
-						<div className="space-y-4">
-							<div className="space-y-2 border border-[color:rgba(11,11,11,0.1)] bg-[color:rgba(255,255,255,0.45)] p-3">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)]">
-									{t("coupon.title")}
-								</p>
-								<div className="flex gap-2">
-									<Input
-										value={couponCode}
-										onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
-										placeholder={t("coupon.placeholder")}
-										className="border-[color:rgba(11,11,11,0.12)] bg-[color:var(--editorial-paper)]"
-									/>
-									<button
-										type="button"
-										onClick={handleApplyCoupon}
-										className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
-									>
-										{t("coupon.apply")}
-									</button>
-								</div>
-								{cart?.couponCode ? (
-									<div className="flex items-center justify-between gap-2 text-xs text-[color:var(--editorial-muted)]">
-										<span>{t("coupon.active", { code: cart.couponCode })}</span>
-										<button
-											type="button"
-											onClick={handleRemoveCoupon}
-											className="font-medium text-[color:var(--editorial-accent)]"
-										>
-											{t("coupon.remove")}
-										</button>
-									</div>
-								) : null}
-								{cart?.couponError ? (
-									<p className="text-xs text-[color:var(--editorial-accent)]">{cart.couponError}</p>
-								) : null}
-							</div>
-
-							<div className="space-y-2 text-sm text-[color:var(--editorial-ink)]">
-								<div className="flex items-center justify-between">
-									<span>{t("summary.subtotal")}</span>
-									<span className="font-medium">
-										{formatMoney({
-											amount: subtotal,
-											currency: cartCurrency,
-											locale,
-										})}
-									</span>
-								</div>
-								<div className="flex items-start justify-between gap-4 text-[color:var(--editorial-muted)]">
-									<span>Frete</span>
-									<span className="max-w-[14rem] text-right">
-										{cart?.shippingRate
-											? `${cart.shippingRate.providerLabel}${cart.shippingRate.serviceName ? ` · ${cart.shippingRate.serviceName}` : ""}`
-											: "Calculado no checkout"}
-									</span>
-								</div>
-								<div className="flex items-center justify-between border-t border-[color:rgba(11,11,11,0.1)] pt-2 text-base font-semibold">
-									<span>{t("summary.total")}</span>
-									<span>
-										{formatMoney({
-											amount: total,
-											currency: cartCurrency,
-											locale,
-										})}
-									</span>
-								</div>
-							</div>
-
-							{error ? (
-								<p className="text-sm text-[color:var(--editorial-accent)]" role="alert">
-									{error}
-								</p>
-							) : null}
-
-							<div className="grid gap-3 sm:grid-cols-[1fr_1.25fr]">
-								<button
-									type="button"
-									onClick={() => {
-										onClose();
-										router.push("/products");
-									}}
-									className="inline-flex min-h-11 items-center justify-center border border-[color:rgba(11,11,11,0.16)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:text-[color:var(--editorial-accent)]"
-								>
-									Ver produtos
-								</button>
-								<button
-									type="button"
-									onClick={() => {
-										if (loading) {
-											return;
-										}
-										setLoading(true);
-										setError(null);
-										onClose();
-										router.push("/checkout");
-									}}
-									disabled={loading}
-									className="inline-flex min-h-11 items-center justify-center bg-[color:var(--editorial-ink)] px-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:rgba(122,30,34,0.96)] disabled:bg-[color:rgba(11,11,11,0.42)]"
-								>
-									{loading ? t("actions.openingCheckout") : t("actions.checkout")}
-								</button>
-							</div>
+					</>
+				) : (
+					<div className="flex flex-1 flex-col justify-between p-6">
+						<div className="flex flex-col gap-3">
+							<h2 className="sl-price m-0 text-[24px]">{t("empty.title")}</h2>
+							<p className="m-0 text-[14px] leading-[1.7] text-[color:var(--sl-text-muted)]">
+								{t("empty.description")}
+							</p>
 						</div>
-					) : null}
-				</div>
+						<button
+							type="button"
+							className="sl-btn sl-btn-primary w-full"
+							onClick={() => {
+								onClose();
+								router.push("/products");
+							}}
+						>
+							Ver produtos
+						</button>
+					</div>
+				)}
 			</aside>
-		</>
+		</div>
 	);
 }

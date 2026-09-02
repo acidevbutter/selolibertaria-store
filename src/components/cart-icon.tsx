@@ -1,14 +1,19 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { cn } from "@/lib/utils";
 
 type CartIconProps = {
 	className?: string;
+	/** Hide the "Carrinho" word — used in the tight mobile header. */
+	compact?: boolean;
 };
 
-export function CartIcon({ className = "" }: CartIconProps) {
+/**
+ * The wine cart button — the header's only block of colour. Counter chip is on
+ * paper (kit rule).
+ */
+export function CartIcon({ className = "", compact = false }: CartIconProps) {
 	const { openCart, itemCount } = useCart();
 
 	return (
@@ -18,13 +23,17 @@ export function CartIcon({ className = "" }: CartIconProps) {
 			aria-label="Carrinho"
 			data-cart-trigger="header"
 			className={cn(
-				"relative inline-flex h-10 w-10 items-center justify-center border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-accent)] hover:bg-[color:rgba(216,208,196,0.24)] hover:text-[color:var(--editorial-accent)]",
+				"inline-flex h-11 items-center gap-2 px-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-colors",
 				className,
 			)}
+			style={{ background: "var(--sl-wine)", color: "var(--sl-text-on-ink)" }}
 		>
-			<ShoppingBag className="h-5 w-5" />
+			{compact ? <span className="sr-only">Carrinho</span> : <span>Carrinho</span>}
 			{itemCount > 0 ? (
-				<span className="absolute -right-2 -top-2 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--editorial-accent)] px-1 text-[10px] font-black text-[color:var(--editorial-paper)]">
+				<span
+					className="inline-flex h-5 min-w-5 items-center justify-center px-1 text-[11px] font-normal tracking-normal"
+					style={{ background: "var(--sl-paper)", color: "var(--sl-wine)" }}
+				>
 					{itemCount > 99 ? "99+" : itemCount}
 				</span>
 			) : null}

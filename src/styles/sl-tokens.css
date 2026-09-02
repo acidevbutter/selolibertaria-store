@@ -1,0 +1,372 @@
+/*
+ * Selo Libertária — design-system tokens (imported from claude.ai/design "Selo Libertária").
+ * This is the canonical token layer for public storefront surfaces (home, loja, …).
+ * The older `--editorial-*` variables stay in globals.css until each page is migrated.
+ *
+ * Rules that matter (see the design README):
+ *  - 7 colours, no library grey. Depth comes from swapping surface (paper → ink → sand).
+ *  - `--sl-radius` is 0 everywhere in the public area. Cite it, never change it.
+ *  - No decorative box-shadow. The only shadow is the focus halo `--sl-focus-ring`.
+ *  - Two serifs: Fertigo (headlines, CAPS, weight 900) and DCC Ash (prices, numbers).
+ */
+
+/* DCC Ash — display face for prices/numbers/short block titles.
+   The .otf is not vendored yet; drop it at public/fonts/DCC-Ash.otf and this activates.
+   Until then the serif fallback stack below is used (documented in the design README). */
+@font-face {
+	font-family: "DCCAsh";
+	src: url("/fonts/DCC-Ash.otf") format("opentype");
+	font-weight: 400 700;
+	font-display: swap;
+}
+
+:root {
+	/* --- Fonts -------------------------------------------------------- */
+	--sl-font-display: "DCCAsh", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+	--sl-font-head: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
+	--sl-font-body: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
+
+	/* --- Base palette ----------------------------------------------------- */
+	--sl-ink: #0b0b0b;
+	--sl-charcoal: #141210;
+	--sl-paper: #f7f4ef;
+	--sl-paper-pure: #ffffff;
+	--sl-sand: #d8d0c4;
+	--sl-wine: #7a1e22;
+	--sl-red: #b3282e;
+
+	/* --- Ink on paper --------------------------------------------------- */
+	--sl-text: var(--sl-ink);
+	--sl-text-muted: rgba(11, 11, 11, 0.72);
+	--sl-text-soft: rgba(11, 11, 11, 0.65);
+	--sl-text-label: rgba(11, 11, 11, 0.6);
+	--sl-text-quiet: rgba(11, 11, 11, 0.55);
+	--sl-text-disabled: rgba(11, 11, 11, 0.5);
+
+	/* --- Ink on ink --------------------------------------------------- */
+	--sl-text-on-ink: #f7f4ef;
+	--sl-text-on-ink-muted: rgba(247, 244, 239, 0.82);
+	--sl-text-on-ink-soft: rgba(247, 244, 239, 0.72);
+	--sl-text-on-ink-label: rgba(247, 244, 239, 0.6);
+	--sl-text-on-ink-quiet: rgba(247, 244, 239, 0.45);
+
+	/* --- Lines (tinted ink, never library grey) ----------------------- */
+	--sl-line-hairline: rgba(11, 11, 11, 0.14);
+	--sl-line: rgba(11, 11, 11, 0.2);
+	--sl-line-strong: rgba(11, 11, 11, 0.3);
+	--sl-line-solid: var(--sl-ink);
+	--sl-line-on-ink: rgba(247, 244, 239, 0.28);
+	--sl-line-on-ink-mid: rgba(247, 244, 239, 0.45);
+	--sl-line-on-ink-hi: rgba(247, 244, 239, 0.5);
+
+	/* --- Surfaces ------------------------------------------------------- */
+	--sl-surface-page: var(--sl-paper);
+	--sl-surface-card: var(--sl-paper-pure);
+	--sl-surface-band: var(--sl-sand);
+	--sl-surface-invert: var(--sl-ink);
+	--sl-surface-desk: var(--sl-charcoal);
+
+	/* --- Semantic ----------------------------------------------------- */
+	--sl-accent: var(--sl-wine); /* links, stock, ✓, text emphasis */
+	--sl-buy: var(--sl-red); /* ONLY the buy button + "now" badge */
+	--sl-danger: var(--sl-wine); /* error = wine, never a system red */
+	--sl-danger-wash: rgba(122, 30, 34, 0.06);
+	--sl-focus-ring: 0 0 0 2px rgba(122, 30, 34, 0.2);
+
+	/* --- Type scale (locked) ---------------------------------------------- */
+	--sl-size-hero-xl: 96px;
+	--sl-size-hero-lg: 76px;
+	--sl-size-hero-md: 60px;
+	--sl-size-hero-sm: 40px;
+	--sl-size-section: 56px;
+	--sl-size-section-sm: 44px;
+	--sl-size-section-mobile: 36px;
+	--sl-size-card-title: 22px;
+	--sl-size-card-title-sm: 18px;
+	--sl-size-lead: 17px;
+	--sl-size-body: 16px;
+	--sl-size-body-sm: 15px;
+	--sl-size-meta: 14px;
+	--sl-size-meta-sm: 13px;
+	--sl-size-micro: 12px;
+	--sl-size-label: 11px;
+	--sl-size-label-sm: 10px;
+
+	--sl-track-hero: -0.055em;
+	--sl-track-head: -0.05em;
+	--sl-track-card: -0.02em;
+	--sl-track-label: 0.24em;
+
+	/* --- Spacing / gutters --------------------------------------------- */
+	--sl-gutter-desktop: 48px;
+	--sl-gutter-narrow: 40px;
+	--sl-gutter-mobile: 16px;
+	--sl-grid-gap: 20px;
+	--sl-grid-gap-sm: 12px;
+	--sl-section-gap: 56px;
+	--sl-w-desktop: 1440px;
+	--sl-w-narrow: 1152px;
+
+	/* --- Controls ----------------------------------------------------- */
+	--sl-radius: 0;
+	--sl-h-buy: 56px;
+	--sl-h-field: 52px;
+	--sl-h-button: 48px;
+	--sl-h-small: 44px;
+	--sl-h-chip: 26px;
+	--sl-h-badge: 24px;
+	--sl-h-tab: 56px;
+	--sl-h-header: 72px;
+	--sl-pad-button: 0 20px;
+	--sl-pad-buy: 0 32px;
+	--sl-pad-field: 0 14px;
+	--sl-pad-card: 20px;
+	--sl-image-ratio: 1 / 1;
+	--sl-image-ratio-pdp: 4 / 3;
+	--sl-transition: 120ms linear;
+}
+
+/* ------------------------------------------------------------------ *
+ * Small utility layer — ports the UI-kit primitives so components
+ * stay lean and match the click-through kit 1:1.
+ * ------------------------------------------------------------------ */
+
+.sl-scope {
+	font-family: var(--sl-font-body);
+	color: var(--sl-text);
+}
+
+.sl-u {
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.sl-price {
+	font-family: var(--sl-font-display);
+	font-synthesis: none;
+	letter-spacing: -0.015em;
+}
+
+.sl-head {
+	font-family: var(--sl-font-head);
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: var(--sl-track-head);
+}
+
+.sl-eyebrow {
+	margin: 0;
+	font-size: var(--sl-size-label);
+	font-weight: 900;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+}
+
+.sl-lbl {
+	font-size: var(--sl-size-label-sm);
+	font-weight: 900;
+	letter-spacing: var(--sl-track-label);
+	text-transform: uppercase;
+	color: var(--sl-text-label);
+}
+
+/* Buttons — three heights, one field. Square corners, wide tracking. */
+.sl-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-family: inherit;
+	font-weight: 900;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+	cursor: pointer;
+	border: 0;
+	background: none;
+	color: inherit;
+	border-radius: var(--sl-radius);
+	transition: var(--sl-transition);
+	text-decoration: none;
+}
+.sl-btn:disabled,
+.sl-btn[aria-disabled="true"] {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.sl-btn-buy {
+	height: var(--sl-h-buy);
+	padding: var(--sl-pad-buy);
+	background: var(--sl-buy);
+	color: var(--sl-text-on-ink);
+	font-size: 13px;
+}
+.sl-btn-buy:not(:disabled):hover {
+	background: #9d2228;
+}
+.sl-btn-primary {
+	height: var(--sl-h-button);
+	padding: var(--sl-pad-button);
+	background: var(--sl-ink);
+	color: var(--sl-text-on-ink);
+	font-size: 11px;
+}
+.sl-btn-primary:not(:disabled):hover {
+	background: #2a2422;
+}
+.sl-btn-secondary {
+	height: var(--sl-h-button);
+	padding: var(--sl-pad-button);
+	border: 1px solid var(--sl-ink);
+	font-size: 11px;
+}
+.sl-btn-secondary:not(:disabled):hover {
+	background: var(--sl-sand);
+}
+.sl-btn-ink {
+	border-color: var(--sl-line-on-ink-hi);
+	color: var(--sl-text-on-ink);
+}
+.sl-btn-ink:not(:disabled):hover {
+	background: rgba(247, 244, 239, 0.1);
+}
+.sl-btn:focus-visible {
+	outline: none;
+	border: 1px solid var(--sl-line-solid);
+	box-shadow: var(--sl-focus-ring);
+}
+
+/* Category chip / payment flag — 26px, square. */
+.sl-chip {
+	display: inline-flex;
+	align-items: center;
+	height: var(--sl-h-small);
+	padding: 0 16px;
+	font-size: 11px;
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	border: 1px solid var(--sl-line-strong);
+	border-radius: var(--sl-radius);
+	cursor: pointer;
+	background: none;
+	color: inherit;
+	transition: var(--sl-transition);
+	white-space: nowrap;
+}
+.sl-chip:hover {
+	border-color: var(--sl-ink);
+}
+.sl-chip[aria-pressed="true"],
+.sl-chip.is-on {
+	background: var(--sl-ink);
+	color: var(--sl-text-on-ink);
+	border-color: var(--sl-ink);
+}
+
+/* Category tab on the sand band — 56px. */
+.sl-tab {
+	display: inline-flex;
+	align-items: center;
+	height: var(--sl-h-tab);
+	padding: 0 20px;
+	font-size: var(--sl-size-label);
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--sl-text-muted);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	transition: var(--sl-transition);
+	white-space: nowrap;
+}
+.sl-tab:hover {
+	color: var(--sl-ink);
+}
+.sl-tab[aria-selected="true"] {
+	background: var(--sl-ink);
+	color: var(--sl-text-on-ink);
+}
+
+/* Product card — one design for book, poster, object, ticket. */
+.sl-card {
+	display: flex;
+	flex-direction: column;
+	background: var(--sl-surface-card);
+	border: 1px solid var(--sl-line-hairline);
+	border-radius: var(--sl-radius);
+	transition: var(--sl-transition);
+}
+.sl-card:hover,
+.sl-card:focus-within {
+	border-color: var(--sl-ink);
+}
+.sl-card .sl-shot {
+	aspect-ratio: 1 / 1;
+	background: var(--sl-sand);
+	overflow: hidden;
+	position: relative;
+}
+.sl-card .sl-shot img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sl-card .sl-body {
+	padding: var(--sl-pad-card);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	flex: 1;
+}
+.sl-badge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: var(--sl-h-badge);
+	padding: 0 9px;
+	display: inline-flex;
+	align-items: center;
+	font-size: 10px;
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+.sl-badge-buy {
+	background: var(--sl-buy);
+	color: var(--sl-text-on-ink);
+}
+.sl-badge-ink {
+	background: var(--sl-ink);
+	color: var(--sl-text-on-ink);
+}
+.sl-badge-paper {
+	background: var(--sl-paper);
+	color: var(--sl-ink);
+	border: 1px solid var(--sl-ink);
+}
+
+.sl-field {
+	height: var(--sl-h-field);
+	border: 1px solid var(--sl-line-strong);
+	background: var(--sl-surface-card);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--sl-pad-field);
+	font-size: var(--sl-size-body);
+	border-radius: var(--sl-radius);
+}
+.sl-field:focus-within {
+	border-color: var(--sl-ink);
+	box-shadow: var(--sl-focus-ring);
+}
+
+.sl-link {
+	color: var(--sl-accent);
+	text-decoration: none;
+	transition: var(--sl-transition);
+}
+.sl-link:hover {
+	color: var(--sl-buy);
+}
