@@ -99,21 +99,25 @@ async function persistGuest(cart: FastApiCart): Promise<Cart | null> {
 
 async function createGuestFromCookie(): Promise<FastApiCart> {
 	const [items, couponCode] = await Promise.all([getCartCookieItems(), getCartCouponCode()]);
-	let cart = await api<FastApiCart>("/carts/guest", { method: "POST" });
-	if (!cart) throw new Error("Não foi possível criar o carrinho");
+	const created = await api<FastApiCart>("/carts/guest", { method: "POST" });
+	if (!created) throw new Error("Não foi possível criar o carrinho");
+	let cart: FastApiCart = created;
+	// Best-effort resurrection: a cookie line whose variant no longer exists (catalog
+	// reset, unpublished product) must be dropped, not throw — otherwise a single stale
+	// guest cookie takes down every route that reads the cart (RootLayout included).
 	for (const item of items ?? []) {
-		cart = await api<FastApiCart>(`/carts/guest/${cart.id}/items`, {
+		const updated = await api<FastApiCart>(`/carts/guest/${cart.id}/items`, {
 			method: "POST",
 			body: JSON.stringify({ variant_id: item.variantId, quantity: item.quantity }),
-		});
-		if (!cart) throw new Error("Não foi possível recuperar o carrinho");
+		}).catch(() => null);
+		if (updated) cart = updated;
 	}
 	if (couponCode) {
-		cart = await api<FastApiCart>(`/carts/guest/${cart.id}/coupon`, {
+		const updated = await api<FastApiCart>(`/carts/guest/${cart.id}/coupon`, {
 			method: "PUT",
 			body: JSON.stringify({ coupon_code: couponCode }),
-		});
-		if (!cart) throw new Error("Não foi possível recuperar o carrinho");
+		}).catch(() => null);
+		if (updated) cart = updated;
 	}
 	return cart;
 }
@@ -138,8 +142,16 @@ export async function getCartAction(): Promise<Cart | null> {
 		const cart = await api<FastApiCart>("/carts/me", {}, auth.token);
 		return cart ? toCart(cart) : null;
 	}
-	const cart = await getGuest();
-	return cart ? persistGuest(cart) : null;
+	try {
+		const cart = await getGuest();
+		return cart ? await persistGuest(cart) : null;
+	} catch (error) {
+		// Never let a guest-cart failure bubble to RootLayout and blank the whole site.
+		// Render without a cart this pass; the cookie is left intact so a later
+		// successful read can still restore it.
+		console.warn("[cart] guest cart unavailable, rendering without cart", error);
+		return null;
+	}
 }
 
 export async function addToCartAction(variantId: string, quantity = 1): Promise<Cart | null> {

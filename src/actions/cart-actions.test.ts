@@ -5,13 +5,14 @@ const getCartIdMock = vi.fn();
 const getCartCookieItemsMock = vi.fn();
 const getCartCouponCodeMock = vi.fn();
 const setCartIdMock = vi.fn();
+const clearCartIdMock = vi.fn();
 const cookiesMock = vi.fn();
 
 vi.mock("@/env.mjs", () => ({ env: { FASTAPI_API_URL: "http://fastapi.test" } }));
 vi.mock("@/lib/api-auth", () => ({ requireAuth: () => requireAuthMock() }));
 vi.mock("@/lib/authz", () => ({ canBuyOnSelolibertaria: () => true }));
 vi.mock("@/lib/cart-cookies", () => ({
-	clearCartId: vi.fn(),
+	clearCartId: (...args: unknown[]) => clearCartIdMock(...args),
 	getCartCookieItems: () => getCartCookieItemsMock(),
 	getCartCouponCode: () => getCartCouponCodeMock(),
 	getCartId: () => getCartIdMock(),
@@ -46,6 +47,7 @@ describe("cart actions", () => {
 		getCartCookieItemsMock.mockReset();
 		getCartCouponCodeMock.mockReset();
 		setCartIdMock.mockReset();
+		clearCartIdMock.mockReset();
 		cookiesMock.mockReset();
 		vi.stubGlobal("fetch", vi.fn());
 	});
@@ -67,6 +69,26 @@ describe("cart actions", () => {
 			[{ productId: "prod_123", variantId: "variant_123", quantity: 1 }],
 			null,
 		);
+	});
+
+	it("não derruba o layout quando o cookie de convidado aponta para variantes que sumiram", async () => {
+		// BUG-1: yns_cart_id órfão + linha de item cuja variante não existe mais.
+		requireAuthMock.mockResolvedValue({ error: "guest" });
+		getCartIdMock.mockResolvedValue("00000000-0000-4000-8000-0000000000ff");
+		getCartCookieItemsMock.mockResolvedValue([{ variantId: "variant_dead", quantity: 1 }]);
+		getCartCouponCodeMock.mockResolvedValue(null);
+		cookiesMock.mockResolvedValue({ get: vi.fn() });
+		vi.mocked(fetch)
+			.mockResolvedValueOnce(fetchResponse(null, 404)) // GET /carts/guest/{órfão}
+			.mockResolvedValueOnce(
+				fetchResponse({ id: "00000000-0000-4000-8000-000000000abc", coupon_code: null, items: [] }, 201),
+			) // POST /carts/guest
+			.mockResolvedValueOnce(fetchResponse({ detail: "Variante de produto não disponível" }, 404)); // POST .../items
+
+		const { getCartAction } = await import("@/actions/cart-actions");
+
+		await expect(getCartAction()).resolves.toBeNull();
+		expect(clearCartIdMock).toHaveBeenCalled();
 	});
 
 	it("envia a mutação autenticada do carrinho ao FastAPI", async () => {
