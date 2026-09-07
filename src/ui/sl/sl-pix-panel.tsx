@@ -77,7 +77,7 @@ export function SlPixPanel({
 				) : null}
 				{ticketUrl ? (
 					<a className="sl-link text-[13px]" href={ticketUrl} rel="noreferrer" target="_blank">
-						Abrir Pix no Mercado Pago
+						Abrir pagamento Pix
 					</a>
 				) : null}
 				{footer}

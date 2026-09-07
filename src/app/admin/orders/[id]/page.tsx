@@ -195,8 +195,6 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		status: string;
 		created_at: string;
 		buyer_email: string | null;
-		mercado_pago_order_id: string | null;
-		mercado_pago_payment_id: string | null;
 		items: Array<{ name: string | null; quantity: number; unit_amount: number | null }>;
 		fulfillment_status: "received" | "producing" | "shipped";
 		tracking_number: string | null;
@@ -223,10 +221,6 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 		deliveryMethod: remote.delivery_method,
 		deliveryAddress: remote.delivery_address,
 		shippingRate: remote.shipping_rate,
-		relatedIds: {
-			mercadoPagoOrderId: remote.mercado_pago_order_id,
-			mercadoPagoPaymentId: remote.mercado_pago_payment_id,
-		},
 	};
 	const history = await listOrderAuditEntries(p.id, 15);
 	const itemCount = p.items.reduce((total, item) => total + (item.quantity || 0), 0);
@@ -300,23 +294,8 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								{formatDateTime(p.createdAt, locale)}
 							</div>
 						</div>
-						<div className="space-y-1">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.mercadoPagoOrderId
-									? "ID da order (Mercado Pago)"
-									: "ID do pagamento (Mercado Pago)"}
-							</div>
-							<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
-								{p.relatedIds?.mercadoPagoOrderId || p.relatedIds?.mercadoPagoPaymentId || "Não informado"}
-							</div>
-						</div>
 					</div>
-					<AdminPaymentOperations
-						orderId={p.id}
-						status={p.status}
-						amountInCents={p.amountTotal}
-						currency={p.currency}
-					/>
+					<AdminPaymentOperations orderId={p.id} />
 					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
 						<div className="mb-4 space-y-1">
 							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">

@@ -1,12 +1,9 @@
 import { redirect } from "next/navigation";
-import { createTransparentCheckoutIntent } from "@/actions/checkout-actions";
 import { CheckoutForm } from "@/app/checkout/checkout-form.client";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { getCartCookiePayload } from "@/lib/cart-cookies";
-import { isAsaasActive, isMercadoPagoActive } from "@/lib/payments";
-import { getPaymentBoletoEnabledSetting } from "@/lib/settings-store";
+import { getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { formatMoney } from "@/lib/utils";
-import { SlButton } from "@/ui/sl/sl-button";
 import { SlCheckoutStepper } from "@/ui/sl/sl-checkout-stepper";
 import { SlMiniProductRow } from "@/ui/sl/sl-mini-product-row";
 import { SlOrderSummary } from "@/ui/sl/sl-order-summary";
@@ -17,9 +14,7 @@ interface CheckoutStartPageProps {
 }
 
 /**
- * Server page that prepares the guest cart, creates/reuses a Mercado Pago draft,
- * and renders the payment form inside the SL checkout shell. Guests can complete
- * checkout without an account.
+ * Server page that prepares the guest cart and renders the hosted Asaas checkout.
  */
 export default async function CheckoutStartPage({ searchParams }: CheckoutStartPageProps) {
 	const resolvedSearchParams = await searchParams;
@@ -32,52 +27,22 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 		redirect("/checkout");
 	}
 
-	const [locale, t, boletoEnabled] = await Promise.all([
-		getLocale(),
-		getTranslations("Checkout.page"),
-		getPaymentBoletoEnabledSetting(),
-	]);
+	const [locale, t] = await Promise.all([getLocale(), getTranslations("Checkout.page")]);
 
-	// Mercado Pago is kept in the codebase but only wired when it is the active
-	// provider. Any other value shows a maintenance notice instead of the form.
-	if (!isMercadoPagoActive) {
-		return (
-			<main
-				className="sl-scope mx-auto flex max-w-lg flex-col gap-4 px-6 py-20"
-				style={{ color: "var(--sl-text)" }}
-			>
-				<p className="sl-eyebrow m-0 text-[color:var(--sl-accent)]">Checkout</p>
-				<h1 className="sl-head m-0 text-[clamp(28px,5vw,40px)] leading-[0.98]">Pagamento em manutenção</h1>
-				<p className="m-0 text-[15px] leading-[1.7] text-[color:var(--sl-text-muted)]">
-					{isAsaasActive
-						? "Estamos migrando o checkout para a Asaas. O carrinho fica salvo — tente de novo em instantes ou fale com a gente."
-						: "O checkout está temporariamente indisponível. O carrinho fica salvo — tente de novo em instantes."}
-				</p>
-				<div className="flex flex-wrap gap-3">
-					<SlButton href="/products" variant="secondary">
-						Continuar na loja
-					</SlButton>
-					<SlButton href="/contact" variant="secondary">
-						Falar com a loja
-					</SlButton>
-				</div>
-			</main>
-		);
-	}
+	const snapshotResult = await getCheckoutSnapshot();
 
-	const res = await createTransparentCheckoutIntent();
-
-	if ("error" in res) {
+	if (!snapshotResult.ok) {
 		return (
 			<main className="sl-scope mx-auto max-w-md px-6 py-16" style={{ color: "var(--sl-text)" }}>
 				<h1 className="sl-head m-0 text-[32px] leading-[0.98]">{t("errorTitle")}</h1>
-				<p className="mt-4 text-[14px] text-[color:var(--sl-accent)]">{res.error}</p>
+				<p className="mt-4 text-[14px] text-[color:var(--sl-accent)]">{snapshotResult.error}</p>
 				<a className="sl-link mt-6 inline-block text-[13px]" href="/products">
 					{t("continueShopping")}
 				</a>
 			</main>
 		);
 	}
+	const res = snapshotResult.snapshot;
 
 	const money = (amount: number) => formatMoney({ amount, currency: res.currency, locale });
 	const summaryLines: Array<{ label: string; value: string; tone?: "default" | "accent" }> = [
@@ -124,7 +89,7 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 
 			<div className="mx-auto grid w-full max-w-[var(--sl-w-narrow)] gap-8 px-4 py-9 sm:px-8 lg:grid-cols-[1fr_400px] lg:items-start lg:px-10">
 				<section>
-					<CheckoutForm checkout={res} locale={locale} boletoEnabled={boletoEnabled} />
+					<CheckoutForm checkout={res} />
 				</section>
 
 				<aside className="flex flex-col gap-4">
@@ -173,14 +138,8 @@ export default async function CheckoutStartPage({ searchParams }: CheckoutStartP
 						<div className="flex flex-col gap-2.5 px-5 py-4">
 							<div className="flex items-start gap-2.5">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img
-									src="/images/icons/mercado-pago.svg"
-									alt="Mercado Pago"
-									className="h-5 w-auto flex-none"
-								/>
 								<p className="m-0 text-[13px] leading-[1.55]">
-									Pagamento processado pelo <strong>Mercado Pago</strong> — o selo não armazena dados do
-									cartão.
+									Pagamento processado pela <strong>Asaas</strong> em ambiente hospedado e seguro.
 								</p>
 							</div>
 							<div className="flex items-baseline gap-2.5">

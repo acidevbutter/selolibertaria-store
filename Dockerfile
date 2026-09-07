@@ -21,6 +21,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# next.config.ts only emits `output: "standalone"` when DOCKER is set at build
+# time; the runner stage below copies from .next/standalone, so this is required.
+ARG DOCKER=1
+ENV DOCKER=$DOCKER
+
 # Uncomment to disable Next.js telemetry
 # ENV NEXT_TELEMETRY_DISABLED 1
 

@@ -37,7 +37,6 @@ export function CheckoutSuccessHandler() {
 
 		const next = new URLSearchParams(Array.from(searchParams.entries()));
 		next.delete("checkout");
-		next.delete("mp_payment");
 		next.delete("order");
 		const query = next.toString();
 		router.replace(query ? `/?${query}` : "/");

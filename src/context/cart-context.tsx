@@ -215,9 +215,8 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 	useEffect(() => {
 		const status = searchParams?.get("checkout");
 		const orderId = searchParams?.get("order");
-		const paymentId = searchParams?.get("mp_payment");
 
-		if (!status || (!paymentId && !orderId)) {
+		if (!status || !orderId) {
 			return;
 		}
 

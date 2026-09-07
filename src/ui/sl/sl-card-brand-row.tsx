@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Only Visa, Mastercard, Pix and Mercado Pago have real files (design decision).
+// Only Visa and Mastercard have real files (design decision).
 // Elo, Amex and Hiper are square wordmarks — never a reconstructed logo.
 const BRAND_ICON: Record<string, string> = {
 	visa: "/images/icons/visa.svg",
@@ -11,7 +11,7 @@ const DEFAULT_BRANDS = ["Visa", "Mastercard", "Elo", "Amex", "Hiper"];
 
 /**
  * Detected from the first 6 digits, but the selector stays visible for manual
- * correction. Purely visual here — Mercado Pago's Brick owns the real detection.
+ * correction. Purely visual; the hosted checkout owns the real detection.
  */
 export function SlCardBrandRow({
 	brands = DEFAULT_BRANDS,
