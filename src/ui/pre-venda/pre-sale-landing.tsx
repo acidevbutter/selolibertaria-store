@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { fillCampaignText, type PreSaleCampaign } from "@/lib/pre-sale";
-import { PreSaleCountdownPopup } from "@/ui/pre-venda/pre-sale-countdown-popup.client";
 import { YnsLink } from "@/ui/yns-link";
 
 /**
@@ -223,8 +222,6 @@ export function PreSaleLanding({ campaign }: { campaign: PreSaleCampaign }) {
 				</div>
 				<PreSaleHighlightCard campaign={campaign} />
 			</div>
-
-			<PreSaleCountdownPopup campaign={campaign} />
 		</div>
 	);
 }

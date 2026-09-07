@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getLocale } from "@/i18n/server";
 import { commerce } from "@/lib/commerce";
@@ -17,12 +19,8 @@ export const dynamic = "force-dynamic";
 export default async function Image(props: { params: Promise<{ slug: string }> }) {
 	const params = await props.params;
 	const locale = await getLocale();
-	const geistRegular = fetch(new URL("./Geist-Regular.ttf", import.meta.url)).then((res) =>
-		res.arrayBuffer(),
-	);
-	// const geistBold = fetch(new URL("./Geist-Bold.ttf", import.meta.url)).then((res) =>
-	// 	res.arrayBuffer(),
-	// );
+	// Fertigo Pro — one of the project's two faces (see src/styles/sl-tokens.css).
+	const fertigo = readFile(join(process.cwd(), "public/fonts/FertigoPro-Regular.otf"));
 	// Note: accountGet not available in new SDK, using product only
 	const product = await commerce.product.get({ slug: params.slug });
 
@@ -32,7 +30,7 @@ export default async function Image(props: { params: Promise<{ slug: string }> }
 
 	return new ImageResponse(
 		<div
-			style={{ fontFamily: "Geist" }}
+			style={{ fontFamily: "Fertigo Pro" }}
 			tw="bg-neutral-100 w-full h-full flex flex-row items-stretch justify-center"
 		>
 			<div tw="flex-1 flex justify-center items-center">
@@ -67,17 +65,11 @@ export default async function Image(props: { params: Promise<{ slug: string }> }
 			// debug: true,
 			fonts: [
 				{
-					name: "Geist",
-					data: await geistRegular,
+					name: "Fertigo Pro",
+					data: await fertigo,
 					style: "normal",
 					weight: 400,
 				},
-				// {
-				// 	name: "Geist",
-				// 	data: await geistBold,
-				// 	style: "normal",
-				// 	weight: 700,
-				// },
 			],
 		},
 	);

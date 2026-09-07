@@ -3,13 +3,16 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "@/i18n/client";
 import { cn } from "@/lib/utils";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
 
 interface ContactFormProps {
 	className?: string;
 	subjectSuggestions?: string[];
 }
+
+const FIELD_CLASS =
+	"h-[var(--sl-h-field)] w-full border border-[color:var(--sl-line-strong)] bg-[color:var(--sl-surface-card)] px-3.5 text-[var(--sl-size-body)] text-[color:var(--sl-text)] outline-none transition-colors placeholder:text-[color:var(--sl-text-disabled)] focus-visible:border-[color:var(--sl-ink)] focus-visible:shadow-[var(--sl-focus-ring)]";
+
+const LABEL_CLASS = "sl-lbl";
 
 export function ContactForm({ className, subjectSuggestions = [] }: ContactFormProps) {
 	const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
@@ -32,56 +35,48 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 	);
 
 	return (
-		<form onSubmit={onSubmit} className={cn("space-y-6", className)}>
-			<div className="grid gap-6 sm:grid-cols-2">
-				<div className="space-y-2">
-					<label
-						htmlFor="name"
-						className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-					>
+		<form onSubmit={onSubmit} className={cn("flex flex-col gap-6", className)}>
+			<div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+				<div className="flex flex-col gap-2">
+					<label htmlFor="name" className={LABEL_CLASS}>
 						{t("fields.name")}
 					</label>
-					<Input
+					<input
 						id="name"
 						name="name"
 						required
 						placeholder={t("placeholders.name")}
 						autoComplete="name"
-						className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
+						className={FIELD_CLASS}
 					/>
 				</div>
-				<div className="space-y-2">
-					<label
-						htmlFor="email"
-						className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-					>
+				<div className="flex flex-col gap-2">
+					<label htmlFor="email" className={LABEL_CLASS}>
 						{t("fields.email")}
 					</label>
-					<Input
+					<input
 						id="email"
 						name="email"
 						type="email"
 						required
 						placeholder={t("placeholders.email")}
 						autoComplete="email"
-						className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
+						className={FIELD_CLASS}
 					/>
 				</div>
 			</div>
-			<div className="space-y-2">
-				<label
-					htmlFor="subject"
-					className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-				>
+
+			<div className="flex flex-col gap-2">
+				<label htmlFor="subject" className={LABEL_CLASS}>
 					{t("fields.subject")}
 				</label>
-				<Input
+				<input
 					id="subject"
 					name="subject"
 					required
 					placeholder={t("placeholders.subject")}
 					list={subjectSuggestions.length > 0 ? "contact-subject-suggestions" : undefined}
-					className="rounded-none border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)]"
+					className={FIELD_CLASS}
 				/>
 				{subjectSuggestions.length > 0 ? (
 					<datalist id="contact-subject-suggestions">
@@ -91,11 +86,9 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 					</datalist>
 				) : null}
 			</div>
-			<div className="space-y-2">
-				<label
-					htmlFor="message"
-					className="text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-				>
+
+			<div className="flex flex-col gap-2">
+				<label htmlFor="message" className={LABEL_CLASS}>
 					{t("fields.message")}
 				</label>
 				<textarea
@@ -103,24 +96,23 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 					name="message"
 					required
 					rows={6}
-					className="flex min-h-48 w-full resize-y border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					className={cn(
+						"min-h-44 w-full resize-y border border-[color:var(--sl-line-strong)] bg-[color:var(--sl-surface-card)] px-3.5 py-3 text-[var(--sl-size-body)] leading-[1.7] text-[color:var(--sl-text)] outline-none transition-colors placeholder:text-[color:var(--sl-text-disabled)] focus-visible:border-[color:var(--sl-ink)] focus-visible:shadow-[var(--sl-focus-ring)]",
+					)}
 					placeholder={t("placeholders.message")}
 				/>
 			</div>
-			<div className="flex items-center gap-4">
-				<Button
-					type="submit"
-					disabled={status === "submitting"}
-					className="min-w-40 rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-				>
+
+			<div className="flex flex-wrap items-center gap-4">
+				<button type="submit" disabled={status === "submitting"} className="sl-btn sl-btn-primary min-w-40">
 					{status === "submitting"
 						? t("actions.sending")
 						: status === "sent"
 							? t("actions.sent")
 							: t("actions.send")}
-				</Button>
-				<p aria-live="polite" className="text-xs text-neutral-500 h-4">
-					{status === "sent" && t("success")}
+				</button>
+				<p aria-live="polite" className="m-0 text-[var(--sl-size-micro)] text-[color:var(--sl-text-soft)]">
+					{status === "sent" ? t("success") : "Não usamos seu email para newsletter sem pedir."}
 				</p>
 			</div>
 		</form>

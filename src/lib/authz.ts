@@ -11,6 +11,8 @@ export type Capability =
 	| "customers.read"
 	| "promotions.read"
 	| "promotions.write"
+	| "presale.read"
+	| "presale.write"
 	| "settings.read"
 	| "settings.write"
 	| "webhooks.read"
@@ -31,6 +33,8 @@ const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
 		"customers.read",
 		"promotions.read",
 		"promotions.write",
+		"presale.read",
+		"presale.write",
 		"settings.read",
 		"settings.write",
 		"webhooks.read",

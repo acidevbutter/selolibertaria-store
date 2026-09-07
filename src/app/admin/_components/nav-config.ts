@@ -1,6 +1,7 @@
 import {
 	Activity,
 	BookOpen,
+	Fish,
 	LayoutDashboard,
 	Mail,
 	Package,
@@ -24,6 +25,7 @@ export const adminNavItems: NavItem[] = [
 	{ href: "/admin/products", label: "Produtos", icon: Package, capability: "catalog.write" },
 	{ href: "/admin/editorial", label: "Editorial", icon: BookOpen, capability: "editorial.write" },
 	{ href: "/admin/promotions", label: "Promoções", icon: Percent, capability: "promotions.read" },
+	{ href: "/admin/pre-venda", label: "Pré-venda", icon: Fish, capability: "presale.read" },
 	{ href: "/admin/users", label: "Usuários", icon: Users, capability: "customers.read" },
 	{ href: "/admin/emails", label: "E-mails", icon: Mail, capability: "emails.read" },
 	{ href: "/admin/settings", label: "Configurações", icon: Settings, capability: "settings.write" },

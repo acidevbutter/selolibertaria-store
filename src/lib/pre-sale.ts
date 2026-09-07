@@ -2,11 +2,8 @@
  * Pré-venda ("modo pré-venda") — configuração e flag de ativação.
  *
  * A tela e o pop-up de pré-venda são presentational: recebem uma `PreSaleCampaign`
- * e não sabem de onde ela veio. Hoje a campanha é estática (ver `LFBF_CAMPAIGN`) e a
- * ativação é feita por variável de ambiente, espelhando `maintenance-mode.ts`.
- *
- * A evolução (campanha vinda do admin/editorial, janela agendada, toggle com histórico
- * de auditoria) está especificada em `docs/prompts/pre-venda-03-admin-modo-pre-venda.md`.
+ * e não sabem de onde ela veio. A campanha é estática por enquanto, enquanto sua
+ * ativação é uma configuração editorial persistida e alterada no admin.
  */
 
 export type PreSaleCta = {
@@ -30,12 +27,10 @@ export type PreSaleCampaign = {
 	/** janela de lançamento em texto livre (ex.: "agosto de 2026") */
 	launchWindow: string;
 	/**
-	 * Data/hora alvo do lançamento em ISO 8601. Quando presente, é a fonte da
-	 * verdade da contagem regressiva. Sem ela, o pop-up cai em `countdownDays`.
+	 * Data/hora de estreia em ISO 8601, definida no admin. É a única fonte da
+	 * contagem regressiva do modal — sem ela, o modal não abre.
 	 */
 	launchAt?: string;
-	/** fallback da contagem regressiva quando não há `launchAt` */
-	countdownDays: number;
 	/** destino do botão "Comprar" (checkout / produto / link do Mercado Pago) */
 	buyHref: string;
 	/** link "voltar para a loja" no topo */
@@ -77,6 +72,52 @@ export type PreSaleCampaign = {
 	};
 };
 
+export type PreSaleAvailability = {
+	pageActive: boolean;
+	popupActive: boolean;
+	inWindow: boolean;
+};
+
+export type PreSaleScheduleSettings = {
+	enabled?: boolean;
+	pageEnabled?: boolean;
+	popupEnabled?: boolean;
+	launchAt?: string | null;
+	windowStartAt?: string | null;
+	windowEndAt?: string | null;
+};
+
+function parseDate(value?: string | null): number | null {
+	if (!value) return null;
+	const timestamp = Date.parse(value);
+	return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+/** Resolve os dois canais públicos, sempre falhando fechado para janela inválida. */
+export function resolvePreSaleAvailability(
+	settings: PreSaleScheduleSettings | null | undefined,
+	now: number = Date.now(),
+): PreSaleAvailability {
+	const startAt = parseDate(settings?.windowStartAt);
+	const endAt = parseDate(settings?.windowEndAt);
+	const invalidWindow =
+		(settings?.windowStartAt != null && startAt === null) ||
+		(settings?.windowEndAt != null && endAt === null) ||
+		(startAt !== null && endAt !== null && startAt > endAt);
+	const inWindow = !invalidWindow && (startAt === null || now >= startAt) && (endAt === null || now <= endAt);
+	const pageEnabled = settings?.pageEnabled ?? settings?.enabled ?? false;
+	return {
+		pageActive: pageEnabled && inWindow,
+		popupActive: (settings?.popupEnabled ?? false) && inWindow,
+		inWindow,
+	};
+}
+
+/** Aplica a data editorial ao countdown sem modificar a definição estática. */
+export function withPreSaleLaunchAt(campaign: PreSaleCampaign, launchAt?: string | null): PreSaleCampaign {
+	return parseDate(launchAt) === null ? campaign : { ...campaign, launchAt: launchAt ?? undefined };
+}
+
 /**
  * Campanha "little fish, big fish" — Natália Nolli Sasso.
  * Importada de Claude Design: "Pre-venda Little Fish Big Fish.dc.html".
@@ -91,7 +132,6 @@ export const LFBF_CAMPAIGN: PreSaleCampaign = {
 	price: "a definir",
 	launchWindow: "agosto de 2026",
 	launchAt: undefined,
-	countdownDays: 45,
 	buyHref: "#",
 	backHref: "/",
 	paymentNote: "Pagamento via Mercado Pago · Pix ou cartão.",
@@ -135,21 +175,12 @@ const CAMPAIGNS: Record<string, PreSaleCampaign> = {
 };
 
 /**
- * Flag global do "modo pré-venda". Lida direto de `process.env` (sem
- * `@t3-oss/env-nextjs`) para poder ser importada também no edge proxy,
- * do mesmo jeito que `isMaintenanceModeEnabled`.
- *
- * Ative com `PRESALE_MODE=true`. O painel admin (a construir — ver
- * `docs/prompts/pre-venda-03-admin-modo-pre-venda.md`) deve passar a ser a
- * fonte da verdade, com esta env como override de emergência.
+ * Definição estática da campanha de um slug, sem qualquer checagem do "modo
+ * pré-venda". O gating pela configuração do admin vive em `pre-sale.server.ts`
+ * — este módulo é isomórfico e não pode tocar `settings-store` (`server-only`),
+ * senão o bundle client do pop-up de contagem quebra no build.
  */
-export function isPreSaleModeEnabled(): boolean {
-	return process.env.PRESALE_MODE === "true";
-}
-
-/** Campanha ativa da pré-venda, ou `null` quando o modo está desligado / slug desconhecido. */
-export function getPreSaleCampaign(slug: string): PreSaleCampaign | null {
-	if (!isPreSaleModeEnabled()) return null;
+export function getPreSaleCampaignDefinition(slug: string): PreSaleCampaign | null {
 	return CAMPAIGNS[slug] ?? null;
 }
 
@@ -158,11 +189,10 @@ export function fillCampaignText(template: string, campaign: PreSaleCampaign): s
 	return template.replaceAll("{price}", campaign.price).replaceAll("{launchWindow}", campaign.launchWindow);
 }
 
-/** Alvo da contagem regressiva em epoch ms: `launchAt` quando válido, senão agora + `countdownDays`. */
-export function resolveCountdownTarget(campaign: PreSaleCampaign, now: number = Date.now()): number {
-	if (campaign.launchAt) {
-		const parsed = Date.parse(campaign.launchAt);
-		if (!Number.isNaN(parsed)) return parsed;
-	}
-	return now + campaign.countdownDays * 86_400_000;
+/**
+ * Alvo da contagem regressiva em epoch ms: a data de estreia (`launchAt`, definida
+ * no admin) quando válida, senão `null` — sem data, o modal não mostra countdown.
+ */
+export function resolveCountdownTarget(campaign: PreSaleCampaign): number | null {
+	return parseDate(campaign.launchAt);
 }

@@ -10,7 +10,10 @@ function isActive(pathname: string, href: string) {
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Desktop nav links. Active item = 2px red underline, nothing else coloured. */
+/**
+ * Desktop nav links. Active item = 2px red underline, nothing else coloured.
+ * Hover mirrors the active treatment (red underline + full-strength text).
+ */
 export function SlNavLinks({ links }: { links: SlNavLink[] }) {
 	const pathname = usePathname() || "/";
 	// Loja stays active across the whole shop surface.
@@ -24,11 +27,8 @@ export function SlNavLinks({ links }: { links: SlNavLink[] }) {
 					<YnsLink
 						key={link.href}
 						href={link.href}
-						className="inline-flex h-11 items-center border-b-2 text-[12px] font-bold uppercase tracking-[0.2em] transition-colors"
-						style={{
-							borderColor: active ? "var(--sl-buy)" : "transparent",
-							color: active ? "var(--sl-text-on-ink)" : "var(--sl-text-on-ink-soft)",
-						}}
+						data-active={active || undefined}
+						className="inline-flex h-11 items-center border-b-2 border-transparent text-[12px] font-bold uppercase tracking-[0.2em] text-[color:var(--sl-text-on-ink-soft)] transition-colors hover:border-[color:var(--sl-buy)] hover:text-[color:var(--sl-text-on-ink)]! data-[active]:border-[color:var(--sl-buy)] data-[active]:text-[color:var(--sl-text-on-ink)]"
 					>
 						{link.label}
 					</YnsLink>

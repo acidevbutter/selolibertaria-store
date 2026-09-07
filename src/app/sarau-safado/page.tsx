@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
-import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
-import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
-import { LiftOnHover, Reveal } from "@/ui/motion/reveal";
 import { Nav } from "@/ui/nav/nav";
+import { SlBand, SlProse } from "@/ui/sl/sl-band";
+import { SlButton } from "@/ui/sl/sl-button";
+import { SlEyebrow } from "@/ui/sl/sl-section-head";
 import { YnsLink } from "@/ui/yns-link";
 
 export const dynamic = "force-dynamic";
@@ -24,34 +24,26 @@ export default async function SarauSafadoPage() {
 	const t = await getTranslations("Selo");
 	const [sarau, events] = await Promise.all([getEditorialSarauPage(), listEditorialEvents()]);
 	const agenda = events.filter((event) => event.published).slice(0, 3);
-	const signals = sarau.signals?.filter(Boolean) ?? [];
-	const heroBackgroundStyle = getEditorialBackgroundStyle(
-		sarau.hero?.background,
-		sarau.hero?.image ?? null,
-		"strong",
-	);
-	const useDarkHeroText =
-		Boolean(heroBackgroundStyle) && getEditorialBackgroundContrast(sarau.hero?.background) === "dark";
+	const signals = sarau.signals?.filter(Boolean).slice(0, 3) ?? [];
+	const heroSignals = signals.length > 0 ? signals : ["Leitura em voz alta", "Convidadas", "Entrada franca"];
+
 	const notes = sarau.programNotes?.length
-		? sarau.programNotes
+		? sarau.programNotes.slice(0, 3)
 		: [
 				{
-					title: "O Sarau Safado existe como ritual recorrente de leitura, presença e escuta.",
-					body: "Em vez de um evento avulso, ele sustenta continuidade, cria público e abre espaço para vozes convidadas dentro de uma linha curatorial nítida.",
-				},
-				{
 					title: "Origem",
-					body: "O programa nasce da literatura erótica como campo de leitura e encontro, não como tema ornamental da marca.",
+					body: "Nasce da literatura erótica como campo de leitura e encontro, não como tema ornamental.",
 				},
 				{
 					title: "Continuidade",
-					body: "Cada edição reforça a circulação entre livros, artistas convidadas, bibliotecas, instituições e leitoras recorrentes.",
+					body: "Doze edições, público recorrente e uma rede de convidadas que retorna e traz outras.",
 				},
 				{
 					title: "Presença",
-					body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
+					body: "Leitura em voz alta, corpo em cena e escuta coletiva no mesmo espaço.",
 				},
 			];
+
 	const continueLinks = sarau.continueLinks?.length
 		? sarau.continueLinks
 		: [
@@ -61,200 +53,164 @@ export default async function SarauSafadoPage() {
 			];
 
 	return (
-		<div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
+		<div
+			className="sl-scope flex min-h-full flex-1 flex-col"
+			style={{ background: "var(--sl-surface-page)" }}
+		>
 			<Nav />
-			<div className="flex flex-1 flex-col">
-				<Reveal>
-					<section
-						className={[
-							"relative overflow-hidden",
-							useDarkHeroText
-								? "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)]"
-								: "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]",
-						].join(" ")}
-						style={heroBackgroundStyle}
-					>
-						<EditorialShell className="relative flex min-h-[440px] flex-col justify-between px-6 py-8 sm:min-h-[520px] sm:px-10 sm:py-10">
-							<div className="max-w-3xl space-y-4">
-								<EditorialEyebrow
-									className={
-										useDarkHeroText
-											? "text-[color:var(--editorial-accent)] sm:text-sm"
-											: "text-[color:rgba(247,244,239,0.72)] sm:text-sm"
-									}
-								>
-									{sarau.hero?.eyebrow || t("nav.sarau")}
-								</EditorialEyebrow>
-								<h1
-									className={[
-										"title-font mt-4 max-w-4xl text-5xl font-black tracking-[-0.06em] sm:text-6xl",
-										useDarkHeroText
-											? "text-[color:var(--editorial-ink)]"
-											: "text-[color:var(--editorial-paper)]",
-									].join(" ")}
-								>
-									{sarau.hero?.title || t("sarau.heroTitle")}
-								</h1>
-								<EditorialRichText
-									source={sarau.hero?.body || t("sarau.heroBody")}
-									className={[
-										"max-w-2xl text-base leading-8 sm:text-lg",
-										useDarkHeroText
-											? "text-[color:var(--editorial-ink)]"
-											: "text-[color:rgba(247,244,239,0.82)]",
-									].join(" ")}
-								/>
-								<div className="flex flex-wrap gap-3 pt-2">
-									<YnsLink
-										href={sarau.hero?.primaryCtaHref || "/events"}
-										className={[
-											"inline-flex min-h-11 items-center justify-center px-5 text-xs font-semibold uppercase tracking-[0.22em] transition-colors duration-300",
-											useDarkHeroText
-												? "bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-												: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
-										].join(" ")}
-									>
-										{sarau.hero?.primaryCtaLabel || "Próxima edição"}
-									</YnsLink>
-									<YnsLink
-										href={sarau.hero?.secondaryCtaHref || "/events"}
-										className={[
-											"inline-flex min-h-11 items-center justify-center border px-5 text-xs font-semibold uppercase tracking-[0.22em] transition-colors duration-300",
-											useDarkHeroText
-												? "border-[color:rgba(11,11,11,0.24)] text-[color:var(--editorial-ink)] hover:bg-[color:rgba(11,11,11,0.06)]"
-												: "border-white/20 text-[color:var(--editorial-paper)] hover:bg-white/8",
-										].join(" ")}
-									>
-										{sarau.hero?.secondaryCtaLabel || "Memória do Sarau"}
-									</YnsLink>
-								</div>
-								{signals.length > 0 ? (
-									<div className="flex flex-wrap gap-2 pt-2">
-										{signals.map((signal) => (
-											<span
-												key={signal}
-												className={[
-													"border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]",
-													useDarkHeroText
-														? "border-[color:rgba(11,11,11,0.2)] text-[color:var(--editorial-muted)]"
-														: "border-[color:rgba(247,244,239,0.22)] text-[color:rgba(247,244,239,0.72)]",
-												].join(" ")}
-											>
-												{signal}
-											</span>
-										))}
-									</div>
-								) : null}
-							</div>
-						</EditorialShell>
-					</section>
-				</Reveal>
+			<main className="flex flex-1 flex-col">
+				{/* Hero — ink */}
+				<SlBand
+					tone="ink"
+					innerClassName="flex flex-wrap items-end justify-between gap-8 px-4 py-14 sm:px-8 lg:px-12"
+				>
+					<div className="flex max-w-[52ch] flex-col gap-3.5">
+						<SlEyebrow onInk>{sarau.hero?.eyebrow || t("nav.sarau")}</SlEyebrow>
+						<h1 className="sl-head m-0 text-[clamp(38px,6vw,var(--sl-size-hero-md))] leading-[0.95]">
+							{sarau.hero?.title || t("sarau.heroTitle")}
+						</h1>
+						<p className="m-0 max-w-[48ch] text-[var(--sl-size-lead)] leading-[1.75] text-[color:var(--sl-text-on-ink-muted)]">
+							{sarau.hero?.body || t("sarau.heroBody")}
+						</p>
+						<div className="flex flex-wrap gap-3 pt-2.5">
+							<SlButton
+								href={sarau.hero?.primaryCtaHref || "/events"}
+								variant="primary"
+								className="bg-[color:var(--sl-paper)] text-[color:var(--sl-ink)] hover:bg-[color:var(--sl-sand)]"
+							>
+								{sarau.hero?.primaryCtaLabel || "Próxima edição"}
+							</SlButton>
+							<SlButton href={sarau.hero?.secondaryCtaHref || "/events"} variant="secondary" onInk>
+								{sarau.hero?.secondaryCtaLabel || "Memória do Sarau"}
+							</SlButton>
+						</div>
+					</div>
+					<div className="flex flex-none flex-wrap gap-2">
+						{heroSignals.map((signal) => (
+							<span
+								key={signal}
+								className="inline-flex h-[var(--sl-h-chip)] items-center border border-[color:var(--sl-line-on-ink-hi)] px-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-[color:var(--sl-text-on-ink)]"
+							>
+								{signal}
+							</span>
+						))}
+					</div>
+				</SlBand>
 
-				<EditorialShell className="grid gap-8 py-10 lg:grid-cols-[1fr_1fr] lg:items-start">
-					<Reveal>
-						<div className="space-y-4">
-							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">Agenda</EditorialEyebrow>
-							<h2 className="max-w-3xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
-								Próxima edição e encontros recentes.
+				{/* Agenda — paper */}
+				<SlBand
+					tone="paper"
+					innerClassName="grid gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-start lg:px-12"
+				>
+					<div className="flex flex-col gap-4">
+						<SlEyebrow>{sarau.agenda?.eyebrow || "Agenda"}</SlEyebrow>
+						<div className="border-b border-[color:var(--sl-line-hairline)] pb-5">
+							<h2 className="sl-head m-0 text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
+								{sarau.agenda?.title || "Próxima edição e encontros recentes"}
 							</h2>
 						</div>
-					</Reveal>
-					<Reveal delay={0.08}>
-						<div className="grid gap-8">
-							{agenda.map((event) => (
+						<SlProse
+							source={
+								sarau.agenda?.body ||
+								"Cada edição reforça a circulação entre livros, artistas convidadas, bibliotecas, instituições e leitoras recorrentes."
+							}
+							className="max-w-[44ch] text-[var(--sl-size-body)] leading-[1.7] text-[color:var(--sl-text-muted)]"
+						/>
+					</div>
+					<div className="flex flex-col gap-6">
+						{agenda.length > 0 ? (
+							agenda.map((event) => (
 								<div
 									key={event.slug}
-									className="grid gap-3 border-b border-[color:var(--editorial-border)] pb-6 sm:grid-cols-[5.5rem_1fr]"
+									className="grid gap-3 border-b border-[color:var(--sl-line-hairline)] pb-6 [grid-template-columns:5.5rem_minmax(0,1fr)]"
 								>
-									<div className="text-3xl font-black text-[color:var(--editorial-accent)]">
-										{event.period?.toUpperCase() || "AGENDA"}
-									</div>
-									<div>
-										<h3 className="text-2xl font-semibold">{event.title}</h3>
-										<div className="mt-1 text-sm text-[color:var(--editorial-muted)]">
-											<p>{event.location}</p>
+									<p className="sl-lbl m-0 text-[color:var(--sl-accent)]">{event.period || "Agenda"}</p>
+									<div className="flex flex-col gap-2">
+										<h3 className="sl-head m-0 text-[var(--sl-size-card-title)] leading-[1.05]">
+											{event.title}
+										</h3>
+										<div className="text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]">
+											{event.location ? <p className="m-0">{event.location}</p> : null}
 											<EditorialRichText source={event.summary} />
 										</div>
 									</div>
 								</div>
-							))}
-						</div>
-					</Reveal>
-				</EditorialShell>
+							))
+						) : (
+							<p className="m-0 border-b border-[color:var(--sl-line-hairline)] pb-6 text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]">
+								A agenda do Sarau será atualizada em breve.
+							</p>
+						)}
+						<YnsLink href="/events" className="sl-btn sl-btn-secondary self-start">
+							Ver agenda completa
+						</YnsLink>
+					</div>
+				</SlBand>
 
-				<section className="bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)]">
-					<EditorialShell className="grid gap-6 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-						<Reveal>
-							<div className="space-y-4">
-								<EditorialEyebrow className="text-[color:rgba(247,244,239,0.7)]">
-									Galeria / memória
-								</EditorialEyebrow>
-								<h2 className="max-w-2xl text-4xl leading-[0.95] font-black tracking-[-0.05em]">
-									Fotos grandes, vídeos, textos e registros.
-								</h2>
-								<EditorialRichText
-									source={sarau.why?.body || t("sarau.whyBody")}
-									className="max-w-2xl text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
-								/>
+				{/* Galeria / memória — ink */}
+				<SlBand
+					tone="ink"
+					innerClassName="grid gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-center lg:px-12"
+				>
+					<div className="flex flex-col gap-4">
+						<SlEyebrow onInk>{sarau.gallery?.eyebrow || "Galeria / memória"}</SlEyebrow>
+						<h2 className="sl-head m-0 max-w-[20ch] text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
+							{sarau.gallery?.title || "Fotos grandes, vídeos, textos e registros"}
+						</h2>
+						<SlProse
+							source={sarau.why?.body || sarau.gallery?.body || t("sarau.whyBody")}
+							className="max-w-[46ch] text-[var(--sl-size-body)] leading-[1.8] text-[color:var(--sl-text-on-ink-muted)]"
+						/>
+					</div>
+					<div className="grid gap-[var(--sl-grid-gap)] [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+						{notes.map((note, index) => (
+							<div
+								key={note.title}
+								className={
+									index === 1
+										? "flex min-h-[272px] flex-col justify-end p-5 text-[color:var(--sl-text)]"
+										: "flex min-h-[272px] flex-col justify-end border border-[color:var(--sl-line-on-ink)] p-5"
+								}
+								style={index === 1 ? { background: "var(--sl-surface-band)" } : undefined}
+							>
+								<p
+									className={
+										index === 1 ? "sl-lbl m-0" : "sl-lbl m-0 text-[color:var(--sl-text-on-ink-soft)]"
+									}
+								>
+									{note.title}
+								</p>
+								<p
+									className={
+										index === 1
+											? "m-0 mt-3 text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]"
+											: "m-0 mt-3 text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-on-ink-muted)]"
+									}
+								>
+									{note.body}
+								</p>
 							</div>
-						</Reveal>
-						<div className="grid gap-4 sm:grid-cols-3">
-							{notes.slice(1, 4).map((note, index) => (
-								<Reveal key={note.title} delay={0.08 * index}>
-									<LiftOnHover>
-										<div
-											className={
-												index === 1
-													? "flex min-h-[17rem] flex-col justify-end bg-[color:var(--editorial-beige)] p-5 text-[color:var(--editorial-ink)]"
-													: "flex min-h-[17rem] flex-col justify-end border border-white/30 bg-[color:rgba(247,244,239,0.08)] p-5"
-											}
-										>
-											<p
-												className={
-													index === 1
-														? "text-xs uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
-														: "text-xs uppercase tracking-[0.22em] text-[color:rgba(247,244,239,0.72)]"
-												}
-											>
-												{note.title}
-											</p>
-											<EditorialRichText
-												source={note.body}
-												className={
-													index === 1
-														? "mt-3 text-sm leading-7 text-[color:var(--editorial-muted)]"
-														: "mt-3 text-sm leading-7 text-[color:rgba(247,244,239,0.72)]"
-												}
-											/>
-										</div>
-									</LiftOnHover>
-								</Reveal>
-							))}
-						</div>
-					</EditorialShell>
-				</section>
+						))}
+					</div>
+				</SlBand>
 
-				<Reveal>
-					<section className="bg-[color:rgba(216,208,196,0.55)]">
-						<EditorialShell className="px-6 py-8 sm:px-8 sm:py-10">
-							<h2 className="max-w-4xl text-3xl leading-[1.05] font-black sm:text-4xl">
-								Eventos vivem aqui como agenda do Sarau, não como item principal do menu.
-							</h2>
-							<div className="mt-6 flex flex-wrap gap-3">
-								{continueLinks.map((link) => (
-									<YnsLink
-										key={link.href}
-										href={link.href}
-										className="inline-flex min-h-11 items-center justify-center border border-[color:var(--editorial-border)] px-5 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-white/45"
-									>
-										{link.label}
-									</YnsLink>
-								))}
-							</div>
-						</EditorialShell>
-					</section>
-				</Reveal>
-			</div>
+				{/* Continue band — sand */}
+				<SlBand
+					tone="sand"
+					innerClassName="flex flex-wrap items-center justify-between gap-6 px-4 py-12 sm:px-8 lg:px-12"
+				>
+					<h2 className="sl-head m-0 max-w-[34ch] text-[clamp(26px,3.4vw,var(--sl-size-section-sm))] leading-[1]">
+						Eventos vivem aqui como agenda do Sarau
+					</h2>
+					<div className="flex flex-wrap gap-3">
+						{continueLinks.map((link, index) => (
+							<SlButton key={link.href} href={link.href} variant={index === 0 ? "primary" : "secondary"}>
+								{link.label}
+							</SlButton>
+						))}
+					</div>
+				</SlBand>
+			</main>
 			<Footer />
 		</div>
 	);

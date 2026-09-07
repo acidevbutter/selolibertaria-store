@@ -16,12 +16,8 @@ import { IntlClientProvider } from "@/i18n/client";
 import { getMessages } from "@/i18n/server";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 
-const rubikDistressed = localFont({
-	src: "../../public/fonts/RubikDistressed-Regular.ttf",
-	variable: "--font-editorial-display",
-	display: "swap",
-});
-
+// Fertigo Pro — main headings (h1/h2) + body. Also the fallback for DCCAsh's
+// missing PT-BR accented glyphs (see src/styles/sl-tokens.css @font-face).
 const fertigoPro = localFont({
 	src: "../../public/fonts/FertigoPro-Regular.otf",
 	variable: "--font-editorial-body",
@@ -49,11 +45,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 	const [messages, initialCart] = await Promise.all([getMessages(), getCartAction()]);
 
 	return (
-		<html
-			lang="pt-BR"
-			suppressHydrationWarning
-			className={`h-full antialiased ${rubikDistressed.variable} ${fertigoPro.variable}`}
-		>
+		<html lang="pt-BR" suppressHydrationWarning className={`h-full antialiased ${fertigoPro.variable}`}>
 			<body className="display-font flex min-h-full flex-col bg-background text-foreground">
 				<ThemeProviderWrapper>
 					<IntlClientProvider messages={messages} locale="pt-BR">
