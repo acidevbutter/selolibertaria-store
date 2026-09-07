@@ -322,7 +322,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 							>
 								<p className="font-medium">Pagamento Pix em confirmação.</p>
 								<p className="mt-1 text-amber-800">
-									Seu pedido ficará disponível aqui assim que o Mercado Pago confirmar o pagamento.
+									Seu pedido ficará disponível aqui assim que a Asaas confirmar o pagamento.
 								</p>
 							</div>
 						) : null}

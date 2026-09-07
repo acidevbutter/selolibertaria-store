@@ -8,7 +8,7 @@ import { YnsLink } from "@/ui/yns-link";
  *
  * Presentational: tudo vem de `campaign`. Os placeholders `{price}` /
  * `{launchWindow}` do design viram props tipadas. As ações (checkout real,
- * link do Mercado Pago) estão especificadas em
+ * link de pagamento) estão especificadas em
  * `docs/prompts/pre-venda-01-landing.md`.
  */
 export function PreSaleLanding({ campaign }: { campaign: PreSaleCampaign }) {

@@ -1,9 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { recordMercadoPagoCheckout } from "@/actions/mercado-pago-order-actions";
-import { finalizeCheckoutCleanup } from "@/actions/order-actions";
+import { useEffect, useState } from "react";
+import { finalizeAsaasCheckout } from "@/actions/checkout-actions";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import { isResolvedCheckoutStatus, isWarningCheckoutStatus } from "@/lib/payment-status";
@@ -39,12 +38,11 @@ export default function ProcessingPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const orderId = searchParams.get("order");
-	const paymentId = searchParams.get("mp_payment");
 	const isGuest = searchParams.get("guest") === "1";
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
+	const [accountEmailSent, setAccountEmailSent] = useState(false);
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
 	const { refreshCart, closeCart } = useCart();
-	const ranRef = useRef(false);
 	const t = useTranslations("Checkout.processing");
 
 	useEffect(() => {
@@ -72,7 +70,9 @@ export default function ProcessingPage() {
 		}
 
 		async function syncOnce() {
-			const result = await recordMercadoPagoCheckout({ orderId, paymentId });
+			if (!orderId?.startsWith("ord_")) return "resolved" as const;
+			const result = await finalizeAsaasCheckout({ orderId });
+			if (cancelled) return "resolved" as const;
 			if ("error" in result) {
 				if (result.status && isWarningCheckoutStatus(result.status)) {
 					setWarningReason(result.status === "disputed" ? "disputed" : "timeout");
@@ -92,12 +92,7 @@ export default function ProcessingPage() {
 			}
 
 			if (result.cartCleared) {
-				try {
-					const cleanup = await finalizeCheckoutCleanup();
-					if ("ok" in cleanup) closeCart();
-				} catch {
-					// The server-side order remains authoritative.
-				}
+				closeCart();
 			}
 			safelyRefreshCart(refreshCart);
 
@@ -109,7 +104,9 @@ export default function ProcessingPage() {
 			}
 
 			setPhase("finalized");
-			scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
+			setAccountEmailSent(result.accountEmailSent);
+			if (hardTimeoutTimer) clearTimeout(hardTimeoutTimer);
+			if (!isGuest) scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
 			return "resolved" as const;
 		}
 
@@ -125,8 +122,6 @@ export default function ProcessingPage() {
 			pollTimer = setTimeout(() => void poll(), PROCESSING_POLL_INTERVAL_MS);
 		}
 
-		if (ranRef.current) return;
-		ranRef.current = true;
 		hardTimeoutTimer = setTimeout(() => {
 			if (cancelled) return;
 			setPhase("warning");
@@ -134,14 +129,14 @@ export default function ProcessingPage() {
 			replaceLocation(router, getSuccessPath());
 		}, PROCESSING_TIMEOUT_MS);
 
-		if (orderId?.startsWith("ord_") || paymentId) void poll();
+		if (orderId?.startsWith("ord_")) void poll();
 		else replaceLocation(router, "/user?section=purchases");
 
 		return () => {
 			cancelled = true;
 			clearTimers();
 		};
-	}, [router, orderId, paymentId, closeCart, refreshCart]);
+	}, [router, orderId, closeCart, refreshCart, isGuest]);
 
 	const done = phase === "finalized";
 	const isWarning = phase === "warning";
@@ -177,7 +172,11 @@ export default function ProcessingPage() {
 						<>
 							{description}
 							{isGuest && done ? (
-								<> Sua conta já está pronta — o link seguro para definir a senha vai por e-mail.</>
+								<>
+									{accountEmailSent
+										? " Enviamos um link seguro por e-mail para acessar sua compra."
+										: " Seu pagamento foi confirmado, mas não foi possível enviar o acesso por e-mail. Entre em contato com o suporte informando o número do pedido."}
+								</>
 							) : null}
 						</>
 					}

@@ -12,14 +12,6 @@ export const env = createEnv({
 		OAUTH_STATE_SECRET: z.string().min(32),
 	},
 	client: {
-		// Active checkout payment provider. Mercado Pago stays in the codebase but is
-		// only wired when this is "mercado_pago"; "asaas" routes to the Asaas form,
-		// "disabled" shows a maintenance notice.
-		NEXT_PUBLIC_PAYMENTS_PROVIDER: z
-			.enum(["mercado_pago", "asaas", "disabled"])
-			.optional()
-			.default("mercado_pago"),
-		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: z.string().optional(),
 		NEXT_PUBLIC_ASAAS_ENV: z.enum(["sandbox", "production"]).optional().default("sandbox"),
 		NEXT_PUBLIC_URL: z.string().url().optional(),
 
@@ -42,8 +34,6 @@ export const env = createEnv({
 		FASTAPI_API_URL: process.env.FASTAPI_API_URL,
 		FASTAPI_INTERNAL_API_KEY: process.env.FASTAPI_INTERNAL_API_KEY,
 
-		NEXT_PUBLIC_PAYMENTS_PROVIDER: process.env.NEXT_PUBLIC_PAYMENTS_PROVIDER,
-		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
 		NEXT_PUBLIC_ASAAS_ENV: process.env.NEXT_PUBLIC_ASAAS_ENV,
 		NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
 		NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,

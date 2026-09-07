@@ -10,7 +10,7 @@ export interface SlInstallmentOption {
 /**
  * Installment options, stacked. System rule: the store never offers interest —
  * if you see "com juros" here, the data is wrong. Purely informational alongside
- * the Mercado Pago Brick, which owns the real selection.
+ * the hosted checkout, which owns the real selection.
  */
 export function SlInstallmentList({
 	options,

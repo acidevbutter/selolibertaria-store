@@ -143,7 +143,7 @@ export default async function SingleProductPage(props: {
 	const trust = [
 		"Envio em até 2 dias úteis após a confirmação, com rastreio pelo Melhor Envio.",
 		"Troca ou devolução em até 7 dias após o recebimento.",
-		"Pagamento processado pelo Mercado Pago — não guardamos dados de cartão.",
+		"Pagamento processado pela Asaas em ambiente hospedado e seguro.",
 	];
 
 	return (

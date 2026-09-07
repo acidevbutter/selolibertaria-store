@@ -16,7 +16,6 @@ export async function Footer() {
 		{ label: "Pix", src: "/images/icons/pix.svg" },
 		{ label: "Visa", src: "/images/icons/visa.svg" },
 		{ label: "Mastercard", src: "/images/icons/mastercard.svg" },
-		{ label: "Mercado Pago", src: "/images/icons/mercado-pago.svg" },
 	];
 
 	const footer = globalContent.footer ?? null;

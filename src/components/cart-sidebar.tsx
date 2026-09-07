@@ -236,7 +236,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 								Continuar comprando
 							</button>
 							<p className="m-0 text-center text-[12px] leading-[1.6] text-[color:var(--sl-text-soft)]">
-								Pagamento seguro Mercado Pago · Pix, cartão em até 6x ou boleto
+								Pagamento seguro pela Asaas
 							</p>
 						</div>
 					</>

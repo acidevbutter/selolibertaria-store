@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Checkout: o fluxo público cria cobrança PIX na Asaas pelo backend e encaminha para a página hospedada; a confirmação continua no backend/webhook. A homologação Sandbox ainda depende de credencial, certificado mTLS, migration e webhook configurados.
+
 - Pré-venda: o modo público agora é persistido e controlado em `/admin/pre-venda`; `PRESALE_MODE` não participa mais da decisão.
 - Pré-venda: o admin agora agenda página e modal global separadamente, com data de estreia aplicada à contagem regressiva.
 

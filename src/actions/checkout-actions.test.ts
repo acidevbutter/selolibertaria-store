@@ -1,47 +1,97 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const fetchMock = vi.fn();
-
-vi.mock("server-only", () => ({}));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), shipping: vi.fn(), fetch: vi.fn() }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined, set: vi.fn() }) }));
+vi.mock("@/actions/order-actions", () => ({ finalizeCheckoutCleanup: vi.fn() }));
 vi.mock("@/env.mjs", () => ({
-	env: {
-		FASTAPI_API_URL: "http://fastapi.test",
-		FASTAPI_INTERNAL_API_KEY: "internal",
-		NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: "public-key",
-	},
+	env: { FASTAPI_API_URL: "http://backend", FASTAPI_INTERNAL_API_KEY: "internal" },
 }));
-vi.mock("@/lib/api-auth", () => ({
-	requireAuth: vi.fn().mockResolvedValue({ error: new Response(null, { status: 401 }) }),
+vi.mock("@/lib/api-auth", () => ({ requireAuth: async () => ({ error: true }) }));
+vi.mock("@/lib/checkout/cart-snapshot", () => ({ getCheckoutSnapshot: mocks.snapshot }));
+vi.mock("@/lib/shipping", () => ({
+	resolveShippingQuotesForDestination: mocks.shipping,
+	toShippingRate: (quote: { amount: number }) => ({ fixed_amount: { amount: quote.amount } }),
 }));
-vi.mock("@/lib/cart-cookies", () => ({ getCartId: vi.fn().mockResolvedValue("cart-cookie") }));
-vi.mock("next/headers", () => ({ cookies: vi.fn().mockResolvedValue({ get: () => undefined }) }));
+vi.mock("@/lib/cart-cookies", () => ({ getCartId: async () => "guest-1" }));
 
-describe("continuePendingMercadoPagoPixCheckout", () => {
+import { createAsaasCheckout } from "./checkout-actions";
+
+const buyer = {
+	fullName: "Pessoa Teste",
+	email: "pessoa@example.com",
+	cpf: "12345678909",
+	phone: "11999999999",
+};
+
+describe("checkout Asaas", () => {
 	beforeEach(() => {
-		vi.resetModules();
-		fetchMock.mockReset();
-		vi.stubGlobal("fetch", fetchMock);
+		vi.clearAllMocks();
+		vi.stubGlobal("fetch", mocks.fetch);
+		mocks.snapshot.mockResolvedValue({
+			ok: true,
+			snapshot: {
+				checkoutOwnerKey: "guest:guest-1",
+				userId: null,
+				user: {},
+				cartHash: "cart-1",
+				currency: "BRL",
+				subtotal: 5000,
+				discountTotal: 500,
+				amountTotal: 4500,
+				items: [],
+			},
+		});
+		mocks.shipping.mockResolvedValue({ selected: { amount: 0 }, error: null });
+		mocks.fetch.mockResolvedValue(
+			new Response(
+				JSON.stringify({
+					order_id: "ord_1234",
+					status: "pending",
+					asaas_charge_id: "pay_1",
+					redirect_url: "https://sandbox.asaas.com/i/pay_1",
+					pix_copy_paste: null,
+				}),
+				{ status: 201 },
+			),
+		);
 	});
 
-	it("finaliza o acompanhamento no FastAPI sem aprovar o Pix localmente", async () => {
-		fetchMock.mockResolvedValue(
-			new Response(JSON.stringify({ status: "processing", setup_password_required: true }), {
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			}),
-		);
+	it("exige confirmação do total antes de emitir cobrança", async () => {
+		const result = await createAsaasCheckout({ buyer, deliveryMethod: "pickup" });
+		expect(result).toMatchObject({ needsConfirmation: true, amountTotal: 4500 });
+		expect(mocks.fetch).not.toHaveBeenCalled();
+	});
 
-		const { continuePendingMercadoPagoPixCheckout } = await import("@/actions/checkout-actions");
-		await expect(continuePendingMercadoPagoPixCheckout({ orderId: "ord_123" })).resolves.toEqual({
+	it("envia centavos e interpreta o contrato snake_case", async () => {
+		const result = await createAsaasCheckout({ buyer, deliveryMethod: "pickup", confirmedAmount: 4500 });
+		expect(result).toMatchObject({
 			ok: true,
-			redirectUrl: "/user?section=purchases&order=ord_123&pendingPayment=1&setupPassword=1",
+			asaasChargeId: "pay_1",
+			status: "pending",
+			redirectUrl: "https://sandbox.asaas.com/i/pay_1",
 		});
-		expect(fetchMock).toHaveBeenCalledWith(
-			"http://fastapi.test/checkout/intents/ord_123/finalize",
-			expect.objectContaining({
-				method: "POST",
-				headers: expect.any(Headers),
-			}),
-		);
+		const [url, request] = mocks.fetch.mock.calls[0]!;
+		expect(url).toBe("http://backend/checkout/intents");
+		expect(JSON.parse(request.body)).toMatchObject({
+			amount_total: 4500,
+			delivery_method: "pickup",
+			delivery_address: null,
+		});
+		expect(request.headers.get("X-Internal-API-Key")).toBe("internal");
+	});
+
+	it("bloqueia entrega sem endereço completo", async () => {
+		expect(
+			await createAsaasCheckout({ buyer, deliveryMethod: "new-address", confirmedAmount: 4500 }),
+		).toHaveProperty("error");
+		expect(mocks.fetch).not.toHaveBeenCalled();
+	});
+
+	it("não emite cobrança quando o frete falha", async () => {
+		mocks.shipping.mockResolvedValue({ selected: null, error: "Frete indisponível" });
+		expect(await createAsaasCheckout({ buyer, deliveryMethod: "pickup", confirmedAmount: 4500 })).toEqual({
+			error: "Frete indisponível",
+		});
+		expect(mocks.fetch).not.toHaveBeenCalled();
 	});
 });
