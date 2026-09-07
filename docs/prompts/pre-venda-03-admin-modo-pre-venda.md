@@ -1,5 +1,15 @@
 # Prompt 03 — Admin: ativar/desativar o "modo pré-venda"
 
+> Nota de implementação: `PRESALE_MODE` foi removida da decisão em 2026-09-06.
+> O toggle persistido no admin é a fonte de verdade. As referências a override por
+> ambiente abaixo pertencem à proposta original e não devem ser reaplicadas.
+
+> Estado implementado (2026-09-06): `current.preSale` agora mantém `pageEnabled`,
+> `popupEnabled`, `launchAt`, `windowStartAt` e `windowEndAt`. A landing e o modal
+> global são controles independentes e só ficam ativos dentro da janela. O conteúdo
+> da campanha continua estático nesta fase; e-mail, templates e Butter Relay ficam
+> fora deste slice.
+
 ## Contexto
 
 Hoje o modo pré-venda é ligado só por variável de ambiente:

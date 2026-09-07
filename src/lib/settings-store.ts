@@ -4,7 +4,7 @@ import { cache } from "react";
 import { env } from "@/env.mjs";
 import { type AppLocale, DEFAULT_LOCALE, getDefaultCountryForLocale, matchLocale } from "@/i18n/config";
 import { getCountryOption } from "@/lib/location/countries";
-import type { SettingsDoc } from "@/lib/settings";
+import type { PreSaleModeSettings, SettingsDoc } from "@/lib/settings";
 
 const SETTINGS_READ_TIMEOUT_MS = 1800;
 
@@ -71,4 +71,20 @@ export const getPaymentBoletoEnabledSetting = cache(async (): Promise<boolean> =
 	} catch {
 		return false;
 	}
+});
+
+/** Pré-venda é uma decisão editorial persistida; ausente significa desligada. */
+export const getPreSaleModeSettings = cache(async (): Promise<PreSaleModeSettings> => {
+	try {
+		const settings = await getSettingsDoc();
+		return settings?.current?.preSale ?? {};
+	} catch {
+		return {};
+	}
+});
+
+/** @deprecated Use `getPreSaleModeSettings` + `resolvePreSaleAvailability`. */
+export const getPreSaleModeSetting = cache(async (): Promise<boolean> => {
+	const { pageEnabled, enabled } = await getPreSaleModeSettings();
+	return pageEnabled ?? enabled ?? false;
 });

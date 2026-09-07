@@ -12,6 +12,7 @@ function isPublicApiPath(pathname: string) {
 		pathname === "/api/auth/login/form" ||
 		pathname === "/api/auth/verify" ||
 		pathname === "/api/auth/register" ||
+		pathname === "/api/auth/email-available" ||
 		pathname === "/api/auth/forgot-password" ||
 		pathname === "/api/auth/reset-password" ||
 		pathname === "/api/cart" ||

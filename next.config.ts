@@ -4,6 +4,10 @@ import type { NextConfig } from "next/types";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const isProductionBuild = process.env.NODE_ENV === "production";
+const blobHosts = (process.env.BUTTER_BLOB_PUBLIC_HOST ?? "localhost,127.0.0.1")
+	.split(",")
+	.map((s) => s.trim())
+	.filter(Boolean);
 
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
@@ -17,7 +21,7 @@ const nextConfig: NextConfig = {
 		},
 	},
 	images: {
-		remotePatterns: [{ hostname: "res.cloudinary.com" }],
+		remotePatterns: [{ hostname: "res.cloudinary.com" }, ...blobHosts.map((hostname) => ({ hostname }))],
 		formats: ["image/avif", "image/webp"],
 	},
 	transpilePackages: ["next-mdx-remote"],

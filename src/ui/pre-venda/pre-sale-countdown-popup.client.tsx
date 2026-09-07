@@ -7,6 +7,8 @@ import { YnsLink } from "@/ui/yns-link";
 
 type Remaining = { days: string; hours: string; minutes: string; seconds: string; done: boolean };
 
+const ZERO_REMAINING: Remaining = { days: "00", hours: "00", minutes: "00", seconds: "00", done: false };
+
 const pad = (n: number) => String(Math.max(0, n)).padStart(2, "0");
 
 function computeRemaining(target: number, now: number): Remaining {
@@ -41,10 +43,13 @@ function computeRemaining(target: number, now: number): Remaining {
 export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign }) {
 	const titleId = useId();
 	const storageKey = `presale:${campaign.slug}:popup-dismissed-until`;
+	// `null` = sem data de estreia no admin → o modal de contagem não abre.
 	const target = useMemo(() => resolveCountdownTarget(campaign), [campaign]);
 
 	const [open, setOpen] = useState(false);
-	const [remaining, setRemaining] = useState<Remaining>(() => computeRemaining(target, Date.now()));
+	const [remaining, setRemaining] = useState<Remaining>(() =>
+		target === null ? ZERO_REMAINING : computeRemaining(target, Date.now()),
+	);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const lastFocusedRef = useRef<HTMLElement | null>(null);
 
@@ -60,6 +65,7 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 
 	// Abertura automática, respeitando o "snooze" salvo.
 	useEffect(() => {
+		if (target === null) return;
 		let snoozedUntil = 0;
 		try {
 			snoozedUntil = Number(window.localStorage.getItem(storageKey)) || 0;
@@ -69,11 +75,11 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 		if (Date.now() < snoozedUntil) return;
 		const id = window.setTimeout(() => setOpen(true), campaign.popup.autoOpenDelayMs);
 		return () => window.clearTimeout(id);
-	}, [campaign.popup.autoOpenDelayMs, storageKey]);
+	}, [campaign.popup.autoOpenDelayMs, storageKey, target]);
 
-	// Tick da contagem regressiva (só enquanto aberto).
+	// Tick da contagem regressiva (só enquanto aberto e com data de estreia).
 	useEffect(() => {
-		if (!open) return;
+		if (!open || target === null) return;
 		const id = window.setInterval(() => setRemaining(computeRemaining(target, Date.now())), 1000);
 		setRemaining(computeRemaining(target, Date.now()));
 		return () => window.clearInterval(id);
@@ -97,7 +103,7 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 		};
 	}, [open, dismiss]);
 
-	if (!open) return null;
+	if (!open || target === null) return null;
 
 	const cells: Array<[string, string]> = [
 		[remaining.days, "dias"],

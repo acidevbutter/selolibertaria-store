@@ -2,25 +2,27 @@
 @import "../styles/glitch.css";
 @import "../styles/sl-tokens.css";
 
-/* Neutral typography helpers for the generic selolibertaria baseline. */
+/* Two faces only: Fertigo (--font-editorial-body) for headings + body,
+   DCCAsh (--font-editorial-display) for prices/numbers/accents, with Fertigo
+   as its fallback for missing PT-BR glyphs. */
 .display-font {
-	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 }
 
-/* Distinctive editorial font, reserved for the site's main titles (not nav/menu/admin). */
+/* Main titles — Fertigo (canvas: main headings h1/h2). */
 .title-font {
-	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 }
 
 .price-font {
-	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-display), var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 	font-synthesis: none;
 	letter-spacing: -0.015em;
 	/* Keep price sizing and weight inherited unless explicitly set */
 }
 
 .editorial-serif {
-	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 	font-synthesis: none;
 	letter-spacing: -0.015em;
 }
@@ -136,15 +138,15 @@
 }
 
 @utility display-font {
-	font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 }
 
 @utility title-font {
-	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 }
 
 @utility editorial-serif {
-	font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 	font-synthesis: none;
 	letter-spacing: -0.015em;
 }
@@ -238,7 +240,7 @@
 	}
 	body {
 		@apply bg-background text-foreground;
-		font-family: var(--font-editorial-body), "Segoe UI", sans-serif;
+		font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 		background:
 			radial-gradient(circle at top, rgba(122, 30, 34, 0.08), transparent 30%),
 			linear-gradient(180deg, var(--editorial-paper) 0%, #f3ede4 100%);
@@ -249,7 +251,7 @@
 	h2,
 	h3,
 	.seo-h1 {
-		font-family: var(--font-editorial-display), "Segoe UI", sans-serif;
+		font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 		font-synthesis: none;
 		letter-spacing: -0.015em;
 	}

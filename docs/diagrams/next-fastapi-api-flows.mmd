@@ -25,7 +25,7 @@ flowchart LR
         mp["Mercado Pago<br/>Payments / webhooks"]
         relay["Butter Relay<br/>Transactional e-mail"]
         melhor["Melhor Envio<br/>Freight"]
-        cloudinary["Cloudinary<br/>Media"]
+        butter_blob["butter_blob<br/>Media"]
         postal["ViaCEP / BrasilAPI<br/>Postal lookup"]
         oauth["OAuth providers"]
     end
@@ -59,7 +59,7 @@ flowchart LR
     cron -->|"manual reconcile"| commerce
     shipping --> melhor
     shipping --> postal
-    admin --> cloudinary
+    admin --> butter_blob
     workers --> relay
     admin -->|"read / retry logs"| relay
 
@@ -82,6 +82,6 @@ flowchart LR
     class browser,ui,api,auth,cron nextNode
     class authapi,catalog,commerce,shipping,admin,workers apiNode
     class postgres dataNode
-    class mp,relay,melhor,cloudinary,postal,oauth providerNode
+    class mp,relay,melhor,butter_blob,postal,oauth providerNode
     class forbidden warningNode
     class checkout resultNode

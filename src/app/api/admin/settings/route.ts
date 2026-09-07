@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { env } from "@/env.mjs";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin, requireCapability } from "@/lib/api-auth";
 
 async function forward(path: string, init: RequestInit = {}) {
 	const token = (await cookies()).get("session")?.value;
@@ -22,9 +22,10 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-	const { error } = await requireAdmin();
-	if (error) return error;
 	const body = await request.json().catch(() => null);
+	const requiresPreSaleWrite = body && typeof body === "object" && !Array.isArray(body) && "preSale" in body;
+	const { error } = requiresPreSaleWrite ? await requireCapability("presale.write") : await requireAdmin();
+	if (error) return error;
 	if (!body || typeof body !== "object" || Array.isArray(body)) {
 		return NextResponse.json(
 			{ error: "Payload de configurações inválido", code: "ADMIN_SETTINGS_INVALID_REQUEST" },

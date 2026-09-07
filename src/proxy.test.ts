@@ -59,6 +59,12 @@ describe("proxy public auth paths", () => {
 		expect(res.status).toBe(200);
 	});
 
+	it("allows the email-availability check during signup without a session", async () => {
+		const res = await proxy(new NextRequest("http://localhost/api/auth/email-available", { method: "POST" }));
+
+		expect(res.status).toBe(200);
+	});
+
 	it("still protects private api routes", async () => {
 		const res = await proxy(new NextRequest("http://localhost/api/user"));
 

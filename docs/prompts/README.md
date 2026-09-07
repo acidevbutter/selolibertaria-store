@@ -12,7 +12,7 @@ O que **já existe** no repositório (camada visual / presentational):
 
 | Arquivo | Papel |
 | --- | --- |
-| `src/lib/pre-sale.ts` | Tipos `PreSaleCampaign`, campanha estática `LFBF_CAMPAIGN`, flag `isPreSaleModeEnabled()` (lê `PRESALE_MODE`), helpers `getPreSaleCampaign` / `resolveCountdownTarget` / `fillCampaignText`. |
+| `src/lib/pre-sale.ts` | Tipos `PreSaleCampaign`, campanha estática `LFBF_CAMPAIGN`, flag `isPreSaleModeEnabled()` (lê a configuração persistida do admin), helpers `getPreSaleCampaign` / `resolveCountdownTarget` / `fillCampaignText`. |
 | `src/ui/pre-venda/pre-sale-landing.tsx` | Composição completa da tela + blocos reutilizáveis `PreSaleHeroBanner` (A) e `PreSaleHighlightCard` (B). |
 | `src/ui/pre-venda/pre-sale-countdown-popup.client.tsx` | Pop-up de contagem regressiva: auto-open, snooze via `localStorage`, Esc / backdrop / ✕. |
 | `src/app/(store)/pre-venda/little-fish-big-fish/page.tsx` | Rota. `notFound()` quando o modo pré-venda está desligado. |
