@@ -7,9 +7,17 @@ export function isLegacyHostedImageUrl(src: string) {
 	}
 }
 
+export function isButterBlobPublicUrl(src: string) {
+	try {
+		return new URL(src).pathname.includes("/v1/public/");
+	} catch {
+		return false;
+	}
+}
+
 export function getProductImageOptimizationProps(src: string) {
 	return {
-		unoptimized: isLegacyHostedImageUrl(src),
+		unoptimized: isLegacyHostedImageUrl(src) || isButterBlobPublicUrl(src),
 	};
 }
 
