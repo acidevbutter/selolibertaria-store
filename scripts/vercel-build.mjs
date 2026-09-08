@@ -29,35 +29,11 @@ function runCommand(command, args, options = {}) {
 	return true;
 }
 
-const isVercelProduction = process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
-const shouldRunAdminSeed = isVercelProduction;
-const shouldRunEditorialMigrations = isVercelProduction && process.env.RUN_EDITORIAL_MIGRATIONS === "true";
-
-if (shouldRunAdminSeed) {
-	console.log("[build] admin seed: running");
-	const seeded = runCommand("node", ["scripts/seed-admin.mjs"], {
-		continueOnError: true,
-	});
-
-	if (!seeded) {
-		console.log("[build] admin seed: failed, continuing build");
-	}
-} else {
-	console.log("[build] admin seed: skipped");
-}
-
-if (shouldRunEditorialMigrations) {
-	console.log("[build] editorial migrations: running");
-	const migrated = runCommand("tsx", ["scripts/migrate-selo-editorial-content.ts"], {
-		continueOnError: true,
-	});
-
-	if (!migrated) {
-		console.log("[build] editorial migrations: failed, continuing build");
-	}
-} else {
-	console.log("[build] editorial migrations: skipped");
-}
+// Admin seed and editorial content migration used to run here, gated on
+// VERCEL_ENV=production. Both scripts were removed in 6dc7ec5 as part of the
+// Mongo -> Postgres cutover; their replacements live in the backend
+// (backend/scripts/create_admin.py, backend/app/migrations) and run there
+// instead, not at frontend build time.
 
 console.log("[build] next build: running");
 runCommand("next", ["build", "--webpack"]);

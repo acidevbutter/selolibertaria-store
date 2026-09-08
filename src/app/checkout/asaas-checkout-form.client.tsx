@@ -7,6 +7,7 @@ import { formatCheckoutPhone, formatCpf, getCheckoutBuyerFieldErrors } from "@/l
 import type { CheckoutDeliveryMethod } from "@/lib/shipping-core";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { SlButton } from "@/ui/sl/sl-button";
+import { SlField } from "@/ui/sl/sl-field";
 
 export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) {
 	const [pending, startTransition] = useTransition();
@@ -62,7 +63,7 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 	}
 
 	return (
-		<form className="flex flex-col gap-4" onSubmit={submit} onChange={() => setQuotedAmount(undefined)}>
+		<form className="flex flex-col gap-5" onSubmit={submit} onChange={() => setQuotedAmount(undefined)}>
 			<div>
 				<p className="sl-eyebrow m-0 text-[color:var(--sl-accent)]">Pagamento</p>
 				<h1 className="sl-head mt-2 text-[32px] leading-[0.98]">Finalizar na Asaas</h1>
@@ -70,35 +71,40 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 					Escolha o meio de pagamento no ambiente seguro da Asaas, entre as opções disponíveis.
 				</p>
 			</div>
-			<label className="flex flex-col gap-1.5 text-[13px]">
-				Nome completo
-				<input required value={fullName} onChange={(event) => setFullName(event.target.value)} />
-			</label>
-			<label className="flex flex-col gap-1.5 text-[13px]">
-				E-mail
-				<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-			</label>
-			<label className="flex flex-col gap-1.5 text-[13px]">
-				CPF
-				<input
-					required
-					inputMode="numeric"
-					value={cpf}
-					onChange={(event) => setCpf(formatCpf(event.target.value))}
-				/>
-			</label>
-			<label className="flex flex-col gap-1.5 text-[13px]">
-				Telefone
-				<input
-					required
-					inputMode="tel"
-					value={phone}
-					onChange={(event) => setPhone(formatCheckoutPhone(event.target.value))}
-				/>
-			</label>
-			<label className="flex flex-col gap-1.5 text-[13px]">
-				Entrega
+			<SlField
+				label="Nome completo"
+				required
+				value={fullName}
+				onChange={(event) => setFullName(event.target.value)}
+			/>
+			<SlField
+				label="E-mail"
+				required
+				type="email"
+				value={email}
+				onChange={(event) => setEmail(event.target.value)}
+			/>
+			<SlField
+				label="CPF"
+				required
+				inputMode="numeric"
+				value={cpf}
+				onChange={(event) => setCpf(formatCpf(event.target.value))}
+			/>
+			<SlField
+				label="Telefone"
+				required
+				inputMode="tel"
+				value={phone}
+				onChange={(event) => setPhone(formatCheckoutPhone(event.target.value))}
+			/>
+			<div className="flex flex-col gap-2">
+				<label htmlFor="asaas-checkout-delivery" className="sl-lbl">
+					Entrega
+				</label>
 				<select
+					id="asaas-checkout-delivery"
+					className="sl-field"
 					value={deliveryMethod}
 					onChange={(event) => setDeliveryMethod(event.target.value as CheckoutDeliveryMethod)}
 				>
@@ -108,10 +114,10 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 					<option value="new-address">Usar um novo endereço</option>
 					<option value="pickup">Retirar na loja</option>
 				</select>
-			</label>
+			</div>
 			{deliveryMethod === "new-address" ? (
-				<fieldset className="flex flex-col gap-3">
-					<legend>Endereço de entrega</legend>
+				<fieldset className="m-0 flex flex-col gap-4 border-0 p-0">
+					<legend className="sl-lbl p-0">Endereço de entrega</legend>
 					<AddressFields
 						idPrefix="asaas-checkout"
 						value={address}
@@ -122,11 +128,13 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 						required
 						countryMode="br-only"
 					/>
-					<p>Entregamos somente no Brasil. O frete será calculado antes de emitir a cobrança.</p>
+					<p className="m-0 text-[13px] text-[color:var(--sl-text-muted)]">
+						Entregamos somente no Brasil. O frete será calculado antes de emitir a cobrança.
+					</p>
 				</fieldset>
 			) : null}
 			{message ? <p className="m-0 text-[13px] text-[color:var(--sl-accent)]">{message}</p> : null}
-			<SlButton type="submit" disabled={pending} className="w-full justify-center">
+			<SlButton type="submit" variant="buy" disabled={pending} className="w-full justify-center">
 				{pending
 					? "Preparando pagamento…"
 					: quotedAmount === undefined

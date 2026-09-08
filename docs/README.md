@@ -27,6 +27,7 @@ Material comercial/institucional (não técnico).
 - `gerar_proposta_cliente.py`
 
 ## Outras pastas já existentes (não tocadas nesta reorganização)
+- `qa/` — runbooks validados e a matriz de regressão do frontend.
 - `architecture/` — mapas de arquitetura (ex.: migração FastAPI).
 - `diagrams/` — diagramas `.mmd`.
 - `mercado-pago-orders-api-migration/` — migração da API de pagamentos.

@@ -62,11 +62,11 @@ export function SlHomeManifesto({
 								<p className="m-0 text-[11px] uppercase tracking-[0.2em] text-[color:var(--sl-text-on-ink-quiet)]">
 									{stat.label}
 								</p>
-								<p className="sl-price m-0 mt-1.5 text-[20px]">{stat.value}</p>
+								<p className="sl-price m-0 mt-1.5 text-[24px]">{stat.value}</p>
 							</div>
 						))}
 					</div>
-					<SlButton href={sarau.ctaHref} variant="buy" className="self-start">
+					<SlButton href={sarau.ctaHref} variant="buy" size="md" className="self-start">
 						{sarau.ctaLabel}
 					</SlButton>
 				</div>
