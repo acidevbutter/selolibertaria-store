@@ -8,7 +8,7 @@
 	"packageManager": "yarn@1.22.22",
 	"scripts": {
 		"dev": "next dev --webpack -p 3001",
-		"build": "node scripts/vercel-build.mjs",
+		"build": "node scripts/build.mjs",
 		"start": "next start",
 		"lint": "biome check --write",
 		"test": "vitest run",

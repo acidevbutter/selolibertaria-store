@@ -44,7 +44,7 @@ objetos, ingressos, laboratórios) — não é uma livraria.
 | Package manager | **Yarn Classic (1.x)** — não introduzir segundo lockfile |
 | Node | `^24 || ^25` |
 | Observabilidade | Datadog RUM, Vercel Analytics + Speed Insights, Umami (rewrite `/stats/*`) |
-| Deploy | Vercel (`scripts/vercel-build.mjs`) · Docker/Compose para dev |
+| Deploy | Coolify/Hostinger (`scripts/build.mjs`) · Docker/Compose para dev |
 
 ---
 
@@ -141,7 +141,7 @@ backend/                submodule FastAPI + PostgreSQL (fonte de domínio)
 docs/                   spec de produto, mapas de migração, runbooks, prompts
 prompts/                prompts de trabalho por fase
 messages/pt-BR.json     strings i18n
-scripts/vercel-build.mjs  entrypoint de build
+scripts/build.mjs        entrypoint de build
 ```
 
 ---
@@ -177,7 +177,7 @@ scripts/vercel-build.mjs  entrypoint de build
 ```bash
 yarn install
 yarn dev          # next dev --webpack -p 3001  → http://localhost:3001
-yarn build        # node scripts/vercel-build.mjs
+yarn build        # node scripts/build.mjs
 yarn start
 yarn lint         # biome check --write
 yarn test         # vitest run
