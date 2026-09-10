@@ -1,6 +1,4 @@
 import "@/app/globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
@@ -23,10 +21,6 @@ const fertigoPro = localFont({
 	variable: "--font-editorial-body",
 	display: "swap",
 });
-
-const shouldLoadVercelClientTelemetry =
-	process.env.NODE_ENV === "production" &&
-	(Boolean(process.env.VERCEL) || Boolean(process.env.NEXT_PUBLIC_VERCEL_ENV));
 
 export const generateMetadata = async (): Promise<Metadata> => {
 	return {
@@ -71,8 +65,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 						data-website-id={env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
 					/>
 				)}
-				{shouldLoadVercelClientTelemetry ? <SpeedInsights /> : null}
-				{shouldLoadVercelClientTelemetry ? <Analytics /> : null}
 			</body>
 		</html>
 	);

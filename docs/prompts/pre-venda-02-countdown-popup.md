@@ -72,7 +72,7 @@ showOncePerSession?: boolean;                   // default true (sessionStorage)
 - `presale_popup_open` `{ slug, trigger, impression: n }`
 - `presale_popup_dismiss` `{ slug, via: "x" | "backdrop" | "esc" | "link", secondsOpen }`
 - `presale_popup_cta_click` `{ slug }`
-- Enviar via Umami (`data-umami-event`) e `track()` do `@vercel/analytics`.
+- Enviar via Umami (`data-umami-event`).
 
 ### 5. Refatoração
 

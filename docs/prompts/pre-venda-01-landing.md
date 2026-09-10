@@ -74,7 +74,7 @@ SEO/OpenGraph corretos e telemetria de eventos.
 
 ### 5. Analytics
 
-- Emitir eventos (Umami — `data-umami-event` — e `@vercel/analytics` `track`):
+- Emitir eventos via Umami (`data-umami-event`):
   - `presale_view` (na montagem da página, com `slug`);
   - `presale_cta_click` (`{ slug, placement: "hero" | "price-card" | "closing" |
     "banner-a" | "card-b" | "popup" }`);

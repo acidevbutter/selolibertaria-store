@@ -138,7 +138,7 @@ Blocos da página (usar `EditorialPanel` + `<details>` como em
 - `PRESALE_MODE=false` → força desligado (kill switch), ignora toggle/schedule.
 - `PRESALE_MODE` ausente/qualquer outro valor → estado vem do admin.
 - A tela de admin deve **mostrar** qual override está ativo e desabilitar os
-  controles afetados, com texto explicando como remover (variável na Vercel).
+  controles afetados, com texto explicando como remover a variável de ambiente.
 - Documentar em `.env.example` e no `README` de deploy.
 
 ### 5. Auditoria e segurança

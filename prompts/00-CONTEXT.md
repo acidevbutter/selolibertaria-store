@@ -23,7 +23,7 @@
 - Gerenciador: yarn 1.22.22. Node via `.nvmrc`.
 - Lint/format: `yarn lint` → `biome check --write` (tabs, indentWidth 2, lineWidth 110).
 - Testes: `yarn test` → `vitest run`; `yarn test:watch` → `vitest`.
-- Build: `yarn build` → `node scripts/vercel-build.mjs`. Dev: `yarn dev` → `next dev --webpack -p 3001`.
+- Build: `yarn build` → `next build --webpack`. Dev: `yarn dev` → `next dev --webpack -p 3001`.
 - i18n: `messages/pt-BR.json` (688 linhas). Produto travado em `pt-BR` — sem seletor de idioma (ver `docs/design/userinterface.md`, atualização 2026-06-25).
 
 ## 2. Convenções
