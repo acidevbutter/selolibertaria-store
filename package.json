@@ -8,11 +8,7 @@
 	"packageManager": "yarn@1.22.22",
 	"scripts": {
 		"dev": "next dev --webpack -p 3001",
-<<<<<<< HEAD
-		"build": "next build --webpack",
-=======
 		"build": "node scripts/build.mjs",
->>>>>>> origin/staging
 		"start": "next start",
 		"lint": "biome check --write",
 		"test": "vitest run",
