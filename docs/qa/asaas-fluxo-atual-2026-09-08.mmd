@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    participant C as Cliente (guest/logado)
+    participant FE as Next.js · /checkout
+    participant BE as FastAPI · POST /checkout/intents
+    participant Draft as Postgres · order_drafts
+    participant Cred as Postgres · asaas_subaccount_credential
+    participant Relay as devbutter_backend (relay HMAC)
+    participant Asaas as Asaas API (sandbox)
+
+    Note over Cred: HOJE: 0 linhas nesta tabela — credencial nunca chegou
+
+    C->>FE: "Confirmar e pagar"
+    FE->>BE: POST /checkout/intents (buyer, cart, endereço, frete)
+    BE->>Draft: cria/atualiza OrderDraft (status="creating")
+    BE->>BE: AsaasClient._resolve_api_key()
+    BE->>BE: settings.asaas_account_id
+    alt account_id vazio (estado atual)
+        BE--xBE: log "asaas_account_id_not_configured"
+        BE-->>FE: 503 "Pagamento temporariamente indisponível"
+        FE-->>C: mensagem de erro, checkout não avança
+    else account_id configurado (não é o caso hoje)
+        BE->>Cred: get_active_key(account_id)
+        alt credencial ausente/revogada
+            Cred-->>BE: NotFoundError
+            BE-->>FE: 503 (mesma mensagem)
+        else credencial ativa
+            Cred-->>BE: api_key (Fernet decrypt em memória, nunca logado)
+            BE->>Asaas: POST /customers (dados do comprador)
+            Asaas-->>BE: customer criado
+            BE->>Asaas: POST /payments (cobrança, Pix/cartão/boleto)
+            Asaas-->>BE: charge criado + link de pagamento hospedado
+            BE->>Draft: status="pending", asaas_charge_id=...
+            BE-->>FE: 201 intent (checkoutUrl)
+            FE-->>C: redireciona para pagamento hospedado na Asaas
+        end
+    end
+
+    rect rgb(255,235,235)
+    Note over Relay,Cred: Como a credencial deveria chegar (nunca disparado neste ambiente)
+    Relay->>BE: POST /integrations/devbutter/.../subaccounts (assinado HMAC)
+    BE->>BE: verify_signature() + dedupe por event_id
+    BE->>Cred: upsert_from_relay() grava asaas_account_id + api_key cifrada (Fernet)
+    end
+
+    rect rgb(235,245,255)
+    Note over BE,Relay: Rotação reativa (só roda se a Asaas devolver 401 na cobrança)
+    Asaas--xBE: 401 (chave revogada/expirada)
+    BE->>Relay: POST rotate-key (DevButterRelayClient)
+    Relay->>BE: novo evento "key-updated" (HMAC)
+    BE->>Cred: apply_rotation() atualiza key_version
+    end

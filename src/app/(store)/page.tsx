@@ -5,11 +5,7 @@ import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import {
-	getEditorialHomePage,
-	getEditorialSarauPage,
-	listEditorialEvents,
-} from "@/lib/editorial-content-store";
+import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { formatMoney } from "@/lib/utils";
 import { SlHomeCategoryBand } from "@/ui/home/sl/sl-home-category-band";
@@ -33,9 +29,8 @@ export default async function Home() {
 		getRequestPreferredCurrency(),
 	]);
 
-	const [featuredEvents, sarauPage, heroProduct, featuredProduct, browse] = await Promise.all([
+	const [featuredEvents, heroProduct, featuredProduct, browse] = await Promise.all([
 		listEditorialEvents(),
-		getEditorialSarauPage(),
 		homeContent.hero?.mode === "product" && homeContent.hero.productSlug
 			? commerce.product.get({ slug: homeContent.hero.productSlug, currency }).catch(() => null)
 			: Promise.resolve(null),
@@ -48,7 +43,8 @@ export default async function Home() {
 	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
 	const rows = buildSlProductRows(browse.data, { locale, canPurchase });
 	const categories = deriveSlCategories(rows);
-	const featuredEvent = featuredEvents.find((event) => event.published) ?? null;
+	// "arquivo" events are past/archival, not the upcoming edition the Home spotlight promises.
+	const featuredEvent = featuredEvents.find((event) => event.published && event.status !== "arquivo") ?? null;
 
 	// --- Hero resolution: product-backed when possible, editorial copy otherwise.
 	const hero = homeContent.hero ?? null;
@@ -110,7 +106,7 @@ export default async function Home() {
 				linkHref={homeContent.manifesto?.linkHref || "/about"}
 				sarau={{
 					eyebrow: "Sarau Safado · próxima edição",
-					data: featuredEvent?.period || sarauPage?.agenda?.title || "Agenda em breve",
+					data: featuredEvent?.period || "Agenda em breve",
 					local: featuredEvent?.location || "São Paulo · centro",
 					entrada: "R$ 30,00",
 					ctaLabel: "Garantir ingresso",

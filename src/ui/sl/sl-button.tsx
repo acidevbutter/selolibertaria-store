@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { YnsLink } from "@/ui/yns-link";
 
 type SlVariant = "buy" | "primary" | "secondary";
+type SlSize = "buy" | "md" | "sm";
 
 const variantClass: Record<SlVariant, string> = {
 	buy: "sl-btn-buy",
@@ -10,8 +11,18 @@ const variantClass: Record<SlVariant, string> = {
 	secondary: "sl-btn-secondary",
 };
 
+// Variant picks the skin (color/border); size independently overrides height/padding/font
+// when a variant is used at a non-default height (e.g. an outlined button next to a 56px buy button).
+const sizeStyle: Record<SlSize, React.CSSProperties> = {
+	buy: { height: "var(--sl-h-buy)", padding: "var(--sl-pad-buy)", fontSize: "13px" },
+	md: { height: "var(--sl-h-button)", padding: "var(--sl-pad-button)", fontSize: "11px" },
+	sm: { height: "var(--sl-h-small)", padding: "0 16px", fontSize: "11px" },
+};
+
 type CommonProps = {
 	variant?: SlVariant;
+	/** Override this variant's default height (e.g. a secondary button beside a buy button). */
+	size?: SlSize;
 	/** Render for placement on an ink (black) surface. */
 	onInk?: boolean;
 	fullWidth?: boolean;
@@ -29,10 +40,12 @@ export function SlButton(props: ButtonProps): React.JSX.Element;
 export function SlButton(props: LinkProps): React.JSX.Element;
 export function SlButton({
 	variant = "primary",
+	size,
 	onInk = false,
 	fullWidth = false,
 	className,
 	children,
+	style,
 	...rest
 }: ButtonProps | LinkProps) {
 	const classes = cn(
@@ -42,10 +55,11 @@ export function SlButton({
 		fullWidth && "w-full",
 		className,
 	);
+	const mergedStyle = size ? { ...sizeStyle[size], ...style } : style;
 
 	if ("href" in rest && rest.href) {
 		return (
-			<YnsLink className={classes} {...(rest as LinkProps)}>
+			<YnsLink className={classes} style={mergedStyle} {...(rest as LinkProps)}>
 				{children}
 			</YnsLink>
 		);
@@ -53,7 +67,7 @@ export function SlButton({
 
 	const buttonProps = rest as ButtonProps;
 	return (
-		<button type={buttonProps.type ?? "button"} className={classes} {...buttonProps}>
+		<button type={buttonProps.type ?? "button"} className={classes} style={mergedStyle} {...buttonProps}>
 			{children}
 		</button>
 	);

@@ -5,15 +5,14 @@ import { cn } from "@/lib/utils";
 
 type CartIconProps = {
 	className?: string;
-	/** Hide the "Carrinho" word — used in the tight mobile header. */
-	compact?: boolean;
 };
 
 /**
- * The wine cart button — the header's only block of colour. Counter chip is on
- * paper (kit rule).
+ * The wine cart button — the header's only block of colour, icon-only (no visible
+ * "Carrinho" label on any breakpoint, per the kit). Counter chip is on paper, overlapping
+ * the top-right corner.
  */
-export function CartIcon({ className = "", compact = false }: CartIconProps) {
+export function CartIcon({ className = "" }: CartIconProps) {
 	const { openCart, itemCount } = useCart();
 
 	return (
@@ -22,16 +21,16 @@ export function CartIcon({ className = "", compact = false }: CartIconProps) {
 			onClick={openCart}
 			aria-label="Carrinho"
 			data-cart-trigger="header"
-			className={cn(
-				"inline-flex h-11 items-center gap-2 px-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-colors",
-				className,
-			)}
+			className={cn("relative inline-flex h-11 w-11 items-center justify-center", className)}
 			style={{ background: "var(--sl-wine)", color: "var(--sl-text-on-ink)" }}
 		>
-			{compact ? <span className="sr-only">Carrinho</span> : <span>Carrinho</span>}
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+				<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+				<path d="M3 6h18" />
+			</svg>
 			{itemCount > 0 ? (
 				<span
-					className="inline-flex h-5 min-w-5 items-center justify-center px-1 text-[11px] font-normal tracking-normal"
+					className="absolute -top-1.5 -right-1.5 inline-flex h-5 min-w-5 items-center justify-center px-1 text-[11px] font-normal tracking-normal"
 					style={{ background: "var(--sl-paper)", color: "var(--sl-wine)" }}
 				>
 					{itemCount > 99 ? "99+" : itemCount}

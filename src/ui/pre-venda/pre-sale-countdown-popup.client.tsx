@@ -2,32 +2,9 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { type CountdownRemaining, computeCountdown, ZERO_COUNTDOWN } from "@/lib/countdown";
 import { type PreSaleCampaign, resolveCountdownTarget } from "@/lib/pre-sale";
 import { YnsLink } from "@/ui/yns-link";
-
-type Remaining = { days: string; hours: string; minutes: string; seconds: string; done: boolean };
-
-const ZERO_REMAINING: Remaining = { days: "00", hours: "00", minutes: "00", seconds: "00", done: false };
-
-const pad = (n: number) => String(Math.max(0, n)).padStart(2, "0");
-
-function computeRemaining(target: number, now: number): Remaining {
-	let diff = Math.max(0, target - now);
-	const days = Math.floor(diff / 86_400_000);
-	diff -= days * 86_400_000;
-	const hours = Math.floor(diff / 3_600_000);
-	diff -= hours * 3_600_000;
-	const minutes = Math.floor(diff / 60_000);
-	diff -= minutes * 60_000;
-	const seconds = Math.floor(diff / 1000);
-	return {
-		days: pad(days),
-		hours: pad(hours),
-		minutes: pad(minutes),
-		seconds: pad(seconds),
-		done: target - now <= 0,
-	};
-}
 
 /**
  * Pop-up de contagem regressiva da pré-venda.
@@ -47,8 +24,8 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 	const target = useMemo(() => resolveCountdownTarget(campaign), [campaign]);
 
 	const [open, setOpen] = useState(false);
-	const [remaining, setRemaining] = useState<Remaining>(() =>
-		target === null ? ZERO_REMAINING : computeRemaining(target, Date.now()),
+	const [remaining, setRemaining] = useState<CountdownRemaining>(() =>
+		target === null ? ZERO_COUNTDOWN : computeCountdown(target, Date.now()),
 	);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const lastFocusedRef = useRef<HTMLElement | null>(null);
@@ -80,8 +57,8 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 	// Tick da contagem regressiva (só enquanto aberto e com data de estreia).
 	useEffect(() => {
 		if (!open || target === null) return;
-		const id = window.setInterval(() => setRemaining(computeRemaining(target, Date.now())), 1000);
-		setRemaining(computeRemaining(target, Date.now()));
+		const id = window.setInterval(() => setRemaining(computeCountdown(target, Date.now())), 1000);
+		setRemaining(computeCountdown(target, Date.now()));
 		return () => window.clearInterval(id);
 	}, [open, target]);
 
