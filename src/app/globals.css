@@ -346,6 +346,74 @@ input[type="search" i]::-webkit-search-cancel-button {
 	}
 }
 
+/* "Em construção" screen (src/app/maintenance/page.tsx) — imported from
+   Claude Design: "Em Construcao Little Fish Big Fish.dc.html". */
+@keyframes sl-drift {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-12px);
+	}
+}
+
+@keyframes sl-splash-veil {
+	0%,
+	42% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+
+@keyframes sl-splash-mark {
+	0% {
+		transform: scale(0.55);
+		opacity: 0;
+	}
+	18% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	38% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	62% {
+		transform: scale(14);
+		opacity: 0;
+	}
+	100% {
+		transform: scale(14);
+		opacity: 0;
+	}
+}
+
+@keyframes sl-settle {
+	0%,
+	46% {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes sl-settle-soft {
+	0%,
+	50% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
 .nav-border-reveal::after {
 	@apply content-[''] w-full h-px absolute bottom-0 bg-neutral-200;
 
