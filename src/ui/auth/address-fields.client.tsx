@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Label } from "@/components/ui/label";
 import { useLocale, useTranslations } from "@/i18n/client";
 import { getPostalCodeLabel, normalizePostalCode } from "@/lib/location/countries";
 import { CountrySelect } from "@/ui/auth/country-select";
-import { Input } from "@/ui/shadcn/input";
+import { SlField } from "@/ui/sl/sl-field";
 
 export type AddressValue = {
 	line1: string;
@@ -177,16 +176,23 @@ export function AddressFields({
 		);
 	}
 
+	const autoFilledHint =
+		postalFieldsLocked && effectiveCountry === "BR" ? { title: t("fieldAutoFilled") } : {};
+
 	return (
 		<div className="grid gap-4">
 			<div className="grid gap-4 md:grid-cols-2">
 				{isBrazilOnly ? (
 					<div className="md:col-span-2">
-						<p className="text-xs text-muted-foreground">No momento, atendemos apenas endereços no Brasil.</p>
+						<p className="m-0 text-[13px] text-[color:var(--sl-text-muted)]">
+							No momento, atendemos apenas endereços no Brasil.
+						</p>
 					</div>
 				) : (
-					<div className="grid gap-2">
-						<Label htmlFor={`${idPrefix}-country`}>{t("country")}</Label>
+					<div className="flex flex-col gap-2">
+						<label htmlFor={`${idPrefix}-country`} className="sl-lbl">
+							{t("country")}
+						</label>
 						<CountrySelect
 							id={`${idPrefix}-country`}
 							value={current.country}
@@ -201,111 +207,99 @@ export function AddressFields({
 					</div>
 				)}
 
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-postal-code`}>{postalLabel}</Label>
-					<Input
-						id={`${idPrefix}-postal-code`}
-						value={current.postalCode}
-						onChange={(event) => handlePostalCodeChange(event.target.value)}
-						onBlur={() => void lookupPostalCode(current.postalCode, true)}
-						autoComplete="postal-code"
-						placeholder={effectiveCountry === "BR" ? "00000-000" : postalLabel}
-						inputMode={effectiveCountry === "BR" ? "numeric" : "text"}
-						maxLength={effectiveCountry === "BR" ? 9 : undefined}
-						required={required}
-					/>
-				</div>
-			</div>
-
-			{lookupStatus ? <p className="-mt-2 text-xs text-muted-foreground">{lookupStatus}</p> : null}
-
-			<div className="grid gap-2">
-				<Label htmlFor={`${idPrefix}-line1`}>{t("fields.streetAddress")}</Label>
-				<Input
-					id={`${idPrefix}-line1`}
-					value={current.line1}
-					onChange={(event) => setField("line1", event.target.value)}
-					autoComplete="address-line1"
-					placeholder={t("placeholders.streetAddress")}
-					disabled={postalFieldsLocked && effectiveCountry === "BR"}
-					title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
+				<SlField
+					id={`${idPrefix}-postal-code`}
+					label={postalLabel}
+					value={current.postalCode}
+					onChange={(event) => handlePostalCodeChange(event.target.value)}
+					onBlur={() => void lookupPostalCode(current.postalCode, true)}
+					autoComplete="postal-code"
+					placeholder={effectiveCountry === "BR" ? "00000-000" : postalLabel}
+					inputMode={effectiveCountry === "BR" ? "numeric" : "text"}
+					maxLength={effectiveCountry === "BR" ? 9 : undefined}
 					required={required}
 				/>
 			</div>
 
+			{lookupStatus ? (
+				<p className="-mt-2 text-[13px] text-[color:var(--sl-text-soft)]">{lookupStatus}</p>
+			) : null}
+
+			<SlField
+				id={`${idPrefix}-line1`}
+				label={t("fields.streetAddress")}
+				value={current.line1}
+				onChange={(event) => setField("line1", event.target.value)}
+				autoComplete="address-line1"
+				placeholder={t("placeholders.streetAddress")}
+				disabled={postalFieldsLocked && effectiveCountry === "BR"}
+				{...autoFilledHint}
+				required={required}
+			/>
+
 			<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px]">
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-district`}>{t("fields.district")}</Label>
-					<Input
-						id={`${idPrefix}-district`}
-						value={current.district}
-						onChange={(event) => setField("district", event.target.value)}
-						placeholder={t("placeholders.district")}
-						disabled={postalFieldsLocked && effectiveCountry === "BR"}
-						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
-						required={required && effectiveCountry === "BR"}
-					/>
-				</div>
+				<SlField
+					id={`${idPrefix}-district`}
+					label={t("fields.district")}
+					value={current.district}
+					onChange={(event) => setField("district", event.target.value)}
+					placeholder={t("placeholders.district")}
+					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					{...autoFilledHint}
+					required={required && effectiveCountry === "BR"}
+				/>
 
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-city`}>{t("fields.city")}</Label>
-					<Input
-						id={`${idPrefix}-city`}
-						value={current.city}
-						onChange={(event) => setField("city", event.target.value)}
-						autoComplete="address-level2"
-						disabled={postalFieldsLocked && effectiveCountry === "BR"}
-						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
-						required={required}
-					/>
-				</div>
+				<SlField
+					id={`${idPrefix}-city`}
+					label={t("fields.city")}
+					value={current.city}
+					onChange={(event) => setField("city", event.target.value)}
+					autoComplete="address-level2"
+					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					{...autoFilledHint}
+					required={required}
+				/>
 
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-state`}>{t("fields.state")}</Label>
-					<Input
-						id={`${idPrefix}-state`}
-						value={current.state}
-						onChange={(event) => setField("state", event.target.value)}
-						autoComplete="address-level1"
-						maxLength={effectiveCountry === "BR" ? 2 : undefined}
-						disabled={postalFieldsLocked && effectiveCountry === "BR"}
-						title={postalFieldsLocked && effectiveCountry === "BR" ? t("fieldAutoFilled") : undefined}
-						required={required}
-					/>
-				</div>
+				<SlField
+					id={`${idPrefix}-state`}
+					label={t("fields.state")}
+					value={current.state}
+					onChange={(event) => setField("state", event.target.value)}
+					autoComplete="address-level1"
+					maxLength={effectiveCountry === "BR" ? 2 : undefined}
+					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					{...autoFilledHint}
+					required={required}
+				/>
 			</div>
 
 			<div className="grid gap-4 md:grid-cols-[160px_minmax(0,1fr)]">
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-number`}>{t("fields.number")}</Label>
-					<Input
-						id={`${idPrefix}-number`}
-						value={current.number}
-						onChange={(event) => setField("number", event.target.value)}
-						autoComplete="address-line2"
-						placeholder={t("placeholders.number")}
-						required={required}
-					/>
-				</div>
+				<SlField
+					id={`${idPrefix}-number`}
+					label={t("fields.number")}
+					value={current.number}
+					onChange={(event) => setField("number", event.target.value)}
+					autoComplete="address-line2"
+					placeholder={t("placeholders.number")}
+					required={required}
+				/>
 
-				<div className="grid gap-2">
-					<Label htmlFor={`${idPrefix}-complement`}>{t("fields.complement")}</Label>
-					<Input
-						id={`${idPrefix}-complement`}
-						value={current.complement || current.line2}
-						onChange={(event) =>
-							onChange(
-								withCountryConstraint({
-									...current,
-									complement: event.target.value,
-									line2: event.target.value,
-								}),
-							)
-						}
-						autoComplete="address-line3"
-						placeholder={t("placeholders.complement")}
-					/>
-				</div>
+				<SlField
+					id={`${idPrefix}-complement`}
+					label={t("fields.complement")}
+					value={current.complement || current.line2}
+					onChange={(event) =>
+						onChange(
+							withCountryConstraint({
+								...current,
+								complement: event.target.value,
+								line2: event.target.value,
+							}),
+						)
+					}
+					autoComplete="address-line3"
+					placeholder={t("placeholders.complement")}
+				/>
 			</div>
 		</div>
 	);
@@ -325,9 +319,9 @@ async function lookupPostalCodeFromApi(country: string, postalCode: string): Pro
 			`/api/address/postal-lookup?country=${encodeURIComponent(country)}&postalCode=${encodeURIComponent(postalCode)}`,
 			{ cache: "no-store" },
 		);
-		const data = (await res.json().catch(() => ({}))) as { error?: string; result?: PostalLookupResult };
-		if (res.ok && data.result) {
-			return { status: "success", result: data.result };
+		const data = (await res.json().catch(() => ({}))) as PostalLookupResult;
+		if (res.ok && data.postalCode) {
+			return { status: "success", result: data };
 		}
 		if (res.status === 404) {
 			return { status: "not-found" };

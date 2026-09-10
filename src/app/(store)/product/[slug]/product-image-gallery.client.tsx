@@ -29,7 +29,10 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 
 	if (!normalizedImages.length) {
 		return (
-			<div className="flex aspect-square w-full items-center justify-center bg-neutral-100 text-sm text-muted-foreground">
+			<div
+				className="flex aspect-[4/3] w-full items-center justify-center text-sm text-muted-foreground"
+				style={{ background: "var(--sl-sand)" }}
+			>
 				{t("noImage")}
 			</div>
 		);
@@ -61,7 +64,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 	return (
 		<>
 			<div className="space-y-4">
-				<div className="relative overflow-hidden bg-neutral-100">
+				<div className="relative overflow-hidden" style={{ background: "var(--sl-sand)" }}>
 					<button
 						type="button"
 						className="block w-full cursor-zoom-in"
@@ -69,7 +72,7 @@ export function ProductImageGallery({ images, alt }: { images: string[]; alt: st
 						aria-label={t("actions.zoom")}
 					>
 						<MainProductImage
-							className="aspect-square w-full object-cover object-center transition-opacity"
+							className="aspect-[4/3] w-full object-cover object-center transition-opacity"
 							src={currentImage}
 							loading="eager"
 							priority

@@ -83,7 +83,7 @@ export function SlHomeHero({
 						<SlButton href={primaryHref} variant="buy">
 							{primaryLabel}
 						</SlButton>
-						<SlButton href={secondaryHref} variant="secondary" onInk>
+						<SlButton href={secondaryHref} variant="secondary" size="buy" onInk>
 							{secondaryLabel}
 						</SlButton>
 					</div>

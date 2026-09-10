@@ -1,6 +1,12 @@
 ## [Unreleased]
 
+<<<<<<< HEAD
 - Infraestrutura: removido o acoplamento de deploy, telemetria e release à Vercel; o build agora usa diretamente `next build --webpack` e exige `NEXT_PUBLIC_URL`.
+=======
+- Backend: separados o bootstrap administrativo, o seed idempotente de catálogo
+  via API e o limpador explícito dos dados de aplicação; a capa do livro de
+  pré-venda foi incluída nos assets do seed.
+>>>>>>> origin/staging
 
 - Checkout: o fluxo público cria cobrança PIX na Asaas pelo backend e encaminha para a página hospedada; a confirmação continua no backend/webhook. A homologação Sandbox ainda depende de credencial, certificado mTLS, migration e webhook configurados.
 

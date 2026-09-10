@@ -10,27 +10,29 @@ describe("postal lookup route", () => {
 	});
 
 	it("proxies a Brazilian address lookup to FastAPI", async () => {
+		// FastAPI's PostalLookupRead (backend/app/address/schemas.py) responds with
+		// the address fields at the top level, not wrapped in a `result` key. This
+		// route is a pure passthrough (`return new Response(await response.text(), ...)`),
+		// so the proxied body must mirror that flat shape exactly.
 		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
 			Response.json({
-				result: {
-					line1: "Praça da Sé",
-					line2: "",
-					district: "Sé",
-					city: "São Paulo",
-					state: "SP",
-					postalCode: "01001-000",
-					country: "BR",
-				},
+				line1: "Praça da Sé",
+				line2: "",
+				district: "Sé",
+				city: "São Paulo",
+				state: "SP",
+				postalCode: "01001-000",
+				country: "BR",
 			}),
 		);
 
 		const res = await GET(
 			new Request("http://localhost/api/address/postal-lookup?country=BR&postalCode=01001000"),
 		);
-		const body = (await res.json()) as { result: Record<string, string> };
+		const body = (await res.json()) as Record<string, string>;
 
 		expect(res.status).toBe(200);
-		expect(body.result).toMatchObject({
+		expect(body).toMatchObject({
 			line1: "Praça da Sé",
 			line2: "",
 			district: "Sé",
