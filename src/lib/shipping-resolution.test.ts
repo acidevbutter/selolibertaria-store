@@ -75,19 +75,6 @@ describe("shipping FastAPI client", () => {
 		});
 	});
 
-	it("keeps pickup local and free", async () => {
-		const fetchMock = vi.spyOn(globalThis, "fetch");
-		const result = await resolveShippingQuotesForDestination({
-			destination: null,
-			subtotal: 5000,
-			currency: "BRL",
-			deliveryMethod: "pickup",
-			items: [],
-		});
-		expect(fetchMock).not.toHaveBeenCalled();
-		expect(result.selected?.amount).toBe(0);
-	});
-
 	it("does not expose a token in admin settings", () => {
 		const result = serializeMelhorEnvioSettingsForAdmin({ envTokenStatus: "configured" });
 		expect(result).toMatchObject({ envTokenStatus: "configured", oauthStatus: "coming-soon" });

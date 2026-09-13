@@ -127,7 +127,6 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 						<option value="saved-address">Usar meu endereço salvo</option>
 					) : null}
 					<option value="new-address">Usar um novo endereço</option>
-					<option value="pickup">Retirar na loja</option>
 				</select>
 			</div>
 			{deliveryMethod === "new-address" ? (

@@ -111,16 +111,19 @@ export async function createAsaasCheckout(input: {
 	const snapshot = result.snapshot;
 	try {
 		const buyer = normalizeCheckoutBuyer(input.buyer);
-		if (!["pickup", "saved-address", "new-address"].includes(input.deliveryMethod)) {
+		if (!["saved-address", "new-address"].includes(input.deliveryMethod)) {
 			return { error: "Escolha uma forma de entrega" } as const;
 		}
-		const address =
-			input.deliveryMethod === "pickup"
-				? null
-				: normalizeAddress(input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address);
+		const address = normalizeAddress(
+			input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address,
+		);
 		if (
-			input.deliveryMethod !== "pickup" &&
-			(!address || !address.line1 || !address.number || !address.city || !address.state || !address.district)
+			!address ||
+			!address.line1 ||
+			!address.number ||
+			!address.city ||
+			!address.state ||
+			!address.district
 		) {
 			return { error: "Informe o endereço completo para entrega" } as const;
 		}
