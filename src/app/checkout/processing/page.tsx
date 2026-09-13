@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { finalizeAsaasCheckout } from "@/actions/checkout-actions";
+import { finalizeAsaasCheckout, saveCheckoutCard } from "@/actions/checkout-actions";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import { isResolvedCheckoutStatus, isWarningCheckoutStatus } from "@/lib/payment-status";
@@ -15,6 +15,8 @@ const ERROR_REDIRECT_DELAY_MS = 2600;
 
 type ProcessingPhase = "processing" | "finalized" | "warning" | "error";
 type WarningReason = "timeout" | "disputed";
+type CardOffer = { brand: string | null; last4: string | null };
+type CardSaveState = "idle" | "saving" | "saved" | "error";
 
 function replaceLocation(router: ReturnType<typeof useRouter>, path: string) {
 	router.replace(path);
@@ -42,6 +44,9 @@ export default function ProcessingPage() {
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
 	const [accountEmailSent, setAccountEmailSent] = useState(false);
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
+	const [cardOffer, setCardOffer] = useState<CardOffer | null>(null);
+	const [cardSaveState, setCardSaveState] = useState<CardSaveState>("idle");
+	const [setupPasswordRequired, setSetupPasswordRequired] = useState(false);
 	const { refreshCart, closeCart } = useCart();
 	const t = useTranslations("Checkout.processing");
 
@@ -106,7 +111,12 @@ export default function ProcessingPage() {
 			setPhase("finalized");
 			setAccountEmailSent(result.accountEmailSent);
 			if (hardTimeoutTimer) clearTimeout(hardTimeoutTimer);
-			if (!isGuest) scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
+			if (result.cardSaveAvailable) {
+				setCardOffer({ brand: result.creditCardBrand, last4: result.creditCardLast4 });
+				setSetupPasswordRequired(result.setupPasswordRequired);
+			} else if (!isGuest) {
+				scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
+			}
 			return "resolved" as const;
 		}
 
@@ -159,6 +169,22 @@ export default function ProcessingPage() {
 
 	const stateKind = done ? "approved" : phase === "error" ? "declined" : isWarning ? "waiting" : "processing";
 
+	function continueAfterCardDecision() {
+		setCardOffer(null);
+		if (isGuest) return;
+		const params = new URLSearchParams({ section: "purchases" });
+		if (orderId?.startsWith("ord_")) params.set("order", orderId);
+		if (setupPasswordRequired) params.set("setupPassword", "1");
+		replaceLocation(router, `/user?${params.toString()}`);
+	}
+
+	async function handleSaveCard() {
+		if (!orderId) return;
+		setCardSaveState("saving");
+		const result = await saveCheckoutCard({ orderId });
+		setCardSaveState("error" in result ? "error" : "saved");
+	}
+
 	return (
 		<main
 			className="sl-scope mx-auto flex min-h-[60vh] w-full max-w-lg items-center px-6 py-16"
@@ -181,6 +207,59 @@ export default function ProcessingPage() {
 						</>
 					}
 				/>
+				{done && cardOffer ? (
+					<div
+						className="mt-4 flex flex-col gap-3 p-4"
+						style={{ border: "1px solid var(--sl-ink)", background: "var(--sl-surface-card)" }}
+					>
+						<div>
+							<p className="m-0 text-[14px] font-bold">{t("cardOffer.title")}</p>
+							<p className="m-0 mt-1 text-[13px] text-[color:var(--sl-text-muted)]">
+								{t("cardOffer.description", {
+									brand: cardOffer.brand ?? "Cartão",
+									last4: cardOffer.last4 ?? "----",
+								})}
+							</p>
+						</div>
+						{cardSaveState === "saved" ? (
+							<div className="flex items-center justify-between gap-3">
+								<p className="m-0 text-[13px] font-bold text-[color:var(--sl-accent)]">
+									{t("cardOffer.saved")}
+								</p>
+								<button
+									type="button"
+									className="sl-link text-[13px] font-bold"
+									onClick={continueAfterCardDecision}
+								>
+									{t("cardOffer.continue")}
+								</button>
+							</div>
+						) : (
+							<div className="flex flex-wrap items-center gap-3">
+								<button
+									type="button"
+									className="sl-btn sl-btn-buy"
+									disabled={cardSaveState === "saving"}
+									onClick={handleSaveCard}
+								>
+									{t("cardOffer.save")}
+								</button>
+								<button
+									type="button"
+									className="sl-link text-[13px] font-bold"
+									onClick={continueAfterCardDecision}
+								>
+									{t("cardOffer.skip")}
+								</button>
+								{cardSaveState === "error" ? (
+									<p className="m-0 basis-full text-[12px] text-[color:var(--sl-accent)]">
+										{t("cardOffer.error")}
+									</p>
+								) : null}
+							</div>
+						)}
+					</div>
+				) : null}
 			</div>
 		</main>
 	);
