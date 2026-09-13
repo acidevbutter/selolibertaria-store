@@ -68,6 +68,13 @@ EXPOSE 3000
 
 ENV PORT 3000
 
+# Explicit, using the curl already installed via apk above — without this,
+# Coolify falls back to its own default healthcheck, which assumes a
+# Debian-family image and runs `apt install curl` against this (Alpine,
+# non-root) container and fails with a dpkg permission error. See #64.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
+
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 CMD HOSTNAME="0.0.0.0" node server.js
