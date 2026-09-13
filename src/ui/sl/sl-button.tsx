@@ -50,7 +50,7 @@ export function SlButton({
 	...rest
 }: ButtonProps | LinkProps) {
 	const classes = cn(
-		"sl-btn",
+		"sl-btn gap-2",
 		variantClass[variant],
 		onInk && variant === "secondary" && "sl-btn-ink",
 		fullWidth && "w-full",

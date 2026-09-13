@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { AdminVariantsPanel } from "@/app/admin/products/_components/admin-variants-panel.client";
 import {
 	ActiveCheckbox,
@@ -27,8 +28,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Badge } from "@/ui/shadcn/badge";
-import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
 
@@ -93,20 +92,20 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 					<div className="flex flex-wrap items-center gap-3">
 						<Link
 							href="/admin/products"
-							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+							className="inline-flex items-center gap-2 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)] transition-colors hover:text-[var(--sl-ink)]"
 						>
 							<ArrowLeft className="h-4 w-4" />
 							Voltar para produtos
 						</Link>
-						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+						<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 								Slug
 							</div>
-							<div className="mt-2 font-mono text-xs text-[color:var(--editorial-muted)]">{group.slug}</div>
+							<div className="mt-2 font-mono text-xs text-[var(--sl-text-muted)]">{group.slug}</div>
 						</div>
-						<Badge variant={group.active ? "secondary" : "outline"}>
+						<StatusBadge tone={group.active ? "active" : "neutral"}>
 							{group.active ? "Ativo" : "Inativo"}
-						</Badge>
+						</StatusBadge>
 					</div>
 				}
 			/>
@@ -130,33 +129,29 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 			</div>
 
 			<EditorialPanel>
-				<CardHeader>
-					<CardTitle>Dados do produto</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form action={updateProductGroupAction} className="space-y-6">
-						<input type="hidden" name="currentSlug" value={group.slug} />
-						<FormSection title="Informações principais">
-							<ProductCoreFields
-								name={group.name}
-								slug={group.slug}
-								category={group.category}
-								description={group.description}
-								images={group.images}
-								stock={group.stock}
-								order={group.order}
-								productType={group.productType}
-								format={group.format}
-								categories={categories}
-								orderOptions={orderOptions}
-								autoSubmitImages
-								autoFormatSlug
-							/>
-						</FormSection>
-						<ActiveCheckbox defaultChecked={group.active} />
-						<SubmitButton>Salvar produto</SubmitButton>
-					</form>
-				</CardContent>
+				<h2 className="editorial-serif mb-6 text-xl font-semibold text-[var(--sl-ink)]">Dados do produto</h2>
+				<form action={updateProductGroupAction} className="space-y-6">
+					<input type="hidden" name="currentSlug" value={group.slug} />
+					<FormSection title="Informações principais">
+						<ProductCoreFields
+							name={group.name}
+							slug={group.slug}
+							category={group.category}
+							description={group.description}
+							images={group.images}
+							stock={group.stock}
+							order={group.order}
+							productType={group.productType}
+							format={group.format}
+							categories={categories}
+							orderOptions={orderOptions}
+							autoSubmitImages
+							autoFormatSlug
+						/>
+					</FormSection>
+					<ActiveCheckbox defaultChecked={group.active} />
+					<SubmitButton>Salvar produto</SubmitButton>
+				</form>
 			</EditorialPanel>
 
 			<AdminVariantsPanel
@@ -169,34 +164,35 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 			/>
 
 			<EditorialPanel>
-				<CardHeader>
-					<CardTitle>Histórico do produto</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<ul className="divide-y">
-						{history.map((entry) => (
-							<li key={String(entry._id)} className="py-3 space-y-1">
-								<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-									<div className="font-medium">{getAuditActionLabel(entry.action)}</div>
-									<div className="text-xs text-muted-foreground">
-										{new Date(entry.createdAt).toLocaleString(displayLocale)}
-									</div>
+				<h2 className="editorial-serif mb-4 text-xl font-semibold text-[var(--sl-ink)]">
+					Histórico do produto
+				</h2>
+				<ul className="divide-y divide-[var(--sl-line)]">
+					{history.map((entry) => (
+						<li key={String(entry._id)} className="space-y-1 py-3">
+							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+								<div className="font-medium">{getAuditActionLabel(entry.action)}</div>
+								<div className="text-xs text-[var(--sl-text-muted)]">
+									{new Date(entry.createdAt).toLocaleString(displayLocale)}
 								</div>
-								<div className="text-sm text-muted-foreground">
-									{entry.actorEmail || entry.actorId} · {getActorRoleLabel(entry.actorRole)}
-								</div>
-								{entry.details ? (
-									<pre className="overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
-										{JSON.stringify(entry.details, null, 2)}
-									</pre>
-								) : null}
-							</li>
-						))}
-						{history.length === 0 ? (
-							<li className="py-6 text-muted-foreground">Nenhum registro recente neste produto.</li>
-						) : null}
-					</ul>
-				</CardContent>
+							</div>
+							<div className="text-sm text-[var(--sl-text-muted)]">
+								{entry.actorEmail || entry.actorId} · {getActorRoleLabel(entry.actorRole)}
+							</div>
+							{entry.details ? (
+								<pre
+									className="overflow-x-auto border bg-[var(--sl-surface-quiet)] p-3 text-xs text-[var(--sl-text-muted)]"
+									style={{ borderRadius: "var(--sl-radius)" }}
+								>
+									{JSON.stringify(entry.details, null, 2)}
+								</pre>
+							) : null}
+						</li>
+					))}
+					{history.length === 0 ? (
+						<li className="py-6 text-[var(--sl-text-muted)]">Nenhum registro recente neste produto.</li>
+					) : null}
+				</ul>
 			</EditorialPanel>
 		</AdminEditorialPage>
 	);

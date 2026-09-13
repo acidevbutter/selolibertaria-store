@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
 
 export function CategorySelectField({
@@ -22,7 +23,10 @@ export function CategorySelectField({
 		<>
 			<input type="hidden" name={name} value={value} />
 			<Select value={value} onValueChange={setValue}>
-				<SelectTrigger className={triggerClassName}>
+				<SelectTrigger
+					className={cn("border-[var(--sl-line)] bg-[var(--sl-paper-pure)]", triggerClassName)}
+					style={{ borderRadius: "var(--sl-radius)" }}
+				>
 					<SelectValue placeholder={placeholder} />
 				</SelectTrigger>
 				<SelectContent>

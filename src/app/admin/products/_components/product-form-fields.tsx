@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { AdminFieldHelp } from "@/app/admin/_components/admin-field-help";
 import { AdminImageUrlList } from "@/app/admin/products/_components/admin-image-url-list.client";
@@ -8,9 +8,24 @@ import { AdminProductImagePreview } from "@/app/admin/products/_components/admin
 import { CategorySelectField } from "@/app/admin/products/_components/category-select-field.client";
 import { VariantPriceFields } from "@/app/admin/products/_components/variant-price-fields.client";
 import { fieldPatterns } from "@/lib/admin-product-form-schema";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
+import { cn } from "@/lib/utils";
 import { Label } from "@/ui/shadcn/label";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const inputStyle = { borderRadius: "var(--sl-radius)" } as const;
+
+function Input({ className, ...props }: ComponentPropsWithoutRef<"input">) {
+	return (
+		<input
+			{...props}
+			className={cn(
+				"h-[var(--sl-h-button)] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)] disabled:opacity-50",
+				className,
+			)}
+			style={inputStyle}
+		/>
+	);
+}
 
 export function Field({
 	label,
@@ -29,16 +44,13 @@ export function Field({
 	return (
 		<div className={className ?? "space-y-2"}>
 			<div className="flex items-center gap-1">
-				<Label
-					htmlFor={name}
-					className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]"
-				>
+				<Label htmlFor={name} className="text-[11px] uppercase tracking-[0.2em] text-[var(--sl-text-muted)]">
 					{label}
 				</Label>
 				{help ? <AdminFieldHelp label={label}>{help}</AdminFieldHelp> : null}
 			</div>
 			{children}
-			{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+			{hint ? <p className="text-xs text-[var(--sl-text-muted)]">{hint}</p> : null}
 		</div>
 	);
 }
@@ -87,26 +99,36 @@ export function Textarea({
 			defaultValue={defaultValue ?? undefined}
 			rows={rows}
 			placeholder={placeholder}
-			className={`flex min-h-24 w-full border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.76)] px-4 py-3 text-base shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className ?? ""}`}
+			className={cn(
+				"flex min-h-24 w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-base text-[var(--sl-ink)] outline-none transition-colors placeholder:text-[color:var(--sl-text-disabled)] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+				className,
+			)}
+			style={inputStyle}
 		/>
 	);
 }
 
 export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boolean }) {
 	return (
-		<div className="space-y-3 border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.72)] p-5">
+		<div className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper)] p-5">
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium">Disponibilidade</h3>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2">
-				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
+				<label
+					className="flex cursor-pointer items-start gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3 text-sm"
+					style={inputStyle}
+				>
 					<input type="radio" name="active" value="true" defaultChecked={defaultChecked} className="mt-0.5" />
 					<span className="space-y-1">
 						<span className="block font-medium">Ativo</span>
-						<span className="block text-xs text-muted-foreground">Disponível no catálogo.</span>
+						<span className="block text-xs text-[var(--sl-text-muted)]">Disponível no catálogo.</span>
 					</span>
 				</label>
-				<label className="flex cursor-pointer items-start gap-3 border border-[color:var(--editorial-border)] bg-white/50 px-3 py-3 text-sm">
+				<label
+					className="flex cursor-pointer items-start gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3 text-sm"
+					style={inputStyle}
+				>
 					<input
 						type="radio"
 						name="active"
@@ -116,7 +138,7 @@ export function ActiveCheckbox({ defaultChecked = true }: { defaultChecked?: boo
 					/>
 					<span className="space-y-1">
 						<span className="block font-medium">Desativar</span>
-						<span className="block text-xs text-muted-foreground">Oculta o item no catálogo.</span>
+						<span className="block text-xs text-[var(--sl-text-muted)]">Oculta o item no catálogo.</span>
 					</span>
 				</label>
 			</div>
@@ -134,12 +156,10 @@ export function FormSection({
 	children: ReactNode;
 }) {
 	return (
-		<section className="space-y-4 border border-[color:var(--editorial-border)] bg-[color:rgba(255,251,245,0.74)] p-5">
+		<section className="space-y-4 border border-[var(--sl-line)] bg-[var(--sl-paper)] p-5">
 			<div className="space-y-1">
 				<h2 className="editorial-serif text-2xl font-semibold">{title}</h2>
-				{description ? (
-					<p className="text-sm leading-7 text-[color:var(--editorial-muted)]">{description}</p>
-				) : null}
+				{description ? <p className="text-sm leading-7 text-[var(--sl-text-muted)]">{description}</p> : null}
 			</div>
 			{children}
 		</section>
@@ -258,7 +278,8 @@ export function ProductCoreFields({
 					id="order"
 					name="order"
 					defaultValue={order || String(orderOptions[0] ?? 1)}
-					className="flex h-9 w-full max-w-[11rem] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background focus:outline-hidden focus:ring-1 focus:ring-ring"
+					className="flex h-[var(--sl-h-button)] w-full max-w-[11rem] border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm text-[var(--sl-ink)] outline-none"
+					style={inputStyle}
 				>
 					{orderOptions.map((option) => (
 						<option key={option} value={String(option)}>
@@ -372,28 +393,44 @@ export function InheritedVariantFields({
 	images: string[];
 }) {
 	return (
-		<div className="space-y-4 rounded-md border p-4">
+		<div className="space-y-4 border border-[var(--sl-line)] p-4" style={inputStyle}>
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium">Herdado do produto</h3>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-2">
 					<Label>Nome</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{name}</div>
+					<div
+						className="border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] px-3 py-2 text-sm"
+						style={inputStyle}
+					>
+						{name}
+					</div>
 				</div>
 				<div className="space-y-2">
 					<Label>Slug</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 font-mono text-sm">{slug}</div>
+					<div
+						className="border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] px-3 py-2 font-mono text-sm"
+						style={inputStyle}
+					>
+						{slug}
+					</div>
 				</div>
 				<div className="space-y-2">
 					<Label>Categoria</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+					<div
+						className="border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] px-3 py-2 text-sm"
+						style={inputStyle}
+					>
 						{category || "Categoria não informada"}
 					</div>
 				</div>
 				<div className="space-y-2">
 					<Label>Descrição</Label>
-					<div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+					<div
+						className="border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] px-3 py-2 text-sm"
+						style={inputStyle}
+					>
 						{description || "Usa o resumo do produto."}
 					</div>
 				</div>
@@ -441,9 +478,9 @@ export function SubmitButton({ children }: { children: ReactNode }) {
 	const { pending } = useFormStatus();
 
 	return (
-		<Button type="submit" disabled={pending}>
+		<SlButton type="submit" variant="primary" disabled={pending}>
 			{pending ? "Salvando..." : children}
-		</Button>
+		</SlButton>
 	);
 }
 
