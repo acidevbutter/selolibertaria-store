@@ -5,6 +5,8 @@ import { useState } from "react";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
 
+const radiusStyle = { borderRadius: "var(--sl-radius)" } as const;
+
 export function AdminProductImagePreview({
 	images,
 	alt,
@@ -21,9 +23,10 @@ export function AdminProductImagePreview({
 			<div
 				className={
 					size === "sm"
-						? "flex h-14 w-14 items-center justify-center rounded-md border border-dashed bg-muted/40 text-[11px] text-muted-foreground"
-						: "flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground"
+						? "flex h-14 w-14 items-center justify-center border border-dashed border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] text-[11px] text-[var(--sl-text-muted)]"
+						: "flex aspect-square w-full items-center justify-center border border-dashed border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] text-sm text-[var(--sl-text-muted)]"
 				}
+				style={radiusStyle}
 			>
 				Sem imagem disponível
 			</div>
@@ -35,7 +38,8 @@ export function AdminProductImagePreview({
 			<>
 				<button
 					type="button"
-					className="h-14 w-14 overflow-hidden rounded-md border bg-muted"
+					className="h-14 w-14 overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]"
+					style={radiusStyle}
 					onClick={() => setSelectedImage(images[0]!)}
 				>
 					<Image
@@ -67,7 +71,8 @@ export function AdminProductImagePreview({
 						<button
 							key={`${src}-${index}`}
 							type="button"
-							className="overflow-hidden rounded-md border bg-muted text-left"
+							className="overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] text-left"
+							style={radiusStyle}
 							onClick={() => setSelectedImage(src)}
 						>
 							<Image
@@ -83,7 +88,7 @@ export function AdminProductImagePreview({
 					))}
 				</div>
 				{images.length > 4 ? (
-					<p className="text-xs text-muted-foreground">
+					<p className="text-xs text-[var(--sl-text-muted)]">
 						Mostrando 4 de {images.length} imagens desta galeria.
 					</p>
 				) : null}
@@ -116,7 +121,10 @@ function ImagePreviewDialog({
 					<DialogDescription>Prévia ampliada da imagem selecionada.</DialogDescription>
 				</DialogHeader>
 				{selectedImage ? (
-					<div className="overflow-hidden rounded-lg bg-background">
+					<div
+						className="overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]"
+						style={radiusStyle}
+					>
 						<Image
 							src={selectedImage}
 							alt={alt}

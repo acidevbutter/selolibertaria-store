@@ -1,12 +1,16 @@
 "use client";
 
-import { ImagePlus, RefreshCw, Trash2, X } from "lucide-react";
+import { ImagePlus, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
+import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ADMIN_IMAGE_UPLOAD_MAX_LABEL, getAdminImageUploadError } from "@/lib/admin-image-upload";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
-import { Button } from "@/ui/shadcn/button";
+import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const radiusStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 export function AdminImageUrlList({
 	name = "images",
@@ -34,6 +38,8 @@ export function AdminImageUrlList({
 	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 	const [pendingPreviewUrls, setPendingPreviewUrls] = useState<string[]>([]);
 	const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+	const [isDraggingOver, setIsDraggingOver] = useState(false);
+	const dragDepthRef = useRef(0);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const preservePendingSelectionRef = useRef(false);
@@ -121,6 +127,31 @@ export function AdminImageUrlList({
 		setUploadError("");
 		setUploadSuccess("");
 		setIsSelectionModalOpen(true);
+	};
+
+	const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		if (!event.dataTransfer.types.includes("Files")) return;
+		dragDepthRef.current += 1;
+		setIsDraggingOver(true);
+	};
+
+	const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+	};
+
+	const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		dragDepthRef.current = Math.max(dragDepthRef.current - 1, 0);
+		if (dragDepthRef.current === 0) setIsDraggingOver(false);
+	};
+
+	const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		dragDepthRef.current = 0;
+		setIsDraggingOver(false);
+		if (isUploading) return;
+		handleFiles(event.dataTransfer.files);
 	};
 
 	const appendValue = (nextValue: string) => {
@@ -265,16 +296,40 @@ export function AdminImageUrlList({
 				<input key={`${name}-hidden-${index}`} type="hidden" name={name} value={value} />
 			))}
 
-			<div className="flex flex-col gap-3 rounded-md border border-dashed p-3 md:flex-row md:items-center md:justify-between">
-				<div className="space-y-1">
-					<p className="text-sm font-medium">Imagem</p>
-					<p className="text-xs text-muted-foreground">
-						{uploadMode === "on-submit"
-							? `Escolha, revise a prévia local e salve o formulário para publicar a troca. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`
-							: isSingleImage
-								? `Escolha uma imagem do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`
-								: `Escolha uma ou mais imagens do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`}
-					</p>
+			<div
+				onDragEnter={handleDragEnter}
+				onDragOver={handleDragOver}
+				onDragLeave={handleDragLeave}
+				onDrop={handleDrop}
+				className={cn(
+					"flex flex-col gap-3 border border-dashed p-4 transition-colors md:flex-row md:items-center md:justify-between",
+					isDraggingOver
+						? "border-[var(--sl-wine)] bg-[var(--sl-danger-wash)]"
+						: "border-[var(--sl-line)] bg-[var(--sl-paper-pure)]",
+				)}
+				style={radiusStyle}
+			>
+				<div className="flex items-center gap-3">
+					<UploadCloud
+						className={cn(
+							"h-5 w-5 shrink-0",
+							isDraggingOver ? "text-[var(--sl-wine)]" : "text-[var(--sl-text-muted)]",
+						)}
+					/>
+					<div className="space-y-1">
+						<p className="text-sm font-medium text-[var(--sl-ink)]">
+							{isDraggingOver ? "Solte para enviar" : "Arraste a foto aqui"}
+						</p>
+						<p className="text-xs text-[var(--sl-text-muted)]">
+							{isDraggingOver
+								? "JPG, PNG ou WebP."
+								: uploadMode === "on-submit"
+									? `ou escolha do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}. Revise a prévia local e salve o formulário para publicar a troca.`
+									: isSingleImage
+										? `ou escolha do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`
+										: `ou escolha do computador. Limite: ${ADMIN_IMAGE_UPLOAD_MAX_LABEL}.`}
+						</p>
+					</div>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<input
@@ -297,10 +352,11 @@ export function AdminImageUrlList({
 					/>
 					<label
 						htmlFor={inputId}
-						className={[
-							"inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground",
+						className={cn(
+							"sl-btn sl-btn-secondary gap-2",
 							isUploading ? "pointer-events-none opacity-50" : "",
-						].join(" ")}
+						)}
+						style={{ height: "var(--sl-h-small)", padding: "0 16px", fontSize: "11px" }}
 					>
 						{isSingleImage && previewValues.length > 0 ? (
 							<RefreshCw className="h-4 w-4" />
@@ -311,43 +367,76 @@ export function AdminImageUrlList({
 					</label>
 
 					{uploadMode === "instant" && pendingFiles.length > 0 && !isUploading ? (
-						<Button type="button" variant="outline" onClick={() => void uploadFiles(pendingFiles)}>
+						<SlButton
+							type="button"
+							variant="secondary"
+							size="sm"
+							onClick={() => void uploadFiles(pendingFiles)}
+						>
 							Enviar agora
-						</Button>
+						</SlButton>
 					) : null}
 				</div>
 			</div>
 
+			{isUploading ? (
+				<div
+					className="flex items-center gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3 text-xs text-[var(--sl-text-muted)]"
+					style={radiusStyle}
+				>
+					{pendingPreviewUrls[0] ? (
+						<Image
+							src={pendingPreviewUrls[0]}
+							alt="Prévia da imagem em envio"
+							width={40}
+							height={40}
+							className="h-10 w-10 shrink-0 object-cover"
+							style={radiusStyle}
+							unoptimized
+						/>
+					) : null}
+					<span>Enviando imagem...</span>
+				</div>
+			) : null}
+
 			{hasPendingSelection ? (
-				<div className="flex flex-col gap-3 border border-amber-300 bg-amber-50 px-3 py-3 text-xs text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+				<div
+					className="flex flex-col gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3 text-xs text-[var(--sl-text)] sm:flex-row sm:items-center sm:justify-between"
+					style={radiusStyle}
+				>
 					<div className="space-y-1">
-						<p className="font-medium">
+						<p className="font-medium text-[var(--sl-ink)]">
 							{uploadMode === "on-submit"
 								? "Troca pendente: a imagem será enviada ao salvar."
 								: "Imagem selecionada aguardando envio."}
 						</p>
 						<p>{pendingFiles.map((file) => file.name).join(", ")}</p>
 					</div>
-					<Button
+					<SlButton
 						type="button"
-						variant="outline"
+						variant="secondary"
 						size="sm"
 						onClick={clearPendingSelection}
 						disabled={isUploading}
 					>
 						<X className="mr-2 h-4 w-4" />
 						Descartar troca
-					</Button>
+					</SlButton>
 				</div>
 			) : null}
 
 			{uploadError ? (
-				<p role="alert" className="text-sm text-destructive">
-					{uploadError}
-				</p>
+				<div
+					className="border border-[var(--sl-danger-line)] bg-[var(--sl-danger-wash)] px-3 py-3"
+					style={radiusStyle}
+				>
+					<p role="alert" className="text-sm text-[var(--sl-danger)]">
+						{uploadError}
+					</p>
+				</div>
 			) : null}
 			{uploadSuccess ? (
-				<p role="status" className="text-sm text-emerald-700">
+				<p role="status" className="text-sm text-[var(--sl-ink)]">
 					{uploadSuccess}
 				</p>
 			) : null}
@@ -358,7 +447,8 @@ export function AdminImageUrlList({
 						<button
 							key={`${src}-${index}`}
 							type="button"
-							className="relative overflow-hidden rounded-md border bg-muted text-left"
+							className="relative overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] text-left"
+							style={radiusStyle}
 							aria-label={`Visualizar imagem ${index + 1}`}
 							onClick={() => setSelectedImage(src)}
 						>
@@ -374,7 +464,10 @@ export function AdminImageUrlList({
 						</button>
 					))
 				) : pendingPreviewUrls.length === 0 ? (
-					<div className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed bg-muted/40 text-sm text-muted-foreground">
+					<div
+						className="flex aspect-square w-full items-center justify-center border border-dashed border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] text-sm text-[var(--sl-text-muted)]"
+						style={radiusStyle}
+					>
 						Sem imagem disponível
 					</div>
 				) : null}
@@ -382,7 +475,8 @@ export function AdminImageUrlList({
 				{pendingPreviewUrls.map((src, index) => (
 					<div
 						key={`${src}-${index}`}
-						className="relative overflow-hidden rounded-md border border-dashed border-primary/40 bg-muted/60"
+						className="relative overflow-hidden border border-dashed border-[var(--sl-wine)] bg-[var(--sl-surface-quiet)]"
+						style={radiusStyle}
 					>
 						<Image
 							src={src}
@@ -419,7 +513,10 @@ export function AdminImageUrlList({
 					</DialogHeader>
 					<div className="space-y-4">
 						{pendingPreviewUrls[0] ? (
-							<div className="overflow-hidden rounded-lg border bg-muted/40">
+							<div
+								className="overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]"
+								style={radiusStyle}
+							>
 								<Image
 									src={pendingPreviewUrls[0]}
 									alt={pendingFiles[0]?.name || "Prévia da imagem selecionada"}
@@ -431,7 +528,7 @@ export function AdminImageUrlList({
 								/>
 							</div>
 						) : null}
-						<div className="space-y-1 text-sm text-muted-foreground">
+						<div className="space-y-1 text-sm text-[var(--sl-text-muted)]">
 							<p>{pendingFiles[0]?.name ?? "Arquivo sem nome"}</p>
 							{pendingFiles.length > 1 ? (
 								<p>{pendingFiles.length} arquivos serão processados neste envio.</p>
@@ -441,9 +538,9 @@ export function AdminImageUrlList({
 							) : null}
 						</div>
 						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-							<Button
+							<SlButton
 								type="button"
-								variant="outline"
+								variant="secondary"
 								onClick={() => {
 									setIsSelectionModalOpen(false);
 									clearPendingSelection();
@@ -451,14 +548,19 @@ export function AdminImageUrlList({
 								disabled={isUploading}
 							>
 								Descartar prévia
-							</Button>
-							<Button type="button" onClick={() => void confirmPendingSelection()} disabled={isUploading}>
+							</SlButton>
+							<SlButton
+								type="button"
+								variant="primary"
+								onClick={() => void confirmPendingSelection()}
+								disabled={isUploading}
+							>
 								{isUploading
 									? "Enviando..."
 									: uploadMode === "on-submit"
 										? "Confirmar troca"
 										: "Salvar e enviar"}
-							</Button>
+							</SlButton>
 						</div>
 					</div>
 				</DialogContent>
@@ -482,7 +584,10 @@ export function AdminImageUrlList({
 					</DialogHeader>
 					{selectedImage ? (
 						<div className="space-y-4">
-							<div className="overflow-hidden rounded-lg bg-background">
+							<div
+								className="overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]"
+								style={radiusStyle}
+							>
 								<Image
 									src={selectedImage}
 									alt="Prévia ampliada da imagem"
@@ -494,9 +599,9 @@ export function AdminImageUrlList({
 								/>
 							</div>
 							<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-								<Button
+								<SlButton
 									type="button"
-									variant="outline"
+									variant="secondary"
 									onClick={() => {
 										setSelectedImage(null);
 										setIsDeleteConfirmOpen(false);
@@ -504,25 +609,25 @@ export function AdminImageUrlList({
 									disabled={isDeletingImage}
 								>
 									Fechar prévia
-								</Button>
-								<Button
+								</SlButton>
+								<SlButton
 									type="button"
-									variant="outline"
+									variant="secondary"
 									onClick={removeSelectedImageFromForm}
 									disabled={isDeletingImage}
 								>
 									<X className="mr-2 h-4 w-4" />
 									Remover do formulário
-								</Button>
-								<Button
+								</SlButton>
+								<SlButton
 									type="button"
-									variant="destructive"
+									variant="accent"
 									onClick={() => setIsDeleteConfirmOpen(true)}
 									disabled={isDeletingImage}
 								>
 									<Trash2 className="mr-2 h-4 w-4" />
 									Excluir mídia
-								</Button>
+								</SlButton>
 							</div>
 						</div>
 					) : null}
@@ -539,22 +644,22 @@ export function AdminImageUrlList({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-						<Button
+						<SlButton
 							type="button"
-							variant="outline"
+							variant="secondary"
 							onClick={() => setIsDeleteConfirmOpen(false)}
 							disabled={isDeletingImage}
 						>
 							Cancelar
-						</Button>
-						<Button
+						</SlButton>
+						<SlButton
 							type="button"
-							variant="destructive"
+							variant="accent"
 							onClick={() => void deleteSelectedImage()}
 							disabled={isDeletingImage}
 						>
 							{isDeletingImage ? "Excluindo..." : "Sim, excluir"}
-						</Button>
+						</SlButton>
 					</div>
 				</DialogContent>
 			</Dialog>
