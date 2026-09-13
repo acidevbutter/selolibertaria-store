@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { env } from "@/env.mjs";
+import { syncMediaUsage } from "@/lib/media-usage";
 import { filterRenderableProductImages } from "@/lib/product-image-utils";
 import { slugify } from "@/lib/utils";
 
@@ -188,6 +189,13 @@ export async function createCatalogProduct(product: CatalogProductInput) {
 		},
 		true,
 	);
+	await syncMediaUsage({
+		entityType: "product",
+		entityId: product.slug,
+		entityLabel: product.name,
+		field: "images",
+		imageUrls: product.images,
+	});
 	return fromFastApiProduct(created);
 }
 
@@ -211,6 +219,15 @@ export async function updateCatalogProduct(
 		},
 		true,
 	);
+	if (payload.images) {
+		await syncMediaUsage({
+			entityType: "product",
+			entityId: slugify(slug),
+			entityLabel: payload.name ?? slug,
+			field: "images",
+			imageUrls: payload.images,
+		});
+	}
 	return fromFastApiProduct(product);
 }
 
@@ -224,6 +241,13 @@ export async function addCatalogVariant(slug: string, variant: CatalogVariantDoc
 		},
 		true,
 	);
+	await syncMediaUsage({
+		entityType: "product_variant",
+		entityId: variant.id,
+		entityLabel: variant.label || slug,
+		field: "images",
+		imageUrls: variant.images,
+	});
 	return fromFastApiProduct(product);
 }
 
@@ -246,6 +270,15 @@ export async function updateCatalogVariant(
 		},
 		true,
 	);
+	if (payload.images) {
+		await syncMediaUsage({
+			entityType: "product_variant",
+			entityId: variantId,
+			entityLabel: payload.label || slug,
+			field: "images",
+			imageUrls: payload.images,
+		});
+	}
 	return fromFastApiProduct(product);
 }
 
