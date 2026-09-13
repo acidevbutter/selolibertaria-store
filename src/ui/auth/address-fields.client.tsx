@@ -53,7 +53,6 @@ export function AddressFields({
 	const locale = useLocale();
 	const t = useTranslations("Address");
 	const [lookupStatus, setLookupStatus] = useState<string | null>(null);
-	const [postalFieldsLocked, setPostalFieldsLocked] = useState(false);
 	const lastLookupKeyRef = useRef<string | null>(null);
 	const isBrazilOnly = countryMode === "br-only";
 
@@ -77,7 +76,6 @@ export function AddressFields({
 	}
 
 	function clearPostalDerivedAddress(postalCode = current.postalCode) {
-		setPostalFieldsLocked(false);
 		onChange(
 			withCountryConstraint({
 				...current,
@@ -128,10 +126,8 @@ export function AddressFields({
 
 			onChange(nextAddress);
 			onResolvedAddress?.(nextAddress);
-			setPostalFieldsLocked(effectiveCountry === "BR");
 			setLookupStatus(t("lookup.success"));
 		} catch {
-			setPostalFieldsLocked(false);
 			setLookupStatus(t("lookup.unavailable"));
 			clearPostalDerivedAddress(normalizePostalCode(effectiveCountry, postalCode));
 		}
@@ -157,7 +153,6 @@ export function AddressFields({
 		const postalDigits = nextPostalCode.replace(/\D+/g, "");
 
 		lastLookupKeyRef.current = null;
-		setPostalFieldsLocked(false);
 		setLookupStatus(null);
 
 		onChange(
@@ -176,8 +171,8 @@ export function AddressFields({
 		);
 	}
 
-	const autoFilledHint =
-		postalFieldsLocked && effectiveCountry === "BR" ? { title: t("fieldAutoFilled") } : {};
+	const postalDerivedFieldsLocked = effectiveCountry === "BR";
+	const autoFilledHint = postalDerivedFieldsLocked ? { title: t("fieldAutoFilled") } : {};
 
 	return (
 		<div className="grid gap-4">
@@ -232,7 +227,7 @@ export function AddressFields({
 				onChange={(event) => setField("line1", event.target.value)}
 				autoComplete="address-line1"
 				placeholder={t("placeholders.streetAddress")}
-				disabled={postalFieldsLocked && effectiveCountry === "BR"}
+				readOnly={postalDerivedFieldsLocked}
 				{...autoFilledHint}
 				required={required}
 			/>
@@ -244,7 +239,7 @@ export function AddressFields({
 					value={current.district}
 					onChange={(event) => setField("district", event.target.value)}
 					placeholder={t("placeholders.district")}
-					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					readOnly={postalDerivedFieldsLocked}
 					{...autoFilledHint}
 					required={required && effectiveCountry === "BR"}
 				/>
@@ -255,7 +250,7 @@ export function AddressFields({
 					value={current.city}
 					onChange={(event) => setField("city", event.target.value)}
 					autoComplete="address-level2"
-					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					readOnly={postalDerivedFieldsLocked}
 					{...autoFilledHint}
 					required={required}
 				/>
@@ -267,7 +262,7 @@ export function AddressFields({
 					onChange={(event) => setField("state", event.target.value)}
 					autoComplete="address-level1"
 					maxLength={effectiveCountry === "BR" ? 2 : undefined}
-					disabled={postalFieldsLocked && effectiveCountry === "BR"}
+					readOnly={postalDerivedFieldsLocked}
 					{...autoFilledHint}
 					required={required}
 				/>

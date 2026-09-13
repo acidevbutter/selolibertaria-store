@@ -21,7 +21,7 @@ export interface CheckoutAddress extends ShippingDestination {
 	state?: string | null;
 }
 
-export type CheckoutDeliveryMethod = "saved-address" | "new-address" | "pickup";
+export type CheckoutDeliveryMethod = "saved-address" | "new-address";
 
 export interface ShippingQuote {
 	providerCode: string;

@@ -12,7 +12,12 @@ import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipp
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
 const CHECKOUT_COOKIE = "asaas_checkout";
-type CheckoutReceipt = { orderId: string; ownerKey: string; cartHash: string; cleaned: boolean };
+type CheckoutReceipt = {
+	orderId: string;
+	ownerKey: string;
+	cartHash: string;
+	cleaned: boolean;
+};
 
 async function receipt(orderId: string): Promise<CheckoutReceipt | null> {
 	try {
@@ -95,6 +100,57 @@ function normalizeAddress(address?: CheckoutAddress | null): CheckoutAddress | n
 	return normalized.postalCode && normalized.country === "BR" ? normalized : null;
 }
 
+/**
+ * Light quote used to auto-calculate shipping as soon as a CEP resolves, before
+ * the buyer has filled in the rest of the form. Only needs a destination postal
+ * code -- unlike createAsaasCheckout, it never touches Asaas or requires buyer
+ * data or a full street address.
+ */
+export async function getShippingQuote(input: {
+	deliveryMethod: CheckoutDeliveryMethod;
+	address?: CheckoutAddress | null;
+}) {
+	const result = await getCheckoutSnapshot();
+	if (!result.ok) return { error: result.error } as const;
+	const snapshot = result.snapshot;
+	if (!["saved-address", "new-address"].includes(input.deliveryMethod)) {
+		return { error: "Escolha uma forma de entrega" } as const;
+	}
+	const address = normalizeAddress(
+		input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address,
+	);
+	if (!address) {
+		return { error: "Informe um CEP válido para calcular o frete" } as const;
+	}
+	try {
+		const baseTotal = Math.max(0, snapshot.subtotal - snapshot.discountTotal);
+		const shipping = await resolveShippingQuotesForDestination({
+			destination: address,
+			deliveryMethod: input.deliveryMethod,
+			subtotal: baseTotal,
+			currency: snapshot.currency,
+			items: snapshot.items.map((item) => ({
+				...item,
+				price: item.unitAmount,
+			})),
+		});
+		if (shipping.error || !shipping.selected) {
+			return { error: shipping.error || "Não foi possível cotar a entrega" } as const;
+		}
+		return {
+			ok: true as const,
+			amountTotal: baseTotal + shipping.selected.amount,
+			shippingAmount: shipping.selected.amount,
+			estimatedDays: shipping.selected.estimatedDays ?? null,
+			currency: snapshot.currency,
+		};
+	} catch (error) {
+		return {
+			error: error instanceof Error ? error.message : "Não foi possível calcular o frete",
+		} as const;
+	}
+}
+
 export async function createAsaasCheckout(input: {
 	buyer: CheckoutBuyerDraft;
 	deliveryMethod: CheckoutDeliveryMethod;
@@ -106,16 +162,19 @@ export async function createAsaasCheckout(input: {
 	const snapshot = result.snapshot;
 	try {
 		const buyer = normalizeCheckoutBuyer(input.buyer);
-		if (!["pickup", "saved-address", "new-address"].includes(input.deliveryMethod)) {
+		if (!["saved-address", "new-address"].includes(input.deliveryMethod)) {
 			return { error: "Escolha uma forma de entrega" } as const;
 		}
-		const address =
-			input.deliveryMethod === "pickup"
-				? null
-				: normalizeAddress(input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address);
+		const address = normalizeAddress(
+			input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address,
+		);
 		if (
-			input.deliveryMethod !== "pickup" &&
-			(!address || !address.line1 || !address.number || !address.city || !address.state || !address.district)
+			!address ||
+			!address.line1 ||
+			!address.number ||
+			!address.city ||
+			!address.state ||
+			!address.district
 		) {
 			return { error: "Informe o endereço completo para entrega" } as const;
 		}
@@ -125,10 +184,15 @@ export async function createAsaasCheckout(input: {
 			deliveryMethod: input.deliveryMethod,
 			subtotal: baseTotal,
 			currency: snapshot.currency,
-			items: snapshot.items.map((item) => ({ ...item, price: item.unitAmount })),
+			items: snapshot.items.map((item) => ({
+				...item,
+				price: item.unitAmount,
+			})),
 		});
 		if (shipping.error || !shipping.selected) {
-			return { error: shipping.error || "Não foi possível cotar a entrega" } as const;
+			return {
+				error: shipping.error || "Não foi possível cotar a entrega",
+			} as const;
 		}
 		const shippingRate = toShippingRate(shipping.selected);
 		const amountTotal = baseTotal + shipping.selected.amount;
@@ -137,6 +201,7 @@ export async function createAsaasCheckout(input: {
 				needsConfirmation: true as const,
 				amountTotal,
 				shippingAmount: shipping.selected.amount,
+				estimatedDays: shipping.selected.estimatedDays ?? null,
 				currency: snapshot.currency,
 			};
 		}
@@ -204,7 +269,9 @@ export async function finalizeAsaasCheckout(input: { orderId: string }) {
 			account_email_sent?: boolean;
 		}>(`/checkout/intents/${encodeURIComponent(input.orderId)}/finalize`, {
 			method: "POST",
-			headers: { "X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()) },
+			headers: {
+				"X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()),
+			},
 		});
 		let cartCleared = false;
 		if (remote.status === "succeeded" && currentReceipt && !currentReceipt.cleaned) {

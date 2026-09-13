@@ -14,13 +14,23 @@ vi.mock("@/lib/shipping", () => ({
 }));
 vi.mock("@/lib/cart-cookies", () => ({ getCartId: async () => "guest-1" }));
 
-import { createAsaasCheckout } from "./checkout-actions";
+import { createAsaasCheckout, getShippingQuote } from "./checkout-actions";
 
 const buyer = {
 	fullName: "Pessoa Teste",
 	email: "pessoa@example.com",
 	cpf: "12345678909",
 	phone: "11999999999",
+};
+
+const address = {
+	line1: "Rua Teste",
+	number: "100",
+	district: "Centro",
+	city: "São Paulo",
+	state: "SP",
+	postalCode: "01000-000",
+	country: "BR",
 };
 
 describe("checkout Asaas", () => {
@@ -57,13 +67,18 @@ describe("checkout Asaas", () => {
 	});
 
 	it("exige confirmação do total antes de emitir cobrança", async () => {
-		const result = await createAsaasCheckout({ buyer, deliveryMethod: "pickup" });
+		const result = await createAsaasCheckout({ buyer, deliveryMethod: "new-address", address });
 		expect(result).toMatchObject({ needsConfirmation: true, amountTotal: 4500 });
 		expect(mocks.fetch).not.toHaveBeenCalled();
 	});
 
 	it("envia centavos e interpreta o contrato snake_case", async () => {
-		const result = await createAsaasCheckout({ buyer, deliveryMethod: "pickup", confirmedAmount: 4500 });
+		const result = await createAsaasCheckout({
+			buyer,
+			deliveryMethod: "new-address",
+			address,
+			confirmedAmount: 4500,
+		});
 		expect(result).toMatchObject({
 			ok: true,
 			asaasChargeId: "pay_1",
@@ -74,8 +89,7 @@ describe("checkout Asaas", () => {
 		expect(url).toBe("http://backend/checkout/intents");
 		expect(JSON.parse(request.body)).toMatchObject({
 			amount_total: 4500,
-			delivery_method: "pickup",
-			delivery_address: null,
+			delivery_method: "new-address",
 		});
 		expect(request.headers.get("X-Internal-API-Key")).toBe("internal");
 	});
@@ -89,9 +103,60 @@ describe("checkout Asaas", () => {
 
 	it("não emite cobrança quando o frete falha", async () => {
 		mocks.shipping.mockResolvedValue({ selected: null, error: "Frete indisponível" });
-		expect(await createAsaasCheckout({ buyer, deliveryMethod: "pickup", confirmedAmount: 4500 })).toEqual({
+		expect(
+			await createAsaasCheckout({ buyer, deliveryMethod: "new-address", address, confirmedAmount: 4500 }),
+		).toEqual({
 			error: "Frete indisponível",
 		});
 		expect(mocks.fetch).not.toHaveBeenCalled();
+	});
+});
+
+describe("getShippingQuote", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.stubGlobal("fetch", mocks.fetch);
+		mocks.snapshot.mockResolvedValue({
+			ok: true,
+			snapshot: {
+				checkoutOwnerKey: "guest:guest-1",
+				userId: null,
+				user: {},
+				cartHash: "cart-1",
+				currency: "BRL",
+				subtotal: 5000,
+				discountTotal: 500,
+				amountTotal: 4500,
+				items: [],
+			},
+		});
+		mocks.shipping.mockResolvedValue({
+			selected: { amount: 990, estimatedDays: 3 },
+			error: null,
+		});
+	});
+
+	it("calcula o frete só com o CEP, sem exigir endereço completo ou comprador", async () => {
+		const result = await getShippingQuote({
+			deliveryMethod: "new-address",
+			address: { postalCode: "01000-000", country: "BR" },
+		});
+		expect(result).toMatchObject({ ok: true, amountTotal: 4500 + 990, shippingAmount: 990 });
+		expect(mocks.fetch).not.toHaveBeenCalled();
+	});
+
+	it("recusa calcular sem um CEP válido", async () => {
+		expect(await getShippingQuote({ deliveryMethod: "new-address", address: null })).toHaveProperty("error");
+		expect(mocks.shipping).not.toHaveBeenCalled();
+	});
+
+	it("propaga o erro quando o frete não é encontrado para o CEP", async () => {
+		mocks.shipping.mockResolvedValue({ selected: null, error: "Frete indisponível" });
+		expect(
+			await getShippingQuote({
+				deliveryMethod: "new-address",
+				address: { postalCode: "01000-000", country: "BR" },
+			}),
+		).toEqual({ error: "Frete indisponível" });
 	});
 });

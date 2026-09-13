@@ -23,19 +23,6 @@ type QuoteItem = {
 	format?: string | null;
 };
 
-function pickupQuote(currency: string): ShippingQuote {
-	return {
-		providerCode: "pickup",
-		providerLabel: "Retirada na loja",
-		serviceCode: "pickup",
-		serviceName: "Retirar na loja",
-		amount: 0,
-		currency: currency.toUpperCase(),
-		estimatedDays: 1,
-		method: "flat",
-	};
-}
-
 function toQuote(value: Record<string, unknown>): ShippingQuote {
 	return {
 		providerCode: String(value.provider_code ?? "melhor-envio"),
@@ -105,10 +92,6 @@ export async function resolveShippingQuotesForDestination(args: {
 	items: QuoteItem[];
 	deliveryMethod: CheckoutDeliveryMethod;
 }): Promise<ShippingQuoteResolution & { provider: null }> {
-	if (args.deliveryMethod === "pickup") {
-		const quote = pickupQuote(args.currency);
-		return { quotes: [quote], selected: quote, provider: null, error: null };
-	}
 	const resolution = await requestQuote({
 		destination: {
 			country: args.destination?.country ?? "BR",

@@ -78,6 +78,59 @@ describe("AddressFields", () => {
 		expect(current.state).toBe("SP");
 	});
 
+	it("mantem Logradouro/Bairro/Cidade/Estado bloqueados mesmo quando o CEP nao e encontrado", async () => {
+		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 404 }));
+
+		let current: AddressValue = {
+			line1: "",
+			line2: "",
+			number: "",
+			complement: "",
+			district: "",
+			city: "",
+			state: "",
+			postalCode: "",
+			country: "BR",
+		};
+		const handleChange = vi.fn((next: AddressValue) => {
+			current = next;
+		});
+
+		const { rerender } = render(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<AddressFields
+					idPrefix="checkout-address"
+					value={current}
+					onChange={handleChange}
+					countryMode="br-only"
+				/>
+			</IntlClientProvider>,
+		);
+
+		const postalInput = screen.getByLabelText("CEP");
+		fireEvent.change(postalInput, { target: { value: "00000-000" } });
+		rerender(
+			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>
+				<AddressFields
+					idPrefix="checkout-address"
+					value={current}
+					onChange={handleChange}
+					countryMode="br-only"
+				/>
+			</IntlClientProvider>,
+		);
+		fireEvent.blur(postalInput);
+
+		await waitFor(() => {
+			expect(screen.getByText("CEP não encontrado. Confira o número digitado.")).toBeTruthy();
+		});
+
+		expect(screen.getByLabelText("Logradouro")).toHaveProperty("readOnly", true);
+		expect(screen.getByLabelText("Bairro")).toHaveProperty("readOnly", true);
+		expect(screen.getByLabelText("Cidade")).toHaveProperty("readOnly", true);
+		expect(screen.getByLabelText("Estado / Região")).toHaveProperty("readOnly", true);
+	});
+
 	it("remove o campo de pais quando o modo BR-only esta ativo", () => {
 		render(
 			<IntlClientProvider locale="pt-BR" messages={ptBrMessages}>

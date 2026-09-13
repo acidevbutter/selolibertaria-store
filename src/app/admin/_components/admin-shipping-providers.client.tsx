@@ -221,9 +221,7 @@ export default function AdminShippingProviders() {
 				/>
 				<div className="space-y-1">
 					<Label htmlFor="shipping-enabled">Ativar cálculo de frete</Label>
-					<p className="text-xs text-muted-foreground">
-						Se desligar, a cotação fica pausada sem afetar a retirada na loja.
-					</p>
+					<p className="text-xs text-muted-foreground">Se desligar, a cotação de frete fica pausada.</p>
 				</div>
 			</div>
 
