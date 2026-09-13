@@ -41,6 +41,13 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    env:
+      # Build-time only: this job never calls Asaas/FastAPI for real, it just
+      # needs values that satisfy env.mjs's schema so `yarn build` can collect
+      # page data. Not used for any live request.
+      NEXT_PUBLIC_URL: "http://localhost:3000"
+      FASTAPI_INTERNAL_API_KEY: "ci-build-placeholder"
+      OAUTH_STATE_SECRET: "ci-build-placeholder-secret-value-32-chars-min"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
