@@ -11,12 +11,29 @@ function normalizeBlocks(source: string) {
 	return source.replace(/\s+(>\s+)/g, "\n\n$1").replace(/\s+(#{3}\s+)/g, "\n\n$1");
 }
 
+const LINK_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/;
+
 export function renderInline(text: string) {
-	const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_)/g).filter(Boolean);
+	const parts = text
+		.split(/(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|\+\+[^+]+\+\+|\[[^\]]+\]\([^)]+\))/g)
+		.filter(Boolean);
 
 	return parts.map((part, index) => {
+		const link = part.match(LINK_PATTERN);
+		if (link) {
+			return (
+				<a key={`${part}-${index}`} href={link[2]} className="underline decoration-1 underline-offset-2">
+					{link[1]}
+				</a>
+			);
+		}
+
 		if (part.startsWith("**") && part.endsWith("**")) {
 			return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>;
+		}
+
+		if (part.startsWith("++") && part.endsWith("++")) {
+			return <u key={`${part}-${index}`}>{part.slice(2, -2)}</u>;
 		}
 
 		if (part.startsWith("*") && part.endsWith("*")) {
