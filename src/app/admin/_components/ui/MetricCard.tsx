@@ -50,14 +50,15 @@ export function MetricCard({
 	);
 
 	const classes = cn(
-		"block w-full rounded-[var(--sl-radius)] bg-[var(--sl-surface-card)] p-[var(--sl-pad-metric)] text-left text-[var(--sl-text)] no-underline transition-[var(--sl-transition)]",
+		"block w-full bg-[var(--sl-surface-card)] p-[var(--sl-pad-metric)] text-left text-[var(--sl-text)] no-underline transition-[var(--sl-transition)]",
 		clickable ? "border border-[var(--sl-line)] cursor-pointer" : "border border-[var(--sl-line-hairline)]",
 		className,
 	);
+	const style = { borderRadius: "var(--sl-radius)" };
 
 	if (href) {
 		return (
-			<YnsLink href={href} className={classes}>
+			<YnsLink href={href} className={classes} style={style}>
 				{content}
 			</YnsLink>
 		);
@@ -65,11 +66,15 @@ export function MetricCard({
 
 	if (onClick) {
 		return (
-			<button type="button" onClick={onClick} className={classes}>
+			<button type="button" onClick={onClick} className={classes} style={style}>
 				{content}
 			</button>
 		);
 	}
 
-	return <div className={classes}>{content}</div>;
+	return (
+		<div className={classes} style={style}>
+			{content}
+		</div>
+	);
 }

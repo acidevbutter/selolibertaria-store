@@ -25,10 +25,11 @@ export function StatusBadge({
 	return (
 		<span
 			className={cn(
-				"inline-flex h-[var(--sl-h-badge)] items-center rounded-[var(--sl-radius)] px-[10px] text-[10px] font-black uppercase tracking-[var(--sl-track-label-tight)]",
+				"inline-flex h-[var(--sl-h-badge)] items-center px-[10px] text-[10px] font-black uppercase tracking-[var(--sl-track-label-tight)]",
 				toneStyle[tone],
 				className,
 			)}
+			style={{ borderRadius: "var(--sl-radius)" }}
 		>
 			{children}
 		</span>

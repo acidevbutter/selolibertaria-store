@@ -48,9 +48,10 @@ export function DataTable<Row extends { id?: string | number }>({
 	return (
 		<div
 			className={cn(
-				"rounded-[var(--sl-radius)] border border-[var(--sl-line-hairline)] bg-[var(--sl-surface-card)] text-[var(--sl-text)]",
+				"border border-[var(--sl-line-hairline)] bg-[var(--sl-surface-card)] text-[var(--sl-text)]",
 				className,
 			)}
+			style={{ borderRadius: "var(--sl-radius)" }}
 		>
 			<div
 				className="grid items-center gap-4 border-b border-[var(--sl-line)] p-[var(--sl-pad-table-head)] bg-[var(--sl-surface-band)] text-[10px] font-black tracking-[var(--sl-track-label-tight)] text-[var(--sl-text-label)] uppercase"
