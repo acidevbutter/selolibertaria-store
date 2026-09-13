@@ -2,21 +2,24 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/ui/shadcn/badge";
-import { Button } from "@/ui/shadcn/button";
+import { DataTable } from "@/app/admin/_components/ui/DataTable";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/ui/shadcn/table";
+import { SlButton } from "@/ui/sl/sl-button";
 import { StatusBadge } from "@/ui/status-badge";
+
+function Tag({ children }: { children: ReactNode }) {
+	return (
+		<span
+			className="inline-flex max-w-full items-center truncate border border-[var(--sl-line)] px-2 py-1 text-[11px] font-semibold tracking-[0.12em] text-[var(--sl-text-muted)] uppercase"
+			style={{ borderRadius: "var(--sl-radius)" }}
+		>
+			{children}
+		</span>
+	);
+}
 
 export type EmailLogTableItem = {
 	id: string;
@@ -98,58 +101,33 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 
 	return (
 		<>
-			<div className="w-full overflow-x-auto">
-				<Table className="w-full table-fixed">
-					<TableHeader>
-						<TableRow>
-							<TableHead className="w-[160px]">Data</TableHead>
-							<TableHead className="w-[120px]">Status</TableHead>
-							<TableHead className="w-[180px]">Tipo</TableHead>
-							<TableHead>Destinatário</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{items.map((item) => (
-							<TableRow
-								key={item.id}
-								className="cursor-pointer hover:bg-muted/40"
-								onClick={() => setSelected(item)}
-								onKeyDown={(event) => {
-									if (event.key === "Enter" || event.key === " ") {
-										event.preventDefault();
-										setSelected(item);
-									}
-								}}
-								role="button"
-								tabIndex={0}
-							>
-								<TableCell>{item.sentAtLabel}</TableCell>
-								<TableCell>
-									<StatusBadge status={item.status || "unknown"} />
-								</TableCell>
-								<TableCell>
-									<Badge variant="outline" className="max-w-full truncate">
-										{item.kindLabel}
-									</Badge>
-								</TableCell>
-								<TableCell className="font-mono text-xs">
-									<div className="truncate" title={item.email || "-"}>
-										{item.email || "-"}
-									</div>
-								</TableCell>
-							</TableRow>
-						))}
-						{items.length === 0 && (
-							<TableRow>
-								<TableCell colSpan={4} className="py-8 text-muted-foreground">
-									Nenhum e-mail encontrado para os filtros atuais.
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-					<TableCaption>Mostrando até {limit} registros, do mais recente para o mais antigo.</TableCaption>
-				</Table>
-			</div>
+			<DataTable<EmailLogTableItem>
+				columns={[
+					{ key: "sentAtLabel", label: "Data", width: "160px" },
+					{
+						key: "status",
+						label: "Status",
+						width: "120px",
+						render: (item) => <StatusBadge status={item.status || "unknown"} />,
+					},
+					{ key: "kindLabel", label: "Tipo", width: "180px", render: (item) => <Tag>{item.kindLabel}</Tag> },
+					{
+						key: "email",
+						label: "Destinatário",
+						render: (item) => (
+							<span className="font-mono text-xs break-all" title={item.email || "-"}>
+								{item.email || "-"}
+							</span>
+						),
+					},
+				]}
+				rows={items}
+				empty="Nenhum e-mail encontrado para os filtros atuais."
+				onRowClick={setSelected}
+			/>
+			<p className="mt-3 text-xs text-[var(--sl-text-muted)]">
+				Mostrando até {limit} registros, do mais recente para o mais antigo.
+			</p>
 
 			<Dialog
 				open={selected !== null}
@@ -170,31 +148,34 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 
 								<div className="mt-6 space-y-4 text-sm">
 									{selected.error ? (
-										<div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-											<p className="mb-2 text-xs font-semibold uppercase tracking-wide text-destructive">
+										<div
+											className="border border-[var(--sl-danger-line)] bg-[var(--sl-danger-wash)] p-4"
+											style={{ borderRadius: "var(--sl-radius)" }}
+										>
+											<p className="mb-2 text-xs font-semibold tracking-wide text-[var(--sl-danger)] uppercase">
 												Falha de envio
 											</p>
-											<p className="break-words text-sm text-destructive">{selected.error}</p>
+											<p className="text-sm break-words text-[var(--sl-danger)]">{selected.error}</p>
 										</div>
 									) : null}
 									<div className="flex items-center gap-2">
-										<Button
+										<SlButton
 											type="button"
-											size="sm"
 											variant="secondary"
+											size="sm"
 											disabled={retryingKey !== null || !canRetry(selected)}
 											onClick={() => void retryEmail(selected)}
 										>
 											{retryingKey === selected.id ? "Reenviando..." : "Reenviar pelo Butter Relay"}
-										</Button>
+										</SlButton>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Status</p>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Status</p>
 										<StatusBadge status={selected.status || "unknown"} />
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Tipo</p>
-										<Badge variant="outline">{selected.kindLabel}</Badge>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Tipo</p>
+										<Tag>{selected.kindLabel}</Tag>
 									</div>
 									<div className="space-y-1 text-xs">
 										{selected.purchaseId ? (
@@ -217,38 +198,46 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 										{selected.source ? <div>Origem do envio: {selected.source}</div> : null}
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Canal de envio</p>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Canal de envio</p>
 										<p>{providerLabel(selected.provider)}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Enviado em</p>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Enviado em</p>
 										<p>{selected.sentAtLabel}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Modelo do e-mail</p>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Modelo do e-mail</p>
 										<p>{selected.template || "Não informado"}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">ID da mensagem</p>
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">ID da mensagem</p>
 										<p className="font-mono text-xs break-all">{selected.messageId || "-"}</p>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Destinatários</p>
-										<pre className="max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs">
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">Destinatários</p>
+										<pre
+											className="max-h-40 overflow-auto border bg-[var(--sl-surface-quiet)] p-3 text-xs"
+											style={{ borderRadius: "var(--sl-radius)" }}
+										>
 											{formatJson(selected.recipients || {})}
 										</pre>
 									</div>
 									<div>
-										<p className="mb-1 text-xs font-medium text-muted-foreground">Histórico de tentativas</p>
-										<pre className="max-h-40 overflow-auto rounded-md border bg-muted p-3 text-xs">
+										<p className="mb-1 text-xs font-medium text-[var(--sl-text-muted)]">
+											Histórico de tentativas
+										</p>
+										<pre
+											className="max-h-40 overflow-auto border bg-[var(--sl-surface-quiet)] p-3 text-xs"
+											style={{ borderRadius: "var(--sl-radius)" }}
+										>
 											{formatJson(selected.attempts || [])}
 										</pre>
 									</div>
 								</div>
 							</div>
 
-							<div className="flex min-h-0 flex-col bg-muted/20">
-								<div className="border-b px-6 py-3 text-sm text-muted-foreground">
+							<div className="flex min-h-0 flex-col bg-[var(--sl-surface-quiet)]">
+								<div className="border-b border-[var(--sl-line)] px-6 py-3 text-sm text-[var(--sl-text-muted)]">
 									{selected.emailBody ? "Prévia do e-mail" : "Versão em texto"}
 								</div>
 								<div className="min-h-0 flex-1 p-4">
@@ -257,10 +246,14 @@ export function EmailLogTable({ items, limit }: { items: EmailLogTableItem[]; li
 											title={`Prévia do e-mail ${selected.subject || selected.id}`}
 											srcDoc={selected.emailBody}
 											sandbox=""
-											className="h-full w-full rounded-md border bg-white"
+											className="h-full w-full border bg-[var(--sl-paper-pure)]"
+											style={{ borderRadius: "var(--sl-radius)" }}
 										/>
 									) : (
-										<pre className="h-full overflow-auto rounded-md border bg-background p-4 text-xs whitespace-pre-wrap">
+										<pre
+											className="h-full overflow-auto border bg-[var(--sl-paper-pure)] p-4 text-xs whitespace-pre-wrap"
+											style={{ borderRadius: "var(--sl-radius)" }}
+										>
 											{selected.textBody || "Nenhum conteúdo disponível."}
 										</pre>
 									)}

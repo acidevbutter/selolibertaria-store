@@ -21,6 +21,8 @@ type DataTableProps<Row extends { id?: string | number }> = {
 	selectedIds?: Set<string | number>;
 	onToggleRow?: (row: Row) => void;
 	onToggleAll?: (checked: boolean) => void;
+	/** Makes each row clickable (e.g. to open a detail view) without a dedicated "actions" column. */
+	onRowClick?: (row: Row) => void;
 	className?: string;
 };
 
@@ -38,6 +40,7 @@ export function DataTable<Row extends { id?: string | number }>({
 	selectedIds,
 	onToggleRow,
 	onToggleAll,
+	onRowClick,
 	className,
 }: DataTableProps<Row>) {
 	const gridTemplateColumns = [selectable ? "24px" : null, ...columns.map((c) => c.width || "minmax(0,1fr)")]
@@ -83,6 +86,7 @@ export function DataTable<Row extends { id?: string | number }>({
 							className={cn(
 								"grid items-center gap-4 p-[var(--sl-pad-table-cell)] text-[15px] transition-[var(--sl-transition)]",
 								i === rows.length - 1 ? "" : "border-b border-[var(--sl-line-hairline)]",
+								onRowClick && "cursor-pointer",
 								selected
 									? "bg-[var(--sl-surface-row-hover)]"
 									: zebra && i % 2 === 1
@@ -90,6 +94,19 @@ export function DataTable<Row extends { id?: string | number }>({
 										: "",
 							)}
 							style={{ gridTemplateColumns }}
+							onClick={onRowClick ? () => onRowClick(row) : undefined}
+							onKeyDown={
+								onRowClick
+									? (e) => {
+											if (e.key === "Enter" || e.key === " ") {
+												e.preventDefault();
+												onRowClick(row);
+											}
+										}
+									: undefined
+							}
+							role={onRowClick ? "button" : undefined}
+							tabIndex={onRowClick ? 0 : undefined}
 						>
 							{selectable ? (
 								<input
