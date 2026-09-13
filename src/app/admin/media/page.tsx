@@ -1,11 +1,9 @@
-import { ImageOff } from "lucide-react";
-import NextImage from "next/image";
 import { redirect } from "next/navigation";
+import { MediaLibraryGrid } from "@/app/admin/media/_components/media-library-grid.client";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import {
 	AdminEditorialHero,
 	AdminEditorialPage,
@@ -137,53 +135,20 @@ export default async function AdminMediaPage({ searchParams }: { searchParams?: 
 					</div>
 				</div>
 				<div className="space-y-4 p-6 sm:p-8">
-					{items.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 border border-dashed border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-6 py-12 text-center">
-							<ImageOff className="h-6 w-6 text-[var(--sl-text-muted)]" />
-							<p className="text-sm font-semibold text-[var(--sl-ink)]">
-								Nenhuma imagem ainda — arraste a primeira.
-							</p>
-							<p className="max-w-md text-sm leading-6 text-[var(--sl-text-muted)]">
-								Envie uma imagem pelo editorial ou por um produto. Ela passa a aparecer nesta biblioteca
-								automaticamente.
-							</p>
-						</div>
-					) : (
-						<div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
-							{items.map((item) => (
-								<div
-									key={item.id}
-									className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
-									style={{ borderRadius: "var(--sl-radius)" }}
-								>
-									<div className="relative aspect-square overflow-hidden border-b border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]">
-										<NextImage
-											src={item.url}
-											alt={item.alt || item.filename}
-											fill
-											sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 20vw"
-											className="object-cover"
-											{...getProductImageOptimizationProps(item.url)}
-										/>
-									</div>
-									<div className="space-y-1 p-3">
-										<p className="truncate text-xs font-semibold text-[var(--sl-ink)]" title={item.filename}>
-											{item.filename}
-										</p>
-										<p className="text-[11px] text-[var(--sl-text-muted)]">
-											{item.width && item.height ? `${item.width}×${item.height} · ` : ""}
-											{formatBytes(item.bytes)}
-										</p>
-										<p className="text-[11px] text-[var(--sl-text-muted)]">
-											{new Intl.DateTimeFormat(DEFAULT_LOCALE, { dateStyle: "short" }).format(
-												new Date(item.created_at),
-											)}
-										</p>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
+					<MediaLibraryGrid
+						items={items.map((item) => ({
+							id: item.id,
+							url: item.url,
+							filename: item.filename,
+							alt: item.alt,
+							bytes: item.bytes,
+							width: item.width,
+							height: item.height,
+							createdAtLabel: new Intl.DateTimeFormat(DEFAULT_LOCALE, { dateStyle: "short" }).format(
+								new Date(item.created_at),
+							),
+						}))}
+					/>
 
 					<div className="flex flex-col gap-3 border-t border-[var(--sl-line)] pt-4 sm:flex-row sm:items-center sm:justify-between">
 						<p className="text-sm text-[var(--sl-text-muted)]">
