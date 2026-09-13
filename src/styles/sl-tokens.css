@@ -238,6 +238,16 @@
 .sl-btn-primary:not(:disabled):hover {
 	background: #2a2422;
 }
+.sl-btn-accent {
+	height: var(--sl-h-button);
+	padding: var(--sl-pad-button);
+	background: var(--sl-wine);
+	color: var(--sl-text-on-ink);
+	font-size: 11px;
+}
+.sl-btn-accent:not(:disabled):hover {
+	background: #612226;
+}
 .sl-btn-secondary {
 	height: var(--sl-h-button);
 	padding: var(--sl-pad-button);
