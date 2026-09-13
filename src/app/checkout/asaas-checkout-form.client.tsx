@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createAsaasCheckout } from "@/actions/checkout-actions";
+import { useCheckoutQuote } from "@/app/checkout/checkout-quote-context";
 import type { CheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { formatCheckoutPhone, formatCpf, getCheckoutBuyerFieldErrors } from "@/lib/checkout-buyer";
 import type { CheckoutDeliveryMethod } from "@/lib/shipping-core";
@@ -13,6 +14,7 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 	const [pending, startTransition] = useTransition();
 	const [message, setMessage] = useState<string | null>(null);
 	const [quotedAmount, setQuotedAmount] = useState<number | undefined>();
+	const { setQuote } = useCheckoutQuote();
 	const [fullName, setFullName] = useState(checkout.user.name ?? "");
 	const [email, setEmail] = useState(checkout.user.email ?? "");
 	const [cpf, setCpf] = useState(checkout.user.cpf ?? "");
@@ -53,6 +55,12 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 			}
 			if (result.needsConfirmation === true) {
 				setQuotedAmount(result.amountTotal);
+				setQuote({
+					amountTotal: result.amountTotal,
+					shippingAmount: result.shippingAmount,
+					estimatedDays: result.estimatedDays,
+					currency: result.currency,
+				});
 				setMessage(
 					`Total com frete: ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: result.currency }).format(result.amountTotal / 100)}. Confirme para continuar.`,
 				);
@@ -63,7 +71,14 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 	}
 
 	return (
-		<form className="flex flex-col gap-5" onSubmit={submit} onChange={() => setQuotedAmount(undefined)}>
+		<form
+			className="flex flex-col gap-5"
+			onSubmit={submit}
+			onChange={() => {
+				setQuotedAmount(undefined);
+				setQuote(null);
+			}}
+		>
 			<div>
 				<p className="sl-eyebrow m-0 text-[color:var(--sl-accent)]">Pagamento</p>
 				<h1 className="sl-head mt-2 text-[32px] leading-[0.98]">Finalizar na Asaas</h1>
@@ -124,6 +139,7 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 						onChange={(value) => {
 							setAddress(value);
 							setQuotedAmount(undefined);
+							setQuote(null);
 						}}
 						required
 						countryMode="br-only"

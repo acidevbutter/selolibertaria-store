@@ -12,7 +12,12 @@ import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipp
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
 const CHECKOUT_COOKIE = "asaas_checkout";
-type CheckoutReceipt = { orderId: string; ownerKey: string; cartHash: string; cleaned: boolean };
+type CheckoutReceipt = {
+	orderId: string;
+	ownerKey: string;
+	cartHash: string;
+	cleaned: boolean;
+};
 
 async function receipt(orderId: string): Promise<CheckoutReceipt | null> {
 	try {
@@ -125,10 +130,15 @@ export async function createAsaasCheckout(input: {
 			deliveryMethod: input.deliveryMethod,
 			subtotal: baseTotal,
 			currency: snapshot.currency,
-			items: snapshot.items.map((item) => ({ ...item, price: item.unitAmount })),
+			items: snapshot.items.map((item) => ({
+				...item,
+				price: item.unitAmount,
+			})),
 		});
 		if (shipping.error || !shipping.selected) {
-			return { error: shipping.error || "Não foi possível cotar a entrega" } as const;
+			return {
+				error: shipping.error || "Não foi possível cotar a entrega",
+			} as const;
 		}
 		const shippingRate = toShippingRate(shipping.selected);
 		const amountTotal = baseTotal + shipping.selected.amount;
@@ -137,6 +147,7 @@ export async function createAsaasCheckout(input: {
 				needsConfirmation: true as const,
 				amountTotal,
 				shippingAmount: shipping.selected.amount,
+				estimatedDays: shipping.selected.estimatedDays ?? null,
 				currency: snapshot.currency,
 			};
 		}
@@ -204,7 +215,9 @@ export async function finalizeAsaasCheckout(input: { orderId: string }) {
 			account_email_sent?: boolean;
 		}>(`/checkout/intents/${encodeURIComponent(input.orderId)}/finalize`, {
 			method: "POST",
-			headers: { "X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()) },
+			headers: {
+				"X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()),
+			},
 		});
 		let cartCleared = false;
 		if (remote.status === "succeeded" && currentReceipt && !currentReceipt.cleaned) {
