@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataTable } from "@/app/admin/_components/ui/DataTable";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability, normalizeUserRole } from "@/lib/authz";
@@ -10,7 +12,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 function formatRoleLabel(role: "admin" | "vendor" | "customer") {
 	switch (role) {
@@ -75,65 +76,54 @@ export default async function AdminUsersPage() {
 				<AdminEditorialStat label="Bloqueados" value={blockedCount} helper="Contas com acesso suspenso." />
 			</div>
 			<EditorialPanel className="p-0">
-				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
-					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+				<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 						Cadastros recentes
 					</div>
 				</div>
 				<div className="p-6 sm:p-8">
-					<div className="w-full overflow-x-auto">
-						<Table className="min-w-[720px]">
-							<TableHeader>
-								<TableRow>
-									<TableHead>E-mail</TableHead>
-									<TableHead>Nome</TableHead>
-									<TableHead>Papel</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead></TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{users.map((u: UserLite) => {
-									const role = normalizeUserRole(u.role);
-									return (
-										<TableRow key={u.id}>
-											<TableCell className="font-medium break-all sm:break-normal">{u.email}</TableCell>
-											<TableCell>{u.name || "Nome não informado"}</TableCell>
-											<TableCell className="uppercase text-[11px] tracking-[0.18em] text-[color:var(--editorial-muted)]">
-												{formatRoleLabel(role)}
-											</TableCell>
-											<TableCell>
-												{u.access?.blockedAt ? (
-													<span className="inline-flex items-center rounded-full border border-[#ead2ce] bg-[#f5dfdc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a02a2a]">
-														Bloqueado
-													</span>
-												) : (
-													<span className="inline-flex items-center rounded-full border border-[#bed9ca] bg-[#dfeee6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#23634a]">
-														Ativo
-													</span>
-												)}
-											</TableCell>
-											<TableCell className="text-right">
-												<Link
-													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-													href={`/admin/users/${u.id}`}
-												>
-													Ver usuário
-												</Link>
-											</TableCell>
-										</TableRow>
-									);
-								})}
-								{users.length === 0 && (
-									<TableRow>
-										<TableCell colSpan={5} className="py-6 text-[color:var(--editorial-muted)]">
-											Nenhum usuário encontrado.
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</div>
+					<DataTable<UserLite>
+						columns={[
+							{
+								key: "email",
+								label: "E-mail",
+								render: (u) => <span className="font-medium break-all">{u.email}</span>,
+							},
+							{ key: "name", label: "Nome", render: (u) => u.name || "Nome não informado" },
+							{
+								key: "role",
+								label: "Papel",
+								render: (u) => (
+									<span className="text-[11px] tracking-[0.18em] text-[var(--sl-text-muted)] uppercase">
+										{formatRoleLabel(normalizeUserRole(u.role))}
+									</span>
+								),
+							},
+							{
+								key: "status",
+								label: "Status",
+								render: (u) => (
+									<StatusBadge tone={u.access?.blockedAt ? "alert" : "active"}>
+										{u.access?.blockedAt ? "Bloqueado" : "Ativo"}
+									</StatusBadge>
+								),
+							},
+							{
+								key: "actions",
+								label: "",
+								render: (u) => (
+									<Link
+										className="text-sm font-semibold text-[var(--sl-accent)] underline underline-offset-4"
+										href={`/admin/users/${u.id}`}
+									>
+										Ver usuário
+									</Link>
+								),
+							},
+						]}
+						rows={users}
+						empty="Nenhum usuário encontrado."
+					/>
 				</div>
 			</EditorialPanel>
 		</AdminEditorialPage>

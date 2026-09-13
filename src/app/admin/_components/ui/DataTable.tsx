@@ -102,7 +102,10 @@ export function DataTable<Row extends { id?: string | number }>({
 							{columns.map((c) => (
 								<span
 									key={c.key}
-									className={c.numeric ? "font-[family-name:var(--sl-font-display)] text-[18px]" : undefined}
+									className={cn(
+										"min-w-0 break-words",
+										c.numeric && "font-[family-name:var(--sl-font-display)] text-[18px]",
+									)}
 								>
 									{c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? "")}
 								</span>
