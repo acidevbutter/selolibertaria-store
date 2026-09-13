@@ -79,6 +79,13 @@
 	--sl-danger: var(--sl-wine); /* error = wine, never a system red */
 	--sl-danger-wash: rgba(122, 30, 34, 0.06);
 	--sl-focus-ring: 0 0 0 2px rgba(122, 30, 34, 0.2);
+	--sl-danger-line: rgba(122, 30, 34, 0.3); /* status chip border, field-in-error border */
+
+	/* --- Logged area (/admin, /user) ----------------------------------- */
+	--sl-surface-row-hover: rgba(11, 11, 11, 0.04); /* table row hover + zebra stripe */
+	--sl-surface-quiet: rgba(11, 11, 11, 0.06); /* neutral chip — replaces every library grey */
+	--sl-nav-hover-on-ink: rgba(247, 244, 239, 0.06);
+	--sl-nav-selected: var(--sl-wine); /* selected nav item on the ink sidebar: solid wine block */
 
 	/* --- Type scale (locked) ---------------------------------------------- */
 	--sl-size-hero-xl: 96px;
@@ -103,6 +110,10 @@
 	--sl-track-head: -0.05em;
 	--sl-track-card: -0.02em;
 	--sl-track-label: 0.24em;
+	--sl-track-label-tight: 0.2em; /* status chip, table head label */
+	--sl-track-label-wide: 0.28em; /* eyebrow */
+	--sl-weight-label: 900;
+	--sl-leading-compact: 1.55; /* table empty state, field hint */
 
 	/* --- Spacing / gutters --------------------------------------------- */
 	--sl-gutter-desktop: 48px;
@@ -131,6 +142,14 @@
 	--sl-image-ratio: 1 / 1;
 	--sl-image-ratio-pdp: 4 / 3;
 	--sl-transition: 120ms linear;
+
+	/* --- Logged area layout (/admin, /user) ------------------------------ */
+	--sl-w-sidebar: 264px; /* panel nav, fixed width */
+	--sl-h-nav-item: 44px; /* panel nav item = minimum target */
+	--sl-pad-nav-item: 0 28px; /* item bleeds to the bar edge — no radius, no inset */
+	--sl-pad-table-cell: 14px 20px;
+	--sl-pad-table-head: 10px 20px;
+	--sl-pad-metric: 20px;
 }
 
 /* ------------------------------------------------------------------ *
