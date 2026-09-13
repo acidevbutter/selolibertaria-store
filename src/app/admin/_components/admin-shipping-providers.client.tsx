@@ -1,11 +1,27 @@
 "use client";
 
+import type { ComponentPropsWithoutRef } from "react";
 import { useEffect, useState } from "react";
-import { Button } from "@/ui/shadcn/button";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/ui/shadcn/checkbox";
-import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
+
+function Input({ className, ...props }: ComponentPropsWithoutRef<"input">) {
+	return (
+		<input
+			{...props}
+			className={cn(
+				"h-[var(--sl-h-button)] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)] disabled:opacity-50",
+				className,
+			)}
+			style={fieldStyle}
+		/>
+	);
+}
 
 type ShippingMelhorEnvioPayload = {
 	environment?: "sandbox" | "production" | null;
@@ -185,34 +201,37 @@ export default function AdminShippingProviders() {
 	return (
 		<div className="space-y-6">
 			<div className="space-y-2">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-[var(--sl-text-muted)]">
 					Configure apenas a operação do Melhor Envio neste bloco. O token continua no ambiente do servidor e
 					nunca é salvo no admin.
 				</p>
 			</div>
 
-			<div className="rounded-md border border-border/70 bg-background/70 p-4">
+			<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4" style={fieldStyle}>
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 					<div className="space-y-1">
 						<h3 className="text-sm font-semibold">Conexão Melhor Envio</h3>
-						<p className="text-sm text-muted-foreground">{envTokenStatusLabel}</p>
-						<p className="text-xs leading-5 text-muted-foreground">
+						<p className="text-sm text-[var(--sl-text-muted)]">{envTokenStatusLabel}</p>
+						<p className="text-xs leading-5 text-[var(--sl-text-muted)]">
 							Nesta versão, a cotação usa o token configurado no ambiente da aplicação. A conexão OAuth
 							completa fica preparada para uma próxima etapa.
 						</p>
 					</div>
 					<div className="flex items-center gap-2">
-						<Button type="button" variant="outline" disabled>
+						<SlButton type="button" variant="secondary" disabled>
 							Conectar Melhor Envio
-						</Button>
-						<span className="text-xs text-muted-foreground">
+						</SlButton>
+						<span className="text-xs text-[var(--sl-text-muted)]">
 							{connection.oauthStatus === "coming-soon" ? "Em breve" : ""}
 						</span>
 					</div>
 				</div>
 			</div>
 
-			<div className="flex items-center gap-3 rounded-md border border-border/70 bg-background/70 px-4 py-3">
+			<div
+				className="flex items-center gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3"
+				style={fieldStyle}
+			>
 				<Checkbox
 					id="shipping-enabled"
 					checked={shippingEnabled}
@@ -221,7 +240,7 @@ export default function AdminShippingProviders() {
 				/>
 				<div className="space-y-1">
 					<Label htmlFor="shipping-enabled">Ativar cálculo de frete</Label>
-					<p className="text-xs text-muted-foreground">Se desligar, a cotação de frete fica pausada.</p>
+					<p className="text-xs text-[var(--sl-text-muted)]">Se desligar, a cotação de frete fica pausada.</p>
 				</div>
 			</div>
 
@@ -233,7 +252,11 @@ export default function AdminShippingProviders() {
 						onValueChange={(value: "sandbox" | "production") => updateField("environment", value)}
 						disabled={saving || loading}
 					>
-						<SelectTrigger id="shipping-environment">
+						<SelectTrigger
+							id="shipping-environment"
+							className="border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+							style={fieldStyle}
+						>
 							<SelectValue placeholder="Selecione o ambiente" />
 						</SelectTrigger>
 						<SelectContent>
@@ -349,10 +372,10 @@ export default function AdminShippingProviders() {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-3">
-				<Button type="button" onClick={save} disabled={saving || loading}>
+				<SlButton type="button" variant="primary" onClick={save} disabled={saving || loading}>
 					{saving ? "Salvando..." : "Salvar frete"}
-				</Button>
-				{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+				</SlButton>
+				{status ? <p className="text-sm text-[var(--sl-text-muted)]">{status}</p> : null}
 			</div>
 		</div>
 	);
