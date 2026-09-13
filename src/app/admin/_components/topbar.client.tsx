@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,7 +14,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/ui/
 function AdminBrandMark({ size = 36 }: { size?: number }) {
 	return (
 		<div
-			className="grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#fffdf8] ring-1 ring-white/8"
+			className="grid shrink-0 place-items-center overflow-hidden bg-[var(--sl-paper)]"
 			style={{ height: size, width: size }}
 		>
 			<Image
@@ -32,52 +32,58 @@ function AdminBrandMark({ size = 36 }: { size?: number }) {
 export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAction: () => Promise<void> }) {
 	const pathname = usePathname();
 	const t = useTranslations("AdminShell");
-	const [navigating, setNavigating] = useState(false);
+	const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
 	const visibleNavItems = adminNavItems.filter((item) => hasCapability(role, item.capability));
 
 	useEffect(() => {
-		setNavigating(false);
+		setNavigatingHref(null);
 	}, [pathname]);
 
 	return (
-		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
+		<div className="sticky top-0 relative z-40 border-b border-[var(--sl-line-on-ink)] bg-[var(--sl-ink)] text-[var(--sl-text-on-ink)] md:hidden">
 			<div className="flex h-16 items-center justify-between px-5">
 				<Link href="/admin" className="flex items-center gap-3">
 					<AdminBrandMark />
 					<div className="space-y-0.5">
-						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
-						<div className="text-[11px] font-medium text-[#beb3a8]">{t("brandSubtitle")}</div>
+						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--sl-text-on-ink)]">
+							LIBERTÁRIA
+						</div>
+						<div className="text-[11px] font-medium text-[var(--sl-text-on-ink-soft)]">
+							{t("brandSubtitle")}
+						</div>
 					</div>
 				</Link>
 
 				<Sheet>
-					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
+					<SheetTrigger className="inline-flex items-center justify-center border border-[var(--sl-line-on-ink)] p-2 transition-colors hover:bg-[var(--sl-nav-hover-on-ink)]">
 						<Menu className="h-5 w-5" />
 						<span className="sr-only">{t("openMenu")}</span>
 					</SheetTrigger>
 					<SheetContent
 						side="left"
-						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
+						className="w-[88vw] max-w-[320px] border-r border-[var(--sl-line-on-ink)] bg-[var(--sl-ink)] p-0 text-[var(--sl-text-on-ink)]"
 					>
 						<SheetTitle className="sr-only">{t("navTitle")}</SheetTitle>
 						<div className="px-7 pb-7 pt-7">
 							<div className="flex items-start gap-4">
 								<AdminBrandMark size={44} />
 								<div className="space-y-1">
-									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
+									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[var(--sl-text-on-ink)]">
 										LIBERTÁRIA
 									</div>
-									<div className="text-xs font-medium leading-4 text-[#beb3a8]">{t("brandSubtitle")}</div>
+									<div className="text-xs font-medium leading-4 text-[var(--sl-text-on-ink-soft)]">
+										{t("brandSubtitle")}
+									</div>
 								</div>
 							</div>
 							<div className="mt-5 flex items-center justify-between gap-3">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--sl-text-on-ink-quiet)]">
 									{t("sectionTitle")}
 								</div>
 								<form action={logoutAction}>
 									<button
 										type="submit"
-										className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
+										className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--sl-text-on-ink-quiet)] transition-colors hover:text-[var(--sl-text-on-ink)]"
 									>
 										{t("logout")}
 									</button>
@@ -88,6 +94,7 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 						<nav className="space-y-1 px-[18px] py-4">
 							{visibleNavItems.map(({ href, label }) => {
 								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+								const loading = navigatingHref === href;
 
 								return (
 									<SheetClose asChild key={href}>
@@ -99,19 +106,20 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 													return;
 												}
 
-												setNavigating(true);
+												setNavigatingHref(href);
 											}}
 											className={cn(
-												"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em]",
+												"flex w-full items-center gap-3 px-3 py-3 text-sm font-medium tracking-[-0.01em] transition-opacity",
 												active
-													? "bg-[#f7f1e8] text-[#0b0b0b]"
-													: "text-[#cfc6bd] hover:bg-white/4 hover:text-[#fffdf8]",
+													? "bg-[var(--sl-paper)] text-[var(--sl-ink)]"
+													: "text-[var(--sl-text-on-ink-soft)] hover:bg-[var(--sl-nav-hover-on-ink)] hover:text-[var(--sl-text-on-ink)]",
+												loading && "opacity-60",
 											)}
 										>
 											<span
 												className={cn(
-													"h-1.5 w-1.5 shrink-0 rounded-full",
-													active ? "bg-[#7a1e22]" : "bg-[#5c5450]",
+													"h-1.5 w-1.5 shrink-0",
+													active ? "bg-[var(--sl-wine)]" : "bg-[var(--sl-line-on-ink)]",
 												)}
 											/>
 											{label}
@@ -124,11 +132,7 @@ export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAct
 				</Sheet>
 			</div>
 
-			{navigating ? (
-				<div className="fixed inset-0 z-[60] grid place-items-center bg-black/55">
-					<Loader2 className="h-6 w-6 animate-spin text-[#fffdf8]" />
-				</div>
-			) : null}
+			{navigatingHref ? <div className="absolute inset-x-0 top-0 z-50 h-[2px] bg-[var(--sl-wine)]" /> : null}
 		</div>
 	);
 }

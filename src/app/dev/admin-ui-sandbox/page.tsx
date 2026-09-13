@@ -1,9 +1,15 @@
+import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
+import { AdminTopbar } from "@/app/admin/_components/topbar.client";
 import { DataTable } from "@/app/admin/_components/ui/DataTable";
 import { Field } from "@/app/admin/_components/ui/Field";
 import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 
 export const dynamic = "force-static";
+
+async function noopLogout() {
+	"use server";
+}
 
 type SandboxRow = { id: number; produto: string; formato: string; total: string; status: string };
 
@@ -21,6 +27,20 @@ export default function AdminUiSandboxPage() {
 	return (
 		<div className="min-h-dvh bg-[var(--sl-paper)] p-10 text-[var(--sl-text)]">
 			<h1 className="sl-head mb-8 text-2xl">Admin UI sandbox — fatia 00.2</h1>
+
+			<section className="mb-10">
+				<h2 className="sl-eyebrow mb-4 text-[var(--sl-accent)]">Sidebar / Topbar (fatia 00.4)</h2>
+				<div className="flex h-[420px] max-w-3xl overflow-hidden border border-[var(--sl-line)]">
+					<AdminSidebar
+						user={{ name: "Marcos Pereira", email: "contact@devbutter.tech", role: "admin" }}
+						logoutAction={noopLogout}
+					/>
+					<div className="flex-1 bg-[var(--sl-paper)]" />
+				</div>
+				<div className="mt-4 max-w-3xl border border-[var(--sl-line)]">
+					<AdminTopbar role="admin" logoutAction={noopLogout} />
+				</div>
+			</section>
 
 			<section className="mb-10">
 				<h2 className="sl-eyebrow mb-4 text-[var(--sl-accent)]">MetricCard</h2>
