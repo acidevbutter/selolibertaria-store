@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 		);
 	}
 	try {
-		const result = await uploadImageFileToFastAPI(file);
+		const result = await uploadImageFileToFastAPI(file, auth.session.sub);
 
 		return Response.json({
 			url: result.secure_url,

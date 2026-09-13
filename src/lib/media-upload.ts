@@ -1,11 +1,13 @@
 import { env } from "@/env.mjs";
 
-export async function uploadImageFileToFastAPI(file: File) {
+export async function uploadImageFileToFastAPI(file: File, actor?: string | null) {
 	const formData = new FormData();
 	formData.set("file", file, file.name || "image");
+	const headers: HeadersInit = { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY };
+	if (actor) headers["X-Actor-User-ID"] = actor;
 	const response = await fetch(`${env.FASTAPI_API_URL}/media/internal/admin/upload`, {
 		method: "POST",
-		headers: { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
+		headers,
 		body: formData,
 		cache: "no-store",
 	});
