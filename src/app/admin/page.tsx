@@ -294,7 +294,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 												<p className="text-xs leading-5 text-[var(--sl-text-muted)]">
 													Leitura rápida da loja para checar vitrine e CTA principal.
 												</p>
-												<span className="sl-badge sl-badge-buy">Comprar</span>
+												<span className="inline-flex h-[var(--sl-h-badge)] items-center bg-[var(--sl-buy)] px-[9px] text-[10px] font-black tracking-[0.2em] text-[var(--sl-text-on-ink)] uppercase">
+													Comprar
+												</span>
 											</div>
 										</div>
 									</div>
