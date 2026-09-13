@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { createAsaasCheckout } from "@/actions/checkout-actions";
+import { useEffect, useState, useTransition } from "react";
+import { createAsaasCheckout, getShippingQuote } from "@/actions/checkout-actions";
 import { useCheckoutQuote } from "@/app/checkout/checkout-quote-context";
 import type { CheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { formatCheckoutPhone, formatCpf, getCheckoutBuyerFieldErrors } from "@/lib/checkout-buyer";
-import type { CheckoutDeliveryMethod } from "@/lib/shipping-core";
+import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 import { AddressFields, type AddressValue } from "@/ui/auth/address-fields.client";
 import { SlButton } from "@/ui/sl/sl-button";
 import { SlField } from "@/ui/sl/sl-field";
 
+type QuoteStatus = "idle" | "loading" | "ready" | "error";
+
 export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) {
 	const [pending, startTransition] = useTransition();
 	const [message, setMessage] = useState<string | null>(null);
+	const [quoteStatus, setQuoteStatus] = useState<QuoteStatus>("idle");
 	const [quotedAmount, setQuotedAmount] = useState<number | undefined>();
 	const { setQuote } = useCheckoutQuote();
 	const [fullName, setFullName] = useState(checkout.user.name ?? "");
@@ -33,6 +36,47 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 		state: "",
 		postalCode: "",
 	});
+
+	async function runQuote(method: CheckoutDeliveryMethod, destination?: CheckoutAddress | null) {
+		setQuoteStatus("loading");
+		setMessage(null);
+		const result = await getShippingQuote({ deliveryMethod: method, address: destination });
+		if ("error" in result) {
+			setQuoteStatus("error");
+			setQuotedAmount(undefined);
+			setQuote(null);
+			setMessage(result.error ?? "Não foi possível calcular o frete");
+			return;
+		}
+		setQuoteStatus("ready");
+		setQuotedAmount(result.amountTotal);
+		setQuote({
+			amountTotal: result.amountTotal,
+			shippingAmount: result.shippingAmount,
+			estimatedDays: result.estimatedDays,
+			currency: result.currency,
+		});
+	}
+
+	function invalidateQuote() {
+		setQuoteStatus("idle");
+		setQuotedAmount(undefined);
+		setQuote(null);
+		setMessage(null);
+	}
+
+	useEffect(() => {
+		if (deliveryMethod === "saved-address") {
+			if (checkout.user.address) void runQuote("saved-address", checkout.user.address);
+			return;
+		}
+		const digits = (address.postalCode || "").replace(/\D+/g, "");
+		if (digits.length === 8) {
+			void runQuote("new-address", address);
+		} else {
+			invalidateQuote();
+		}
+	}, [deliveryMethod]);
 
 	function submit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -62,7 +106,7 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 					currency: result.currency,
 				});
 				setMessage(
-					`Total com frete: ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: result.currency }).format(result.amountTotal / 100)}. Confirme para continuar.`,
+					`O frete foi atualizado para ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: result.currency }).format(result.amountTotal / 100)}. Confirme para continuar.`,
 				);
 				return;
 			}
@@ -70,15 +114,19 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 		});
 	}
 
+	const canSubmit = quoteStatus === "ready" && !pending;
+	const submitLabel = pending
+		? "Preparando pagamento…"
+		: quoteStatus === "loading"
+			? "Calculando frete…"
+			: quoteStatus === "error"
+				? "Frete indisponível"
+				: quoteStatus === "idle"
+					? "Informe um CEP válido para continuar"
+					: "Confirmar e pagar";
+
 	return (
-		<form
-			className="flex flex-col gap-5"
-			onSubmit={submit}
-			onChange={() => {
-				setQuotedAmount(undefined);
-				setQuote(null);
-			}}
-		>
+		<form className="flex flex-col gap-5" onSubmit={submit}>
 			<div>
 				<p className="sl-eyebrow m-0 text-[color:var(--sl-accent)]">Pagamento</p>
 				<h1 className="sl-head mt-2 text-[32px] leading-[0.98]">Finalizar na Asaas</h1>
@@ -136,25 +184,22 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 						idPrefix="asaas-checkout"
 						value={address}
 						onChange={(value) => {
+							const postalChanged = value.postalCode !== address.postalCode;
 							setAddress(value);
-							setQuotedAmount(undefined);
-							setQuote(null);
+							if (postalChanged) invalidateQuote();
 						}}
+						onResolvedAddress={(value) => void runQuote("new-address", value)}
 						required
 						countryMode="br-only"
 					/>
 					<p className="m-0 text-[13px] text-[color:var(--sl-text-muted)]">
-						Entregamos somente no Brasil. O frete será calculado antes de emitir a cobrança.
+						Entregamos somente no Brasil. Informe o CEP para calcularmos o frete automaticamente.
 					</p>
 				</fieldset>
 			) : null}
 			{message ? <p className="m-0 text-[13px] text-[color:var(--sl-accent)]">{message}</p> : null}
-			<SlButton type="submit" variant="buy" disabled={pending} className="w-full justify-center">
-				{pending
-					? "Preparando pagamento…"
-					: quotedAmount === undefined
-						? "Calcular total"
-						: "Confirmar e pagar"}
+			<SlButton type="submit" variant="buy" disabled={!canSubmit} className="w-full justify-center">
+				{submitLabel}
 			</SlButton>
 		</form>
 	);
