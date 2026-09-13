@@ -38,6 +38,7 @@ export function AdminImageUrlList({
 	const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 	const [pendingPreviewUrls, setPendingPreviewUrls] = useState<string[]>([]);
 	const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+	const [pendingAlt, setPendingAlt] = useState("");
 	const [isDraggingOver, setIsDraggingOver] = useState(false);
 	const dragDepthRef = useRef(0);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +61,7 @@ export function AdminImageUrlList({
 	const clearPendingSelection = () => {
 		preservePendingSelectionRef.current = false;
 		setPendingFiles([]);
+		setPendingAlt("");
 		setPendingPreviewUrls((current) => {
 			for (const previewUrl of current) {
 				URL.revokeObjectURL(previewUrl);
@@ -188,6 +190,7 @@ export function AdminImageUrlList({
 	const uploadFile = async (file: File) => {
 		const formData = new FormData();
 		formData.set("file", file);
+		if (pendingAlt.trim()) formData.set("alt", pendingAlt.trim());
 		const controller = new AbortController();
 		const timeout = window.setTimeout(() => controller.abort(), 45_000);
 		let response: Response;
@@ -537,6 +540,25 @@ export function AdminImageUrlList({
 								<p>A imagem será enviada somente ao salvar o formulário.</p>
 							) : null}
 						</div>
+						<div className="space-y-2">
+							<label
+								htmlFor={`${inputId}-alt`}
+								className="text-[11px] uppercase tracking-[0.2em] text-[var(--sl-text-muted)]"
+							>
+								Descrição da imagem
+							</label>
+							<input
+								id={`${inputId}-alt`}
+								value={pendingAlt}
+								onChange={(event) => setPendingAlt(event.target.value)}
+								placeholder="O que essa imagem mostra?"
+								className="h-[var(--sl-h-button)] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]"
+								style={radiusStyle}
+							/>
+							<p className="text-xs text-[var(--sl-text-muted)]">
+								Obrigatória para leitoras de tela e para habilitar o envio.
+							</p>
+						</div>
 						<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 							<SlButton
 								type="button"
@@ -553,7 +575,7 @@ export function AdminImageUrlList({
 								type="button"
 								variant="primary"
 								onClick={() => void confirmPendingSelection()}
-								disabled={isUploading}
+								disabled={isUploading || !pendingAlt.trim()}
 							>
 								{isUploading
 									? "Enviando..."

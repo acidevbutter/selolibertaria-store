@@ -8,6 +8,7 @@ export async function POST(request: Request) {
 
 	const formData = await request.formData();
 	const file = formData.get("file");
+	const alt = formData.get("alt");
 
 	if (!(file instanceof File)) {
 		return Response.json(
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 		);
 	}
 	try {
-		const result = await uploadImageFileToFastAPI(file, auth.session.sub);
+		const result = await uploadImageFileToFastAPI(file, auth.session.sub, typeof alt === "string" ? alt : "");
 
 		return Response.json({
 			url: result.secure_url,
