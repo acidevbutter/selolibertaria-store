@@ -26,8 +26,8 @@ export default function AdminPaymentOperations({ orderId }: { orderId: string })
 	}
 
 	return (
-		<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
-			<p className="m-0 text-sm leading-6 text-[color:var(--editorial-muted)]">
+		<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4 sm:p-5">
+			<p className="m-0 text-sm leading-6 text-[var(--sl-text-muted)]">
 				Operações são confirmadas diretamente com a Asaas; o webhook atualiza o estado final.
 			</p>
 			<div className="mt-3 flex flex-wrap gap-2">

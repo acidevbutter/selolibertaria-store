@@ -12,7 +12,6 @@ import {
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
 import { Reveal } from "@/ui/motion/reveal";
-import { Badge } from "@/ui/shadcn/badge";
 import { StatusBadge } from "@/ui/status-badge";
 import AdminPaymentOperations from "../_components/admin-payment-operations.client";
 import UpdateFulfillment from "../_components/update-fulfillment.client";
@@ -264,65 +263,55 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 			<Reveal delay={0.08}>
 				<EditorialPanel className="space-y-6">
 					<div className="space-y-1">
-						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 							Resumo
 						</div>
-						<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
-							Resumo do pedido
-						</h2>
+						<h2 className="editorial-serif text-2xl font-semibold text-[var(--sl-ink)]">Resumo do pedido</h2>
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 						<div className="space-y-1 xl:col-span-2">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Pedido
-							</div>
-							<div className="font-mono text-sm break-all text-[color:var(--editorial-ink)]">{p.id}</div>
+							<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">Pedido</div>
+							<div className="font-mono text-sm break-all text-[var(--sl-ink)]">{p.id}</div>
 						</div>
 						<div className="space-y-1">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+							<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 								E-mail do cliente
 							</div>
-							<div className="break-all text-sm text-[color:var(--editorial-ink)]">
+							<div className="break-all text-sm text-[var(--sl-ink)]">
 								{remote.buyer_email || "Não informado"}
 							</div>
 						</div>
 						<div className="space-y-1">
-							<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-								Criado em
-							</div>
-							<div className="text-sm text-[color:var(--editorial-ink)]">
-								{formatDateTime(p.createdAt, locale)}
-							</div>
+							<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">Criado em</div>
+							<div className="text-sm text-[var(--sl-ink)]">{formatDateTime(p.createdAt, locale)}</div>
 						</div>
 					</div>
 					<AdminPaymentOperations orderId={p.id} />
-					<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4 sm:p-5">
+					<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4 sm:p-5">
 						<div className="mb-4 space-y-1">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 								Expedição
 							</div>
-							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+							<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
 								Atualize status e rastreio. A mudança aparece no histórico logo abaixo.
 							</p>
 						</div>
-						<div className="mb-4 space-y-3 border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-3">
+						<div className="mb-4 space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper)] p-3">
 							<div className="space-y-1">
-								<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+								<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 									Entrega selecionada
 								</div>
-								<div className="text-sm text-[color:var(--editorial-ink)]">
-									{getDeliveryMethodLabel(p.deliveryMethod)}
-								</div>
+								<div className="text-sm text-[var(--sl-ink)]">{getDeliveryMethodLabel(p.deliveryMethod)}</div>
 							</div>
 							{p.shippingRate ? (
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										Frete cotado
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">
+									<div className="text-sm text-[var(--sl-ink)]">
 										{p.shippingRate.serviceName || "Serviço não informado"}
 									</div>
-									<div className="text-xs text-[color:var(--editorial-muted)]">
+									<div className="text-xs text-[var(--sl-text-muted)]">
 										{[
 											p.shippingRate.providerCode ? `Provedor: ${p.shippingRate.providerCode}` : null,
 											p.shippingRate.serviceCode ? `Serviço: ${p.shippingRate.serviceCode}` : null,
@@ -330,7 +319,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 											.filter(Boolean)
 											.join(" • ")}
 									</div>
-									<div className="text-sm text-[color:var(--editorial-muted)]">
+									<div className="text-sm text-[var(--sl-text-muted)]">
 										{typeof p.shippingRate.amount === "number"
 											? formatMoney(
 													p.shippingRate.amount,
@@ -344,7 +333,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 											: ""}
 									</div>
 									{p.shippingRate.quotedAt ? (
-										<div className="text-xs text-[color:var(--editorial-muted)]">
+										<div className="text-xs text-[var(--sl-text-muted)]">
 											Cotado em {formatDateTime(p.shippingRate.quotedAt, locale)}
 										</div>
 									) : null}
@@ -352,10 +341,10 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							) : null}
 							{shippingAddressLines.length > 0 ? (
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										Endereço de entrega
 									</div>
-									<div className="space-y-1 text-sm text-[color:var(--editorial-ink)]">
+									<div className="space-y-1 text-sm text-[var(--sl-ink)]">
 										{shippingAddressLines.map((line) => (
 											<div key={line}>{line}</div>
 										))}
@@ -375,23 +364,23 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 				<Reveal delay={0.12}>
 					<EditorialPanel className="space-y-5">
 						<div className="space-y-1">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 								Itens
 							</div>
-							<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+							<h2 className="editorial-serif text-2xl font-semibold text-[var(--sl-ink)]">
 								Composição da compra
 							</h2>
 						</div>
-						<ul className="divide-y divide-[color:var(--editorial-border)]">
+						<ul className="divide-y divide-[var(--sl-line)]">
 							{(p.items || []).map((it, idx) => (
 								<li key={idx} className="flex items-center justify-between gap-3 py-4">
 									<div className="min-w-0">
-										<div className="font-medium break-words text-[color:var(--editorial-ink)]">
+										<div className="font-medium break-words text-[var(--sl-ink)]">
 											{it.name || "Item sem nome informado"}
 										</div>
-										<div className="text-sm text-[color:var(--editorial-muted)]">Qtd.: {it.quantity}</div>
+										<div className="text-sm text-[var(--sl-text-muted)]">Qtd.: {it.quantity}</div>
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">
+									<div className="text-sm text-[var(--sl-ink)]">
 										{typeof it.unitAmount === "number"
 											? formatMoney(it.unitAmount, p.currency, locale, fallbackCurrency)
 											: "Valor não informado"}
@@ -399,7 +388,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								</li>
 							))}
 							{(p.items || []).length === 0 ? (
-								<li className="py-6 text-[color:var(--editorial-muted)]">Nenhum item registrado.</li>
+								<li className="py-6 text-[var(--sl-text-muted)]">Nenhum item registrado.</li>
 							) : null}
 						</ul>
 					</EditorialPanel>
@@ -407,18 +396,18 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 				<Reveal delay={0.16}>
 					<EditorialPanel className="space-y-5">
 						<div className="space-y-2">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 								Auditoria
 							</div>
-							<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+							<h2 className="editorial-serif text-2xl font-semibold text-[var(--sl-ink)]">
 								Histórico de edição
 							</h2>
-							<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+							<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
 								Toda atualização manual ou automática de status aparece aqui com autoria e origem.
 							</p>
 						</div>
-						<div className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
-							<div className="text-sm text-[color:var(--editorial-muted)]">
+						<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4">
+							<div className="text-sm text-[var(--sl-text-muted)]">
 								{auditCount === 0
 									? "Ainda não há registros neste pedido."
 									: `${auditCount} ${auditCount === 1 ? "registro recente" : "registros recentes"}.`}
@@ -428,29 +417,32 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 							{history.map((entry) => (
 								<li
 									key={`${entry.action}-${entry.createdAt.toISOString()}`}
-									className="border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+									className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
 								>
 									<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 										<div className="space-y-2">
 											<div className="flex flex-wrap items-center gap-2">
-												<div className="font-medium text-[color:var(--editorial-ink)]">
-													{getAuditSummary(entry)}
-												</div>
-												<Badge variant="outline">{getActorRoleLabel(entry.actorRole)}</Badge>
+												<div className="font-medium text-[var(--sl-ink)]">{getAuditSummary(entry)}</div>
+												<span
+													className="inline-flex h-[var(--sl-h-small)] items-center border border-[var(--sl-line)] px-3 text-[11px] font-semibold tracking-[0.12em] text-[var(--sl-text-muted)] uppercase"
+													style={{ borderRadius: "var(--sl-radius)" }}
+												>
+													{getActorRoleLabel(entry.actorRole)}
+												</span>
 											</div>
-											<div className="text-sm text-[color:var(--editorial-muted)]">
+											<div className="text-sm text-[var(--sl-text-muted)]">
 												{entry.actorRole === "system"
 													? "Automação de recebimento"
 													: entry.actorEmail || entry.actorId}
 											</div>
 											{entry.action === "order_payment_status_webhook_updated" ? (
-												<div className="text-xs text-[color:var(--editorial-muted)]">
+												<div className="text-xs text-[var(--sl-text-muted)]">
 													{((entry.details ?? {}) as { webhookType?: string | null }).webhookType ||
 														"Evento recebido"}
 												</div>
 											) : null}
 										</div>
-										<div className="text-xs text-[color:var(--editorial-muted)]">
+										<div className="text-xs text-[var(--sl-text-muted)]">
 											{formatDateTime(entry.createdAt, locale)}
 										</div>
 									</div>
@@ -458,19 +450,19 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 										{getAuditChanges(entry).map((change) => (
 											<div
 												key={change.label}
-												className="border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-3"
+												className="border border-[var(--sl-line)] bg-[var(--sl-paper)] p-3"
 											>
-												<div className="text-xs font-medium uppercase tracking-wide text-[color:var(--editorial-muted)]">
+												<div className="text-xs font-medium uppercase tracking-wide text-[var(--sl-text-muted)]">
 													{change.label}
 												</div>
 												<div className="mt-2 grid gap-2 sm:grid-cols-2">
-													<div className="border border-[color:var(--editorial-border)] bg-white px-3 py-2">
-														<div className="text-xs text-[color:var(--editorial-muted)]">Antes</div>
-														<div className="text-sm text-[color:var(--editorial-ink)]">{change.previous}</div>
+													<div className="border border-[var(--sl-line)] bg-white px-3 py-2">
+														<div className="text-xs text-[var(--sl-text-muted)]">Antes</div>
+														<div className="text-sm text-[var(--sl-ink)]">{change.previous}</div>
 													</div>
-													<div className="border border-[color:var(--editorial-border)] bg-white px-3 py-2">
-														<div className="text-xs text-[color:var(--editorial-muted)]">Depois</div>
-														<div className="text-sm text-[color:var(--editorial-ink)]">{change.next}</div>
+													<div className="border border-[var(--sl-line)] bg-white px-3 py-2">
+														<div className="text-xs text-[var(--sl-text-muted)]">Depois</div>
+														<div className="text-sm text-[var(--sl-ink)]">{change.next}</div>
 													</div>
 												</div>
 											</div>
@@ -479,7 +471,7 @@ export default async function AdminOrderDetails({ params }: { params: Promise<{ 
 								</li>
 							))}
 							{history.length === 0 ? (
-								<li className="border border-dashed border-[color:var(--editorial-border)] py-8 text-center text-[color:var(--editorial-muted)]">
+								<li className="border border-dashed border-[var(--sl-line)] py-8 text-center text-[var(--sl-text-muted)]">
 									Nenhuma mudança de status registrada ainda.
 								</li>
 							) : null}

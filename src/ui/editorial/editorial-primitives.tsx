@@ -12,10 +12,7 @@ export function EditorialSection({ children, className }: { children: ReactNode;
 export function EditorialPanel({ children, className }: { children: ReactNode; className?: string }) {
 	return (
 		<div
-			className={cn(
-				"border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-6 shadow-none sm:p-8",
-				className,
-			)}
+			className={cn("border border-[var(--sl-line)] bg-[var(--sl-paper)] p-6 shadow-none sm:p-8", className)}
 		>
 			{children}
 		</div>
@@ -26,7 +23,7 @@ export function EditorialDarkPanel({ children, className }: { children: ReactNod
 	return (
 		<div
 			className={cn(
-				"border border-[color:var(--editorial-ink)] bg-[color:var(--editorial-ink)] p-6 text-[color:var(--editorial-paper)] shadow-none sm:p-8",
+				"border border-[var(--sl-ink)] bg-[var(--sl-ink)] p-6 text-[var(--sl-text-on-ink)] shadow-none sm:p-8",
 				className,
 			)}
 		>
@@ -39,7 +36,7 @@ export function EditorialEyebrow({ children, className }: { children: ReactNode;
 	return (
 		<p
 			className={cn(
-				"text-[11px] font-medium uppercase tracking-[0.32em] text-[color:var(--editorial-muted)]",
+				"text-[11px] font-medium uppercase tracking-[0.32em] text-[var(--sl-text-muted)]",
 				className,
 			)}
 		>
@@ -68,23 +65,18 @@ export function AdminEditorialHero({
 	className?: string;
 }) {
 	return (
-		<section
-			className={cn(
-				"border border-[color:var(--editorial-border)] bg-[color:var(--editorial-paper)] p-6 sm:p-8",
-				className,
-			)}
-		>
+		<section className={cn("border border-[var(--sl-line)] bg-[var(--sl-paper)] p-6 sm:p-8", className)}>
 			<div className={cn("grid gap-8", aside ? "xl:grid-cols-[minmax(0,1.5fr)_320px]" : undefined)}>
 				<div className="space-y-5">
 					<div className="space-y-3">
 						{eyebrow ? (
-							<EditorialEyebrow className="text-[color:var(--editorial-accent)]">{eyebrow}</EditorialEyebrow>
+							<EditorialEyebrow className="text-[var(--sl-accent)]">{eyebrow}</EditorialEyebrow>
 						) : null}
-						<h1 className="title-font max-w-4xl text-[2.6rem] font-black leading-[0.9] tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-[4rem]">
+						<h1 className="title-font max-w-4xl text-[2.6rem] font-black leading-[0.9] tracking-[-0.05em] text-[var(--sl-ink)] sm:text-[4rem]">
 							{title}
 						</h1>
 						{description ? (
-							<p className="max-w-3xl text-sm leading-7 text-[color:var(--editorial-muted)] sm:text-base">
+							<p className="max-w-3xl text-sm leading-7 text-[var(--sl-text-muted)] sm:text-base">
 								{description}
 							</p>
 						) : null}
@@ -109,16 +101,14 @@ export function AdminEditorialStat({
 	className?: string;
 }) {
 	return (
-		<div className={cn("border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5", className)}>
-			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+		<div className={cn("border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-5", className)}>
+			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 				{label}
 			</div>
-			<div className="mt-4 text-[1.65rem] font-semibold tracking-[-0.04em] text-[color:var(--editorial-ink)] sm:text-[1.9rem]">
+			<div className="mt-4 text-[1.65rem] font-semibold tracking-[-0.04em] text-[var(--sl-ink)] sm:text-[1.9rem]">
 				{value}
 			</div>
-			{helper ? (
-				<div className="mt-3 text-sm leading-6 text-[color:var(--editorial-muted)]">{helper}</div>
-			) : null}
+			{helper ? <div className="mt-3 text-sm leading-6 text-[var(--sl-text-muted)]">{helper}</div> : null}
 		</div>
 	);
 }
@@ -135,14 +125,14 @@ export function AdminEditorialNote({
 	return (
 		<div
 			className={cn(
-				"border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 text-[color:var(--editorial-ink)]",
+				"border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-5 text-[var(--sl-ink)]",
 				className,
 			)}
 		>
-			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+			<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 				{title}
 			</div>
-			<div className="mt-3 text-sm leading-6 text-[color:var(--editorial-muted)]">{description}</div>
+			<div className="mt-3 text-sm leading-6 text-[var(--sl-text-muted)]">{description}</div>
 		</div>
 	);
 }
@@ -159,15 +149,13 @@ export function AdminEditorialEmptyState({
 	return (
 		<div
 			className={cn(
-				"border border-dashed border-[color:var(--editorial-border)] bg-[#fbf7f1] px-6 py-10 text-center",
+				"border border-dashed border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-6 py-10 text-center",
 				className,
 			)}
 		>
 			<div className="space-y-2">
-				<div className="text-base font-semibold text-[color:var(--editorial-ink)]">{title}</div>
-				<div className="mx-auto max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
-					{description}
-				</div>
+				<div className="text-base font-semibold text-[var(--sl-ink)]">{title}</div>
+				<div className="mx-auto max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">{description}</div>
 			</div>
 		</div>
 	);
