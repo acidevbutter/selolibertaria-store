@@ -11,7 +11,7 @@ function normalizeBlocks(source: string) {
 	return source.replace(/\s+(>\s+)/g, "\n\n$1").replace(/\s+(#{3}\s+)/g, "\n\n$1");
 }
 
-function renderInline(text: string) {
+export function renderInline(text: string) {
 	const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_)/g).filter(Boolean);
 
 	return parts.map((part, index) => {
