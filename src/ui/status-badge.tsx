@@ -1,7 +1,5 @@
-"use client";
-
+import { StatusBadge as AdminStatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { normalizeDisplayPaymentStatus } from "@/lib/payment-status-display";
-import { Badge } from "@/ui/shadcn/badge";
 
 const STATUS_LABELS: Record<string, string> = {
 	paid: "Pago",
@@ -22,20 +20,17 @@ const STATUS_LABELS: Record<string, string> = {
 	requires_action: "Ação necessária",
 };
 
+const NEUTRAL_STATUSES = new Set(["paid", "processed", "succeeded", "won"]);
+const ACTIVE_STATUSES = new Set(["sent", "pending", "processing", "open", "requires_action"]);
+
+/** Payment/order status — three tones only (neutral/active/alert), never shadcn green/red. */
 export function StatusBadge({ status }: { status: string }) {
 	const s = normalizeDisplayPaymentStatus(status);
 	const normalizedLabel = (s || status || "").replaceAll("_", " ").trim().toLowerCase();
 	const label =
 		STATUS_LABELS[s] || STATUS_LABELS[normalizedLabel] || normalizedLabel || "Sem status definido";
-	if (s === "paid" || s === "processed" || s === "sent" || s === "succeeded" || s === "won")
-		return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">{label}</Badge>;
-	if (s === "disputed")
-		return <Badge className="bg-orange-100 text-orange-800 border-orange-200">{label}</Badge>;
-	if (s === "failed") return <Badge className="bg-red-100 text-red-800 border-red-200">{label}</Badge>;
-	if (s === "lost") return <Badge className="bg-red-100 text-red-800 border-red-200">{label}</Badge>;
-	if (s === "pending" || s === "processing")
-		return <Badge className="bg-amber-100 text-amber-800 border-amber-200">{label}</Badge>;
-	if (s === "canceled" || s === "voided")
-		return <Badge className="bg-gray-200 text-gray-800 border-gray-300">{label}</Badge>;
-	return <Badge variant="secondary">{label}</Badge>;
+
+	const tone = NEUTRAL_STATUSES.has(s) ? "neutral" : ACTIVE_STATUSES.has(s) ? "active" : "alert";
+
+	return <AdminStatusBadge tone={tone}>{label}</AdminStatusBadge>;
 }

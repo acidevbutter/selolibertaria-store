@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const fieldClassName =
+	"h-[var(--sl-h-button)] max-w-md flex-1 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)] disabled:opacity-50";
+const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 function normalizeSupportEmail(value: string) {
 	return value.trim().toLowerCase();
@@ -52,25 +55,26 @@ export function AdminSupportEmail() {
 	return (
 		<div className="space-y-2">
 			<label className="block text-sm font-medium">E-mail de suporte</label>
-			<p className="text-sm text-muted-foreground">
+			<p className="text-sm text-[var(--sl-text-muted)]">
 				Usado nos modelos de e-mail e nos pontos de suporte da loja.
 			</p>
 			<div className="flex flex-wrap items-end gap-2">
-				<Input
+				<input
 					value={email ?? ""}
 					onChange={(e) => setEmail(e.target.value)}
 					onBlur={(e) => setEmail(normalizeSupportEmail(e.target.value))}
 					placeholder="contact@selolibertaria.com"
-					className="max-w-md flex-1"
+					className={fieldClassName}
+					style={fieldStyle}
 					autoCapitalize="none"
 					autoCorrect="off"
 					spellCheck={false}
 				/>
-				<Button type="button" onClick={save} disabled={loading}>
+				<SlButton type="button" variant="primary" onClick={save} disabled={loading}>
 					Salvar e-mail
-				</Button>
+				</SlButton>
 			</div>
-			{status && <div className="text-sm text-muted-foreground">{status}</div>}
+			{status && <div className="text-sm text-[var(--sl-text-muted)]">{status}</div>}
 		</div>
 	);
 }

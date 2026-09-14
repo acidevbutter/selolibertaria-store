@@ -22,6 +22,7 @@ import type {
 import { getEditorialRecordForAdmin } from "@/lib/editorial-content-store";
 import { parseEditorialHrefChoice } from "@/lib/editorial-link-policy";
 import { uploadImageFileToFastAPI } from "@/lib/media-upload";
+import { extractImageUrls, syncMediaUsage } from "@/lib/media-usage";
 
 type PageCopyType =
 	| "page_home"
@@ -201,6 +202,13 @@ async function upsertPageRecord<T extends EditorialDocument>(type: T["type"], do
 		cache: "no-store",
 	});
 	if (!response.ok) throw new Error("Não foi possível salvar o conteúdo editorial no FastAPI.");
+	await syncMediaUsage({
+		entityType: `editorial_${type}`,
+		entityId: doc.slug,
+		entityLabel: doc.title,
+		field: "content",
+		imageUrls: extractImageUrls(doc),
+	});
 }
 
 function revalidateEditorialPaths() {

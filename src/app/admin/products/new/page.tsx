@@ -21,7 +21,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +40,7 @@ export default async function NewAdminProductPage() {
 				actions={
 					<Link
 						href="/admin/products"
-						className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+						className="inline-flex items-center gap-2 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)] transition-colors hover:text-[var(--sl-ink)]"
 					>
 						<ArrowLeft className="h-4 w-4" />
 						Voltar para livros
@@ -67,24 +66,20 @@ export default async function NewAdminProductPage() {
 			</div>
 
 			<EditorialPanel>
-				<CardHeader>
-					<CardTitle>Cadastro do livro</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form action={createProductAction} className="space-y-6">
-						<FormSection title="Informações principais do livro">
-							<ProductCoreFields categories={categories} orderOptions={orderOptions} autoFormatSlug />
-						</FormSection>
-						<FormSection title="Primeira variante">
-							<VariantFields />
-						</FormSection>
-						<FormSection title="Preço">
-							<PriceFields />
-						</FormSection>
-						<ActiveCheckbox defaultChecked />
-						<SubmitButton>Criar livro</SubmitButton>
-					</form>
-				</CardContent>
+				<h2 className="editorial-serif mb-6 text-xl font-semibold text-[var(--sl-ink)]">Cadastro do livro</h2>
+				<form action={createProductAction} className="space-y-6">
+					<FormSection title="Informações principais do livro">
+						<ProductCoreFields categories={categories} orderOptions={orderOptions} autoFormatSlug />
+					</FormSection>
+					<FormSection title="Primeira variante">
+						<VariantFields />
+					</FormSection>
+					<FormSection title="Preço">
+						<PriceFields />
+					</FormSection>
+					<ActiveCheckbox defaultChecked />
+					<SubmitButton>Criar livro</SubmitButton>
+				</form>
 			</EditorialPanel>
 		</AdminEditorialPage>
 	);

@@ -40,8 +40,8 @@ export default async function EmailTemplatesPage() {
 				title="Modelos de email"
 				description="Revise a linguagem, a estrutura e a assinatura dos e-mails transacionais antes de alterar o envio real."
 				actions={
-					<div className="inline-flex items-center gap-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)]">
-						<Mail className="h-4 w-4 text-[color:var(--editorial-accent)]" />
+					<div className="inline-flex items-center gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)]">
+						<Mail className="h-4 w-4 text-[var(--sl-accent)]" />
 						As prévias usam dados de exemplo e o e-mail de suporte salvo em configurações.
 					</div>
 				}

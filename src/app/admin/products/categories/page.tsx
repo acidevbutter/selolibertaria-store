@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataTable } from "@/app/admin/_components/ui/DataTable";
 import { createSystemCategoryAction, renameProductCategoryAction } from "@/app/admin/products/actions";
 import { listAdminProductCategories } from "@/lib/admin-products";
 import { auth } from "@/lib/auth";
@@ -12,10 +13,11 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Button } from "@/ui/shadcn/button";
-import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
-import { Input } from "@/ui/shadcn/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const inputClassName =
+	"h-[var(--sl-h-button)] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
+const inputStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +58,7 @@ export default async function AdminProductCategoriesPage() {
 					<div className="flex flex-wrap gap-3">
 						<Link
 							href="/admin/products"
-							className="inline-flex items-center gap-2 border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 py-3 text-sm text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-ink)]"
+							className="inline-flex items-center gap-2 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)] transition-colors hover:text-[var(--sl-ink)]"
 						>
 							<ArrowLeft className="h-4 w-4" />
 							Voltar para produtos
@@ -84,85 +86,88 @@ export default async function AdminProductCategoriesPage() {
 			</div>
 
 			<EditorialPanel className="space-y-6">
-				<CardHeader className="px-0 pt-0">
-					<CardTitle>Cadastrar nova categoria</CardTitle>
-				</CardHeader>
-				<CardContent className="px-0 pb-0">
-					<form
-						action={createSystemCategoryAction}
-						className="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end"
-					>
-						<Input
-							name="name"
-							placeholder="Nome da nova categoria"
-							required
-							className="max-w-md rounded-none border-[color:var(--editorial-border)] bg-white"
-						/>
-						<Button type="submit" className="rounded-none">
-							Adicionar categoria
-						</Button>
-					</form>
-				</CardContent>
+				<h2 className="editorial-serif text-xl font-semibold text-[var(--sl-ink)]">
+					Cadastrar nova categoria
+				</h2>
+				<form
+					action={createSystemCategoryAction}
+					className="flex max-w-xl flex-col gap-3 sm:flex-row sm:items-end"
+				>
+					<input
+						name="name"
+						placeholder="Nome da nova categoria"
+						required
+						className={`max-w-md ${inputClassName}`}
+						style={inputStyle}
+					/>
+					<SlButton type="submit" variant="primary">
+						Adicionar categoria
+					</SlButton>
+				</form>
 			</EditorialPanel>
 
 			<EditorialPanel className="overflow-hidden p-0">
-				<CardHeader>
-					<CardTitle>Categorias do sistema</CardTitle>
-				</CardHeader>
-				<CardContent>
+				<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
+						Categorias do sistema
+					</div>
+				</div>
+				<div className="p-6 sm:p-8">
 					{error ? (
-						<p className="text-sm text-muted-foreground">{error}</p>
+						<p className="text-sm text-[var(--sl-text-muted)]">{error}</p>
 					) : (
-						<Table className="min-w-[760px]">
-							<TableHeader>
-								<TableRow>
-									<TableHead>Nome atual</TableHead>
-									<TableHead>Slug</TableHead>
-									<TableHead>Origem</TableHead>
-									<TableHead>Produtos</TableHead>
-									<TableHead>Variantes</TableHead>
-									<TableHead>Renomear</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{categories.map((category) => (
-									<TableRow key={category.slug}>
-										<TableCell className="font-medium">{category.name}</TableCell>
-										<TableCell className="font-mono text-xs">{category.slug}</TableCell>
-										<TableCell>{getCategorySourceLabel(category.source)}</TableCell>
-										<TableCell>{catalogStatsBySlug.get(category.slug)?.products ?? 0}</TableCell>
-										<TableCell>{catalogStatsBySlug.get(category.slug)?.variants ?? 0}</TableCell>
-										<TableCell>
-											<form
-												action={renameProductCategoryAction}
-												className="flex min-w-[260px] max-w-md flex-col gap-2 sm:flex-row sm:items-end"
-											>
-												<input type="hidden" name="oldCategory" value={category.name} />
-												<Input
-													name="newCategory"
-													defaultValue={category.name}
-													aria-label={`Renomear ${category.name}`}
-													className="max-w-sm rounded-none border-[color:var(--editorial-border)] bg-white"
-													required
-												/>
-												<Button type="submit" variant="outline" size="sm" className="rounded-none">
-													Salvar nome
-												</Button>
-											</form>
-										</TableCell>
-									</TableRow>
-								))}
-								{categories.length === 0 ? (
-									<TableRow>
-										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											Nenhuma categoria disponível neste momento.
-										</TableCell>
-									</TableRow>
-								) : null}
-							</TableBody>
-						</Table>
+						<DataTable
+							columns={[
+								{
+									key: "name",
+									label: "Nome atual",
+									render: (c) => <span className="font-medium">{c.name}</span>,
+								},
+								{
+									key: "slug",
+									label: "Slug",
+									render: (c) => <span className="font-mono text-xs">{c.slug}</span>,
+								},
+								{ key: "source", label: "Origem", render: (c) => getCategorySourceLabel(c.source) },
+								{
+									key: "products",
+									label: "Produtos",
+									render: (c) => catalogStatsBySlug.get(c.slug)?.products ?? 0,
+								},
+								{
+									key: "variants",
+									label: "Variantes",
+									render: (c) => catalogStatsBySlug.get(c.slug)?.variants ?? 0,
+								},
+								{
+									key: "rename",
+									label: "Renomear",
+									render: (category) => (
+										<form
+											action={renameProductCategoryAction}
+											className="flex min-w-[260px] max-w-md flex-col gap-2 sm:flex-row sm:items-end"
+										>
+											<input type="hidden" name="oldCategory" value={category.name} />
+											<input
+												name="newCategory"
+												defaultValue={category.name}
+												aria-label={`Renomear ${category.name}`}
+												className={`max-w-sm ${inputClassName}`}
+												style={inputStyle}
+												required
+											/>
+											<SlButton type="submit" variant="secondary" size="sm">
+												Salvar nome
+											</SlButton>
+										</form>
+									),
+								},
+							]}
+							rows={categories.map((category) => ({ ...category, id: category.slug }))}
+							empty="Nenhuma categoria disponível neste momento."
+						/>
 					)}
-				</CardContent>
+				</div>
 			</EditorialPanel>
 		</AdminEditorialPage>
 	);

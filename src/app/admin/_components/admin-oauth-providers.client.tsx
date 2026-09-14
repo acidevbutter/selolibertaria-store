@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { Checkbox } from "@/ui/shadcn/checkbox";
-import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const fieldClassName =
+	"h-[var(--sl-h-button)] max-w-xl w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
+const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 type ProviderId = "google" | "facebook" | "instagram";
 
@@ -179,7 +182,7 @@ export default function AdminOAuthProviders() {
 
 	return (
 		<div className="space-y-4">
-			<p className="text-sm text-muted-foreground">
+			<p className="text-sm text-[var(--sl-text-muted)]">
 				Ative apenas os provedores já configurados. Os segredos permanecem mascarados depois do salvamento.
 			</p>
 			<div className="grid gap-4">
@@ -187,23 +190,31 @@ export default function AdminOAuthProviders() {
 					const provider = providers[meta.id];
 					const statusValue = providerStatuses[meta.id];
 					return (
-						<Card key={meta.id}>
-							<CardHeader className="space-y-3">
+						<div
+							key={meta.id}
+							className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+							style={fieldStyle}
+						>
+							<div className="space-y-3 p-5">
 								<div className="flex items-center justify-between gap-4">
 									<div>
-										<CardTitle>{meta.label}</CardTitle>
-										<p className="text-sm text-muted-foreground">{meta.helper}</p>
+										<div className="text-lg font-semibold">{meta.label}</div>
+										<p className="text-sm text-[var(--sl-text-muted)]">{meta.helper}</p>
 									</div>
-									<span className="rounded-full border px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground">
+									<StatusBadge
+										tone={
+											statusValue === "ready" ? "active" : statusValue === "incomplete" ? "alert" : "neutral"
+										}
+									>
 										{statusValue === "ready"
 											? "pronto"
 											: statusValue === "incomplete"
 												? "incompleto"
 												: "desativado"}
-									</span>
+									</StatusBadge>
 								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
+							</div>
+							<div className="space-y-4 border-t border-[var(--sl-line)] p-5">
 								<div className="flex items-center gap-3">
 									<Checkbox
 										id={`oauth-${meta.id}-enabled`}
@@ -214,13 +225,14 @@ export default function AdminOAuthProviders() {
 								</div>
 								<div className="grid gap-2">
 									<Label htmlFor={`oauth-${meta.id}-client-id`}>ID do cliente</Label>
-									<Input
+									<input
 										id={`oauth-${meta.id}-client-id`}
 										value={provider.clientId}
 										onChange={(event) => updateProvider(meta.id, { clientId: event.target.value })}
 										onBlur={() => formatProviderField(meta.id, "clientId")}
 										placeholder="ID informado pelo provedor"
-										className="max-w-xl"
+										className={fieldClassName}
+										style={fieldStyle}
 										autoCapitalize="none"
 										autoCorrect="off"
 										spellCheck={false}
@@ -228,7 +240,7 @@ export default function AdminOAuthProviders() {
 								</div>
 								<div className="grid gap-2">
 									<Label htmlFor={`oauth-${meta.id}-client-secret`}>Segredo do cliente</Label>
-									<Input
+									<input
 										id={`oauth-${meta.id}-client-secret`}
 										type="password"
 										value={provider.clientSecret}
@@ -239,29 +251,30 @@ export default function AdminOAuthProviders() {
 												? "Preencha apenas se quiser substituir"
 												: "Segredo informado pelo provedor"
 										}
-										className="max-w-xl"
+										className={fieldClassName}
+										style={fieldStyle}
 										autoCapitalize="none"
 										autoCorrect="off"
 										spellCheck={false}
 									/>
 									{provider.clientSecretMasked ? (
-										<p className="text-xs text-muted-foreground">
+										<p className="text-xs text-[var(--sl-text-muted)]">
 											Segredo salvo: {provider.clientSecretMasked}
 										</p>
 									) : (
-										<p className="text-xs text-muted-foreground">Nenhum segredo salvo ainda.</p>
+										<p className="text-xs text-[var(--sl-text-muted)]">Nenhum segredo salvo ainda.</p>
 									)}
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</div>
 					);
 				})}
 			</div>
 			<div className="flex items-center gap-3">
-				<Button onClick={save} disabled={loading || saving}>
+				<SlButton variant="primary" onClick={save} disabled={loading || saving}>
 					{saving ? "Salvando..." : "Salvar provedores OAuth"}
-				</Button>
-				{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+				</SlButton>
+				{status ? <p className="text-sm text-[var(--sl-text-muted)]">{status}</p> : null}
 			</div>
 		</div>
 	);

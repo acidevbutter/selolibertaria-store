@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { CountrySelect } from "@/ui/auth/country-select";
-import { Button } from "@/ui/shadcn/button";
 import { Label } from "@/ui/shadcn/label";
+import { SlButton } from "@/ui/sl/sl-button";
 
 type SettingsPayload = {
 	current?: {
@@ -64,11 +64,11 @@ export default function AdminRegionalSettings() {
 	return (
 		<div className="space-y-4">
 			<div className="space-y-1">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-[var(--sl-text-muted)]">
 					O storefront público do Selo Libertária funciona somente em português do Brasil. Cookies, prefixos
 					legados e o idioma do navegador não alteram mais o idioma renderizado.
 				</p>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-[var(--sl-text-muted)]">
 					O país padrão continua preenchendo telefone e endereço quando a pessoa usuária ainda não salvou uma
 					região.
 				</p>
@@ -78,7 +78,8 @@ export default function AdminRegionalSettings() {
 					<Label htmlFor="admin-default-locale">Idioma padrão da loja</Label>
 					<div
 						id="admin-default-locale"
-						className="flex min-h-10 max-w-[22rem] items-center rounded-md border border-input bg-background px-3 text-sm"
+						className="flex min-h-10 max-w-[22rem] items-center border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 text-sm"
+						style={{ borderRadius: "var(--sl-radius)" }}
 					>
 						Português (Brasil) · {DEFAULT_LOCALE}
 					</div>
@@ -89,10 +90,10 @@ export default function AdminRegionalSettings() {
 				</div>
 			</div>
 			<div className="flex items-center gap-3">
-				<Button onClick={save} disabled={loading || saving}>
+				<SlButton variant="primary" onClick={save} disabled={loading || saving}>
 					{saving ? "Salvando..." : "Salvar padrões regionais"}
-				</Button>
-				{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+				</SlButton>
+				{status ? <p className="text-sm text-[var(--sl-text-muted)]">{status}</p> : null}
 			</div>
 		</div>
 	);

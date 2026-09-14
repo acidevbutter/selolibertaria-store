@@ -2,13 +2,14 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { YnsLink } from "@/ui/yns-link";
 
-type SlVariant = "buy" | "primary" | "secondary";
+type SlVariant = "buy" | "primary" | "secondary" | "accent";
 type SlSize = "buy" | "md" | "sm";
 
 const variantClass: Record<SlVariant, string> = {
 	buy: "sl-btn-buy",
 	primary: "sl-btn-primary",
 	secondary: "sl-btn-secondary",
+	accent: "sl-btn-accent",
 };
 
 // Variant picks the skin (color/border); size independently overrides height/padding/font
@@ -49,7 +50,7 @@ export function SlButton({
 	...rest
 }: ButtonProps | LinkProps) {
 	const classes = cn(
-		"sl-btn",
+		"sl-btn gap-2",
 		variantClass[variant],
 		onInk && variant === "secondary" && "sl-btn-ink",
 		fullWidth && "w-full",

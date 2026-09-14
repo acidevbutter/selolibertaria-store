@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/ui/shadcn/button";
+import { SlButton } from "@/ui/sl/sl-button";
 
 /**
  * Admin toggle for optional checkout payment methods. Pix + credit card are
@@ -60,21 +60,21 @@ export function AdminPaymentMethods() {
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<p className="text-sm font-medium">Boleto no checkout</p>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-[var(--sl-text-muted)]">
 						Pix e cartão de crédito estão sempre ativos. O boleto atrasa a separação do pedido, então fica
 						desligado até você habilitar.
 					</p>
 				</div>
-				<Button
+				<SlButton
 					type="button"
-					variant={boletoEnabled ? "default" : "outline"}
+					variant={boletoEnabled ? "primary" : "secondary"}
 					disabled={!loaded || loading}
 					onClick={() => void save(!boletoEnabled)}
 				>
 					{boletoEnabled ? "Ativado" : "Desativado"}
-				</Button>
+				</SlButton>
 			</div>
-			{status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
+			{status ? <p className="text-sm text-[var(--sl-text-muted)]">{status}</p> : null}
 		</div>
 	);
 }

@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
+import { Field } from "@/app/admin/_components/ui/Field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
+import { SlButton } from "@/ui/sl/sl-button";
 
 type FulfillmentStatus = "received" | "producing" | "shipped";
 
@@ -58,9 +58,12 @@ export default function UpdateFulfillment({
 			<div className="text-sm font-medium">Expedição</div>
 			<div className="grid gap-2 sm:grid-cols-2">
 				<div className="grid gap-1">
-					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Status</label>
+					<label className="sl-lbl">Status</label>
 					<Select value={status} onValueChange={(v) => setStatus(v as FulfillmentStatus)}>
-						<SelectTrigger className="w-full rounded-none border-[color:var(--editorial-border)] bg-white">
+						<SelectTrigger
+							className="w-full border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+							style={{ borderRadius: "var(--sl-radius)" }}
+						>
 							<SelectValue placeholder="Escolha o status" />
 						</SelectTrigger>
 						<SelectContent>
@@ -72,29 +75,19 @@ export default function UpdateFulfillment({
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="grid gap-1">
-					<label className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-						Código de rastreio
-					</label>
-					<Input
-						value={tracking}
-						onChange={(e) => setTracking(e.target.value)}
-						placeholder="Ex.: BR123456789"
-						className="rounded-none border-[color:var(--editorial-border)] bg-white"
-					/>
-				</div>
+				<Field
+					label="Código de rastreio"
+					value={tracking}
+					onChange={(e) => setTracking(e.target.value)}
+					placeholder="Ex.: BR123456789"
+				/>
 			</div>
 			<div className="flex items-center gap-2">
-				<Button
-					size="sm"
-					onClick={save}
-					disabled={saving}
-					className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-				>
+				<SlButton variant="primary" size="sm" onClick={save} disabled={saving}>
 					{saving ? "Salvando..." : "Salvar expedição"}
-				</Button>
-				{ok && <span className="text-xs text-emerald-700">Expedição salva</span>}
-				{error && <span className="text-xs text-destructive">{error}</span>}
+				</SlButton>
+				{ok && <span className="text-xs text-[var(--sl-wine)]">Expedição salva</span>}
+				{error && <span className="text-xs text-[var(--sl-danger)]">{error}</span>}
 			</div>
 		</div>
 	);

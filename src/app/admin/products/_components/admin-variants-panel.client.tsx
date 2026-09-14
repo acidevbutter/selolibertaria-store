@@ -1,6 +1,7 @@
 "use client";
 
 import { Archive, Pencil, Plus } from "lucide-react";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import {
 	ActiveCheckbox,
 	Field,
@@ -12,9 +13,6 @@ import {
 } from "@/app/admin/products/_components/product-form-fields";
 import type { AdminProductGroup } from "@/lib/admin-products";
 import { formatMoney } from "@/lib/utils";
-import { Badge } from "@/ui/shadcn/badge";
-import { Button } from "@/ui/shadcn/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 import {
 	Dialog,
 	DialogContent,
@@ -24,7 +22,12 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/ui/shadcn/dialog";
-import { Input } from "@/ui/shadcn/input";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const fieldClassName =
+	"h-[var(--sl-h-button)] w-full max-w-[10rem] border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
+const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
+const triggerButtonStyle = { height: "var(--sl-h-small)", padding: "0 16px", fontSize: "11px" } as const;
 
 export function AdminVariantsPanel({
 	group,
@@ -51,15 +54,15 @@ export function AdminVariantsPanel({
 					<h2 className="text-xl font-semibold">Variantes</h2>
 				</div>
 				<div className="flex items-center gap-3">
-					<div className="text-sm text-muted-foreground">
+					<div className="text-sm text-[var(--sl-text-muted)]">
 						{group.variants.length} {group.variants.length === 1 ? "variante" : "variantes"}
 					</div>
 					<Dialog>
 						<DialogTrigger asChild>
-							<Button size="sm">
+							<button type="button" className="sl-btn sl-btn-primary gap-2" style={triggerButtonStyle}>
 								<Plus className="h-4 w-4" />
 								Adicionar variante
-							</Button>
+							</button>
 						</DialogTrigger>
 						<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 							<DialogHeader>
@@ -81,12 +84,13 @@ export function AdminVariantsPanel({
 								<FormSection title="Dados da variante">
 									<VariantFields />
 									<Field label="Estoque" name="stock" hint="Use um número inteiro, como 25.">
-										<Input
+										<input
 											id="stock"
 											name="stock"
 											defaultValue={group.stock}
 											inputMode="numeric"
-											className="max-w-[10rem]"
+											className={fieldClassName}
+											style={fieldStyle}
 										/>
 									</Field>
 								</FormSection>
@@ -95,10 +99,7 @@ export function AdminVariantsPanel({
 								</FormSection>
 								<ActiveCheckbox defaultChecked />
 								<DialogFooter>
-									<Button type="submit">
-										<Plus className="h-4 w-4" />
-										Adicionar variante
-									</Button>
+									<SubmitButton>Adicionar variante</SubmitButton>
 								</DialogFooter>
 							</form>
 						</DialogContent>
@@ -118,49 +119,59 @@ export function AdminVariantsPanel({
 							: "Sem preço";
 
 					return (
-						<Card key={variant.id}>
-							<CardHeader>
+						<div
+							key={variant.id}
+							className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+							style={fieldStyle}
+						>
+							<div className="p-5">
 								<div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 									<div className="space-y-2">
-										<CardTitle>{variant.variantLabel || group.name}</CardTitle>
+										<div className="text-lg font-semibold">{variant.variantLabel || group.name}</div>
 										<div className="flex flex-wrap items-center gap-2">
-											<Badge variant={variant.active ? "secondary" : "outline"}>
+											<StatusBadge tone={variant.active ? "active" : "alert"}>
 												{variant.active ? "Ativa" : "Inativa"}
-											</Badge>
-											<Badge variant="outline">
+											</StatusBadge>
+											<StatusBadge tone="neutral">
 												{usesCustomPrice ? "Preço próprio" : "Preço do produto"}
-											</Badge>
+											</StatusBadge>
 										</div>
 									</div>
-									<div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+									<div className="grid gap-3 text-sm text-[var(--sl-text-muted)] sm:grid-cols-3">
 										<div>
 											<div className="text-xs uppercase tracking-wide">Preço</div>
-											<div className="font-medium text-foreground">{priceLabel}</div>
+											<div className="font-medium text-[var(--sl-ink)]">{priceLabel}</div>
 										</div>
 										<div>
 											<div className="text-xs uppercase tracking-wide">Estoque</div>
-											<div className="font-medium text-foreground">{variant.stock || "Não informado"}</div>
+											<div className="font-medium text-[var(--sl-ink)]">
+												{variant.stock || "Não informado"}
+											</div>
 										</div>
 										<div>
 											<div className="text-xs uppercase tracking-wide">Ordem</div>
-											<div className="font-medium text-foreground">
+											<div className="font-medium text-[var(--sl-ink)]">
 												{variant.variantOrder || "Ordem automática"}
 											</div>
 										</div>
 									</div>
 								</div>
-							</CardHeader>
-							<CardContent className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-								<div className="space-y-1 text-sm text-muted-foreground">
+							</div>
+							<div className="flex flex-col gap-3 border-t border-[var(--sl-line)] p-5 pt-5 sm:flex-row sm:items-center sm:justify-between">
+								<div className="space-y-1 text-sm text-[var(--sl-text-muted)]">
 									<div>{variant.description || "Usa a descrição do produto."}</div>
 								</div>
 								<div className="flex flex-wrap gap-2">
 									<Dialog>
 										<DialogTrigger asChild>
-											<Button variant="outline" size="sm">
+											<button
+												type="button"
+												className="sl-btn sl-btn-secondary gap-2"
+												style={triggerButtonStyle}
+											>
 												<Pencil className="h-4 w-4" />
 												Editar variante
-											</Button>
+											</button>
 										</DialogTrigger>
 										<DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
 											<DialogHeader>
@@ -187,12 +198,13 @@ export function AdminVariantsPanel({
 															name={`stock-${variant.id}`}
 															hint="Use um número inteiro, como 25."
 														>
-															<Input
+															<input
 																id={`stock-${variant.id}`}
 																name="stock"
 																defaultValue={variant.stock}
 																inputMode="numeric"
-																className="max-w-[10rem]"
+																className={fieldClassName}
+																style={fieldStyle}
 															/>
 														</Field>
 													</div>
@@ -216,14 +228,14 @@ export function AdminVariantsPanel({
 									<form action={archiveVariantAction}>
 										<input type="hidden" name="productId" value={variant.id} />
 										<input type="hidden" name="currentSlug" value={group.slug} />
-										<Button type="submit" variant="outline" size="sm">
+										<SlButton type="submit" variant="secondary" size="sm">
 											<Archive className="h-4 w-4" />
 											Arquivar variante
-										</Button>
+										</SlButton>
 									</form>
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</div>
 					);
 				})}
 			</div>

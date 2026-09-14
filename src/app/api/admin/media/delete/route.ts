@@ -17,7 +17,11 @@ export async function POST(request: Request) {
 	try {
 		const response = await fetch(`${env.FASTAPI_API_URL}/media/internal/admin/delete`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json", "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
+			headers: {
+				"Content-Type": "application/json",
+				"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+				"X-Actor-User-ID": auth.session.sub,
+			},
 			body: JSON.stringify({ url: imageUrl }),
 			cache: "no-store",
 		});

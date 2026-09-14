@@ -1,0 +1,106 @@
+/* Oficina v2 — sistema próprio do painel (/admin).
+   Ported from the design project's tokens/admin.css. Two declared halves:
+   casca de tinta (where you navigate) and mesa de papel (where you work).
+   The store uses none of these tokens; --sl-* still rules everything public.
+   IBM Plex Mono is loaded by next/font in the admin layout, not by @import. */
+
+:root {
+	/* --- Casca (chrome: rail, topbar, overlay) -------------------------- */
+	--ad-shell: #0b0b0b; /* rail e topbar — tinta, igual à nav pública */
+	--ad-shell-2: #1f1a16; /* superfície elevada da casca: busca, menu de conta, moldura */
+	--ad-on-shell: #f7f4ef; /* texto, logo e contraste sobre a casca */
+	--ad-on-shell-soft: rgba(247, 244, 239, 0.72); /* item de nav em repouso */
+	--ad-on-shell-label: rgba(247, 244, 239, 0.55); /* rótulo de grupo e eyebrow — mínimo 4.5:1 */
+	--ad-on-shell-quiet: rgba(247, 244, 239, 0.5); /* contagem à direita do item */
+	--ad-shell-hover: rgba(247, 244, 239, 0.06); /* hover e rota-pai — nunca elevação */
+	--ad-shell-press: rgba(247, 244, 239, 0.1);
+	--ad-shell-line: rgba(247, 244, 239, 0.14); /* divisor dentro do escuro */
+	--ad-shell-line-mid: rgba(247, 244, 239, 0.3);
+	--ad-selected: #7a1e22; /* item selecionado = bloco sólido vinho */
+	--ad-signal: #b3282e; /* marcador e progresso SOBRE ESCURO — nunca texto */
+	--ad-scrim: rgba(11, 11, 11, 0.82); /* overlay escurece a casca, não a esconde */
+
+	/* --- Mesa (workbench) ------------------------------------------------ */
+	--ad-desk: #efeae2; /* fundo da área de trabalho — entre papel e bege */
+	--ad-sheet: #ffffff; /* folha: cartão, editor, tabela, campo */
+	--ad-paper: #f7f4ef; /* prévia de conteúdo público dentro do editor */
+	--ad-sand: #d8d0c4; /* barra de ferramentas, rodapé de ação, cabeçalho de tabela */
+	--ad-ink: #0b0b0b;
+	--ad-wine: #7a1e22; /* ação destacada, link, seleção, linha-guia, erro */
+
+	--ad-text: #0b0b0b;
+	--ad-text-muted: rgba(11, 11, 11, 0.78);
+	--ad-text-soft: rgba(11, 11, 11, 0.7);
+	--ad-text-label: rgba(11, 11, 11, 0.6);
+	--ad-text-quiet: rgba(11, 11, 11, 0.5);
+	--ad-text-faint: rgba(11, 11, 11, 0.42);
+
+	/* Filetes da mesa — tinta transparente, nunca cinza de biblioteca */
+	--ad-line-quiet: rgba(11, 11, 11, 0.08); /* divisor entre linhas de lista */
+	--ad-line-sheet: rgba(11, 11, 11, 0.12); /* moldura de folha */
+	--ad-line: rgba(11, 11, 11, 0.2); /* moldura de painel e divisor forte */
+	--ad-line-strong: rgba(11, 11, 11, 0.3); /* campo em repouso, botão secundário */
+	--ad-line-tool: rgba(11, 11, 11, 0.25); /* botão de barra de ferramentas */
+	--ad-row-hover: rgba(11, 11, 11, 0.04);
+
+	--ad-wine-wash: rgba(122, 30, 34, 0.07); /* aviso e nota de sistema */
+	--ad-wine-wash-solid: rgba(122, 30, 34, 0.12); /* badge de falha */
+	--ad-wine-line: rgba(122, 30, 34, 0.4);
+	--ad-block-line: rgba(122, 30, 34, 0.45); /* nó editável em hover */
+	--ad-focus: 0 0 0 2px rgba(122, 30, 34, 0.2); /* o único halo do sistema */
+
+	/* --- Tipografia ------------------------------------------------------ */
+	--ad-font-head: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
+	--ad-font-body: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
+	--ad-font-mono: var(--font-ad-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+	/* DCC Ash NÃO existe no admin: display de fantasia atrapalha leitura de dado. */
+
+	--ad-size-screen: 36px; /* título de tela — 28 no mobile */
+	--ad-size-screen-sm: 28px;
+	--ad-size-section: 24px;
+	--ad-size-card: 18px;
+	--ad-size-lead: 17px; /* corpo da folha do editor = corpo da página publicada */
+	--ad-size-body: 15px;
+	--ad-size-support: 13px;
+	--ad-size-micro: 11px; /* micro-label 900 / .22em / uppercase */
+	--ad-size-data: 13px; /* mono em tabela */
+	--ad-size-data-sm: 12px; /* mono em linha secundária */
+	--ad-size-mono-label: 10px; /* mono de rótulo de grupo e eyebrow */
+
+	--ad-track-screen: -0.045em;
+	--ad-track-section: -0.03em;
+	--ad-track-label: 0.22em;
+	--ad-track-mono: 0.24em;
+	--ad-track-badge: 0.12em;
+	--ad-track-button: 0.18em;
+	--ad-leading-head: 0.92;
+	--ad-leading-body: 1.7;
+	--ad-leading-lead: 1.75;
+
+	/* --- Alturas de controle (densidade média) --------------------------- */
+	--ad-h-topbar: 56px;
+	--ad-h-row: 48px; /* linha de lista e tabela */
+	--ad-h-control: 44px; /* campo, botão principal e secundário, item de sidebar */
+	--ad-h-tool: 36px; /* botão de barra de ferramentas */
+	--ad-h-chip: 28px; /* chip, barrinha do bloco */
+	--ad-h-badge: 24px;
+	--ad-h-loading: 2px;
+	--ad-h-outline: 40px; /* linha da lista de blocos */
+	--ad-h-search: 34px; /* campo de busca dentro da topbar */
+
+	/* --- Larguras e espaço ----------------------------------------------- */
+	--ad-w-rail: 264px; /* rail da sidebar */
+	--ad-w-sheet: 780px; /* coluna do editor = medida da página publicada */
+	--ad-w-outline: 230px; /* lista de blocos */
+	--ad-w-picker: 360px; /* menu de inserir bloco */
+	--ad-w-search: 380px;
+	--ad-pad-rail: 0 28px;
+	--ad-pad-sheet: 24px;
+	--ad-pad-sheet-wide: 36px 40px;
+	--ad-pad-row: 0 18px;
+	--ad-pad-control: 0 16px;
+	--ad-gap-grid: 16px;
+
+	--ad-radius: 0; /* herdado do v1 e não se discute */
+	--ad-transition: 120ms linear;
+}

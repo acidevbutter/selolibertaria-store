@@ -9,7 +9,7 @@ export function AdminThemeSelector() {
 		<div className="max-w-sm space-y-2">
 			<div className="space-y-1">
 				<label className="block text-sm font-medium">Tema do admin</label>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-[var(--sl-text-muted)]">
 					Escolha a leitura visual do admin sem alterar a experiência pública da loja.
 				</p>
 			</div>
@@ -20,7 +20,10 @@ export function AdminThemeSelector() {
 					setTheme(next); // updates context + persists to DB via provider
 				}}
 			>
-				<SelectTrigger className="max-w-[12rem]">
+				<SelectTrigger
+					className="max-w-[12rem] border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+					style={{ borderRadius: "var(--sl-radius)" }}
+				>
 					<SelectValue placeholder="Selecione o tema" />
 				</SelectTrigger>
 				<SelectContent>
