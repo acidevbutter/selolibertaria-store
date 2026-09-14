@@ -78,7 +78,7 @@ export function AdminSidebar({
 				</div>
 			</div>
 
-			<nav className="space-y-1 px-[18px] py-4">
+			<nav className="space-y-1 py-4">
 				{visibleNavItems.map(({ href, label }: NavItem) => {
 					const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
 					const loading = navigatingHref === href;
