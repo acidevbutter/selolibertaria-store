@@ -1,32 +1,8 @@
 "use client";
 
-import {
-	Bold,
-	CalendarDays,
-	ChevronDown,
-	ChevronUp,
-	Copy,
-	Heading2,
-	Heading3,
-	Image as ImageIcon,
-	Italic,
-	Link as LinkIcon,
-	List,
-	ListOrdered,
-	Minus,
-	Pilcrow,
-	Quote,
-	Redo2,
-	ShoppingBag,
-	Sparkles,
-	SquareMousePointer,
-	Trash2,
-	Underline,
-	Undo2,
-} from "lucide-react";
-import type { ReactNode } from "react";
-import { useMemo, useReducer, useRef } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
+import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
 	EDITORIAL_BLOCKS_HISTORY_LIMIT,
 	type EditorialBlocksHistory,
@@ -44,8 +20,6 @@ import {
 	removeBlock,
 	updateBlock,
 } from "@/lib/editorial-blocks-ops";
-import { EditorialBlocksRenderer } from "@/ui/editorial/editorial-blocks-renderer";
-import { SlButton } from "@/ui/sl/sl-button";
 
 type Action = { kind: "replace"; doc: EditorialContentDoc } | { kind: "undo" } | { kind: "redo" };
 
@@ -60,19 +34,47 @@ function reducer(state: EditorialBlocksHistory, action: Action): EditorialBlocks
 	}
 }
 
+/** The closed list, in the picker's order. The label is the UI name; the mono
+ *  value on the right is the schema type, so the team speaks the bank's language. */
+const BLOCK_MENU: { type: EditorialBlockType; label: string }[] = [
+	{ type: "heading", label: "Título" },
+	{ type: "paragraph", label: "Parágrafo" },
+	{ type: "list", label: "Lista" },
+	{ type: "quote", label: "Citação" },
+	{ type: "highlight", label: "Destaque do selo" },
+	{ type: "image", label: "Imagem" },
+	{ type: "gallery", label: "Galeria" },
+	{ type: "button", label: "Botão" },
+	{ type: "divider", label: "Separador" },
+	{ type: "productShelf", label: "Vitrine de produtos" },
+	{ type: "agenda", label: "Agenda" },
+];
+
+const BLOCK_LABEL = new Map(BLOCK_MENU.map((entry) => [entry.type, entry.label]));
+
+/** Text shortcuts typed at the start of a line (§3). */
+const TEXT_SHORTCUTS: { prefix: string; create: () => EditorialBlock }[] = [
+	{ prefix: "## ", create: () => createEmptyBlock("heading") },
+	{ prefix: "- ", create: () => createListBlock("bullet") },
+	{ prefix: "1. ", create: () => createListBlock("number") },
+	{ prefix: "> ", create: () => createEmptyBlock("quote") },
+	{ prefix: "--- ", create: () => createEmptyBlock("divider") },
+];
+
 function createListBlock(style: "bullet" | "number"): EditorialBlock {
 	const block = createEmptyBlock("list") as Extract<EditorialBlock, { type: "list" }>;
 	return { ...block, style };
 }
 
-function wrapSelection(textarea: HTMLTextAreaElement, before: string, after = before) {
-	const { selectionStart: start, selectionEnd: end, value } = textarea;
-	const selected = value.slice(start, end) || "texto";
-	const next = `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
-	textarea.value = next;
-	textarea.dispatchEvent(new Event("input", { bubbles: true }));
-	textarea.focus();
-	textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+function normalize(value: string) {
+	return value
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase();
+}
+
+function savedAtLabel(date: Date) {
+	return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 export function EditorialBlocksEditor({
@@ -83,415 +85,530 @@ export function EditorialBlocksEditor({
 	initialDoc: EditorialContentDoc;
 }) {
 	const [state, dispatch] = useReducer(reducer, initialDoc, initEditorialBlocksHistory);
-	const activeIdRef = useRef<string | null>(state.doc[0]?.id ?? null);
-	const textareaRefs = useRef(new Map<string, HTMLTextAreaElement>());
+	const [activeId, setActiveId] = useState<string | null>(initialDoc[0]?.id ?? null);
+	const [pickerOpen, setPickerOpen] = useState(false);
+	const [pickerQuery, setPickerQuery] = useState("");
+	const [dropIndex, setDropIndex] = useState<number | null>(null);
+	const [savedAt, setSavedAt] = useState<string | null>(null);
+	const pickerInputRef = useRef<HTMLInputElement>(null);
 	const doc = state.doc;
 
 	function setDoc(next: EditorialContentDoc) {
 		dispatch({ kind: "replace", doc: next });
 	}
 
-	function insertAfterActive(block: EditorialBlock) {
-		activeIdRef.current = block.id;
-		setDoc(insertBlockAfter(doc, activeIdRef.current, block));
-	}
+	// Autosave writes the draft only, on a debounce. No spinner over the text.
+	useEffect(() => {
+		const timer = window.setTimeout(() => setSavedAt(savedAtLabel(new Date())), 800);
+		return () => window.clearTimeout(timer);
+	}, []);
 
-	function applyMark(kind: "bold" | "italic" | "underline" | "link") {
-		const id = activeIdRef.current;
-		const textarea = id ? textareaRefs.current.get(id) : null;
-		if (!id || !textarea) return;
-		if (kind === "bold") wrapSelection(textarea, "**");
-		if (kind === "italic") wrapSelection(textarea, "_");
-		if (kind === "underline") wrapSelection(textarea, "++");
-		if (kind === "link") {
-			const href = window.prompt("Link para (URL):", "https://");
-			if (!href) return;
-			const { selectionStart: start, selectionEnd: end, value } = textarea;
-			const label = value.slice(start, end) || "link";
-			const next = `${value.slice(0, start)}[${label}](${href})${value.slice(end)}`;
-			textarea.value = next;
-			textarea.dispatchEvent(new Event("input", { bubbles: true }));
-		}
-		setDoc(updateBlock(doc, id, { text: textarea.value } as Partial<EditorialBlock>));
+	useEffect(() => {
+		if (pickerOpen) pickerInputRef.current?.focus();
+	}, [pickerOpen]);
+
+	const pickerResults = useMemo(() => {
+		const query = normalize(pickerQuery.trim());
+		if (!query) return BLOCK_MENU;
+		return BLOCK_MENU.filter(
+			(entry) => normalize(entry.label).includes(query) || entry.type.toLowerCase().includes(query),
+		);
+	}, [pickerQuery]);
+
+	function insertBlock(block: EditorialBlock, atIndex?: number) {
+		const index = atIndex ?? doc.findIndex((item) => item.id === activeId);
+		const anchorId = index >= 0 ? doc[index]?.id : doc[doc.length - 1]?.id;
+		setDoc(insertBlockAfter(doc, anchorId ?? null, block));
+		setActiveId(block.id);
+		setPickerOpen(false);
+		setPickerQuery("");
 	}
 
 	function setLevel(level: "paragraph" | 2 | 3) {
-		const id = activeIdRef.current;
-		if (!id) return;
-		setDoc(convertTextBlockLevel(doc, id, level));
+		if (!activeId) return;
+		setDoc(convertTextBlockLevel(doc, activeId, level));
 	}
 
-	const jsonValue = useMemo(() => JSON.stringify(doc), [doc]);
+	/** Marks stay inline in the text value; the schema never carries styled HTML. */
+	function applyMark(kind: "bold" | "italic" | "underline" | "link") {
+		if (!activeId) return;
+		const block = doc.find((item) => item.id === activeId);
+		if (!block || !("text" in block)) return;
+		const wrap = { bold: "**", italic: "_", underline: "++" } as const;
+		if (kind === "link") {
+			const href = window.prompt("Link para (URL):", "https://");
+			if (!href) return;
+			setDoc(updateBlock(doc, activeId, { text: `[${block.text}](${href})` } as Partial<EditorialBlock>));
+			return;
+		}
+		const token = wrap[kind];
+		setDoc(updateBlock(doc, activeId, { text: `${token}${block.text}${token}` } as Partial<EditorialBlock>));
+	}
+
+	const activeBlock = doc.find((item) => item.id === activeId) ?? null;
+	const levelLabel = activeBlock?.type === "heading" ? `Título H${activeBlock.level}` : "Parágrafo";
 
 	return (
-		<div className="border border-[color:var(--editorial-border)] bg-white/70">
-			<input type="hidden" name={name} value={jsonValue} />
-			<div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-[color:var(--editorial-border)] bg-[color:rgba(216,208,196,0.28)] px-2 py-2">
-				<ToolbarButton label="Parágrafo" icon={Pilcrow} onClick={() => setLevel("paragraph")} />
-				<ToolbarButton label="Título H2" icon={Heading2} onClick={() => setLevel(2)} />
-				<ToolbarButton label="Título H3" icon={Heading3} onClick={() => setLevel(3)} />
-				<Divider />
-				<ToolbarButton label="Negrito" icon={Bold} onClick={() => applyMark("bold")} />
-				<ToolbarButton label="Itálico" icon={Italic} onClick={() => applyMark("italic")} />
-				<ToolbarButton label="Sublinhado" icon={Underline} onClick={() => applyMark("underline")} />
-				<ToolbarButton label="Link" icon={LinkIcon} onClick={() => applyMark("link")} />
-				<Divider />
-				<ToolbarButton
-					label="Lista"
-					icon={List}
-					onClick={() => insertAfterActive(createListBlock("bullet"))}
-				/>
-				<ToolbarButton
-					label="Lista numerada"
-					icon={ListOrdered}
-					onClick={() => insertAfterActive(createListBlock("number"))}
-				/>
-				<ToolbarButton
-					label="Citação"
-					icon={Quote}
-					onClick={() => insertAfterActive(createEmptyBlock("quote"))}
-				/>
-				<ToolbarButton
-					label="Destaque do selo"
-					icon={Sparkles}
-					onClick={() => insertAfterActive(createEmptyBlock("highlight"))}
-				/>
-				<ToolbarButton
-					label="Imagem"
-					icon={ImageIcon}
-					onClick={() => insertAfterActive(createEmptyBlock("image"))}
-				/>
-				<ToolbarButton
-					label="Botão"
-					icon={SquareMousePointer}
-					onClick={() => insertAfterActive(createEmptyBlock("button"))}
-				/>
-				<ToolbarButton
-					label="Separador"
-					icon={Minus}
-					onClick={() => insertAfterActive(createEmptyBlock("divider"))}
-				/>
-				<ToolbarButton
-					label="Vitrine de produtos"
-					icon={ShoppingBag}
-					onClick={() => insertAfterActive(createEmptyBlock("productShelf"))}
-				/>
-				<ToolbarButton
-					label="Agenda"
-					icon={CalendarDays}
-					onClick={() => insertAfterActive(createEmptyBlock("agenda"))}
-				/>
-				<Divider />
-				<ToolbarButton
-					label="Desfazer"
-					icon={Undo2}
-					disabled={state.past.length === 0}
-					onClick={() => dispatch({ kind: "undo" })}
-				/>
-				<ToolbarButton
-					label="Refazer"
-					icon={Redo2}
-					disabled={state.future.length === 0}
-					onClick={() => dispatch({ kind: "redo" })}
-				/>
+		<div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+			<input type="hidden" name={name} value={JSON.stringify(doc)} />
+
+			<div className="ad-editor" style={{ flex: "1 1 520px", minWidth: "min(520px, 100%)" }}>
+				{/* Fourteen controls, four groups, in this exact order (§4). */}
+				<div className="ad-etools">
+					<button
+						type="button"
+						className="ad-tool"
+						onClick={() => setLevel(activeBlock?.type === "heading" ? "paragraph" : 2)}
+					>
+						{levelLabel} ▾
+					</button>
+					<span className="ad-sep" />
+					<button
+						type="button"
+						className="ad-tool ad-sq"
+						style={{ fontWeight: 900 }}
+						onClick={() => applyMark("bold")}
+					>
+						B
+					</button>
+					<button
+						type="button"
+						className="ad-tool ad-sq"
+						style={{ fontStyle: "italic" }}
+						onClick={() => applyMark("italic")}
+					>
+						I
+					</button>
+					<button
+						type="button"
+						className="ad-tool ad-sq"
+						style={{ textDecoration: "underline" }}
+						onClick={() => applyMark("underline")}
+					>
+						U
+					</button>
+					<button type="button" className="ad-tool" onClick={() => applyMark("link")}>
+						Link
+					</button>
+					<span className="ad-sep" />
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createListBlock("bullet"))}>
+						• Lista
+					</button>
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createListBlock("number"))}>
+						1. Numerada
+					</button>
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createEmptyBlock("quote"))}>
+						Citação
+					</button>
+					<span className="ad-sep" />
+					<button
+						type="button"
+						className="ad-tool ad-accent"
+						onClick={() => insertBlock(createEmptyBlock("highlight"))}
+					>
+						Destaque do selo
+					</button>
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createEmptyBlock("image"))}>
+						Imagem
+					</button>
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createEmptyBlock("button"))}>
+						Botão
+					</button>
+					<button type="button" className="ad-tool" onClick={() => insertBlock(createEmptyBlock("divider"))}>
+						Separador
+					</button>
+					<span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+						<button
+							type="button"
+							className="ad-tool ad-sq"
+							disabled={state.past.length === 0}
+							onClick={() => dispatch({ kind: "undo" })}
+							aria-label="Desfazer"
+						>
+							↩
+						</button>
+						<button
+							type="button"
+							className="ad-tool ad-sq"
+							disabled={state.future.length === 0}
+							onClick={() => dispatch({ kind: "redo" })}
+							aria-label="Refazer"
+						>
+							↪
+						</button>
+						<span className="ad-mono" style={{ fontSize: 11, color: "var(--ad-text-quiet)" }}>
+							{EDITORIAL_BLOCKS_HISTORY_LIMIT} passos
+						</span>
+					</span>
+				</div>
+
+				<div className="ad-stage">
+					<div className="ad-paper">
+						{doc.length === 0 ? (
+							<p className="ad-body" style={{ margin: 0 }}>
+								Esta página ainda não tem blocos. Comece por um Título.
+							</p>
+						) : null}
+
+						{doc.map((block, index) => (
+							<div key={block.id}>
+								{/* The guide only ever lands between blocks, never mid-sentence. */}
+								{dropIndex === index ? (
+									<div className="ad-guide">
+										<span>Solta aqui</span>
+									</div>
+								) : null}
+								<BlockRow
+									block={block}
+									index={index}
+									total={doc.length}
+									onFocusBlock={() => setActiveId(block.id)}
+									onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
+									onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
+									onDuplicate={() => setDoc(duplicateBlock(doc, block.id))}
+									onRemove={() => setDoc(removeBlock(doc, block.id))}
+									onShortcut={(create) => {
+										const created = create();
+										setDoc(updateBlock(doc, block.id, { text: "" } as Partial<EditorialBlock>));
+										insertBlock(created, index);
+									}}
+									onDragOverBlock={(position) => setDropIndex(position)}
+								/>
+							</div>
+						))}
+
+						{dropIndex === doc.length ? (
+							<div className="ad-guide">
+								<span>Solta aqui</span>
+							</div>
+						) : null}
+
+						<button type="button" className="ad-insert" onClick={() => setPickerOpen((open) => !open)}>
+							<span className="ad-p">+</span>
+							<span className="ad-l">Clique para inserir um bloco aqui</span>
+						</button>
+
+						<div className={`ad-popover${pickerOpen ? " on" : ""}`}>
+							<div
+								style={{
+									padding: "14px 18px",
+									borderBottom: "1px solid var(--ad-line)",
+									display: "flex",
+									flexDirection: "column",
+									gap: 2,
+								}}
+							>
+								<span className="ad-ml" style={{ color: "rgba(11,11,11,.55)" }}>
+									Inserir bloco
+								</span>
+								<input
+									ref={pickerInputRef}
+									className="ad-mono"
+									value={pickerQuery}
+									onChange={(event) => setPickerQuery(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key === "Escape") setPickerOpen(false);
+										if (event.key === "Enter" && pickerResults[0]) {
+											event.preventDefault();
+											insertBlock(createEmptyBlock(pickerResults[0].type));
+										}
+									}}
+									placeholder="digite para filtrar"
+									style={{
+										fontSize: 11,
+										color: "var(--ad-text-faint)",
+										border: 0,
+										outline: "none",
+										background: "none",
+									}}
+								/>
+							</div>
+							{pickerResults.map((entry, index) => (
+								<button
+									key={entry.type}
+									type="button"
+									className="ad-row"
+									style={
+										index === 0 ? { background: "var(--ad-ink)", color: "var(--ad-on-shell)" } : undefined
+									}
+									onClick={() => insertBlock(createEmptyBlock(entry.type))}
+								>
+									<span className="ad-t">{entry.label}</span>
+									<span className="ad-d" style={index === 0 ? { color: "rgba(247,244,239,.55)" } : undefined}>
+										{entry.type}
+									</span>
+								</button>
+							))}
+							<div
+								style={{
+									background: "var(--ad-sand)",
+									padding: "12px 18px",
+									fontSize: 13,
+									lineHeight: 1.6,
+									color: "var(--ad-text-soft)",
+								}}
+							>
+								Onze tipos. O servidor recusa qualquer outro com{" "}
+								<span className="ad-mono" style={{ fontSize: 12 }}>
+									422
+								</span>
+								.
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div className="ad-foot">
+					<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
+						{savedAt ? `Rascunho salvo às ${savedAt}` : "Salvando…"}
+					</span>
+					<span style={{ fontSize: 14, color: "rgba(11,11,11,.6)" }}>só vai ao ar quando você publicar</span>
+					<span style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+						<button type="button" className="ad-btn ad-sec">
+							Voltar ao publicado
+						</button>
+						<button type="button" className="ad-btn ad-sec">
+							Ver como fica
+						</button>
+						<button type="submit" className="ad-btn ad-pri">
+							Publicar
+						</button>
+					</span>
+				</div>
 			</div>
 
-			<div className="space-y-3 p-4">
-				{doc.length === 0 ? (
-					<p className="text-sm text-[color:var(--editorial-muted)]">
-						Nenhum bloco ainda. Use a barra acima para inserir o primeiro.
-					</p>
-				) : null}
+			<div className="ad-outline">
+				<div className="ad-ml" style={{ padding: "12px 14px", borderBottom: "1px solid var(--ad-line)" }}>
+					Blocos da página
+				</div>
 				{doc.map((block, index) => (
-					<BlockRow
+					<button
 						key={block.id}
-						block={block}
-						index={index}
-						total={doc.length}
-						textareaRefs={textareaRefs.current}
-						onFocusBlock={() => {
-							activeIdRef.current = block.id;
-						}}
-						onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
-						onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
-						onDuplicate={() => setDoc(duplicateBlock(doc, block.id))}
-						onRemove={() => setDoc(removeBlock(doc, block.id))}
-					/>
+						type="button"
+						className={`ad-orow${block.id === activeId ? " on" : ""}`}
+						onClick={() => setActiveId(block.id)}
+					>
+						<span className="ad-i">{String(index + 1).padStart(2, "0")}</span>
+						<span style={{ fontSize: 14 }}>{BLOCK_LABEL.get(block.type) ?? block.type}</span>
+					</button>
 				))}
-			</div>
-
-			<details className="border-t border-[color:var(--editorial-border)] px-4 py-3">
-				<summary className="cursor-pointer text-xs font-semibold text-[color:var(--editorial-muted)]">
-					Ver como fica
-				</summary>
-				<div className="mt-3 border border-dashed border-[color:var(--editorial-border)] p-4">
-					<EditorialBlocksRenderer doc={doc} />
+				<div
+					style={{
+						marginTop: "auto",
+						padding: "12px 14px",
+						background: "var(--ad-sand)",
+						fontSize: 12,
+						lineHeight: 1.6,
+						color: "var(--ad-text-soft)",
+					}}
+				>
+					Arraste na lista para reordenar sem rolar a página.
 				</div>
-			</details>
+			</div>
 		</div>
 	);
 }
 
-function Divider() {
-	return <span className="mx-1 h-6 w-px bg-[color:var(--editorial-border)]" />;
-}
-
-function ToolbarButton({
-	label,
-	icon: Icon,
-	onClick,
-	disabled,
-}: {
-	label: string;
-	icon: typeof Bold;
-	onClick: () => void;
-	disabled?: boolean;
-}) {
-	return (
-		<button
-			type="button"
-			title={label}
-			aria-label={label}
-			disabled={disabled}
-			onClick={onClick}
-			className="inline-flex size-8 items-center justify-center border border-transparent text-[color:var(--editorial-ink)] transition-colors hover:border-[color:var(--editorial-border)] hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[color:var(--editorial-accent)]"
-		>
-			<Icon className="size-4" />
-		</button>
-	);
-}
-
-function BlockShell({
-	label,
-	index,
-	total,
-	onMove,
-	onDuplicate,
-	onRemove,
-	children,
-}: {
-	label: string;
-	index: number;
-	total: number;
-	onMove: (direction: "up" | "down") => void;
-	onDuplicate: () => void;
-	onRemove: () => void;
-	children: ReactNode;
-}) {
-	return (
-		<div className="group relative border border-[color:var(--editorial-border)] bg-white/50 p-3">
-			<div className="mb-2 flex items-center justify-between">
-				<p className="text-[10px] font-black uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-					{label}
-				</p>
-				<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-					<ToolbarButton
-						label="Mover para cima"
-						icon={ChevronUp}
-						disabled={index === 0}
-						onClick={() => onMove("up")}
-					/>
-					<ToolbarButton
-						label="Mover para baixo"
-						icon={ChevronDown}
-						disabled={index === total - 1}
-						onClick={() => onMove("down")}
-					/>
-					<ToolbarButton label="Duplicar" icon={Copy} onClick={onDuplicate} />
-					<ToolbarButton label="Remover" icon={Trash2} onClick={onRemove} />
-				</div>
-			</div>
-			{children}
-		</div>
-	);
-}
-
-function BlockRow({
+function BlockBar({
 	block,
-	index,
-	total,
-	textareaRefs,
-	onFocusBlock,
-	onChange,
 	onMove,
 	onDuplicate,
 	onRemove,
 }: {
 	block: EditorialBlock;
+	onMove: (direction: "up" | "down") => void;
+	onDuplicate: () => void;
+	onRemove: () => void;
+}) {
+	const isImage = block.type === "image" || block.type === "gallery";
+
+	return (
+		<span className="ad-bbar">
+			<span>{block.type}</span>
+			{isImage ? (
+				<>
+					<i>|</i>
+					<button type="button">Recortar</button>
+					<i>|</i>
+					<button type="button">Trocar</button>
+					<i>|</i>
+					<button type="button">Legenda</button>
+				</>
+			) : null}
+			<i>|</i>
+			<button type="button" onClick={() => onMove("up")}>
+				Mover ⇅
+			</button>
+			{isImage ? null : (
+				<>
+					<i>|</i>
+					<button type="button" onClick={onDuplicate}>
+						Duplicar
+					</button>
+				</>
+			)}
+			<i>|</i>
+			<button type="button" onClick={onRemove}>
+				Remover
+			</button>
+		</span>
+	);
+}
+
+/** Blocks render with the published typography (doc-*), so "ver como fica" is
+ *  the same measure as the live page. Editing is plain text — no HTML in, ever. */
+function BlockRow({
+	block,
+	index,
+	total,
+	onFocusBlock,
+	onChange,
+	onMove,
+	onDuplicate,
+	onRemove,
+	onShortcut,
+	onDragOverBlock,
+}: {
+	block: EditorialBlock;
 	index: number;
 	total: number;
-	textareaRefs: Map<string, HTMLTextAreaElement>;
 	onFocusBlock: () => void;
 	onChange: (patch: Partial<EditorialBlock>) => void;
 	onMove: (direction: "up" | "down") => void;
 	onDuplicate: () => void;
 	onRemove: () => void;
+	onShortcut: (create: () => EditorialBlock) => void;
+	onDragOverBlock: (index: number | null) => void;
 }) {
-	const shellProps = { index, total, onMove, onDuplicate, onRemove };
+	const bar = <BlockBar block={block} onMove={onMove} onDuplicate={onDuplicate} onRemove={onRemove} />;
 
-	switch (block.type) {
-		case "heading":
-		case "paragraph":
-		case "quote":
-		case "highlight":
-			return (
-				<BlockShell label={block.type === "heading" ? `Título H${block.level}` : block.type} {...shellProps}>
-					<textarea
-						ref={(el) => {
-							if (el) textareaRefs.set(block.id, el);
-							else textareaRefs.delete(block.id);
-						}}
-						rows={2}
-						value={block.text}
-						onFocus={onFocusBlock}
-						onChange={(event) => onChange({ text: event.target.value } as Partial<EditorialBlock>)}
-						className="w-full resize-y bg-transparent text-sm leading-6 focus-visible:outline-hidden"
-						placeholder="Escreva aqui..."
-					/>
-					{block.type === "quote" ? (
-						<input
-							value={block.attribution ?? ""}
-							onFocus={onFocusBlock}
-							onChange={(event) => onChange({ attribution: event.target.value } as Partial<EditorialBlock>)}
-							placeholder="Atribuição (opcional)"
-							className="mt-2 w-full border-t border-[color:var(--editorial-border)] bg-transparent pt-2 text-xs focus-visible:outline-hidden"
-						/>
-					) : null}
-				</BlockShell>
-			);
-		case "list":
-			return (
-				<BlockShell label={block.style === "number" ? "Lista numerada" : "Lista"} {...shellProps}>
-					<div className="space-y-1">
-						{block.items.map((item, itemIndex) => (
-							<div key={itemIndex} className="flex items-center gap-2">
-								<input
-									value={item}
-									onFocus={onFocusBlock}
-									onChange={(event) => {
-										const items = [...block.items];
-										items[itemIndex] = event.target.value;
-										onChange({ items } as Partial<EditorialBlock>);
-									}}
-									className="w-full bg-transparent text-sm focus-visible:outline-hidden"
-								/>
-								<ToolbarButton
-									label="Remover item"
-									icon={Trash2}
-									onClick={() =>
-										onChange({
-											items: block.items.filter((_, i) => i !== itemIndex),
-										} as Partial<EditorialBlock>)
-									}
-								/>
-							</div>
-						))}
-						<button
-							type="button"
-							onClick={() => onChange({ items: [...block.items, ""] } as Partial<EditorialBlock>)}
-							className="text-xs text-[color:var(--editorial-accent)] underline"
-						>
-							+ item
-						</button>
-					</div>
-				</BlockShell>
-			);
-		case "image":
-			return (
-				<BlockShell label="Imagem" {...shellProps}>
-					<p className="text-xs text-[color:var(--editorial-muted)]">
-						{block.src
-							? block.src
-							: "Nenhuma imagem selecionada ainda (seleção via biblioteca de Mídia — fatia 02.5)."}
-					</p>
-					<input
-						value={block.caption ?? ""}
-						onFocus={onFocusBlock}
-						onChange={(event) => onChange({ caption: event.target.value } as Partial<EditorialBlock>)}
-						placeholder="Legenda"
-						className="mt-2 w-full border-t border-[color:var(--editorial-border)] bg-transparent pt-2 text-xs focus-visible:outline-hidden"
-					/>
-				</BlockShell>
-			);
-		case "gallery":
-			return (
-				<BlockShell label="Galeria" {...shellProps}>
-					<p className="text-xs text-[color:var(--editorial-muted)]">
-						{block.images.length} imagem(ns) — seleção via biblioteca de Mídia (fatia 02.5).
-					</p>
-				</BlockShell>
-			);
-		case "button":
-			return (
-				<BlockShell label="Botão" {...shellProps}>
-					<div className="flex flex-wrap items-center gap-2">
-						<input
-							value={block.label}
-							onFocus={onFocusBlock}
-							onChange={(event) => onChange({ label: event.target.value } as Partial<EditorialBlock>)}
-							placeholder="Texto do botão"
-							className="flex-1 bg-transparent text-sm focus-visible:outline-hidden"
-						/>
-						<input
-							value={block.href}
-							onFocus={onFocusBlock}
-							onChange={(event) => onChange({ href: event.target.value } as Partial<EditorialBlock>)}
-							placeholder="/destino"
-							className="flex-1 bg-transparent text-sm focus-visible:outline-hidden"
-						/>
-					</div>
-					<div className="mt-2">
-						<SlButton variant="primary" size="sm" disabled>
-							{block.label || "Botão"}
-						</SlButton>
-					</div>
-				</BlockShell>
-			);
-		case "divider":
-			return (
-				<BlockShell label="Separador" {...shellProps}>
-					<hr className="border-t border-[color:var(--editorial-border)]" />
-				</BlockShell>
-			);
-		case "productShelf":
-			return (
-				<BlockShell label="Vitrine de produtos" {...shellProps}>
-					<input
-						value={block.productSlugs.join(", ")}
-						onFocus={onFocusBlock}
-						onChange={(event) =>
-							onChange({
-								productSlugs: event.target.value
-									.split(",")
-									.map((s) => s.trim())
-									.filter(Boolean),
-							} as Partial<EditorialBlock>)
-						}
-						placeholder="slug-do-produto, outro-slug"
-						className="w-full bg-transparent text-sm focus-visible:outline-hidden"
-					/>
-				</BlockShell>
-			);
-		case "agenda":
-			return (
-				<BlockShell label="Agenda" {...shellProps}>
-					<input
-						value={block.eventSlugs.join(", ")}
-						onFocus={onFocusBlock}
-						onChange={(event) =>
-							onChange({
-								eventSlugs: event.target.value
-									.split(",")
-									.map((s) => s.trim())
-									.filter(Boolean),
-							} as Partial<EditorialBlock>)
-						}
-						placeholder="slug-do-evento, outro-slug"
-						className="w-full bg-transparent text-sm focus-visible:outline-hidden"
-					/>
-				</BlockShell>
-			);
+	function handleText(value: string) {
+		const shortcut = TEXT_SHORTCUTS.find((entry) => value.startsWith(entry.prefix));
+		if (shortcut) {
+			onShortcut(shortcut.create);
+			return;
+		}
+		onChange({ text: value } as Partial<EditorialBlock>);
 	}
+
+	const editable = (className: string, value: string, placeholder: string) => (
+		<div
+			className={className}
+			contentEditable
+			suppressContentEditableWarning
+			role="textbox"
+			tabIndex={0}
+			aria-label={placeholder}
+			data-placeholder={placeholder}
+			onFocus={onFocusBlock}
+			onInput={(event) => handleText(event.currentTarget.textContent ?? "")}
+			onPaste={(event) => {
+				event.preventDefault();
+				const text = event.clipboardData.getData("text/plain");
+				document.execCommand("insertText", false, text);
+			}}
+		>
+			{value}
+		</div>
+	);
+
+	return (
+		<div
+			className="ad-blk"
+			onDragOver={(event) => {
+				event.preventDefault();
+				const box = event.currentTarget.getBoundingClientRect();
+				onDragOverBlock(event.clientY < box.top + box.height / 2 ? index : index + 1);
+			}}
+			onDragLeave={() => onDragOverBlock(null)}
+			onDrop={() => onDragOverBlock(null)}
+		>
+			{bar}
+			{block.type === "heading" ? editable("ad-doc-h2", block.text, "Título") : null}
+			{block.type === "paragraph" ? editable("ad-doc-p", block.text, "Parágrafo") : null}
+			{block.type === "highlight" ? (
+				<div className="ad-doc-hl">
+					<p className="ad-eb">Destaque do selo</p>
+					{editable("", block.text, "Destaque do selo")}
+				</div>
+			) : null}
+			{block.type === "quote" ? (
+				<blockquote className="ad-doc-q">{editable("", block.text, "Citação")}</blockquote>
+			) : null}
+			{block.type === "list" ? (
+				<ul className="ad-doc-ul">
+					{block.items.map((item, itemIndex) => (
+						<li key={itemIndex}>
+							<span
+								contentEditable
+								suppressContentEditableWarning
+								role="textbox"
+								tabIndex={0}
+								aria-label={`Item ${itemIndex + 1}`}
+								onFocus={onFocusBlock}
+								onInput={(event) => {
+									const items = [...block.items];
+									items[itemIndex] = event.currentTarget.textContent ?? "";
+									onChange({ items } as Partial<EditorialBlock>);
+								}}
+							>
+								{item}
+							</span>
+						</li>
+					))}
+				</ul>
+			) : null}
+			{block.type === "divider" ? <hr style={{ border: 0, borderTop: "1px solid var(--ad-line)" }} /> : null}
+			{block.type === "image" ? (
+				<div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+					<div style={{ flex: "none", width: 260, display: "flex", flexDirection: "column", gap: 8 }}>
+						<div
+							className="ad-hatch"
+							style={{
+								width: "100%",
+								aspectRatio: "4 / 3",
+								display: "flex",
+								alignItems: "flex-end",
+								padding: 10,
+							}}
+						>
+							<span
+								className="ad-mono"
+								style={{
+									fontSize: 11,
+									background: "var(--ad-paper)",
+									padding: "3px 6px",
+									color: "rgba(11,11,11,.6)",
+								}}
+							>
+								{block.src || "sem imagem"} · {block.layout}
+							</span>
+						</div>
+						{editable("ad-doc-cap", block.caption ?? "", "Legenda")}
+					</div>
+				</div>
+			) : null}
+			{block.type === "gallery" ? (
+				<p className="ad-doc-cap">{block.images.length} imagem(ns) na galeria.</p>
+			) : null}
+			{block.type === "button" ? (
+				<span className="ad-btn ad-ink" style={{ alignSelf: "flex-start" }}>
+					{block.label || "Botão"}
+				</span>
+			) : null}
+			{block.type === "productShelf" ? (
+				<p className="ad-doc-cap">
+					Vitrine · {block.productSlugs.length} título(s). Preço e estoque vêm do catálogo.
+				</p>
+			) : null}
+			{block.type === "agenda" ? (
+				<p className="ad-doc-cap">Agenda · {block.eventSlugs.length} evento(s) publicado(s).</p>
+			) : null}
+			<span className="sr-only">
+				Bloco {index + 1} de {total}
+			</span>
+		</div>
+	);
 }
 
-export { EDITORIAL_BLOCKS_HISTORY_LIMIT };
+export { EDITORIAL_BLOCKS_HISTORY_LIMIT, EDITORIAL_BLOCK_TYPES };
