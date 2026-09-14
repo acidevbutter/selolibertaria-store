@@ -47,13 +47,15 @@ describe("EditorialBlocksEditor", () => {
 
 	it("never exposes a font, color, size or spacing control (fatia 02 hard limit)", () => {
 		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
-		const forbidden = ["font", "cor", "color", "tamanho", "espaçamento", "spacing"];
+		// Whole words only: "Recortar" legitimately contains "cor", and the limit is
+		// about controls FOR colour/font/size/spacing, not about those letters.
+		const forbidden = ["fonte", "font", "cor", "cores", "color", "tamanho", "espaçamento", "spacing"];
 		const labels = Array.from(container.querySelectorAll("[aria-label], [title]")).map(
 			(el) => el.getAttribute("aria-label") ?? el.getAttribute("title") ?? "",
 		);
 		for (const label of labels) {
 			for (const term of forbidden) {
-				expect(label.toLowerCase()).not.toContain(term);
+				expect(label.toLowerCase()).not.toMatch(new RegExp(`\\b${term}\\b`));
 			}
 		}
 	});

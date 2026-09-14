@@ -11,6 +11,7 @@ import {
 } from "@/app/admin/_components/admin-search-palette.client";
 import { AdminThemeProvider } from "@/app/admin/_components/admin-theme-provider.client";
 import { adminNavItems, type NavCounts } from "@/app/admin/_components/nav-config";
+import { fetchMediaCount, fetchOrdersCount } from "@/app/admin/_components/nav-counts";
 import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
 import { AdminTopbar } from "@/app/admin/_components/topbar.client";
 import { auth, logout } from "@/lib/auth";
@@ -48,13 +49,21 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 	}
 
 	const canReadEditorial = hasCapability(role, "editorial.write");
+	const [images, orders] = await Promise.all([
+		hasCapability(role, "catalog.write") ? fetchMediaCount() : undefined,
+		hasCapability(role, "orders.read") ? fetchOrdersCount() : undefined,
+	]);
 	const [events, projects] = canReadEditorial
 		? await Promise.all([listEditorialRecordsForAdmin("event"), listEditorialRecordsForAdmin("project")])
 		: [[], []];
 
-	const counts: NavCounts = canReadEditorial
-		? { pages: EDITORIAL_STATIC_PAGE_COUNT, events: events.length, projects: projects.length }
-		: {};
+	const counts: NavCounts = {
+		...(canReadEditorial
+			? { pages: EDITORIAL_STATIC_PAGE_COUNT, events: events.length, projects: projects.length }
+			: {}),
+		...(typeof images === "number" ? { images } : {}),
+		...(typeof orders === "number" ? { orders } : {}),
+	};
 
 	const searchEntries: SearchEntry[] = [
 		...events.map((event) => ({

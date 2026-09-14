@@ -1,6 +1,8 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
 import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
@@ -61,6 +63,21 @@ const TEXT_SHORTCUTS: { prefix: string; create: () => EditorialBlock }[] = [
 	{ prefix: "--- ", create: () => createEmptyBlock("divider") },
 ];
 
+/** The four named shapes (§5.1). No pixel width, no free corner drag. */
+const IMAGE_SHAPES = [
+	{ id: "wide", label: "Faixa larga" },
+	{ id: "side", label: "Ao lado" },
+	{ id: "center", label: "Centralizada" },
+	{ id: "gallery", label: "Galeria" },
+] as const;
+
+/** Above this the upload is refused — with the alternative, never bare (§6). */
+const HEAVY_IMAGE_BYTES = 8 * 1024 * 1024;
+
+function formatMegabytes(bytes: number) {
+	return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
+}
+
 function createListBlock(style: "bullet" | "number"): EditorialBlock {
 	const block = createEmptyBlock("list") as Extract<EditorialBlock, { type: "list" }>;
 	return { ...block, style };
@@ -90,6 +107,10 @@ export function EditorialBlocksEditor({
 	const [pickerQuery, setPickerQuery] = useState("");
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
 	const [savedAt, setSavedAt] = useState<string | null>(null);
+	const [saving, setSaving] = useState(true);
+	const [cropBlockId, setCropBlockId] = useState<string | null>(null);
+	const [shapeBlockId, setShapeBlockId] = useState<string | null>(null);
+	const [heavyImage, setHeavyImage] = useState<string | null>(null);
 	const pickerInputRef = useRef<HTMLInputElement>(null);
 	const doc = state.doc;
 
@@ -99,9 +120,13 @@ export function EditorialBlocksEditor({
 
 	// Autosave writes the draft only, on a debounce. No spinner over the text.
 	useEffect(() => {
-		const timer = window.setTimeout(() => setSavedAt(savedAtLabel(new Date())), 800);
+		setSaving(true);
+		const timer = window.setTimeout(() => {
+			setSaving(false);
+			setSavedAt(savedAtLabel(new Date()));
+		}, 800);
 		return () => window.clearTimeout(timer);
-	}, []);
+	}, [doc]);
 
 	useEffect(() => {
 		if (pickerOpen) pickerInputRef.current?.focus();
@@ -122,6 +147,36 @@ export function EditorialBlocksEditor({
 		setActiveId(block.id);
 		setPickerOpen(false);
 		setPickerQuery("");
+	}
+
+	/** Third beat of the drag (§5): upload, node in `wide`, shape picker on the
+	 *  new block. The old path — pasting a link — still exists elsewhere. */
+	function acceptFile(file: File, atIndex: number) {
+		setDropIndex(null);
+		if (!file.type.startsWith("image/")) return;
+		if (file.size > HEAVY_IMAGE_BYTES) {
+			setHeavyImage(
+				`Esta foto tem ${formatMegabytes(file.size)}. Podemos reduzir para 2 MB sem perda visível — ou escolha outra.`,
+			);
+			return;
+		}
+		setHeavyImage(null);
+		const block = createEmptyBlock("image") as Extract<EditorialBlock, { type: "image" }>;
+		const created: EditorialBlock = {
+			...block,
+			src: URL.createObjectURL(file),
+			assetId: file.name,
+			layout: "wide",
+			alt: "",
+		};
+		const anchorId = atIndex > 0 ? doc[atIndex - 1]?.id : null;
+		setDoc(insertBlockAfter(doc, anchorId ?? null, created));
+		setActiveId(created.id);
+		setShapeBlockId(created.id);
+	}
+
+	function setShape(blockId: string, layout: (typeof IMAGE_SHAPES)[number]["id"]) {
+		setDoc(updateBlock(doc, blockId, { layout } as Partial<EditorialBlock>));
 	}
 
 	function setLevel(level: "paragraph" | 2 | 3) {
@@ -243,11 +298,39 @@ export function EditorialBlocksEditor({
 				</div>
 
 				<div className="ad-stage">
-					<div className="ad-paper">
-						{doc.length === 0 ? (
-							<p className="ad-body" style={{ margin: 0 }}>
-								Esta página ainda não tem blocos. Comece por um Título.
+					<div
+						className="ad-paper"
+						onDragOver={(event) => event.preventDefault()}
+						onDrop={(event) => {
+							event.preventDefault();
+							const file = event.dataTransfer.files[0];
+							if (file) acceptFile(file, dropIndex ?? doc.length);
+						}}
+					>
+						{heavyImage ? (
+							<p
+								style={{
+									margin: 0,
+									background: "var(--ad-wine-wash-solid)",
+									border: "1px solid var(--ad-wine-line)",
+									color: "var(--ad-wine)",
+									padding: "12px 14px",
+									fontSize: 14,
+									lineHeight: 1.7,
+								}}
+							>
+								{heavyImage}
 							</p>
+						) : null}
+						{doc.length === 0 ? (
+							<button
+								type="button"
+								className="ad-body"
+								style={{ margin: 0, textAlign: "left", padding: 0 }}
+								onClick={() => setPickerOpen(true)}
+							>
+								Esta página ainda não tem blocos. Comece por um Título.
+							</button>
 						) : null}
 
 						{doc.map((block, index) => (
@@ -273,6 +356,16 @@ export function EditorialBlocksEditor({
 										insertBlock(created, index);
 									}}
 									onDragOverBlock={(position) => setDropIndex(position)}
+									onCrop={() => setCropBlockId(block.id)}
+									shapePicker={
+										shapeBlockId === block.id ? (
+											<ImageShapePicker
+												current={block.type === "image" ? block.layout : "wide"}
+												onPick={(layout) => setShape(block.id, layout)}
+												onClose={() => setShapeBlockId(null)}
+											/>
+										) : null
+									}
 								/>
 							</div>
 						))}
@@ -358,9 +451,21 @@ export function EditorialBlocksEditor({
 					</div>
 				</div>
 
-				<div className="ad-foot">
+				<div className="ad-foot" style={{ position: "relative" }}>
+					{saving ? (
+						<span
+							style={{
+								position: "absolute",
+								left: 0,
+								right: 0,
+								top: 0,
+								height: 2,
+								background: "var(--ad-wine)",
+							}}
+						/>
+					) : null}
 					<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
-						{savedAt ? `Rascunho salvo às ${savedAt}` : "Salvando…"}
+						{saving || !savedAt ? "Salvando…" : `Rascunho salvo às ${savedAt}`}
 					</span>
 					<span style={{ fontSize: 14, color: "rgba(11,11,11,.6)" }}>só vai ao ar quando você publicar</span>
 					<span style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
@@ -376,6 +481,26 @@ export function EditorialBlocksEditor({
 					</span>
 				</div>
 			</div>
+
+			<EditorialCropOverlay
+				open={cropBlockId !== null}
+				fileName={
+					(doc.find((item) => item.id === cropBlockId) as { assetId?: string } | undefined)?.assetId ??
+					"imagem"
+				}
+				dimensions="3024×4032"
+				initialAlt={
+					(doc.find((item) => item.id === cropBlockId) as { alt?: string | null } | undefined)?.alt ?? ""
+				}
+				weightLine="2,1 MB → 240 KB · webp + jpg · usada em 3 lugares"
+				onCancel={() => setCropBlockId(null)}
+				onConfirm={({ cropId, alt }) => {
+					if (cropBlockId) {
+						setDoc(updateBlock(doc, cropBlockId, { cropId, alt } as Partial<EditorialBlock>));
+					}
+					setCropBlockId(null);
+				}}
+			/>
 
 			<div className="ad-outline">
 				<div className="ad-ml" style={{ padding: "12px 14px", borderBottom: "1px solid var(--ad-line)" }}>
@@ -409,16 +534,60 @@ export function EditorialBlocksEditor({
 	);
 }
 
+/** Chips on the freshly created block: Enter confirms, Esc keeps faixa larga. */
+function ImageShapePicker({
+	current,
+	onPick,
+	onClose,
+}: {
+	current: string;
+	onPick: (layout: (typeof IMAGE_SHAPES)[number]["id"]) => void;
+	onClose: () => void;
+}) {
+	useEffect(() => {
+		function onKeyDown(event: KeyboardEvent) {
+			if (event.key === "Enter" || event.key === "Escape") {
+				event.preventDefault();
+				onClose();
+			}
+		}
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [onClose]);
+
+	return (
+		<div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+			<div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+				{IMAGE_SHAPES.map((shape) => (
+					<button
+						key={shape.id}
+						type="button"
+						className={`ad-chip${current === shape.id ? " on" : ""}`}
+						onClick={() => onPick(shape.id)}
+					>
+						{shape.label}
+					</button>
+				))}
+			</div>
+			<span className="ad-mono" style={{ fontSize: 11, color: "var(--ad-text-faint)" }}>
+				enter confirma · esc mantém faixa larga
+			</span>
+		</div>
+	);
+}
+
 function BlockBar({
 	block,
 	onMove,
 	onDuplicate,
 	onRemove,
+	onCrop,
 }: {
 	block: EditorialBlock;
 	onMove: (direction: "up" | "down") => void;
 	onDuplicate: () => void;
 	onRemove: () => void;
+	onCrop: () => void;
 }) {
 	const isImage = block.type === "image" || block.type === "gallery";
 
@@ -428,7 +597,9 @@ function BlockBar({
 			{isImage ? (
 				<>
 					<i>|</i>
-					<button type="button">Recortar</button>
+					<button type="button" onClick={onCrop}>
+						Recortar
+					</button>
 					<i>|</i>
 					<button type="button">Trocar</button>
 					<i>|</i>
@@ -468,6 +639,8 @@ function BlockRow({
 	onRemove,
 	onShortcut,
 	onDragOverBlock,
+	onCrop,
+	shapePicker,
 }: {
 	block: EditorialBlock;
 	index: number;
@@ -479,8 +652,12 @@ function BlockRow({
 	onRemove: () => void;
 	onShortcut: (create: () => EditorialBlock) => void;
 	onDragOverBlock: (index: number | null) => void;
+	onCrop: () => void;
+	shapePicker: ReactNode;
 }) {
-	const bar = <BlockBar block={block} onMove={onMove} onDuplicate={onDuplicate} onRemove={onRemove} />;
+	const bar = (
+		<BlockBar block={block} onMove={onMove} onDuplicate={onDuplicate} onRemove={onRemove} onCrop={onCrop} />
+	);
 
 	function handleText(value: string) {
 		const shortcut = TEXT_SHORTCUTS.find((entry) => value.startsWith(entry.prefix));
@@ -585,6 +762,7 @@ function BlockRow({
 							</span>
 						</div>
 						{editable("ad-doc-cap", block.caption ?? "", "Legenda")}
+						{shapePicker}
 					</div>
 				</div>
 			) : null}
