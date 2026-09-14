@@ -96,19 +96,13 @@ export function AdminSidebar({
 								setNavigatingHref(href);
 							}}
 							className={cn(
-								"flex w-full items-center gap-3 px-3 py-3 text-sm font-medium tracking-[-0.01em] transition-opacity",
+								"flex w-full items-center px-3 py-3 text-sm tracking-[-0.01em] transition-opacity",
 								active
-									? "bg-[var(--sl-paper)] text-[var(--sl-ink)]"
-									: "text-[var(--sl-text-on-ink-soft)] hover:bg-[var(--sl-nav-hover-on-ink)] hover:text-[var(--sl-text-on-ink)]",
+									? "bg-[var(--sl-nav-selected)] font-black uppercase tracking-[.04em] text-[var(--sl-text-on-ink)]"
+									: "font-medium text-[var(--sl-text-on-ink-soft)] hover:bg-[var(--sl-nav-hover-on-ink)] hover:text-[var(--sl-text-on-ink)]",
 								loading && "opacity-60",
 							)}
 						>
-							<span
-								className={cn(
-									"h-1.5 w-1.5 shrink-0",
-									active ? "bg-[var(--sl-wine)]" : "bg-[var(--sl-line-on-ink)]",
-								)}
-							/>
 							<span>{label}</span>
 						</Link>
 					);
