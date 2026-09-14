@@ -41,9 +41,7 @@ export default async function AdminEditorialBlocksPage() {
 				<span className="ad-meta">onze tipos · desfazer em 10 passos</span>
 			</div>
 
-			<form>
-				<EditorialBlocksEditor name="contentDoc" initialDoc={SEED_DOC} />
-			</form>
+			<EditorialBlocksEditor name="draftDoc" initialDoc={SEED_DOC} />
 		</>
 	);
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
+import { type PublishState, publishEditorialDraftAction } from "@/app/admin/editorial/blocks-actions";
 import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
@@ -112,7 +113,15 @@ export function EditorialBlocksEditor({
 	const [shapeBlockId, setShapeBlockId] = useState<string | null>(null);
 	const [heavyImage, setHeavyImage] = useState<string | null>(null);
 	const pickerInputRef = useRef<HTMLInputElement>(null);
+	const [publishState, publish, publishing] = useActionState<PublishState, FormData>(
+		publishEditorialDraftAction,
+		{ status: "idle" },
+	);
 	const doc = state.doc;
+	const imageCount = doc.reduce(
+		(total, node) => total + (node.type === "image" ? 1 : node.type === "gallery" ? node.images.length : 0),
+		0,
+	);
 
 	function setDoc(next: EditorialContentDoc) {
 		dispatch({ kind: "replace", doc: next });
@@ -204,8 +213,9 @@ export function EditorialBlocksEditor({
 	const levelLabel = activeBlock?.type === "heading" ? `Título H${activeBlock.level}` : "Parágrafo";
 
 	return (
-		<div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+		<form action={publish} style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
 			<input type="hidden" name={name} value={JSON.stringify(doc)} />
+			<input type="hidden" name="contentDoc" value={JSON.stringify(doc)} />
 
 			<div className="ad-editor" style={{ flex: "1 1 520px", minWidth: "min(520px, 100%)" }}>
 				{/* Fourteen controls, four groups, in this exact order (§4). */}
@@ -451,6 +461,8 @@ export function EditorialBlocksEditor({
 					</div>
 				</div>
 
+				<PublishBanner state={publishState} publishing={publishing} blocks={doc.length} images={imageCount} />
+
 				<div className="ad-foot" style={{ position: "relative" }}>
 					{saving ? (
 						<span
@@ -530,6 +542,100 @@ export function EditorialBlocksEditor({
 					Arraste na lista para reordenar sem rolar a página.
 				</div>
 			</div>
+		</form>
+	);
+}
+
+/**
+ * The publish states (§6). An error stays on the screen with what to do and
+ * what was NOT lost — never a toast that disappears.
+ */
+function PublishBanner({
+	state,
+	publishing,
+	blocks,
+	images,
+}: {
+	state: PublishState;
+	publishing: boolean;
+	blocks: number;
+	images: number;
+}) {
+	if (publishing) {
+		return (
+			<div className="ad-foot" style={{ borderTop: "1px solid var(--ad-line)" }}>
+				<span className="ad-badge ad-b-run">Publicando</span>
+				<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
+					{blocks} blocos · {images} imagens
+				</span>
+			</div>
+		);
+	}
+
+	if (state.status === "idle") return null;
+
+	if (state.status === "published") {
+		return (
+			<div className="ad-foot" style={{ borderTop: "1px solid var(--ad-line)" }}>
+				<span className="ad-badge ad-b-pub">Publicado</span>
+				<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
+					{state.blocks} blocos · {state.images} imagens
+				</span>
+			</div>
+		);
+	}
+
+	if (state.status === "conflict") {
+		return (
+			<div
+				style={{
+					background: "var(--ad-sheet)",
+					borderTop: "1px solid var(--ad-line)",
+					padding: "14px 20px",
+					display: "flex",
+					flexDirection: "column",
+					gap: 10,
+				}}
+			>
+				<span className="ad-badge ad-b-err">Falhou</span>
+				<p style={{ margin: 0, fontSize: 14, lineHeight: 1.7 }}>{state.message}</p>
+				<div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+					<div style={{ flex: "1 1 240px", border: "1px solid var(--ad-line)", padding: 12 }}>
+						<p className="ad-eb">O seu rascunho</p>
+						<p className="ad-mono" style={{ margin: "8px 0 0", fontSize: 12 }}>
+							{blocks} blocos · {images} imagens
+						</p>
+					</div>
+					<div style={{ flex: "1 1 240px", border: "1px solid var(--ad-line)", padding: 12 }}>
+						<p className="ad-eb">O que está no ar</p>
+						<p className="ad-mono" style={{ margin: "8px 0 0", fontSize: 12 }}>
+							publicado {state.theirs}
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			style={{
+				background: "var(--ad-sheet)",
+				borderTop: "1px solid var(--ad-line)",
+				padding: "14px 20px",
+				display: "flex",
+				alignItems: "center",
+				gap: 14,
+				flexWrap: "wrap",
+			}}
+		>
+			<span className="ad-badge ad-b-err">Falhou</span>
+			<p style={{ margin: 0, fontSize: 14, lineHeight: 1.7 }}>{state.message}</p>
+			{state.status === "invalid" ? (
+				<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
+					422
+				</span>
+			) : null}
 		</div>
 	);
 }
