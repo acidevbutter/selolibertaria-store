@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,21 +32,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: "yarn"
+          cache: yarn
+      - run: corepack enable
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+      - run: yarn lint
 
-      - uses: actions/cache@v4
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      # Build-time only: this job never calls Asaas/FastAPI for real, it just
+      # needs values that satisfy env.mjs's schema so `yarn build` can collect
+      # page data. Not used for any live request.
+      NEXT_PUBLIC_URL: "http://localhost:3000"
+      FASTAPI_INTERNAL_API_KEY: "ci-build-placeholder"
+      OAUTH_STATE_SECRET: "ci-build-placeholder-secret-value-32-chars-min"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          path: |
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/yarn.lock') }}-
-
-      - name: Install dependencies
-        run: yarn --version && yarn install --frozen-lockfile
-
-      - name: Check Biome
-        run: yarn lint
-
-      - name: Test
-        run: yarn test
+          node-version-file: ".nvmrc"
+          cache: yarn
+      - run: corepack enable
+      - run: yarn install --frozen-lockfile
+      - run: yarn build

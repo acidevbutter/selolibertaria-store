@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mercado Pago">
-  <circle cx="32" cy="32" r="28" fill="#009ee3"/>
-  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4" d="M16 28c5-7 12-10 16-10s11 3 16 10M16 36c5 7 12 10 16 10s11-3 16-10"/>
-  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4" d="M22 32h20"/>
-</svg>

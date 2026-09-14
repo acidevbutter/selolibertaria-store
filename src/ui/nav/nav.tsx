@@ -5,6 +5,7 @@ import { getTranslations } from "@/i18n/server";
 import { auth } from "@/lib/auth";
 import { isBackofficeRole } from "@/lib/authz";
 import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
+import { cn } from "@/lib/utils";
 import { NavMobileMenu } from "@/ui/nav/nav-mobile-menu.client";
 import { SearchInput, SearchInputPlaceholder } from "@/ui/nav/search-input.client";
 import { type SlNavLink, SlNavLinks } from "@/ui/nav/sl-nav.client";
@@ -78,7 +79,12 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 					{hideAuthCta ? null : (
 						<YnsLink
 							href={authHref}
-							className="hidden text-[11px] font-black uppercase tracking-[0.2em] text-[color:var(--sl-text-on-ink-soft)] transition-colors hover:text-[color:var(--sl-text-on-ink)] lg:inline"
+							className={cn(
+								"hidden text-[11px] font-black uppercase tracking-[0.2em] transition-colors lg:inline",
+								isAdminSession
+									? "sl-link"
+									: "text-[color:var(--sl-text-on-ink-soft)] hover:text-[color:var(--sl-text-on-ink)]",
+							)}
 						>
 							{authLabel}
 						</YnsLink>

@@ -1,134 +1,118 @@
 "use client";
 
-import { Loader2, Menu } from "lucide-react";
-import Image from "next/image";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { adminNavItems } from "@/app/admin/_components/nav-config";
-import { useTranslations } from "@/i18n/client";
+import { Fragment } from "react";
+import { useAdminRouteProgress } from "@/app/admin/_components/admin-route-progress.client";
+import { useAdminSearchPalette } from "@/app/admin/_components/admin-search-palette.client";
+import { adminNavGroups, resolveNavState } from "@/app/admin/_components/nav-config";
 import { hasCapability, type UserRole } from "@/lib/authz";
-import { cn } from "@/lib/utils";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/ui/shadcn/sheet";
 
-function AdminBrandMark({ size = 36 }: { size?: number }) {
-	return (
-		<div
-			className="grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#fffdf8] ring-1 ring-white/8"
-			style={{ height: size, width: size }}
-		>
-			<Image
-				src="/images/selolibertaria.png"
-				alt="Logo do Selo Libertária"
-				width={size}
-				height={size}
-				className="h-full w-full object-contain p-1.5"
-				priority
-			/>
-		</div>
-	);
+function initialsOf(user?: { name?: string | null; email?: string | null }) {
+	const source = user?.name?.trim() || user?.email?.trim() || "";
+	if (!source) return "SL";
+	const parts = source.split(/[\s@.]+/).filter(Boolean);
+	const first = parts[0] ?? source;
+	const second = parts[1];
+	const letters = second ? `${first.charAt(0)}${second.charAt(0)}` : first.slice(0, 2);
+	return letters.toUpperCase();
 }
 
-export function AdminTopbar({ role, logoutAction }: { role?: UserRole; logoutAction: () => Promise<void> }) {
+/**
+ * Topbar (ui_kit `.topbar`, §2.1): 56px on the shell with the search field,
+ * "Ver o site ↗" and the 28px paper avatar. The sheet keeps the rail reachable
+ * below md, where the 264px rail is hidden.
+ */
+export function AdminTopbar({
+	role,
+	user,
+	logoutAction,
+}: {
+	role?: UserRole;
+	user?: { name?: string | null; email?: string | null };
+	logoutAction: () => Promise<void>;
+}) {
 	const pathname = usePathname();
-	const t = useTranslations("AdminShell");
-	const [navigating, setNavigating] = useState(false);
-	const visibleNavItems = adminNavItems.filter((item) => hasCapability(role, item.capability));
-
-	useEffect(() => {
-		setNavigating(false);
-	}, [pathname]);
+	const { pendingHref, navigate } = useAdminRouteProgress();
+	const { open } = useAdminSearchPalette();
+	const visibleGroups = adminNavGroups
+		.map((group) => ({
+			...group,
+			items: group.items.filter((item) => hasCapability(role, item.capability)),
+		}))
+		.filter((group) => group.items.length > 0);
 
 	return (
-		<div className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:hidden">
-			<div className="flex h-16 items-center justify-between px-5">
-				<Link href="/admin" className="flex items-center gap-3">
-					<AdminBrandMark />
-					<div className="space-y-0.5">
-						<div className="text-sm font-bold uppercase tracking-[0.08em] text-[#fffdf8]">LIBERTÁRIA</div>
-						<div className="text-[11px] font-medium text-[#beb3a8]">{t("brandSubtitle")}</div>
-					</div>
-				</Link>
-
-				<Sheet>
-					<SheetTrigger className="inline-flex items-center justify-center border border-white/14 p-2 transition-colors hover:bg-white/6">
-						<Menu className="h-5 w-5" />
-						<span className="sr-only">{t("openMenu")}</span>
-					</SheetTrigger>
-					<SheetContent
-						side="left"
-						className="w-[88vw] max-w-[320px] border-r border-white/10 bg-[#0b0b0b] p-0 text-[color:var(--editorial-paper)]"
-					>
-						<SheetTitle className="sr-only">{t("navTitle")}</SheetTitle>
-						<div className="px-7 pb-7 pt-7">
-							<div className="flex items-start gap-4">
-								<AdminBrandMark size={44} />
-								<div className="space-y-1">
-									<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
-										LIBERTÁRIA
-									</div>
-									<div className="text-xs font-medium leading-4 text-[#beb3a8]">{t("brandSubtitle")}</div>
-								</div>
-							</div>
-							<div className="mt-5 flex items-center justify-between gap-3">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-									{t("sectionTitle")}
-								</div>
-								<form action={logoutAction}>
-									<button
-										type="submit"
-										className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
-									>
-										{t("logout")}
-									</button>
-								</form>
-							</div>
+		<header className="ad-topbar">
+			<Sheet>
+				<SheetTrigger
+					className="inline-flex items-center justify-center border md:hidden"
+					style={{ borderColor: "var(--ad-shell-line)", padding: 8 }}
+				>
+					<Menu className="h-5 w-5" />
+					<span className="sr-only">Abrir menu</span>
+				</SheetTrigger>
+				<SheetContent side="left" className="ad-rail w-[88vw] max-w-[320px] border-0 p-0">
+					<SheetTitle className="sr-only">Painel editorial</SheetTitle>
+					<div className="ad-lockup">
+						<div>
+							<b>Libertária</b>
+							<i>Painel editorial</i>
 						</div>
-
-						<nav className="space-y-1 px-[18px] py-4">
-							{visibleNavItems.map(({ href, label }) => {
-								const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+					</div>
+					{visibleGroups.map((group) => (
+						<Fragment key={group.label}>
+							<div className="ad-grp">{group.label}</div>
+							{group.items.map((item) => {
+								const state = resolveNavState(pathname, item.href);
+								const selected = state === "selected";
 
 								return (
-									<SheetClose asChild key={href}>
-										<Link
-											href={href}
-											onClick={(event) => {
-												if (active) {
-													event.preventDefault();
-													return;
-												}
-
-												setNavigating(true);
+									<SheetClose asChild key={item.href}>
+										<button
+											type="button"
+											className="ad-nav"
+											aria-current={selected ? "page" : undefined}
+											data-parent={state === "parent" || pendingHref === item.href ? "" : undefined}
+											onClick={() => {
+												if (selected) return;
+												navigate(item.href);
 											}}
-											className={cn(
-												"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em]",
-												active
-													? "bg-[#f7f1e8] text-[#0b0b0b]"
-													: "text-[#cfc6bd] hover:bg-white/4 hover:text-[#fffdf8]",
-											)}
 										>
-											<span
-												className={cn(
-													"h-1.5 w-1.5 shrink-0 rounded-full",
-													active ? "bg-[#7a1e22]" : "bg-[#5c5450]",
-												)}
-											/>
-											{label}
-										</Link>
+											{item.label}
+										</button>
 									</SheetClose>
 								);
 							})}
-						</nav>
-					</SheetContent>
-				</Sheet>
+						</Fragment>
+					))}
+					<form action={logoutAction} className="ad-who">
+						<button type="submit" className="ad-mono" style={{ fontSize: 11 }}>
+							sair
+						</button>
+					</form>
+				</SheetContent>
+			</Sheet>
+
+			<div className="ad-search" onClick={open}>
+				<span className="ad-g" aria-hidden="true">
+					⌕
+				</span>
+				<input
+					placeholder="Buscar em todo o painel"
+					readOnly
+					aria-label="Buscar em todo o painel"
+					onFocus={open}
+				/>
+				<span className="ad-kbd">⌘K</span>
 			</div>
 
-			{navigating ? (
-				<div className="fixed inset-0 z-[60] grid place-items-center bg-black/55">
-					<Loader2 className="h-6 w-6 animate-spin text-[#fffdf8]" />
-				</div>
-			) : null}
-		</div>
+			<Link className="ad-site" href="/">
+				Ver o site ↗
+			</Link>
+			<span className="ad-me">{initialsOf(user)}</span>
+		</header>
 	);
 }

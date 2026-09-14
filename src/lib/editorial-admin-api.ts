@@ -2,6 +2,7 @@ import "server-only";
 
 import { env } from "@/env.mjs";
 import type { EditorialDocument } from "@/lib/editorial-content";
+import { extractImageUrls, syncMediaUsage } from "@/lib/media-usage";
 
 /**
  * Server-only client for the admin editorial write surface of the FastAPI
@@ -49,6 +50,13 @@ export async function upsertEditorial(input: UpsertInput, actor?: string | null)
 		cache: "no-store",
 	});
 	if (!response.ok) throw new Error(SAVE_ERROR);
+	await syncMediaUsage({
+		entityType: `editorial_${input.type}`,
+		entityId: input.slug,
+		entityLabel: input.title,
+		field: "content",
+		imageUrls: extractImageUrls(input.content),
+	});
 }
 
 export async function deleteEditorial(type: EditorialDocument["type"], slug: string): Promise<void> {

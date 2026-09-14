@@ -1,0 +1,1054 @@
+/* Oficina v2 — component layer ported from the design project's
+   ui_kits/oficina/index.html. Class names carry the `ad-` prefix and every
+   rule is scoped under `.ad-root` so nothing leaks into the public store,
+   which keeps the --sl-* system. Values are the kit's, unchanged. */
+
+.ad-root .ad-mono {
+	font-family: var(--ad-font-mono);
+}
+
+.ad-root .ad-num {
+	font-family: var(--ad-font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+.ad-root button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	cursor: pointer;
+}
+
+.ad-root input {
+	font: inherit;
+}
+
+.ad-root img {
+	display: block;
+}
+
+/* ---------- estrutura ---------- */
+.ad-root .ad-app {
+	display: flex;
+	min-height: 100vh;
+}
+.ad-root .ad-col {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+.ad-root .ad-desk {
+	flex: 1;
+	padding: 24px 28px 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	overflow: auto;
+}
+
+/* ---------- casca: rail ---------- */
+.ad-root .ad-rail {
+	flex: none;
+	width: var(--ad-w-rail);
+	background: var(--ad-shell);
+	color: var(--ad-on-shell);
+	padding: 24px 0;
+	display: flex;
+	flex-direction: column;
+	position: sticky;
+	top: 0;
+	min-height: 100vh;
+	overflow: auto;
+}
+.ad-root .ad-rail > * {
+	flex: none;
+}
+.ad-root .ad-lockup {
+	padding: 0 28px 6px;
+	display: flex;
+	gap: 14px;
+	align-items: center;
+}
+.ad-root .ad-lockup .ad-mark {
+	flex: none;
+	width: 44px;
+	height: 44px;
+	background: var(--ad-paper);
+	padding: 6px;
+}
+.ad-root .ad-lockup .ad-mark img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+.ad-root .ad-lockup b {
+	display: block;
+	font-size: 13px;
+	font-weight: 900;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+}
+.ad-root .ad-lockup i {
+	display: block;
+	margin-top: 4px;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: 900;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-grp {
+	padding: 18px 28px 6px;
+	font-family: var(--ad-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-grp:first-of-type {
+	padding-top: 12px;
+}
+.ad-root .ad-nav {
+	width: 100%;
+	height: var(--ad-h-control);
+	min-height: var(--ad-h-control);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 0 28px;
+	font-size: 15px;
+	text-align: left;
+	color: var(--ad-on-shell-soft);
+	transition: var(--ad-transition);
+}
+.ad-root .ad-nav .ad-ct {
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: var(--ad-on-shell-quiet);
+}
+.ad-root .ad-nav:hover {
+	background: var(--ad-shell-hover);
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-nav[data-parent] {
+	background: var(--ad-shell-hover);
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-nav[aria-current="page"] {
+	background: var(--ad-selected);
+	color: var(--ad-on-shell);
+	font-weight: 900;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.ad-root .ad-nav[aria-current="page"] .ad-ct {
+	font-weight: 400;
+	letter-spacing: 0;
+	color: rgba(247, 244, 239, 0.65);
+}
+.ad-root .ad-who {
+	margin-top: auto;
+	padding: 18px 28px 0;
+	border-top: 1px solid var(--ad-shell-line);
+}
+.ad-root .ad-who b {
+	display: block;
+	font-size: 13px;
+	font-weight: 400;
+	color: rgba(247, 244, 239, 0.85);
+}
+.ad-root .ad-who span {
+	display: block;
+	margin-top: 4px;
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: var(--ad-on-shell-label);
+}
+
+/* ---------- casca: topbar ---------- */
+.ad-root .ad-topbar {
+	height: var(--ad-h-topbar);
+	flex: none;
+	background: var(--ad-shell);
+	color: var(--ad-on-shell);
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 0 20px;
+	border-bottom: 1px solid var(--ad-shell-line);
+	position: sticky;
+	top: 0;
+	z-index: 6;
+}
+.ad-root .ad-search {
+	flex: 1;
+	max-width: var(--ad-w-search);
+	height: var(--ad-h-search);
+	background: var(--ad-shell-2);
+	border: 1px solid var(--ad-shell-line);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 12px;
+	cursor: text;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-search:hover {
+	border-color: var(--ad-shell-line-mid);
+}
+.ad-root .ad-search span.ad-g {
+	font-size: 15px;
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-search input {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	border: 0;
+	outline: none;
+	background: none;
+	font-size: 13px;
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-search input::placeholder {
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-search .ad-kbd {
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: rgba(247, 244, 239, 0.6);
+}
+.ad-root .ad-site {
+	margin-left: auto;
+	font-size: 13px;
+	color: rgba(247, 244, 239, 0.6);
+	text-decoration: none;
+}
+.ad-root .ad-site:hover {
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-me {
+	width: 28px;
+	height: 28px;
+	flex: none;
+	background: var(--ad-paper);
+	color: var(--ad-ink);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--ad-font-mono);
+	font-size: 12px;
+}
+.ad-root .ad-load {
+	flex: none;
+	height: var(--ad-h-loading);
+	background: rgba(11, 11, 11, 0.08);
+	position: relative;
+}
+.ad-root .ad-load i {
+	position: absolute;
+	inset: 0 100% 0 0;
+	background: var(--ad-signal);
+	transition: right 320ms linear;
+}
+.ad-root .ad-load.on i {
+	right: 18%;
+}
+
+/* ---------- mesa ---------- */
+.ad-root .ad-crumb {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 13px;
+	flex-wrap: wrap;
+}
+.ad-root .ad-crumb a {
+	color: var(--ad-wine);
+	text-decoration: none;
+}
+.ad-root .ad-crumb a:hover {
+	color: var(--ad-ink);
+}
+.ad-root .ad-crumb span.ad-crumb-sep {
+	color: rgba(11, 11, 11, 0.4);
+}
+.ad-root .ad-crumb b {
+	font-weight: 900;
+}
+.ad-root .ad-head {
+	display: flex;
+	align-items: flex-end;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+.ad-root .ad-head h1 {
+	margin: 0;
+	font-family: var(--ad-font-head);
+	font-size: var(--ad-size-screen);
+	line-height: var(--ad-leading-head);
+	font-weight: 900;
+	letter-spacing: var(--ad-track-screen);
+	text-transform: uppercase;
+}
+.ad-root .ad-head .ad-meta {
+	font-family: var(--ad-font-mono);
+	font-size: 12px;
+	color: rgba(11, 11, 11, 0.55);
+}
+.ad-root .ad-head .ad-acts {
+	margin-left: auto;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.ad-root .ad-sheet {
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-sheet);
+}
+.ad-root .ad-panel {
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line);
+}
+.ad-root .ad-eb {
+	margin: 0;
+	font-family: var(--ad-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.24em;
+	text-transform: uppercase;
+	color: var(--ad-wine);
+}
+.ad-root .ad-ml {
+	font-size: 11px;
+	font-weight: 900;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--ad-text-label);
+}
+.ad-root .ad-body {
+	font-size: 15px;
+	line-height: 1.7;
+	color: var(--ad-text-muted);
+}
+
+.ad-root .ad-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	height: var(--ad-h-control);
+	padding: 0 16px;
+	font-size: 12px;
+	font-weight: 900;
+	letter-spacing: var(--ad-track-button);
+	text-transform: uppercase;
+	transition: var(--ad-transition);
+	white-space: nowrap;
+}
+.ad-root .ad-btn.ad-pri {
+	background: var(--ad-wine);
+	color: var(--ad-on-shell);
+	padding: 0 18px;
+}
+.ad-root .ad-btn.ad-pri:hover {
+	background: #6a1a1e;
+}
+.ad-root .ad-btn.ad-sec {
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-strong);
+}
+.ad-root .ad-btn.ad-sec:hover {
+	background: var(--ad-sand);
+}
+.ad-root .ad-btn.ad-ink {
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	padding: 0 18px;
+}
+.ad-root .ad-btn.ad-ink:hover {
+	background: #241f1c;
+}
+.ad-root .ad-tool {
+	height: var(--ad-h-tool);
+	padding: 0 12px;
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-tool);
+	display: inline-flex;
+	align-items: center;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-tool:hover {
+	background: var(--ad-paper);
+}
+.ad-root .ad-tool.on {
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	border-color: var(--ad-ink);
+	font-weight: 900;
+}
+.ad-root .ad-tool.ad-sq {
+	width: var(--ad-h-tool);
+	padding: 0;
+	justify-content: center;
+	font-size: 15px;
+}
+.ad-root .ad-tool.ad-accent {
+	background: var(--ad-wine);
+	color: var(--ad-on-shell);
+	border-color: var(--ad-wine);
+	font-size: 12px;
+	font-weight: 900;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+.ad-root .ad-tool[disabled] {
+	opacity: 0.4;
+	cursor: default;
+}
+.ad-root .ad-sep {
+	width: 1px;
+	height: 24px;
+	background: var(--ad-line-tool);
+	margin: 0 4px;
+}
+
+.ad-root .ad-badge {
+	height: var(--ad-h-badge);
+	display: inline-flex;
+	align-items: center;
+	padding: 0 10px;
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+.ad-root .ad-b-pub {
+	background: var(--ad-sand);
+	color: var(--ad-wine);
+}
+.ad-root .ad-b-dra {
+	border: 1px solid var(--ad-line-strong);
+	color: var(--ad-text-soft);
+}
+.ad-root .ad-b-run {
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-b-err {
+	background: var(--ad-wine-wash-solid);
+	border: 1px solid var(--ad-wine-line);
+	color: var(--ad-wine);
+}
+
+.ad-root .ad-filters {
+	background: var(--ad-sand);
+	padding: 10px 14px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.ad-root .ad-chip {
+	height: var(--ad-h-chip);
+	display: inline-flex;
+	align-items: center;
+	padding: 0 10px;
+	font-size: 12px;
+	border: 1px solid var(--ad-line-tool);
+	background: transparent;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-chip:hover {
+	background: rgba(255, 255, 255, 0.5);
+}
+.ad-root .ad-chip.on {
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	border-color: var(--ad-ink);
+}
+.ad-root .ad-field {
+	height: var(--ad-h-control);
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-strong);
+	display: flex;
+	align-items: center;
+	padding: 0 14px;
+	font-size: 15px;
+	gap: 8px;
+}
+.ad-root .ad-field input {
+	border: 0;
+	outline: none;
+	background: none;
+	width: 100%;
+}
+.ad-root .ad-field:focus-within {
+	border-color: var(--ad-ink);
+	box-shadow: var(--ad-focus);
+}
+
+.ad-root .ad-row {
+	width: 100%;
+	height: var(--ad-h-row);
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: var(--ad-pad-row);
+	border-bottom: 1px solid var(--ad-line-quiet);
+	text-align: left;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-row:last-child {
+	border-bottom: 0;
+}
+.ad-root .ad-row:hover {
+	background: var(--ad-row-hover);
+	border-bottom-color: var(--ad-line);
+}
+.ad-root .ad-row .ad-t {
+	font-size: 15px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.ad-root .ad-row .ad-d {
+	margin-left: auto;
+	font-family: var(--ad-font-mono);
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+	color: var(--ad-text-quiet);
+}
+.ad-root .ad-thead {
+	background: var(--ad-sand);
+	display: grid;
+	gap: 16px;
+	padding: 10px 18px;
+	font-size: 11px;
+	font-weight: 900;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--ad-text-label);
+}
+.ad-root .ad-trow {
+	display: grid;
+	gap: 16px;
+	align-items: center;
+	padding: 0 18px;
+	height: var(--ad-h-row);
+	border-bottom: 1px solid var(--ad-line-quiet);
+	transition: var(--ad-transition);
+}
+.ad-root .ad-trow:hover {
+	background: var(--ad-row-hover);
+	border-bottom-color: var(--ad-line);
+}
+.ad-root .ad-empty {
+	background: var(--ad-sand);
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+}
+.ad-root .ad-grid {
+	display: grid;
+	gap: var(--ad-gap-grid);
+}
+.ad-root .ad-hatch {
+	background: repeating-linear-gradient(135deg, #d8d0c4 0 8px, #e4ded4 8px 16px);
+}
+
+/* ---------- editor ---------- */
+.ad-root .ad-editor {
+	border: 1px solid var(--ad-line);
+	background: var(--ad-desk);
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.ad-root .ad-etools {
+	background: var(--ad-sand);
+	border-bottom: 1px solid var(--ad-line);
+	padding: 8px 14px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+.ad-root .ad-stage {
+	padding: 28px;
+	display: flex;
+	justify-content: center;
+}
+.ad-root .ad-paper {
+	width: 100%;
+	max-width: var(--ad-w-sheet);
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-sheet);
+	padding: var(--ad-pad-sheet-wide);
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	position: relative;
+}
+.ad-root .ad-blk {
+	position: relative;
+	border: 1px solid transparent;
+	padding: 8px 10px;
+	margin: -8px -10px;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-blk:hover {
+	border-color: var(--ad-block-line);
+}
+.ad-root .ad-bbar {
+	position: absolute;
+	top: -14px;
+	right: -1px;
+	height: var(--ad-h-chip);
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	display: none;
+	align-items: center;
+	gap: 10px;
+	padding: 0 10px;
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	white-space: nowrap;
+	z-index: 3;
+}
+.ad-root .ad-bbar i {
+	color: rgba(247, 244, 239, 0.3);
+	font-style: normal;
+}
+.ad-root .ad-bbar button {
+	font-family: inherit;
+	font-size: 11px;
+}
+.ad-root .ad-bbar button:hover {
+	text-decoration: underline;
+}
+.ad-root .ad-blk:hover .ad-bbar {
+	display: inline-flex;
+}
+.ad-root .ad-guide {
+	position: relative;
+	height: 2px;
+	background: var(--ad-wine);
+}
+.ad-root .ad-guide span {
+	position: absolute;
+	left: 0;
+	top: -11px;
+	height: 20px;
+	background: var(--ad-wine);
+	color: var(--ad-on-shell);
+	display: inline-flex;
+	align-items: center;
+	padding: 0 8px;
+	font-family: var(--ad-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+.ad-root .ad-insert {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 0;
+	border-top: 1px dashed rgba(11, 11, 11, 0.25);
+	width: 100%;
+	text-align: left;
+}
+.ad-root .ad-insert span.ad-p {
+	width: 28px;
+	height: 28px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--ad-line-strong);
+	font-size: 16px;
+	color: rgba(11, 11, 11, 0.55);
+}
+.ad-root .ad-insert span.ad-l {
+	font-size: 14px;
+	color: var(--ad-text-quiet);
+}
+.ad-root .ad-insert:hover span.ad-p {
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	border-color: var(--ad-ink);
+}
+.ad-root .ad-foot {
+	background: var(--ad-sand);
+	border-top: 1px solid var(--ad-line);
+	padding: 12px 20px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-wrap: wrap;
+}
+.ad-root .ad-outline {
+	flex: none;
+	width: var(--ad-w-outline);
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line);
+	display: flex;
+	flex-direction: column;
+	align-self: flex-start;
+}
+.ad-root .ad-orow {
+	width: 100%;
+	height: var(--ad-h-outline);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 14px;
+	border-bottom: 1px solid var(--ad-line-quiet);
+	text-align: left;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-orow .ad-i {
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: var(--ad-text-faint);
+}
+.ad-root .ad-orow.on {
+	background: var(--ad-wine);
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-orow.on .ad-i {
+	color: rgba(247, 244, 239, 0.65);
+}
+.ad-root .ad-orow:hover:not(.on) {
+	background: var(--ad-row-hover);
+}
+
+/* conteúdo publicado (renderer único) */
+.ad-root .ad-doc-h2 {
+	margin: 0;
+	font-family: var(--sl-font-head);
+	font-size: 40px;
+	line-height: 0.98;
+	font-weight: 900;
+	letter-spacing: -0.04em;
+	text-transform: uppercase;
+}
+.ad-root .ad-doc-p {
+	margin: 0;
+	font-size: 17px;
+	line-height: 1.75;
+	color: rgba(11, 11, 11, 0.85);
+	max-width: 60ch;
+	text-wrap: pretty;
+}
+.ad-root .ad-doc-q {
+	margin: 0;
+	border-left: 4px solid var(--sl-wine);
+	padding: 4px 0 4px 20px;
+}
+.ad-root .ad-doc-q p {
+	margin: 0;
+	font-size: 21px;
+	line-height: 1.5;
+}
+.ad-root .ad-doc-hl {
+	background: var(--ad-sand);
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.ad-root .ad-doc-ul {
+	margin: 0;
+	padding-left: 22px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-size: 16px;
+	line-height: 1.7;
+	color: rgba(11, 11, 11, 0.85);
+}
+.ad-root .ad-doc-cap {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: rgba(11, 11, 11, 0.55);
+}
+
+/* ---------- overlays ---------- */
+.ad-root .ad-scrim {
+	position: fixed;
+	inset: 0;
+	background: var(--ad-scrim);
+	display: none;
+	z-index: 20;
+	padding: 36px;
+	justify-content: center;
+	align-items: flex-start;
+	overflow: auto;
+}
+.ad-root .ad-scrim.on {
+	display: flex;
+}
+.ad-root .ad-pal {
+	width: 100%;
+	max-width: 640px;
+	background: var(--ad-shell-2);
+	border: 1px solid var(--ad-shell-line);
+	color: var(--ad-on-shell);
+	margin-top: 60px;
+}
+.ad-root .ad-pal .ad-q {
+	height: 56px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 16px;
+	border-bottom: 1px solid var(--ad-shell-line);
+}
+.ad-root .ad-pal .ad-q input {
+	flex: 1;
+	border: 0;
+	outline: none;
+	background: none;
+	font-size: 17px;
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-pal .ad-q input::placeholder {
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-pal .ad-g {
+	padding: 12px 16px 4px;
+	font-family: var(--ad-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-pal button.ad-r {
+	width: 100%;
+	height: var(--ad-h-control);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 16px;
+	text-align: left;
+	font-size: 15px;
+	color: var(--ad-on-shell-soft);
+	transition: var(--ad-transition);
+}
+.ad-root .ad-pal button.ad-r:hover,
+.ad-root .ad-pal button.ad-r.on {
+	background: var(--ad-selected);
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-pal button.ad-r .ad-k {
+	margin-left: auto;
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: rgba(247, 244, 239, 0.55);
+}
+.ad-root .ad-pal .ad-hint {
+	border-top: 1px solid var(--ad-shell-line);
+	padding: 10px 16px;
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: var(--ad-on-shell-label);
+	display: flex;
+	gap: 16px;
+}
+.ad-root .ad-modal {
+	width: 100%;
+	max-width: 760px;
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line);
+	margin-top: 40px;
+}
+.ad-root .ad-modal .ad-mh {
+	height: var(--ad-h-topbar);
+	background: var(--ad-shell);
+	color: var(--ad-on-shell);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 18px;
+}
+.ad-root .ad-modal .ad-mh b {
+	font-size: 15px;
+	font-weight: 900;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+}
+.ad-root .ad-modal .ad-mh .ad-f {
+	font-family: var(--ad-font-mono);
+	font-size: 11px;
+	color: rgba(247, 244, 239, 0.5);
+}
+.ad-root .ad-modal .ad-mb {
+	padding: 22px;
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+.ad-root .ad-crop {
+	position: relative;
+	width: 260px;
+	background: repeating-linear-gradient(135deg, #2a2522 0 10px, #1f1a16 10px 20px);
+	overflow: hidden;
+	user-select: none;
+	transition: aspect-ratio var(--ad-transition);
+}
+.ad-root .ad-crop .ad-dark {
+	position: absolute;
+	inset: 0;
+	background: rgba(11, 11, 11, 0.58);
+}
+.ad-root .ad-crop .ad-fr {
+	position: absolute;
+	border: 2px solid var(--ad-paper);
+	cursor: move;
+	background: repeating-linear-gradient(
+		135deg,
+		rgba(216, 208, 196, 0.5) 0 10px,
+		rgba(228, 222, 212, 0.5) 10px 20px
+	);
+}
+.ad-root .ad-crop .ad-h {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	background: var(--ad-paper);
+	border: 1px solid var(--ad-ink);
+}
+.ad-root .ad-crop .ad-h.ad-nw {
+	left: -8px;
+	top: -8px;
+	cursor: nwse-resize;
+}
+.ad-root .ad-crop .ad-h.ad-ne {
+	right: -8px;
+	top: -8px;
+	cursor: nesw-resize;
+}
+.ad-root .ad-crop .ad-h.ad-sw {
+	left: -8px;
+	bottom: -8px;
+	cursor: nesw-resize;
+}
+.ad-root .ad-crop .ad-h.ad-se {
+	right: -8px;
+	bottom: -8px;
+	cursor: nwse-resize;
+}
+.ad-root .ad-crop .ad-tag {
+	position: absolute;
+	bottom: 6px;
+	left: 6px;
+	background: var(--ad-wine);
+	color: var(--ad-on-shell);
+	font-family: var(--ad-font-mono);
+	font-size: 10px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	padding: 3px 7px;
+	white-space: nowrap;
+}
+.ad-root .ad-drop {
+	border: 2px dashed var(--ad-line-strong);
+	background: var(--ad-paper);
+	padding: 22px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	text-align: center;
+	transition: var(--ad-transition);
+}
+.ad-root .ad-drop.ad-over {
+	border-color: var(--ad-wine);
+	background: var(--ad-wine-wash);
+}
+.ad-root .ad-drop b {
+	font-size: 17px;
+	font-weight: 900;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+}
+.ad-root .ad-area {
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line-strong);
+	padding: 12px 14px;
+	font-size: 15px;
+	line-height: 1.6;
+	min-height: 112px;
+	width: 100%;
+	resize: vertical;
+	outline: none;
+	font-family: var(--ad-font-body);
+}
+.ad-root .ad-area:focus {
+	border-color: var(--ad-ink);
+	box-shadow: var(--ad-focus);
+}
+.ad-root .ad-popover {
+	position: absolute;
+	left: 40px;
+	bottom: 48px;
+	width: var(--ad-w-picker);
+	background: var(--ad-sheet);
+	border: 1px solid var(--ad-line);
+	display: none;
+	flex-direction: column;
+	z-index: 8;
+}
+.ad-root .ad-popover.on {
+	display: flex;
+}
+.ad-root .ad-screen {
+	display: none;
+	flex-direction: column;
+	gap: 20px;
+}
+.ad-root .ad-screen.on {
+	display: flex;
+}
+
+/* The desk owns the page background and the body face for everything inside. */
+.ad-root {
+	background: var(--ad-desk);
+	color: var(--ad-text);
+	font-family: var(--ad-font-body);
+}
+
+.ad-root :focus-visible {
+	outline: 1px solid var(--ad-ink);
+	box-shadow: var(--ad-focus);
+}
+
+/* Empty editable node keeps its placeholder visible, at the block's own size. */
+.ad-root [contenteditable][data-placeholder]:empty::before {
+	content: attr(data-placeholder);
+	color: var(--ad-text-faint);
+}
+
+.ad-root [contenteditable]:focus {
+	outline: none;
+}
+
+/* Real data makes the result list longer than the kit's sample: it scrolls so
+   the shortcut hint stays on screen. */
+.ad-root .ad-pal .ad-results {
+	max-height: 46vh;
+	overflow: auto;
+}

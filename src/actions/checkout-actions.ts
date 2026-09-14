@@ -1,74 +1,56 @@
 "use server";
 
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { finalizeCheckoutCleanup } from "@/actions/order-actions";
 import { env } from "@/env.mjs";
 import { requireAuth } from "@/lib/api-auth";
-import { type CheckoutSnapshot, getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
-import { buildMercadoPagoPaymentAttemptIdempotencyKey } from "@/lib/checkout/mercado-pago-idempotency";
+import { getCheckoutSnapshot } from "@/lib/checkout/cart-snapshot";
 import { type CheckoutBuyerDraft, normalizeCheckoutBuyer } from "@/lib/checkout-buyer";
-import type { Cart } from "@/lib/commerce-types";
 import { createInternalOrderId } from "@/lib/order-identity";
 import { resolveShippingQuotesForDestination, toShippingRate } from "@/lib/shipping";
 import type { CheckoutAddress, CheckoutDeliveryMethod } from "@/lib/shipping-core";
 
-export interface TransparentCheckoutIntent {
-	paymentProvider: "mercado_pago";
-	publishableKey: string;
-	paymentReferenceId: string;
+const CHECKOUT_COOKIE = "asaas_checkout";
+type CheckoutReceipt = {
 	orderId: string;
-	isAuthenticated: boolean;
-	buyer: CheckoutBuyerDraft;
-	subtotal: number;
-	discountTotal: number;
-	amountTotal: number;
-	currency: string;
-	items: CheckoutSnapshot["items"];
-	couponCode?: string | null;
-	shippingRate?: CheckoutSnapshot["shippingRate"] | null;
-	shippingError?: string | null;
-	deliveryMethod: CheckoutDeliveryMethod;
-	deliveryAddress?: CheckoutAddress | null;
-	savedCards: SavedMercadoPagoCard[];
+	ownerKey: string;
+	cartHash: string;
+	cleaned: boolean;
+};
+
+async function receipt(orderId: string): Promise<CheckoutReceipt | null> {
+	try {
+		const [payload, signature] = ((await cookies()).get(CHECKOUT_COOKIE)?.value ?? "").split(".");
+		if (!payload || !signature) return null;
+		const expected = createHmac("sha256", env.FASTAPI_INTERNAL_API_KEY).update(payload).digest();
+		const received = Buffer.from(signature, "base64url");
+		if (received.length !== expected.length || !timingSafeEqual(expected, received)) return null;
+		const value = JSON.parse(Buffer.from(payload, "base64url").toString()) as CheckoutReceipt | null;
+		return value?.orderId === orderId ? value : null;
+	} catch {
+		return null;
+	}
+}
+
+async function saveReceipt(value: CheckoutReceipt) {
+	const payload = Buffer.from(JSON.stringify(value)).toString("base64url");
+	const signature = createHmac("sha256", env.FASTAPI_INTERNAL_API_KEY).update(payload).digest("base64url");
+	(await cookies()).set(CHECKOUT_COOKIE, `${payload}.${signature}`, {
+		httpOnly: true,
+		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
+		path: "/",
+		maxAge: 60 * 60 * 24 * 7,
+	});
 }
 
 type FastApiIntent = {
-	payment_reference_id: string;
 	order_id: string;
-	user_id: string | null;
-	buyer: CheckoutBuyerDraft | null;
-	amount_total: number;
-	currency: string;
-	items: CheckoutSnapshot["items"];
-	subtotal: number | null;
-	discount_total: number | null;
-	shipping_rate: CheckoutSnapshot["shippingRate"] | null;
-	shipping_error: string | null;
-	delivery_method: CheckoutDeliveryMethod | null;
-	delivery_address: CheckoutAddress | null;
-	coupon_code: string | null;
 	status: string;
-};
-
-type FastApiPayment = {
-	order_id: string;
-	payment_id: string;
-	status: string;
-	provider_status: string;
-	status_detail: string | null;
-	qr_code: string | null;
-	qr_code_base64: string | null;
-	ticket_url: string | null;
-	expires_at: string | null;
-	/** Boleto "linha digitável" — present only when the backend supports boleto. */
-	barcode?: string | null;
-};
-
-type SavedMercadoPagoCard = {
-	id: string;
-	brand: string | null;
-	lastFourDigits: string | null;
-	expirationMonth: number | null;
-	expirationYear: number | null;
+	asaas_charge_id: string | null;
+	redirect_url: string | null;
+	pix_copy_paste: string | null;
 };
 
 async function checkoutOwnerKey() {
@@ -101,33 +83,6 @@ async function fastApiRequest<T>(path: string, init: RequestInit = {}): Promise<
 	return payload as T;
 }
 
-function toIntent(remote: FastApiIntent, snapshot: CheckoutSnapshot): TransparentCheckoutIntent {
-	return {
-		paymentProvider: "mercado_pago",
-		publishableKey: env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ?? "",
-		paymentReferenceId: remote.payment_reference_id,
-		orderId: remote.order_id,
-		isAuthenticated: Boolean(snapshot.userId),
-		buyer: remote.buyer ?? {
-			fullName: snapshot.user.name ?? "",
-			email: snapshot.user.email ?? "",
-			cpf: snapshot.user.cpf ?? "",
-			phone: snapshot.user.phone ?? "",
-		},
-		subtotal: remote.subtotal ?? snapshot.subtotal,
-		discountTotal: remote.discount_total ?? snapshot.discountTotal,
-		amountTotal: remote.amount_total,
-		currency: remote.currency,
-		items: remote.items,
-		couponCode: remote.coupon_code,
-		shippingRate: remote.shipping_rate,
-		shippingError: remote.shipping_error,
-		deliveryMethod: remote.delivery_method ?? "new-address",
-		deliveryAddress: remote.delivery_address,
-		savedCards: [],
-	};
-}
-
 function normalizeAddress(address?: CheckoutAddress | null): CheckoutAddress | null {
 	if (!address) return null;
 	const normalized = {
@@ -145,245 +100,228 @@ function normalizeAddress(address?: CheckoutAddress | null): CheckoutAddress | n
 	return normalized.postalCode && normalized.country === "BR" ? normalized : null;
 }
 
-export async function createTransparentCheckoutIntent() {
-	if (!env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY) {
-		return { error: "Public Key do Mercado Pago ausente" } as const;
+/**
+ * Light quote used to auto-calculate shipping as soon as a CEP resolves, before
+ * the buyer has filled in the rest of the form. Only needs a destination postal
+ * code -- unlike createAsaasCheckout, it never touches Asaas or requires buyer
+ * data or a full street address.
+ */
+export async function getShippingQuote(input: {
+	deliveryMethod: CheckoutDeliveryMethod;
+	address?: CheckoutAddress | null;
+}) {
+	const result = await getCheckoutSnapshot();
+	if (!result.ok) return { error: result.error } as const;
+	const snapshot = result.snapshot;
+	if (!["saved-address", "new-address"].includes(input.deliveryMethod)) {
+		return { error: "Escolha uma forma de entrega" } as const;
 	}
+	const address = normalizeAddress(
+		input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address,
+	);
+	if (!address) {
+		return { error: "Informe um CEP válido para calcular o frete" } as const;
+	}
+	try {
+		const baseTotal = Math.max(0, snapshot.subtotal - snapshot.discountTotal);
+		const shipping = await resolveShippingQuotesForDestination({
+			destination: address,
+			deliveryMethod: input.deliveryMethod,
+			subtotal: baseTotal,
+			currency: snapshot.currency,
+			items: snapshot.items.map((item) => ({
+				...item,
+				price: item.unitAmount,
+			})),
+		});
+		if (shipping.error || !shipping.selected) {
+			return { error: shipping.error || "Não foi possível cotar a entrega" } as const;
+		}
+		return {
+			ok: true as const,
+			amountTotal: baseTotal + shipping.selected.amount,
+			shippingAmount: shipping.selected.amount,
+			estimatedDays: shipping.selected.estimatedDays ?? null,
+			currency: snapshot.currency,
+		};
+	} catch (error) {
+		return {
+			error: error instanceof Error ? error.message : "Não foi possível calcular o frete",
+		} as const;
+	}
+}
+
+export async function createAsaasCheckout(input: {
+	buyer: CheckoutBuyerDraft;
+	deliveryMethod: CheckoutDeliveryMethod;
+	address?: CheckoutAddress | null;
+	confirmedAmount?: number;
+}) {
 	const result = await getCheckoutSnapshot();
 	if (!result.ok) return { error: result.error } as const;
 	const snapshot = result.snapshot;
 	try {
+		const buyer = normalizeCheckoutBuyer(input.buyer);
+		if (!["saved-address", "new-address"].includes(input.deliveryMethod)) {
+			return { error: "Escolha uma forma de entrega" } as const;
+		}
+		const address = normalizeAddress(
+			input.deliveryMethod === "saved-address" ? snapshot.user.address : input.address,
+		);
+		if (
+			!address ||
+			!address.line1 ||
+			!address.number ||
+			!address.city ||
+			!address.state ||
+			!address.district
+		) {
+			return { error: "Informe o endereço completo para entrega" } as const;
+		}
+		const baseTotal = Math.max(0, snapshot.subtotal - snapshot.discountTotal);
+		const shipping = await resolveShippingQuotesForDestination({
+			destination: address,
+			deliveryMethod: input.deliveryMethod,
+			subtotal: baseTotal,
+			currency: snapshot.currency,
+			items: snapshot.items.map((item) => ({
+				...item,
+				price: item.unitAmount,
+			})),
+		});
+		if (shipping.error || !shipping.selected) {
+			return {
+				error: shipping.error || "Não foi possível cotar a entrega",
+			} as const;
+		}
+		const shippingRate = toShippingRate(shipping.selected);
+		const amountTotal = baseTotal + shipping.selected.amount;
+		if (input.confirmedAmount !== amountTotal) {
+			return {
+				needsConfirmation: true as const,
+				amountTotal,
+				shippingAmount: shipping.selected.amount,
+				estimatedDays: shipping.selected.estimatedDays ?? null,
+				currency: snapshot.currency,
+			};
+		}
+		const cartHash = createHash("sha256")
+			.update(
+				JSON.stringify({
+					cart: snapshot.cartHash,
+					buyer,
+					address,
+					deliveryMethod: input.deliveryMethod,
+					amountTotal,
+				}),
+			)
+			.digest("hex");
 		const remote = await fastApiRequest<FastApiIntent>("/checkout/intents", {
 			method: "POST",
 			body: JSON.stringify({
 				order_id: createInternalOrderId(),
 				checkout_owner_key: snapshot.checkoutOwnerKey,
 				user_id: snapshot.userId,
-				cart_hash: snapshot.cartHash,
-				buyer: {
-					fullName: snapshot.user.name ?? "",
-					email: snapshot.user.email ?? "",
-					cpf: snapshot.user.cpf ?? "",
-					phone: snapshot.user.phone ?? "",
-				},
-				amount_total: snapshot.amountTotal,
+				cart_hash: cartHash,
+				buyer,
+				amount_total: amountTotal,
 				currency: snapshot.currency,
 				items: snapshot.items,
 				subtotal: snapshot.subtotal,
 				discount_total: snapshot.discountTotal,
-				shipping_rate: snapshot.shippingRate,
-				shipping_error: snapshot.shippingError,
-				delivery_method: "new-address",
-				delivery_address: normalizeAddress(snapshot.user.address),
+				shipping_rate: shippingRate,
+				shipping_error: null,
+				delivery_method: input.deliveryMethod,
+				delivery_address: address,
 				coupon_code: snapshot.couponCode,
 			}),
 		});
-		return toIntent(remote, snapshot);
-	} catch (error) {
-		return {
-			error: error instanceof Error ? error.message : "Não foi possível preparar o checkout",
-		} as const;
-	}
-}
-
-export async function submitMercadoPagoCheckoutPayment(input: {
-	orderId: string;
-	paymentData: {
-		payment_method_id?: string;
-		token?: string;
-		installments?: number;
-		savedCardId?: string;
-	};
-}) {
-	if (input.paymentData.savedCardId) return { error: "Cartões salvos ainda estão em migração" } as const;
-	const paymentMethodId = input.paymentData.payment_method_id?.trim();
-	if (!paymentMethodId) return { error: "Meio de pagamento ausente" } as const;
-	const snapshotResult = await getCheckoutSnapshot();
-	if (!snapshotResult.ok) return { error: snapshotResult.error } as const;
-	const snapshot = snapshotResult.snapshot;
-	const method = paymentMethodId.toLowerCase();
-	const isPix = method === "pix";
-	// Boleto is opt-in via admin; the backend must accept `type: "boleto"`.
-	const isBoleto = method === "boleto" || method === "bolbradesco";
-	const isOffline = isPix || isBoleto;
-	try {
-		const remote = await fastApiRequest<FastApiPayment>(
-			`/checkout/intents/${encodeURIComponent(input.orderId)}/payment`,
-			{
-				method: "POST",
-				headers: { "X-Checkout-Owner-Key": snapshot.checkoutOwnerKey },
-				body: JSON.stringify({
-					payment_method: {
-						type: isPix ? "pix" : isBoleto ? "boleto" : "card",
-						id: isPix ? "pix" : isBoleto ? "boleto" : paymentMethodId,
-						token: isOffline ? null : input.paymentData.token,
-						installments: isOffline ? null : (input.paymentData.installments ?? null),
-					},
-					idempotency_key: buildMercadoPagoPaymentAttemptIdempotencyKey({
-						orderId: input.orderId,
-						checkoutOwnerKey: snapshot.checkoutOwnerKey,
-						cartHash: snapshot.cartHash,
-						amountTotal: snapshot.amountTotal,
-						currency: snapshot.currency,
-						paymentMethodId,
-						buyerEmail: snapshot.user.email,
-						attemptId: input.paymentData.token ?? paymentMethodId,
-					}),
-				}),
-			},
-		);
+		if (!remote.redirect_url || !remote.asaas_charge_id) {
+			return { error: "A Asaas não retornou a cobrança hospedada" } as const;
+		}
+		await saveReceipt({
+			orderId: remote.order_id,
+			ownerKey: snapshot.checkoutOwnerKey,
+			cartHash: snapshot.cartHash,
+			cleaned: false,
+		});
 		return {
 			ok: true as const,
 			orderId: remote.order_id,
-			paymentId: remote.payment_id,
 			status: remote.status,
-			providerStatus: remote.provider_status,
-			statusDetail: remote.status_detail,
-			qrCode: remote.qr_code,
-			qrCodeBase64: remote.qr_code_base64,
-			ticketUrl: remote.ticket_url,
-			expiresAt: remote.expires_at,
-			barcode: remote.barcode ?? null,
-		};
-	} catch (error) {
-		return { error: error instanceof Error ? error.message : "Não foi possível criar o pagamento" } as const;
-	}
-}
-
-export async function getPendingMercadoPagoPixPayment(input: { orderId: string }) {
-	try {
-		const remote = await fastApiRequest<FastApiPayment>(
-			`/checkout/intents/${encodeURIComponent(input.orderId)}/payment`,
-			{ headers: { "X-Checkout-Owner-Key": await checkoutOwnerKey() } },
-		);
-		return {
-			ok: true as const,
-			payment: {
-				paymentId: remote.payment_id,
-				status: remote.status,
-				qrCode: remote.qr_code,
-				qrCodeBase64: remote.qr_code_base64,
-				ticketUrl: remote.ticket_url,
-				expiresAt: remote.expires_at,
-			},
+			asaasChargeId: remote.asaas_charge_id,
+			redirectUrl: remote.redirect_url,
+			pixCopyPaste: remote.pix_copy_paste,
 		};
 	} catch (error) {
 		return {
-			error: error instanceof Error ? error.message : "Não foi possível recuperar o pagamento Pix",
+			error: error instanceof Error ? error.message : "Não foi possível iniciar o pagamento",
 		} as const;
 	}
 }
 
-export async function continuePendingMercadoPagoPixCheckout(input: { orderId: string }) {
+export async function finalizeAsaasCheckout(input: { orderId: string }) {
 	try {
-		const remote = await fastApiRequest<{ status: string; setup_password_required: boolean }>(
-			`/checkout/intents/${encodeURIComponent(input.orderId)}/finalize`,
+		const currentReceipt = await receipt(input.orderId);
+		const remote = await fastApiRequest<{
+			status: string;
+			setup_password_required?: boolean;
+			account_email_sent?: boolean;
+			billing_type?: string | null;
+			credit_card_brand?: string | null;
+			credit_card_last4?: string | null;
+			card_save_available?: boolean;
+		}>(`/checkout/intents/${encodeURIComponent(input.orderId)}/finalize`, {
+			method: "POST",
+			headers: {
+				"X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()),
+			},
+		});
+		let cartCleared = false;
+		if (remote.status === "succeeded" && currentReceipt && !currentReceipt.cleaned) {
+			const snapshot = await getCheckoutSnapshot();
+			if (snapshot.ok && snapshot.snapshot.cartHash === currentReceipt.cartHash) {
+				const cleanup = await finalizeCheckoutCleanup();
+				cartCleared = "ok" in cleanup;
+				if (cartCleared) await saveReceipt({ ...currentReceipt, cleaned: true });
+			}
+		}
+		return {
+			ok: true as const,
+			status: remote.status,
+			setupPasswordRequired: Boolean(remote.setup_password_required),
+			cartCleared,
+			accountEmailSent: Boolean(remote.account_email_sent),
+			cardSaveAvailable: Boolean(remote.card_save_available),
+			creditCardBrand: remote.credit_card_brand ?? null,
+			creditCardLast4: remote.credit_card_last4 ?? null,
+		};
+	} catch (error) {
+		return {
+			error: error instanceof Error ? error.message : "Não foi possível confirmar o pagamento",
+		} as const;
+	}
+}
+
+/** Opt-in save of the card used for an already-confirmed Asaas checkout.
+ * Only ever persists Asaas's reusable token, brand and last 4 digits --
+ * the frontend never sees the card number or the token itself. */
+export async function saveCheckoutCard(input: { orderId: string }) {
+	try {
+		const currentReceipt = await receipt(input.orderId);
+		const remote = await fastApiRequest<{ brand: string | null; last4: string | null }>(
+			`/checkout/intents/${encodeURIComponent(input.orderId)}/save-card`,
 			{
 				method: "POST",
-				headers: { "X-Checkout-Owner-Key": await checkoutOwnerKey() },
+				headers: {
+					"X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()),
+				},
 			},
 		);
-		if (remote.status !== "processing" && remote.status !== "succeeded") {
-			return { error: "O pagamento Pix não está pendente de confirmação" } as const;
-		}
-		const params = new URLSearchParams({ section: "purchases", order: input.orderId, pendingPayment: "1" });
-		if (remote.setup_password_required) params.set("setupPassword", "1");
-		return { ok: true as const, redirectUrl: `/user?${params.toString()}` };
+		return { ok: true as const, brand: remote.brand, last4: remote.last4 };
 	} catch (error) {
 		return {
-			error: error instanceof Error ? error.message : "Não foi possível preparar o acompanhamento do Pix",
+			error: error instanceof Error ? error.message : "Não foi possível salvar o cartão",
 		} as const;
 	}
 }
-
-export async function updateCheckoutBuyerData(input: {
-	paymentReferenceId?: string;
-	orderId?: string | null;
-	buyer: CheckoutBuyerDraft;
-}) {
-	if (!input.orderId) return { error: "Rascunho de pedido não encontrado" } as const;
-	try {
-		const buyer = normalizeCheckoutBuyer(input.buyer);
-		await fastApiRequest(`/checkout/intents/${encodeURIComponent(input.orderId)}`, {
-			method: "PATCH",
-			headers: { "X-Checkout-Owner-Key": await checkoutOwnerKey() },
-			body: JSON.stringify({ buyer }),
-		});
-		return { ok: true as const, buyer };
-	} catch (error) {
-		return { error: error instanceof Error ? error.message : "Dados inválidos" } as const;
-	}
-}
-
-export async function updateCheckoutDeliverySelection(input: {
-	paymentReferenceId?: string;
-	orderId?: string | null;
-	deliveryMethod: CheckoutDeliveryMethod;
-	address?: CheckoutAddress | null;
-}) {
-	if (!input.orderId) return { error: "Rascunho de pedido não encontrado" } as const;
-	const address = input.deliveryMethod === "new-address" ? normalizeAddress(input.address) : null;
-	if (input.deliveryMethod === "new-address" && !address)
-		return { error: "Informe um endereço válido" } as const;
-	try {
-		const snapshotResult = await getCheckoutSnapshot();
-		if (!snapshotResult.ok) return { error: snapshotResult.error } as const;
-		const snapshot = snapshotResult.snapshot;
-		const baseTotal = Math.max(0, snapshot.subtotal - snapshot.discountTotal);
-		const shippingResolution =
-			input.deliveryMethod === "pickup"
-				? { selected: null, error: null }
-				: address
-					? await resolveShippingQuotesForDestination({
-							items: snapshot.items.map((item) => ({
-								productId: item.productId,
-								variantId: item.variantId,
-								quantity: item.quantity,
-								price: item.unitAmount,
-								productType: item.productType ?? null,
-								format: item.format ?? null,
-							})),
-							destination: address,
-							currency: snapshot.currency,
-							subtotal: baseTotal,
-							deliveryMethod: input.deliveryMethod,
-						})
-					: { selected: null, error: null };
-		const shippingRate = shippingResolution.selected ? toShippingRate(shippingResolution.selected) : null;
-		const amountTotal = baseTotal + (shippingRate?.fixed_amount.amount ?? 0);
-		await fastApiRequest(`/checkout/intents/${encodeURIComponent(input.orderId)}`, {
-			method: "PATCH",
-			headers: { "X-Checkout-Owner-Key": await checkoutOwnerKey() },
-			body: JSON.stringify({
-				delivery_method: input.deliveryMethod,
-				delivery_address: address,
-				shipping_rate: shippingRate,
-				shipping_error: shippingResolution.error,
-				amount_total: amountTotal,
-			}),
-		});
-		return {
-			ok: true as const,
-			orderId: input.orderId,
-			paymentReferenceId: input.paymentReferenceId ?? "",
-			deliveryMethod: input.deliveryMethod,
-			deliveryAddress: address,
-			shippingRate,
-			shippingError: shippingResolution.error ?? null,
-			subtotal: snapshot.subtotal,
-			discountTotal: snapshot.discountTotal,
-			amountTotal,
-			currency: snapshot.currency,
-		};
-	} catch (error) {
-		return {
-			error: error instanceof Error ? error.message : "Não foi possível atualizar a entrega",
-		} as const;
-	}
-}
-
-export async function removeSavedMercadoPagoCard(_cardId: string) {
-	return { error: "Cartões salvos ainda estão em migração" } as const;
-}
-
-export type { Cart };

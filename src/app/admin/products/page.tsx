@@ -1,6 +1,8 @@
 import { PackagePlus, Tags } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataTable } from "@/app/admin/_components/ui/DataTable";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { AdminProductImagePreview } from "@/app/admin/products/_components/admin-product-image-preview";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { listAdminProductGroups } from "@/lib/admin-products";
@@ -14,11 +16,10 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Badge } from "@/ui/shadcn/badge";
-import { Button } from "@/ui/shadcn/button";
-import { CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
-import { Input } from "@/ui/shadcn/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
+import { SlButton } from "@/ui/sl/sl-button";
+
+type ProductGroup = Awaited<ReturnType<typeof listAdminProductGroups>>[number];
+type ProductGroupRow = ProductGroup & { id: string };
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,23 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 	const activeCount = filtered.filter((group) => group.active).length;
 	const variantCount = filtered.reduce((total, group) => total + group.variants.length, 0);
 
+	function priceLabelFor(group: ProductGroup) {
+		const prices = group.variants
+			.map((variant) =>
+				typeof variant.priceAmount === "number"
+					? { amount: variant.priceAmount, currency: variant.currency }
+					: null,
+			)
+			.filter((price): price is { amount: number; currency: string } => Boolean(price))
+			.sort((a, b) => a.amount - b.amount);
+		const firstPrice = prices[0];
+		const lastPrice = prices[prices.length - 1];
+		if (!firstPrice || !lastPrice) return "Sem preço";
+		return firstPrice.amount === lastPrice.amount
+			? formatMoney({ ...firstPrice, locale: displayLocale })
+			: `${formatMoney({ ...firstPrice, locale: displayLocale })} - ${formatMoney({ ...lastPrice, locale: displayLocale })}`;
+	}
+
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
@@ -61,30 +79,25 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 				actions={
 					<>
 						<form className="min-w-[280px] max-w-md flex-1">
-							<Input
+							<input
 								name="q"
 								defaultValue={query}
 								placeholder="Buscar produtos, slugs ou categorias"
-								className="rounded-none border-[color:var(--editorial-border)] bg-[#fbf7f1]"
+								aria-label="Buscar produtos, slugs ou categorias"
+								className="h-[var(--sl-h-button)] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]"
+								style={{ borderRadius: "var(--sl-radius)" }}
 							/>
 						</form>
 						{hasCapability(session.user.role, "settings.write") ? (
-							<Button asChild variant="outline" className="rounded-none">
-								<Link href="/admin/products/categories">
-									<Tags className="h-4 w-4" />
-									Categorias
-								</Link>
-							</Button>
+							<SlButton href="/admin/products/categories" variant="secondary">
+								<Tags className="h-4 w-4" />
+								Categorias
+							</SlButton>
 						) : null}
-						<Button
-							asChild
-							className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-						>
-							<Link href="/admin/products/new">
-								<PackagePlus className="h-4 w-4" />
-								Novo livro
-							</Link>
-						</Button>
+						<SlButton href="/admin/products/new" variant="primary">
+							<PackagePlus className="h-4 w-4" />
+							Novo livro
+						</SlButton>
 					</>
 				}
 			/>
@@ -100,156 +113,123 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 
 			{error ? (
 				<EditorialPanel>
-					<CardHeader>
-						<CardTitle>Catálogo indisponível</CardTitle>
-					</CardHeader>
-					<CardContent className="text-sm text-muted-foreground">{error}</CardContent>
+					<h2 className="editorial-serif text-xl font-semibold text-[var(--sl-ink)]">
+						Catálogo indisponível
+					</h2>
+					<p className="mt-2 text-sm text-[var(--sl-text-muted)]">{error}</p>
 				</EditorialPanel>
 			) : (
 				<EditorialPanel className="p-0">
-					<CardHeader>
-						<CardTitle>Produtos</CardTitle>
-					</CardHeader>
-					<CardContent>
+					<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+						<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
+							Produtos
+						</div>
+					</div>
+					<div className="p-6 sm:p-8">
 						<div className="space-y-3 md:hidden">
-							{filtered.map((group) => {
-								const prices = group.variants
-									.map((variant) =>
-										typeof variant.priceAmount === "number"
-											? { amount: variant.priceAmount, currency: variant.currency }
-											: null,
-									)
-									.filter((price): price is { amount: number; currency: string } => Boolean(price))
-									.sort((a, b) => a.amount - b.amount);
-								const firstPrice = prices[0];
-								const lastPrice = prices[prices.length - 1];
-								const priceLabel =
-									firstPrice && lastPrice
-										? firstPrice.amount === lastPrice.amount
-											? formatMoney({ ...firstPrice, locale: displayLocale })
-											: `${formatMoney({ ...firstPrice, locale: displayLocale })} - ${formatMoney({ ...lastPrice, locale: displayLocale })}`
-										: "Sem preço";
-
-								return (
-									<div
-										key={group.slug}
-										className="space-y-3 border border-[color:var(--editorial-border)] bg-white/50 p-4"
-									>
-										<div className="flex min-w-0 items-center gap-3">
-											<AdminProductImagePreview images={group.images} alt={group.name} size="sm" />
-											<div className="min-w-0">
-												<div className="truncate font-medium">{group.name}</div>
-												<div className="truncate font-mono text-xs text-muted-foreground">{group.slug}</div>
+							{filtered.map((group) => (
+								<div
+									key={group.slug}
+									className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
+								>
+									<div className="flex min-w-0 items-center gap-3">
+										<AdminProductImagePreview images={group.images} alt={group.name} size="sm" />
+										<div className="min-w-0">
+											<div className="truncate font-medium">{group.name}</div>
+											<div className="truncate font-mono text-xs text-[var(--sl-text-muted)]">
+												{group.slug}
 											</div>
 										</div>
-										<div className="grid grid-cols-2 gap-3 text-sm">
-											<div>
-												<span className="block text-xs text-muted-foreground">Categoria</span>
-												{group.category || "Não informada"}
-											</div>
-											<div>
-												<span className="block text-xs text-muted-foreground">Preço</span>
-												{priceLabel}
-											</div>
-											<div>
-												<span className="block text-xs text-muted-foreground">Variantes</span>
-												{group.variants.length}
-											</div>
-											<div>
-												<span className="block text-xs text-muted-foreground">Status</span>
-												<Badge variant={group.active ? "secondary" : "outline"}>
-													{group.active ? "Ativo" : "Inativo"}
-												</Badge>
-											</div>
-										</div>
-										<Link
-											className="inline-block text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-											href={`/admin/products/${group.slug}`}
-										>
-											Editar produto
-										</Link>
 									</div>
-								);
-							})}
+									<div className="grid grid-cols-2 gap-3 text-sm">
+										<div>
+											<span className="block text-xs text-[var(--sl-text-muted)]">Categoria</span>
+											{group.category || "Não informada"}
+										</div>
+										<div>
+											<span className="block text-xs text-[var(--sl-text-muted)]">Preço</span>
+											{priceLabelFor(group)}
+										</div>
+										<div>
+											<span className="block text-xs text-[var(--sl-text-muted)]">Variantes</span>
+											{group.variants.length}
+										</div>
+										<div>
+											<span className="block text-xs text-[var(--sl-text-muted)]">Status</span>
+											<StatusBadge tone={group.active ? "active" : "neutral"}>
+												{group.active ? "Ativo" : "Inativo"}
+											</StatusBadge>
+										</div>
+									</div>
+									<Link
+										className="inline-block text-sm font-semibold text-[var(--sl-accent)] underline underline-offset-4"
+										href={`/admin/products/${group.slug}`}
+									>
+										Editar produto
+									</Link>
+								</div>
+							))}
 							{filtered.length === 0 ? (
-								<div className="py-6 text-sm text-muted-foreground">Nenhum livro encontrado.</div>
+								<div className="py-6 text-sm text-[var(--sl-text-muted)]">Nenhum livro encontrado.</div>
 							) : null}
 						</div>
-						<Table className="hidden min-w-[760px] md:table">
-							<TableHeader>
-								<TableRow>
-									<TableHead>Produto</TableHead>
-									<TableHead>Categoria</TableHead>
-									<TableHead>Variantes</TableHead>
-									<TableHead>Preço</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead></TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{filtered.map((group) => {
-									const prices = group.variants
-										.map((variant) =>
-											typeof variant.priceAmount === "number"
-												? { amount: variant.priceAmount, currency: variant.currency }
-												: null,
-										)
-										.filter((price): price is { amount: number; currency: string } => Boolean(price))
-										.sort((a, b) => a.amount - b.amount);
-									const firstPrice = prices[0];
-									const lastPrice = prices[prices.length - 1];
-									const priceLabel =
-										firstPrice && lastPrice
-											? firstPrice.amount === lastPrice.amount
-												? formatMoney({ ...firstPrice, locale: displayLocale })
-												: `${formatMoney({ ...firstPrice, locale: displayLocale })} - ${formatMoney({ ...lastPrice, locale: displayLocale })}`
-											: "Sem preço";
-
-									return (
-										<TableRow key={group.slug}>
-											<TableCell>
-												<div className="flex items-center gap-3">
-													<AdminProductImagePreview images={group.images} alt={group.name} size="sm" />
-													<div className="min-w-0">
-														<div className="font-medium">{group.name}</div>
-														<div className="font-mono text-xs text-muted-foreground">{group.slug}</div>
-													</div>
+						<div className="hidden md:block">
+							<DataTable<ProductGroupRow>
+								columns={[
+									{
+										key: "name",
+										label: "Produto",
+										render: (group) => (
+											<div className="flex items-center gap-3">
+												<AdminProductImagePreview images={group.images} alt={group.name} size="sm" />
+												<div className="min-w-0">
+													<div className="font-medium">{group.name}</div>
+													<div className="font-mono text-xs text-[var(--sl-text-muted)]">{group.slug}</div>
 												</div>
-											</TableCell>
-											<TableCell>{group.category || "Categoria não informada"}</TableCell>
-											<TableCell>{group.variants.length}</TableCell>
-											<TableCell>{priceLabel}</TableCell>
-											<TableCell>
-												<Badge variant={group.active ? "secondary" : "outline"}>
-													{group.active ? "Ativo" : "Inativo"}
-												</Badge>
-											</TableCell>
-											<TableCell className="text-right">
-												<Link
-													className="text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-													href={`/admin/products/${group.slug}`}
-												>
-													Editar produto
-												</Link>
-											</TableCell>
-										</TableRow>
-									);
-								})}
-								{filtered.length === 0 ? (
-									<TableRow>
-										<TableCell colSpan={6} className="py-6 text-muted-foreground">
-											<div className="flex flex-wrap items-center justify-between gap-3">
-												<span>Nenhum livro encontrado.</span>
-												<Button asChild size="sm" className="rounded-none">
-													<Link href="/admin/products/new">Cadastrar novo livro</Link>
-												</Button>
 											</div>
-										</TableCell>
-									</TableRow>
-								) : null}
-							</TableBody>
-						</Table>
-					</CardContent>
+										),
+									},
+									{
+										key: "category",
+										label: "Categoria",
+										render: (group) => group.category || "Categoria não informada",
+									},
+									{ key: "variants", label: "Variantes", render: (group) => group.variants.length },
+									{ key: "price", label: "Preço", numeric: true, render: priceLabelFor },
+									{
+										key: "status",
+										label: "Status",
+										render: (group) => (
+											<StatusBadge tone={group.active ? "active" : "neutral"}>
+												{group.active ? "Ativo" : "Inativo"}
+											</StatusBadge>
+										),
+									},
+									{
+										key: "actions",
+										label: "",
+										render: (group) => (
+											<Link
+												className="text-sm font-semibold text-[var(--sl-accent)] underline underline-offset-4"
+												href={`/admin/products/${group.slug}`}
+											>
+												Editar produto
+											</Link>
+										),
+									},
+								]}
+								rows={filtered.map((group) => ({ ...group, id: group.slug }))}
+								empty={
+									<div className="flex flex-wrap items-center justify-between gap-3">
+										<span>Nenhum livro encontrado.</span>
+										<SlButton href="/admin/products/new" variant="secondary" size="sm">
+											Cadastrar novo livro
+										</SlButton>
+									</div>
+								}
+							/>
+						</div>
+					</div>
 				</EditorialPanel>
 			)}
 		</AdminEditorialPage>

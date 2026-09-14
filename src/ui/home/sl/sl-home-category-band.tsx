@@ -21,7 +21,7 @@ export function SlHomeCategoryBand({ categories }: { categories: SlCategoryFacet
 							href="/products"
 							className={category.key === "all" ? "sl-chip is-on" : "sl-chip"}
 						>
-							{category.label} · {category.count}
+							{category.key === "all" ? `${category.label} · ${category.count}` : category.label}
 						</YnsLink>
 					))}
 				</div>

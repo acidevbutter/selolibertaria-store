@@ -7,7 +7,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Card, CardContent } from "@/ui/shadcn/card";
 import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
 import AdminPaymentMethods from "../_components/admin-payment-methods.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
@@ -46,27 +45,25 @@ export default async function AdminSettingsPage() {
 					<details open className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Aparência
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">Tema do admin</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Tema do admin</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Defina o clima visual usado no admin sem misturar esse ajuste com preferências públicas da
 									loja.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminThemeSelector />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminThemeSelector />
+						</div>
 					</details>
 				</EditorialPanel>
 
@@ -74,29 +71,25 @@ export default async function AdminSettingsPage() {
 					<details open className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Região
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Idioma e país padrão
-								</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Idioma e país padrão</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Define o idioma padrão e a região inicial dos formulários quando a pessoa ainda não salvou
 									seus dados.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminRegionalSettings />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminRegionalSettings />
+						</div>
 					</details>
 				</EditorialPanel>
 
@@ -104,28 +97,24 @@ export default async function AdminSettingsPage() {
 					<details className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Suporte
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									E-mail de suporte
-								</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">E-mail de suporte</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Usado nos e-mails transacionais e nos pontos de contato do admin.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminSupportEmail />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminSupportEmail />
+						</div>
 					</details>
 				</EditorialPanel>
 
@@ -133,28 +122,24 @@ export default async function AdminSettingsPage() {
 					<details className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Pagamento
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Métodos de pagamento
-								</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Métodos de pagamento</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Pix e cartão ficam sempre ativos; o boleto é opcional.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminPaymentMethods />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminPaymentMethods />
+						</div>
 					</details>
 				</EditorialPanel>
 
@@ -162,28 +147,24 @@ export default async function AdminSettingsPage() {
 					<details className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Acesso
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Provedores sociais
-								</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Provedores sociais</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Ative ou revise integrações de login social sem espalhar credenciais por telas secundárias.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminOAuthProviders />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminOAuthProviders />
+						</div>
 					</details>
 				</EditorialPanel>
 
@@ -191,29 +172,25 @@ export default async function AdminSettingsPage() {
 					<details className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
 							<div className="space-y-2">
-								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Entrega
 								</p>
-								<div className="text-lg font-semibold text-[color:var(--editorial-ink)]">
-									Cálculo de frete
-								</div>
-								<p className="max-w-2xl text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Cálculo de frete</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
 									Ative a cotação e ajuste apenas os parâmetros operacionais do Melhor Envio, mantendo o token
 									técnico fora do admin.
 								</p>
 							</div>
-							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:hidden">
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
 								Expandir
 							</span>
-							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-muted)] group-open:block">
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
 								Recolher
 							</span>
 						</summary>
-						<Card className="border-none bg-transparent shadow-none">
-							<CardContent className="border-t border-[color:var(--editorial-border)] px-6 py-6 sm:px-8">
-								<AdminShippingProviders />
-							</CardContent>
-						</Card>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminShippingProviders />
+						</div>
 					</details>
 				</EditorialPanel>
 			</div>

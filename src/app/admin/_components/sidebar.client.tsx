@@ -1,132 +1,79 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { adminNavItems, type NavItem } from "@/app/admin/_components/nav-config";
-import { useTranslations } from "@/i18n/client";
+import { Fragment } from "react";
+import { useAdminRouteProgress } from "@/app/admin/_components/admin-route-progress.client";
+import { adminNavGroups, type NavCounts, resolveNavState } from "@/app/admin/_components/nav-config";
 import { hasCapability, type UserRole } from "@/lib/authz";
-import { cn } from "@/lib/utils";
 
 type SidebarUser = {
 	name?: string | null;
 	email?: string | null;
 	role?: UserRole;
+	capability?: string;
 };
 
-function AdminBrandMark({ size = 44 }: { size?: number }) {
-	return (
-		<div
-			className="grid shrink-0 place-items-center overflow-hidden rounded-xl bg-[#fffdf8] ring-1 ring-white/8"
-			style={{ height: size, width: size }}
-		>
-			<Image
-				src="/images/selolibertaria.png"
-				alt="Logo do Selo Libertária"
-				width={size}
-				height={size}
-				className="h-full w-full object-contain p-1.5"
-				priority
-			/>
-		</div>
-	);
-}
-
-export function AdminSidebar({
-	user,
-	logoutAction,
-}: {
-	user?: SidebarUser;
-	logoutAction: () => Promise<void>;
-}) {
+/**
+ * The rail (ui_kit `.rail`, canvas 4b): 264px, shell ink, three groups, no icons.
+ * One component for every admin screen — no per-page variation.
+ */
+export function AdminSidebar({ user, counts = {} }: { user?: SidebarUser; counts?: NavCounts }) {
 	const pathname = usePathname();
-	const t = useTranslations("AdminShell");
-	const [navigating, setNavigating] = useState(false);
-	const visibleNavItems = adminNavItems.filter((item) => hasCapability(user?.role, item.capability));
-
-	useEffect(() => {
-		setNavigating(false);
-	}, [pathname]);
+	const { pendingHref, navigate } = useAdminRouteProgress();
 
 	return (
-		<aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 overflow-hidden bg-[#0b0b0b] text-[color:var(--editorial-paper)] md:flex md:flex-col">
-			<div className="px-7 pb-7 pt-7">
-				<Link href="/admin" className="flex items-start gap-4">
-					<AdminBrandMark />
-					<div className="space-y-1">
-						<div className="text-base font-bold uppercase leading-[1.05] tracking-[0.06em] text-[#fffdf8]">
-							LIBERTÁRIA
-						</div>
-						<div className="text-xs font-medium leading-4 text-[#beb3a8]">{t("brandSubtitle")}</div>
-					</div>
-				</Link>
-				<div className="mt-5 flex items-center justify-between gap-3">
-					<div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">
-						{t("sectionTitle")}
-					</div>
-					<form action={logoutAction}>
-						<button
-							type="submit"
-							className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/42 transition-colors hover:text-[#fffdf8]"
-						>
-							{t("logout")}
-						</button>
-					</form>
+		<nav className="ad-rail hidden md:flex">
+			<div className="ad-lockup">
+				<div className="ad-mark">
+					<Image src="/images/selolibertaria.png" alt="" width={44} height={44} priority />
+				</div>
+				<div>
+					<b>Libertária</b>
+					<i>Painel editorial</i>
 				</div>
 			</div>
 
-			<nav className="space-y-1 px-[18px] py-4">
-				{visibleNavItems.map(({ href, label }: NavItem) => {
-					const active = pathname === href || (href !== "/admin" && pathname?.startsWith(href));
+			{adminNavGroups.map((group) => {
+				const visibleItems = group.items.filter((item) => hasCapability(user?.role, item.capability));
+				if (visibleItems.length === 0) return null;
 
-					return (
-						<Link
-							key={href}
-							href={href}
-							onClick={(event) => {
-								if (active) {
-									event.preventDefault();
-									return;
-								}
+				return (
+					<Fragment key={group.label}>
+						<div className="ad-grp">{group.label}</div>
+						{visibleItems.map((item) => {
+							const state = resolveNavState(pathname, item.href);
+							const selected = state === "selected";
+							const count = item.countKey ? counts[item.countKey] : undefined;
 
-								setNavigating(true);
-							}}
-							className={cn(
-								"flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium tracking-[-0.01em]",
-								active
-									? "bg-[#f7f1e8] text-[#0b0b0b]"
-									: "text-[#cfc6bd] hover:bg-white/4 hover:text-[#fffdf8]",
-							)}
-						>
-							<span
-								className={cn("h-1.5 w-1.5 shrink-0 rounded-full", active ? "bg-[#7a1e22]" : "bg-[#5c5450]")}
-							/>
-							<span>{label}</span>
-						</Link>
-					);
-				})}
-			</nav>
+							return (
+								<button
+									key={item.href}
+									type="button"
+									className="ad-nav"
+									aria-current={selected ? "page" : undefined}
+									data-parent={state === "parent" || pendingHref === item.href ? "" : undefined}
+									onClick={() => {
+										if (selected) return;
+										navigate(item.href);
+									}}
+								>
+									{item.label}
+									{typeof count === "number" ? <span className="ad-ct">{count}</span> : null}
+								</button>
+							);
+						})}
+					</Fragment>
+				);
+			})}
 
-			<div className="mt-auto px-7 pb-6 pt-4">
-				<div className="h-px w-[208px] bg-[#2a2422]" />
-				<div className="pt-7 text-xs text-white/60">
-					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9f948c]">
-						{t("sessionTitle")}
-					</div>
-					<div className="mt-2 text-sm font-semibold text-[#fffdf8]">
-						{user?.name ?? user?.email ?? t("authenticatedFallback")}
-					</div>
-					<div className="mt-1 truncate text-xs text-[#beb3a8]">{user?.email ?? ""}</div>
-				</div>
+			<div className="ad-who">
+				<b>
+					{user?.name ?? user?.email ?? "Sessão"}
+					{user?.role ? ` · ${user.role}` : ""}
+				</b>
+				<span>{user?.capability ?? "editorial.write"}</span>
 			</div>
-
-			{navigating ? (
-				<div className="absolute inset-0 z-50 grid place-items-center bg-black/55">
-					<Loader2 className="h-6 w-6 animate-spin text-[#fffdf8]" />
-				</div>
-			) : null}
-		</aside>
+		</nav>
 	);
 }

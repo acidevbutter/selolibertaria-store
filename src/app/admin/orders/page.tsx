@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataTable } from "@/app/admin/_components/ui/DataTable";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
@@ -12,19 +13,19 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/ui/shadcn/table";
+import { SlButton } from "@/ui/sl/sl-button";
+import { StatusBadge } from "@/ui/status-badge";
 import { AdminFilters } from "../admin-filters.client";
 export const dynamic = "force-dynamic";
 
-import { StatusBadge } from "@/ui/status-badge";
+type OrderRow = {
+	id: string;
+	buyer_email: string | null;
+	amount_total: number;
+	currency: string;
+	status: string;
+	created_at: string;
+};
 
 type SearchParams = { status?: string | string[]; period?: string | string[]; sort?: string | string[] };
 
@@ -92,7 +93,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 				title="Pedidos"
 				description="Acompanhe status, pagamento e operação."
 				actions={
-					<div className="w-full max-w-3xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
+					<div className="w-full max-w-3xl border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4">
 						<AdminFilters defaultStatus={status} defaultPeriod={period} defaultSort={sort} />
 					</div>
 				}
@@ -115,84 +116,75 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 				/>
 			</div>
 			<EditorialPanel className="p-0">
-				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
-					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+				<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+					<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 						Pedidos recentes
 					</div>
 				</div>
 				<div className="p-6 sm:p-8">
-					<div className="w-full overflow-x-auto">
-						<Table className="min-w-[640px]">
-							<TableHeader>
-								<TableRow>
-									<TableHead>E-mail do cliente</TableHead>
-									<TableHead>Valor</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Data</TableHead>
-									<TableHead>Pedido</TableHead>
-									<TableHead></TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{items.map((it) => (
-									<TableRow key={it.id}>
-										<TableCell className="break-all">{it.buyer_email || "Não informado"}</TableCell>
-										<TableCell>
-											{new Intl.NumberFormat(locale, {
-												style: "currency",
-												currency: it.currency?.toUpperCase?.() || defaultCurrency,
-											}).format((it.amount_total || 0) / 100)}
-										</TableCell>
-										<TableCell className="capitalize">
-											<StatusBadge status={it.status} />
-										</TableCell>
-										<TableCell>{new Date(it.created_at).toLocaleString(locale)}</TableCell>
-										<TableCell className="font-mono text-xs break-all">{it.id}</TableCell>
-										<TableCell className="text-right">
-											<Link
-												className="font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
-												href={`/admin/orders/${it.id}`}
-											>
-												Ver pedido
-											</Link>
-										</TableCell>
-									</TableRow>
-								))}
-								{items.length === 0 && (
-									<TableRow>
-										<TableCell colSpan={6} className="py-6 text-[color:var(--editorial-muted)]">
-											Nenhum pedido encontrado.
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-							<TableCaption>Mostrando até 50 pedidos.</TableCaption>
-						</Table>
-					</div>
+					<DataTable<OrderRow>
+						columns={[
+							{
+								key: "buyer_email",
+								label: "E-mail do cliente",
+								render: (row) => <span className="break-all">{row.buyer_email || "Não informado"}</span>,
+							},
+							{
+								key: "amount_total",
+								label: "Valor",
+								numeric: true,
+								render: (row) =>
+									new Intl.NumberFormat(locale, {
+										style: "currency",
+										currency: row.currency?.toUpperCase?.() || defaultCurrency,
+									}).format((row.amount_total || 0) / 100),
+							},
+							{ key: "status", label: "Status", render: (row) => <StatusBadge status={row.status} /> },
+							{
+								key: "created_at",
+								label: "Data",
+								render: (row) => new Date(row.created_at).toLocaleString(locale),
+							},
+							{
+								key: "id",
+								label: "Pedido",
+								render: (row) => <span className="font-mono text-xs break-all">{row.id}</span>,
+							},
+							{
+								key: "actions",
+								label: "",
+								render: (row) => (
+									<Link
+										className="font-semibold text-[var(--sl-accent)] underline underline-offset-4"
+										href={`/admin/orders/${row.id}`}
+									>
+										Ver pedido
+									</Link>
+								),
+							},
+						]}
+						rows={items as OrderRow[]}
+						empty="Nenhum pedido encontrado."
+					/>
+					<p className="mt-3 text-xs text-[var(--sl-text-muted)]">Mostrando até 50 pedidos.</p>
 					{items.length === 0 ? (
-						<div className="mt-4 flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+						<div className="mt-4 flex flex-col gap-4 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-5 sm:flex-row sm:items-center sm:justify-between">
 							<div className="space-y-1">
-								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+								<p className="text-sm font-semibold text-[var(--sl-ink)]">
 									Ainda não há pedidos neste recorte.
 								</p>
-								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
 									Volte para a loja, confira se os produtos estão visíveis e rode um fluxo de compra para
 									validar a operação.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">
-								<Link
-									href="/"
-									className="inline-flex h-10 items-center justify-center rounded-none border border-[color:var(--editorial-border)] bg-white px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-[#f4eee5]"
-								>
+								<SlButton href="/" variant="secondary" size="sm">
 									Ver loja
-								</Link>
-								<Link
-									href="/admin/products"
-									className="inline-flex h-10 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
-								>
+								</SlButton>
+								<SlButton href="/admin/products" variant="primary" size="sm">
 									Ver produtos
-								</Link>
+								</SlButton>
 							</div>
 						</div>
 					) : null}

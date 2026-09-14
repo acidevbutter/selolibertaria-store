@@ -1,5 +1,4 @@
 import { Mail } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmailLogTable } from "@/app/admin/emails/_components/email-log-table.client";
 import { env } from "@/env.mjs";
@@ -11,8 +10,11 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { Button } from "@/ui/shadcn/button";
-import { Input } from "@/ui/shadcn/input";
+import { SlButton } from "@/ui/sl/sl-button";
+
+const fieldClassName =
+	"h-10 w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
+const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 export const dynamic = "force-dynamic";
 
@@ -182,35 +184,34 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				title="E-mails transacionais"
 				description="Acompanhe envios, falhas e novas tentativas."
 				actions={
-					<div className="w-full max-w-5xl border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4">
+					<div className="w-full max-w-5xl border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4">
 						<form
 							method="get"
 							className="grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_180px_220px_auto] xl:items-end"
 						>
 							<div className="min-w-[220px]">
-								<label
-									htmlFor="email-search"
-									className="mb-2 block text-sm text-[color:var(--editorial-muted)]"
-								>
+								<label htmlFor="email-search" className="mb-2 block text-sm text-[var(--sl-text-muted)]">
 									Buscar por e-mail, pedido, mensagem ou origem
 								</label>
-								<Input
+								<input
 									id="email-search"
 									name="q"
 									defaultValue={q}
 									placeholder="cliente@email.com, pedido, tipo da mensagem..."
-									className="rounded-none border-[color:var(--editorial-border)] bg-white"
+									className={fieldClassName}
+									style={fieldStyle}
 								/>
 							</div>
 							<div>
-								<label htmlFor="status" className="mb-2 block text-sm text-[color:var(--editorial-muted)]">
+								<label htmlFor="status" className="mb-2 block text-sm text-[var(--sl-text-muted)]">
 									Status
 								</label>
 								<select
 									id="status"
 									name="status"
 									defaultValue={status}
-									className="flex h-10 w-full rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+									className={fieldClassName}
+									style={fieldStyle}
 								>
 									<option value="all">Todos</option>
 									<option value="sent">Enviados</option>
@@ -219,14 +220,15 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 								</select>
 							</div>
 							<div>
-								<label htmlFor="kind" className="mb-2 block text-sm text-[color:var(--editorial-muted)]">
+								<label htmlFor="kind" className="mb-2 block text-sm text-[var(--sl-text-muted)]">
 									Tipo
 								</label>
 								<select
 									id="kind"
 									name="kind"
 									defaultValue={kind}
-									className="flex h-10 w-full rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+									className={fieldClassName}
+									style={fieldStyle}
 								>
 									<option value="all">Todos</option>
 									<option value="order_status">Status de pedido</option>
@@ -239,15 +241,12 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 							</div>
 							<input type="hidden" name="limit" value={String(limit)} />
 							<div className="flex flex-wrap gap-2">
-								<Button
-									type="submit"
-									className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-								>
+								<SlButton type="submit" variant="primary">
 									Aplicar
-								</Button>
-								<Button asChild variant="outline" className="rounded-none">
-									<Link href="/admin/emails">Limpar</Link>
-								</Button>
+								</SlButton>
+								<SlButton href="/admin/emails" variant="secondary">
+									Limpar
+								</SlButton>
 							</div>
 						</form>
 					</div>
@@ -268,8 +267,8 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				/>
 			</div>
 			<EditorialPanel className="p-0">
-				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
-					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+				<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 						<Mail className="h-4 w-4" />
 						Envios recentes
 					</div>
@@ -277,45 +276,42 @@ export default async function AdminEmailsPage({ searchParams }: { searchParams?:
 				<div className="space-y-4 p-6 sm:p-8">
 					<EmailLogTable items={tableItems} limit={limit} />
 					{tableItems.length === 0 ? (
-						<div className="flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex flex-col gap-4 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-5 sm:flex-row sm:items-center sm:justify-between">
 							<div className="space-y-1">
-								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
+								<p className="text-sm font-semibold text-[var(--sl-ink)]">
 									Ainda não há envios neste recorte.
 								</p>
-								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
 									Revise os modelos, confirme o e-mail de suporte e dispare um teste para verificar a trilha
 									completa.
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">
-								<Button asChild variant="outline" className="rounded-none bg-white">
-									<Link href="/admin/settings">Ver configurações</Link>
-								</Button>
-								<Button
-									asChild
-									className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-								>
-									<Link href="/admin/email-templates">Ver modelos de e-mail</Link>
-								</Button>
+								<SlButton href="/admin/settings" variant="secondary">
+									Ver configurações
+								</SlButton>
+								<SlButton href="/admin/email-templates" variant="primary">
+									Ver modelos de e-mail
+								</SlButton>
 							</div>
 						</div>
 					) : null}
 
-					<div className="flex flex-col gap-3 border-t border-[color:var(--editorial-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-						<p className="text-sm text-[color:var(--editorial-muted)]">
+					<div className="flex flex-col gap-3 border-t border-[var(--sl-line)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-sm text-[var(--sl-text-muted)]">
 							Mostrando {items.length > 0 ? skip + 1 : 0} - {skip + items.length} de {totalMatching}{" "}
 							registro(s).
 						</p>
 						<div className="flex items-center gap-2">
 							{previousHref ? (
-								<Button asChild variant="outline" className="rounded-none">
-									<Link href={previousHref}>Anterior</Link>
-								</Button>
+								<SlButton href={previousHref} variant="secondary" size="sm">
+									Anterior
+								</SlButton>
 							) : null}
 							{nextHref ? (
-								<Button asChild variant="outline" className="rounded-none">
-									<Link href={nextHref}>Próximo</Link>
-								</Button>
+								<SlButton href={nextHref} variant="secondary" size="sm">
+									Próximo
+								</SlButton>
 							) : null}
 						</div>
 					</div>

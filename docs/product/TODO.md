@@ -84,6 +84,17 @@ Preservar:
 - [ ] Cards da página "Sobre" pendentes.
 - [ ] Prazo real de envio (Correios) no lugar do valor módico atual.
 
+### Pré-estreia / pré-venda — validação técnica (2026-09-08)
+
+- [ ] Corrigir o countdown do modal: conferir `launchAt` salvo no admin e o fuso usado na conversão; o valor de 67h deve ser calculado exclusivamente contra a data de estreia, sem valor fixo ou texto cacheado.
+- [ ] Fazer o CTA da página `/pre-venda/little-fish-big-fish` apontar para um produto/variante real do catálogo, com preço definido. Hoje a campanha usa `buyHref: "#"` e a rota depende de `pageEnabled` + janela ativa; por isso pode retornar 404 fora da janela.
+- [x] Criar seed administrativo e idempotente da edição de pré-estreia no FastAPI: execução protegida/manual, sem endpoint público e sem criar pedidos falsos; criar produto publicado, variante comprável, metadados estruturados de livro impresso, preço, estoque e data de estreia sem duplicar registros. Implementado em `backend/scripts/seed.py` via API de catálogo.
+- [ ] Persistir no pedido os campos `pre_sale` (boolean), `pre_sale_launch_at` e `sold_at`/data da venda. Copiar a informação do snapshot do carrinho para o `OrderDraft` e para o `Order` no checkout/finalização, sem depender do catálogo depois.
+- [ ] Bloquear a expedição de pedidos pagos de pré-venda até `pre_sale_launch_at`; a partir da estreia, permitir as transições normais `received → producing → shipped` e refletir o bloqueio no admin.
+- [ ] Revisar o Envio Módico no backend: a cotação atual monta um pacote agregado e escolhe o menor serviço, sem separar livro elegível, produto misto, registro módico e demais itens. Enviar/usar `productType=book` + `format=print` por item, aplicar `Impresso` e `Registro Módico` conforme a regra do `spec.md` e cobrir os casos com testes.
+- [ ] Abrir a tela de pré-estreia antes da Home durante a janela configurada, preservando acesso direto ao catálogo e evitando loop de redirecionamento. Definir a regra no middleware/roteamento público, não no componente visual.
+- [ ] Ajustar o modal global: não renderizar na página de pré-estreia; trocar `localStorage` por cookie de 20 minutos após fechamento; limitar a abertura ao primeiro acesso da aba/janela e não reabrir a cada navegação dentro dela. Validar também reload e múltiplas abas.
+
 ## P7 — QA final
 
 - [ ] Testar mobile 390px, 768px, 1024px e 1440px.

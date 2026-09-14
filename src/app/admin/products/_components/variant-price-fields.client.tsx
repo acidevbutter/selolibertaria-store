@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/ui/shadcn/input";
 
 function formatDecimalWhileTyping(value: string) {
 	const normalized = value
@@ -36,16 +35,22 @@ export function VariantPriceFields({
 			: null;
 
 	return (
-		<div className="space-y-4 rounded-md border p-4">
+		<div
+			className="space-y-4 border border-[var(--sl-line)] p-4"
+			style={{ borderRadius: "var(--sl-radius)" }}
+		>
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium">Preço</h3>
-				<p className="text-xs text-muted-foreground">
+				<p className="text-xs text-[var(--sl-text-muted)]">
 					As variantes podem herdar o preço do produto ou usar um valor específico.
 				</p>
 			</div>
 			<input type="hidden" name="basePrice" value={typeof basePrice === "number" ? String(basePrice) : ""} />
 			<div className="space-y-3">
-				<label className="flex items-start gap-3 rounded-md border px-3 py-3 text-sm">
+				<label
+					className="flex items-start gap-3 border border-[var(--sl-line)] px-3 py-3 text-sm"
+					style={{ borderRadius: "var(--sl-radius)" }}
+				>
 					<input
 						type="radio"
 						name="priceMode"
@@ -56,12 +61,15 @@ export function VariantPriceFields({
 					/>
 					<span className="space-y-1">
 						<span className="block font-medium">Usar preço do produto</span>
-						<span className="block text-xs text-muted-foreground">
+						<span className="block text-xs text-[var(--sl-text-muted)]">
 							{inheritedPriceLabel ? inheritedPriceLabel : "Usa o preço padrão do produto."}
 						</span>
 					</span>
 				</label>
-				<label className="flex items-start gap-3 rounded-md border px-3 py-3 text-sm">
+				<label
+					className="flex items-start gap-3 border border-[var(--sl-line)] px-3 py-3 text-sm"
+					style={{ borderRadius: "var(--sl-radius)" }}
+				>
 					<input
 						type="radio"
 						name="priceMode"
@@ -78,7 +86,7 @@ export function VariantPriceFields({
 					<label htmlFor="priceOverride" className="text-sm font-medium">
 						Preço da variante
 					</label>
-					<Input
+					<input
 						id="priceOverride"
 						name="priceOverride"
 						type="text"
@@ -86,7 +94,8 @@ export function VariantPriceFields({
 						defaultValue={typeof overridePrice === "number" ? String(overridePrice).replace(".", ",") : ""}
 						disabled={mode !== "override"}
 						placeholder="19,90"
-						className="max-w-[10rem]"
+						className="h-[var(--sl-h-button)] w-full max-w-[10rem] border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)] disabled:opacity-50"
+						style={{ borderRadius: "var(--sl-radius)" }}
 						onChange={(event) => {
 							event.currentTarget.value = formatDecimalWhileTyping(event.currentTarget.value);
 						}}
@@ -97,7 +106,7 @@ export function VariantPriceFields({
 							event.currentTarget.value = formatDecimalOnBlur(event.currentTarget.value);
 						}}
 					/>
-					<p className="text-xs text-muted-foreground">Use valor decimal, como 19,90.</p>
+					<p className="text-xs text-[var(--sl-text-muted)]">Use valor decimal, como 19,90.</p>
 				</div>
 			</div>
 		</div>

@@ -133,6 +133,9 @@ describe("AdminImageUrlList editorial on-submit flow", () => {
 		fireEvent.change(screen.getByLabelText("Selecionar imagens"), {
 			target: { files: [successFile] },
 		});
+		fireEvent.change(await screen.findByLabelText("Descrição da imagem"), {
+			target: { value: "Nova capa do livro" },
+		});
 		fireEvent.click(await screen.findByRole("button", { name: "Salvar e enviar" }));
 		await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Imagem enviada com sucesso."));
 
@@ -143,6 +146,9 @@ describe("AdminImageUrlList editorial on-submit flow", () => {
 		const failedFile = new File(["imagem"], "falhou.jpg", { type: "image/jpeg" });
 		fireEvent.change(screen.getByLabelText("Selecionar imagens"), {
 			target: { files: [failedFile] },
+		});
+		fireEvent.change(await screen.findByLabelText("Descrição da imagem"), {
+			target: { value: "Tentativa que falha" },
 		});
 		fireEvent.click(await screen.findByRole("button", { name: "Salvar e enviar" }));
 		await waitFor(() =>

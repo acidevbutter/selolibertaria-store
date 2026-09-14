@@ -14,7 +14,7 @@ import {
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
 import { Reveal } from "@/ui/motion/reveal";
-import { Button } from "@/ui/shadcn/button";
+import { SlButton } from "@/ui/sl/sl-button";
 import { StatusBadge } from "@/ui/status-badge";
 
 function getRoleLabel(role: UserRole | undefined) {
@@ -98,7 +98,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 					actions={
 						<Link
 							href="/admin/users"
-							className="inline-flex h-11 items-center justify-center rounded-none border border-[color:var(--editorial-border)] px-5 text-sm font-semibold text-[color:var(--editorial-ink)] transition-colors hover:bg-[#fbf7f1]"
+							className="inline-flex h-11 items-center justify-center border border-[var(--sl-line)] px-5 text-sm font-semibold text-[var(--sl-ink)] transition-colors hover:bg-[var(--sl-paper-pure)]"
 						>
 							Voltar para usuários
 						</Link>
@@ -130,55 +130,45 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 					<Reveal delay={0.08}>
 						<EditorialPanel className="space-y-5">
 							<div className="space-y-1">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Perfil
 								</div>
-								<h2 className="editorial-serif text-2xl font-semibold text-[color:var(--editorial-ink)]">
+								<h2 className="editorial-serif text-2xl font-semibold text-[var(--sl-ink)]">
 									Dados principais do cadastro
 								</h2>
 							</div>
 							<div className="grid gap-4 sm:grid-cols-2">
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										E-mail
 									</div>
-									<div className="break-all text-sm text-[color:var(--editorial-ink)]">{user.email}</div>
+									<div className="break-all text-sm text-[var(--sl-ink)]">{user.email}</div>
 								</div>
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
-										Nome
-									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">
-										{user.name || "Nome não informado"}
-									</div>
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">Nome</div>
+									<div className="text-sm text-[var(--sl-ink)]">{user.name || "Nome não informado"}</div>
 								</div>
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										Telefone
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">
-										{user.phone || "Telefone não informado"}
-									</div>
+									<div className="text-sm text-[var(--sl-ink)]">{user.phone || "Telefone não informado"}</div>
 								</div>
 								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										Estado de acesso
 									</div>
 									<div
-										className={
-											blocked
-												? "text-sm font-medium text-destructive"
-												: "text-sm font-medium text-emerald-700"
-										}
+										className={`text-sm font-medium ${blocked ? "text-[var(--sl-danger)]" : "text-[var(--sl-ink)]"}`}
 									>
 										{blocked ? "Bloqueado" : "Ativo"}
 									</div>
 								</div>
 								<div className="space-y-1 sm:col-span-2">
-									<div className="text-xs uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
+									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
 										Endereço
 									</div>
-									<div className="text-sm text-[color:var(--editorial-ink)]">
+									<div className="text-sm text-[var(--sl-ink)]">
 										{addressSummary || "Nenhum endereço salvo."}
 									</div>
 								</div>
@@ -188,21 +178,21 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 
 					<Reveal delay={0.12}>
 						<EditorialPanel className="p-0">
-							<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+							<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Compras
 								</div>
 							</div>
 							<div className="p-6 sm:p-8">
-								<ul className="divide-y divide-[color:var(--editorial-border)]">
+								<ul className="divide-y divide-[var(--sl-line)]">
 									{(user.purchases || []).map(
 										(p: { id: string; status: string; createdAt: string | Date }) => (
 											<li key={p.id} className="flex items-center justify-between gap-3 py-4">
 												<div className="min-w-0">
-													<div className="font-medium text-[color:var(--editorial-ink)]">
+													<div className="font-medium text-[var(--sl-ink)]">
 														<StatusBadge status={p.status} />
 													</div>
-													<div className="text-sm text-[color:var(--editorial-muted)]">
+													<div className="text-sm text-[var(--sl-text-muted)]">
 														{new Intl.DateTimeFormat(locale, {
 															dateStyle: "short",
 															timeStyle: "short",
@@ -210,12 +200,12 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 													</div>
 												</div>
 												<div className="text-right">
-													<div className="font-mono text-xs break-all text-[color:var(--editorial-muted)]">
+													<div className="font-mono text-xs break-all text-[var(--sl-text-muted)]">
 														{p.id}
 													</div>
 													<Link
 														href={`/admin/orders/${p.id}`}
-														className="mt-2 inline-flex text-sm font-semibold text-[color:var(--editorial-accent)] underline underline-offset-4"
+														className="mt-2 inline-flex text-sm font-semibold text-[var(--sl-accent)] underline underline-offset-4"
 													>
 														Ver pedido
 													</Link>
@@ -224,7 +214,7 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 										),
 									)}
 									{(!user.purchases || user.purchases.length === 0) && (
-										<li className="py-6 text-[color:var(--editorial-muted)]">Nenhuma compra registrada.</li>
+										<li className="py-6 text-[var(--sl-text-muted)]">Nenhuma compra registrada.</li>
 									)}
 								</ul>
 							</div>
@@ -236,22 +226,22 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 					<Reveal delay={0.1}>
 						<EditorialPanel className="space-y-6">
 							<div className="space-y-2">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
+								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
 									Gestão de acesso
 								</div>
-								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
+								<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
 									Somente admins podem alterar papel ou bloquear acesso. Toda mudança revoga sessões ativas
 									imediatamente.
 								</p>
 								{blocked && user.access?.blockedReason ? (
-									<p className="text-sm leading-6 text-destructive">
+									<p className="text-sm leading-6 text-[var(--sl-danger)]">
 										Motivo atual: {user.access.blockedReason}
 									</p>
 								) : null}
 							</div>
 							<form
 								action={updateUserRoleAction}
-								className="space-y-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+								className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
 							>
 								<input type="hidden" name="userId" value={id} />
 								<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -260,24 +250,22 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 										<select
 											name="role"
 											defaultValue={role}
-											className="min-w-48 rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+											className="min-w-48 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
+											style={{ borderRadius: "var(--sl-radius)" }}
 										>
 											<option value="customer">Cliente</option>
 											<option value="vendor">Vendedor</option>
 											<option value="admin">Administrador</option>
 										</select>
 									</label>
-									<Button
-										type="submit"
-										className="rounded-none bg-[color:var(--editorial-ink)] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-accent)]"
-									>
+									<SlButton type="submit" variant="primary">
 										Atualizar papel
-									</Button>
+									</SlButton>
 								</div>
 							</form>
 							<form
 								action={setUserBlockedAction}
-								className="space-y-3 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-4"
+								className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
 							>
 								<input type="hidden" name="userId" value={id} />
 								<input type="hidden" name="blocked" value={blocked ? "false" : "true"} />
@@ -294,16 +282,13 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 												? "Opcionalmente registre a observação do desbloqueio"
 												: "Descreva por que esta conta está sendo bloqueada"
 										}
-										className="rounded-none border border-[color:var(--editorial-border)] bg-white px-3 py-2 text-sm"
+										className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
+										style={{ borderRadius: "var(--sl-radius)" }}
 									/>
 								</label>
-								<Button
-									type="submit"
-									variant={blocked ? "secondary" : "destructive"}
-									className="rounded-none"
-								>
+								<SlButton type="submit" variant={blocked ? "secondary" : "accent"}>
 									{blocked ? "Desbloquear usuário" : "Bloquear usuário"}
-								</Button>
+								</SlButton>
 							</form>
 						</EditorialPanel>
 					</Reveal>

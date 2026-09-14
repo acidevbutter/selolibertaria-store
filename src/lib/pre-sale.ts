@@ -31,11 +31,11 @@ export type PreSaleCampaign = {
 	 * contagem regressiva do modal — sem ela, o modal não abre.
 	 */
 	launchAt?: string;
-	/** destino do botão "Comprar" (checkout / produto / link do Mercado Pago) */
+	/** destino do botão "Comprar" (checkout / produto / link de pagamento) */
 	buyHref: string;
 	/** link "voltar para a loja" no topo */
 	backHref: string;
-	/** nota de pagamento sob o card (ex.: "Pagamento via Mercado Pago · Pix ou cartão.") */
+	/** nota de pagamento sob o card (ex.: "Pagamento via Asaas · Pix.") */
 	paymentNote: string;
 	/** imagens da campanha, relativas a /public */
 	images: {
@@ -134,7 +134,7 @@ export const LFBF_CAMPAIGN: PreSaleCampaign = {
 	launchAt: undefined,
 	buyHref: "#",
 	backHref: "/",
-	paymentNote: "Pagamento via Mercado Pago · Pix ou cartão.",
+	paymentNote: "Pagamento via Asaas · Pix.",
 	images: {
 		badge: "/images/selolibertaria/lfbf-fish-badge.png",
 		band: "/images/selolibertaria/lfbf-fish-band.png",
