@@ -6,7 +6,6 @@ import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-cr
 import "react-image-crop/dist/ReactCrop.css";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/shadcn/dialog";
-import { SlButton } from "@/ui/sl/sl-button";
 
 const ASPECT_PRESETS = [
 	{ key: "16:9", label: "Faixa do hero · 16:9", ratio: 16 / 9 },
@@ -27,8 +26,6 @@ type MediaCropDto = {
 	flip: boolean;
 	grayscale: boolean;
 };
-
-const radiusStyle = { borderRadius: "var(--sl-radius)" } as const;
 
 function defaultCropForRatio(ratio: number | undefined): Crop {
 	if (!ratio) return { unit: "%", x: 0, y: 0, width: 100, height: 100 };
@@ -146,13 +143,7 @@ export function MediaCropEditor({
 							key={preset.key}
 							type="button"
 							onClick={() => setAspectKey(preset.key)}
-							className={cn(
-								"border px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em]",
-								aspectKey === preset.key
-									? "border-[var(--sl-ink)] bg-[var(--sl-ink)] text-[var(--sl-text-on-ink)]"
-									: "border-[var(--sl-line)] bg-[var(--sl-paper-pure)] text-[var(--sl-text-muted)]",
-							)}
-							style={radiusStyle}
+							className={cn("ad-tool", aspectKey === preset.key && "on")}
 						>
 							{preset.label}
 						</button>
@@ -161,11 +152,13 @@ export function MediaCropEditor({
 
 				<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
 					<div
-						className="flex items-center justify-center border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)] p-3"
-						style={radiusStyle}
+						className="flex items-center justify-center p-3"
+						style={{ border: "1px solid var(--ad-line)", background: "var(--ad-sand)" }}
 					>
 						{loading ? (
-							<p className="p-8 text-sm text-[var(--sl-text-muted)]">Carregando...</p>
+							<p className="p-8 text-sm" style={{ color: "var(--ad-text-muted)" }}>
+								Carregando...
+							</p>
 						) : (
 							<ReactCrop
 								crop={crop}
@@ -180,47 +173,42 @@ export function MediaCropEditor({
 
 					<div className="space-y-4">
 						<div className="space-y-2">
-							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								Ajustes
-							</p>
+							<p className="ad-ml">Ajustes</p>
 							<div className="flex flex-wrap gap-2">
-								<SlButton
+								<button
 									type="button"
-									variant="secondary"
-									size="sm"
+									className="ad-btn ad-sec"
 									onClick={() => setRotate((current) => ((current + 90) % 360) as 0 | 90 | 180 | 270)}
 								>
 									<RotateCw className="h-4 w-4" />
 									Girar 90°
-								</SlButton>
-								<SlButton
+								</button>
+								<button
 									type="button"
-									variant={flip ? "primary" : "secondary"}
-									size="sm"
+									className={cn("ad-btn", flip ? "ad-pri" : "ad-sec")}
 									onClick={() => setFlip((value) => !value)}
 								>
 									<FlipHorizontal className="h-4 w-4" />
 									Espelhar
-								</SlButton>
-								<SlButton
+								</button>
+								<button
 									type="button"
-									variant={grayscale ? "primary" : "secondary"}
-									size="sm"
+									className={cn("ad-btn", grayscale ? "ad-pri" : "ad-sec")}
 									onClick={() => setGrayscale((value) => !value)}
 								>
 									Preto e branco
-								</SlButton>
+								</button>
 							</div>
-							<p className="text-xs text-[var(--sl-text-muted)]">Rotação atual: {rotate}°.</p>
+							<p className="text-xs" style={{ color: "var(--ad-text-muted)" }}>
+								Rotação atual: {rotate}°.
+							</p>
 						</div>
 
 						<div className="space-y-2">
-							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								Prévia salva
-							</p>
+							<p className="ad-ml">Prévia salva</p>
 							<div
-								className="overflow-hidden border border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]"
-								style={radiusStyle}
+								className="overflow-hidden"
+								style={{ border: "1px solid var(--ad-line)", background: "var(--ad-sand)" }}
 							>
 								<img
 									key={previewUrl}
@@ -229,21 +217,25 @@ export function MediaCropEditor({
 									className="w-full object-contain"
 								/>
 							</div>
-							<p className="text-xs text-[var(--sl-text-muted)]">
+							<p className="text-xs" style={{ color: "var(--ad-text-muted)" }}>
 								Atualiza depois de salvar. Mostra o que já está gravado para esta proporção.
 							</p>
 						</div>
 
-						<SlButton
+						<button
 							type="button"
-							variant="primary"
-							fullWidth
+							className="ad-btn ad-pri"
+							style={{ width: "100%" }}
 							onClick={() => void saveCrop()}
 							disabled={saving}
 						>
 							{saving ? "Salvando..." : "Salvar recorte"}
-						</SlButton>
-						{status ? <p className="text-sm text-[var(--sl-text-muted)]">{status}</p> : null}
+						</button>
+						{status ? (
+							<p className="text-sm" style={{ color: "var(--ad-text-muted)" }}>
+								{status}
+							</p>
+						) : null}
 					</div>
 				</div>
 			</DialogContent>

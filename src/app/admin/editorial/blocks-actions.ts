@@ -1,8 +1,78 @@
 "use server";
 
+import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { type EditorialContentDoc, editorialContentDocSchema } from "@/lib/editorial-blocks";
+
+/** The nine editorial page identities the block editor can load/save (§1). */
+export type EditorialPageType =
+	| "page_home"
+	| "page_events"
+	| "page_projects"
+	| "page_products"
+	| "page_product"
+	| "page_about"
+	| "page_contact"
+	| "page_sarau"
+	| "site_global";
+
+export type EditorialBlocksRecord = {
+	title: string;
+	content: Record<string, unknown>;
+	draftDoc: EditorialContentDoc | null;
+	publishedDoc: EditorialContentDoc | null;
+	publishedAt: string | null;
+};
+
+type FastApiEditorialFull = {
+	slug: string;
+	title: string;
+	content: Record<string, unknown>;
+	draft_doc: EditorialContentDoc | null;
+	published_doc: EditorialContentDoc | null;
+	published_at: string | null;
+};
+
+/**
+ * Reads the record behind a page's block editor, including `draft_doc`/
+ * `published_doc` — fields `editorial-content-store.ts`'s `mapEditorial()`
+ * discards, since that module only serves the legacy per-field forms.
+ * There is no admin GET-by-slug endpoint, so this lists the content type and
+ * filters (same pattern as `getEditorialProjectRecordBySlug` in actions.ts).
+ */
+export async function getEditorialBlocksRecord(
+	type: EditorialPageType,
+	slug: string,
+): Promise<EditorialBlocksRecord | null> {
+	try {
+		const response = await fetch(`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}`, {
+			headers: { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
+			cache: "no-store",
+		});
+		if (!response.ok) return null;
+		const items = (await response.json()) as FastApiEditorialFull[];
+		const item = items.find((entry) => entry.slug === slug);
+		if (!item) return null;
+		return {
+			title: item.title,
+			content: item.content ?? {},
+			draftDoc: item.draft_doc,
+			publishedDoc: item.published_doc,
+			publishedAt: item.published_at,
+		};
+	} catch {
+		return null;
+	}
+}
+
+function backendHeaders(actorId: string) {
+	return {
+		"Content-Type": "application/json",
+		"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+		"X-Actor-User-ID": actorId,
+	};
+}
 
 export type PublishState =
 	| { status: "idle" }
@@ -32,6 +102,10 @@ function timeLabel(date: Date) {
  * Publica o rascunho (§9). Validation is Zod against the closed list of eleven
  * types — anything else is a 422, never a silent render. The draft is never
  * discarded by a refusal: every failure says what to do and what was not lost.
+ *
+ * `type`/`slug` identify which of the nine pages this is — the editor is one
+ * component/route, parameterized by these two hidden fields instead of the
+ * fixed demo document the route used to carry.
  */
 export async function publishEditorialDraftAction(
 	_state: PublishState,
@@ -69,24 +143,87 @@ export async function publishEditorialDraftAction(
 		};
 	}
 
-	// Optimistic concurrency: the editor sends the publishedAt it loaded with.
-	const seen = String(formData.get("publishedAt") ?? "");
-	const theirs = String(formData.get("serverPublishedAt") ?? "");
-	if (theirs && seen && theirs !== seen) {
-		return {
-			status: "conflict",
-			message: `Alguém publicou esta página às ${timeLabel(new Date(theirs))}. Veja o que mudou antes de publicar por cima.`,
-			theirs,
-		};
+	const type = String(formData.get("type") ?? "");
+	const slug = String(formData.get("slug") ?? "");
+	if (!type || !slug) {
+		return { status: "failed", message: "Página inválida: identidade da página ausente." };
 	}
 
-	// TODO(fatia 02.3): POST …/publish once the endpoint exists; it also rewrites
-	// the page's MediaUsage. Until then the validated document is returned so the
-	// screen reports exactly what would be sent.
-	return {
-		status: "published",
-		publishedAt: new Date().toISOString(),
-		blocks: doc.length,
-		images: countImages(doc),
-	};
+	const actorId = session.user.id;
+	const seen = String(formData.get("publishedAt") ?? "") || null;
+
+	try {
+		// PUT …/draft first: publish() on the backend promotes whatever
+		// draft_doc is currently stored, so the doc being published has to
+		// land there before the publish call.
+		const draftResponse = await fetch(
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/draft`,
+			{
+				method: "PUT",
+				headers: backendHeaders(actorId),
+				body: JSON.stringify({ draft_doc: doc }),
+				cache: "no-store",
+			},
+		);
+		if (draftResponse.status === 403) {
+			return { status: "failed", message: "Você não tem permissão para publicar esta página." };
+		}
+		if (!draftResponse.ok) {
+			return {
+				status: "failed",
+				message: `Não foi possível salvar o rascunho no servidor (${draftResponse.status}). O rascunho local está salvo às ${savedAt}.`,
+			};
+		}
+
+		const publishResponse = await fetch(
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/publish`,
+			{
+				method: "POST",
+				headers: backendHeaders(actorId),
+				body: JSON.stringify({ publishedAt: seen }),
+				cache: "no-store",
+			},
+		);
+
+		if (publishResponse.status === 409) {
+			const body = (await publishResponse.json().catch(() => null)) as { publishedAt?: string } | null;
+			const theirs = body?.publishedAt ?? new Date().toISOString();
+			return {
+				status: "conflict",
+				message: `Alguém publicou esta página às ${timeLabel(new Date(theirs))}. Veja o que mudou antes de publicar por cima.`,
+				theirs,
+			};
+		}
+		if (publishResponse.status === 403) {
+			return { status: "failed", message: "Você não tem permissão para publicar esta página." };
+		}
+		if (publishResponse.status === 422) {
+			const body = (await publishResponse.json().catch(() => null)) as { detail?: unknown } | null;
+			return {
+				status: "invalid",
+				code: 422,
+				message: `O servidor recusou o documento: ${JSON.stringify(body?.detail ?? "erro de validação")}.`,
+			};
+		}
+		if (!publishResponse.ok) {
+			return {
+				status: "failed",
+				message: `Não foi possível publicar (${publishResponse.status}). O rascunho está salvo às ${savedAt}.`,
+			};
+		}
+
+		const published = (await publishResponse.json()) as { published_at: string };
+		return {
+			status: "published",
+			publishedAt: published.published_at,
+			blocks: doc.length,
+			images: countImages(doc),
+		};
+	} catch (error) {
+		console.error("[publishEditorialDraftAction]", error);
+		return {
+			status: "failed",
+			message: `Não foi possível falar com o servidor. O rascunho está salvo às ${savedAt} — tente publicar de novo.`,
+		};
+	}
 }

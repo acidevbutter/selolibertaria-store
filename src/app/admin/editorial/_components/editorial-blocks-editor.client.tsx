@@ -3,7 +3,11 @@
 import type { ReactNode } from "react";
 import { useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
-import { type PublishState, publishEditorialDraftAction } from "@/app/admin/editorial/blocks-actions";
+import {
+	type EditorialPageType,
+	type PublishState,
+	publishEditorialDraftAction,
+} from "@/app/admin/editorial/blocks-actions";
 import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
@@ -98,11 +102,19 @@ function savedAtLabel(date: Date) {
 export function EditorialBlocksEditor({
 	name,
 	initialDoc,
+	contentType = "page",
+	slug = "blocos-demo",
+	initialPublishedAt = null,
 }: {
 	name: string;
 	initialDoc: EditorialContentDoc;
+	/** Which of the nine pages this instance edits — same component, different identity. */
+	contentType?: EditorialPageType | "page";
+	slug?: string;
+	initialPublishedAt?: string | null;
 }) {
 	const [state, dispatch] = useReducer(reducer, initialDoc, initEditorialBlocksHistory);
+	const [publishedAtSeen, setPublishedAtSeen] = useState(initialPublishedAt ?? "");
 	const [activeId, setActiveId] = useState<string | null>(initialDoc[0]?.id ?? null);
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const [pickerQuery, setPickerQuery] = useState("");
@@ -140,6 +152,10 @@ export function EditorialBlocksEditor({
 	useEffect(() => {
 		if (pickerOpen) pickerInputRef.current?.focus();
 	}, [pickerOpen]);
+
+	useEffect(() => {
+		if (publishState.status === "published") setPublishedAtSeen(publishState.publishedAt);
+	}, [publishState]);
 
 	const pickerResults = useMemo(() => {
 		const query = normalize(pickerQuery.trim());
@@ -216,6 +232,9 @@ export function EditorialBlocksEditor({
 		<form action={publish} style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
 			<input type="hidden" name={name} value={JSON.stringify(doc)} />
 			<input type="hidden" name="contentDoc" value={JSON.stringify(doc)} />
+			<input type="hidden" name="type" value={contentType} />
+			<input type="hidden" name="slug" value={slug} />
+			<input type="hidden" name="publishedAt" value={publishedAtSeen} />
 
 			<div className="ad-editor" style={{ flex: "1 1 520px", minWidth: "min(520px, 100%)" }}>
 				{/* Fourteen controls, four groups, in this exact order (§4). */}
