@@ -139,6 +139,7 @@ export function EditorialBlocksEditor({
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const [pickerQuery, setPickerQuery] = useState("");
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
+	const [dropTargetBlockId, setDropTargetBlockId] = useState<string | null>(null);
 	const [savedAt, setSavedAt] = useState<string | null>(null);
 	const [saving, setSaving] = useState(true);
 	const [cropBlockId, setCropBlockId] = useState<string | null>(null);
@@ -428,10 +429,17 @@ export function EditorialBlocksEditor({
 								setDoc(moveBlockToIndex(doc, draggedBlockId, dropIndex ?? doc.length));
 								setDraggedId(null);
 								setDropIndex(null);
+								setDropTargetBlockId(null);
 								return;
 							}
 							const file = event.dataTransfer.files[0];
-							if (file) acceptFile(file, dropIndex ?? doc.length);
+							if (file) {
+								// Dropping onto an already-empty image block fills that block
+								// instead of inserting a new one after it.
+								if (dropTargetBlockId) swapImage(file, dropTargetBlockId);
+								else acceptFile(file, dropIndex ?? doc.length);
+							}
+							setDropTargetBlockId(null);
 						}}
 					>
 						{heavyImage ? (
@@ -475,6 +483,7 @@ export function EditorialBlocksEditor({
 									total={doc.length}
 									uploading={uploadingIds.has(block.id)}
 									dragging={draggedId === block.id}
+									isDropTarget={dropTargetBlockId === block.id}
 									onFocusBlock={() => setActiveId(block.id)}
 									onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
 									onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
@@ -486,6 +495,7 @@ export function EditorialBlocksEditor({
 										insertBlock(created, index);
 									}}
 									onDragOverBlock={(position) => setDropIndex(position)}
+									onDragOverImageTarget={(id) => setDropTargetBlockId(id)}
 									onDragStart={(event) => {
 										setDraggedId(block.id);
 										event.dataTransfer.setData(BLOCK_DRAG_MIME, block.id);
@@ -494,6 +504,7 @@ export function EditorialBlocksEditor({
 									onDragEnd={() => {
 										setDraggedId(null);
 										setDropIndex(null);
+										setDropTargetBlockId(null);
 									}}
 									onCrop={() => setCropBlockId(block.id)}
 									onSwap={() => {
@@ -997,6 +1008,7 @@ function BlockRow({
 	total,
 	uploading,
 	dragging,
+	isDropTarget,
 	onFocusBlock,
 	onChange,
 	onMove,
@@ -1004,6 +1016,7 @@ function BlockRow({
 	onRemove,
 	onShortcut,
 	onDragOverBlock,
+	onDragOverImageTarget,
 	onDragStart,
 	onDragEnd,
 	onCrop,
@@ -1015,6 +1028,7 @@ function BlockRow({
 	total: number;
 	uploading: boolean;
 	dragging: boolean;
+	isDropTarget: boolean;
 	onFocusBlock: () => void;
 	onChange: (patch: Partial<EditorialBlock>) => void;
 	onMove: (direction: "up" | "down") => void;
@@ -1022,6 +1036,7 @@ function BlockRow({
 	onRemove: () => void;
 	onShortcut: (create: () => EditorialBlock) => void;
 	onDragOverBlock: (index: number | null) => void;
+	onDragOverImageTarget: (blockId: string | null) => void;
 	onDragStart: (event: DragEvent) => void;
 	onDragEnd: () => void;
 	onCrop: () => void;
@@ -1079,17 +1094,30 @@ function BlockRow({
 		</div>
 	);
 
+	const isEmptyImage = block.type === "image" && !block.src;
+
 	return (
 		<div
 			className="ad-blk"
 			style={dragging ? { opacity: 0.4 } : undefined}
 			onDragOver={(event) => {
 				event.preventDefault();
+				if (isEmptyImage) {
+					onDragOverBlock(null);
+					onDragOverImageTarget(block.id);
+					return;
+				}
 				const box = event.currentTarget.getBoundingClientRect();
 				onDragOverBlock(event.clientY < box.top + box.height / 2 ? index : index + 1);
 			}}
-			onDragLeave={() => onDragOverBlock(null)}
-			onDrop={() => onDragOverBlock(null)}
+			onDragLeave={() => {
+				onDragOverBlock(null);
+				onDragOverImageTarget(null);
+			}}
+			onDrop={() => {
+				onDragOverBlock(null);
+				onDragOverImageTarget(null);
+			}}
 		>
 			{bar}
 			{block.type === "heading" ? editable("ad-doc-h2", block.text, "Título") : null}
@@ -1183,7 +1211,7 @@ function BlockRow({
 									display: "flex",
 									alignItems: "flex-end",
 									padding: 10,
-									border: 0,
+									border: isDropTarget ? "2px dashed var(--ad-wine)" : 0,
 									textAlign: "left",
 								}}
 							>
@@ -1196,7 +1224,9 @@ function BlockRow({
 										color: "rgba(11,11,11,.6)",
 									}}
 								>
-									Clique para enviar uma imagem · {block.layout}
+									{isDropTarget
+										? "Solte para usar nesta imagem"
+										: `Clique para enviar uma imagem · ${block.layout}`}
 								</span>
 							</button>
 						)}
