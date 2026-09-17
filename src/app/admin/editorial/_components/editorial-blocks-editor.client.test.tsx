@@ -42,6 +42,20 @@ describe("EditorialBlocksEditor", () => {
 		expect(next.some((block) => block.type === "divider")).toBe(true);
 	});
 
+	it("inserts a new block right after a specific one via its hover '+' button", () => {
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+
+		const addButtons = screen.getAllByRole("button", { name: "Inserir bloco abaixo" });
+		fireEvent.click(addButtons[0]); // opens the picker anchored to the first block, not the end
+
+		const popover = container.querySelector(".ad-blk .ad-popover") as HTMLElement;
+		const row = within(popover).getByText("Separador").closest("button") as HTMLButtonElement;
+		fireEvent.click(row);
+
+		const next = hiddenValue(container, "content");
+		expect(next.map((block) => block.type)).toEqual(["paragraph", "divider", "paragraph"]);
+	});
+
 	it("duplicates and removes a block via its hover controls", () => {
 		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
 
