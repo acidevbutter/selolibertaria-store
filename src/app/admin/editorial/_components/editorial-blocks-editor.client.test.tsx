@@ -15,6 +15,18 @@ function hiddenValue(container: HTMLElement, name: string) {
 	return JSON.parse(input.value) as EditorialContentDoc;
 }
 
+/** jsdom doesn't implement DataTransfer -- a plain object with the two
+ *  methods the component calls, sharing state across dragstart/drop like a
+ *  real drag operation does. */
+function fakeDataTransfer() {
+	const store = new Map<string, string>();
+	return {
+		effectAllowed: "",
+		setData: (type: string, value: string) => store.set(type, value),
+		getData: (type: string) => store.get(type) ?? "",
+	};
+}
+
 describe("EditorialBlocksEditor", () => {
 	afterEach(() => {
 		vi.unstubAllGlobals();
@@ -97,6 +109,42 @@ describe("EditorialBlocksEditor", () => {
 		fireEvent.drop(rows[0]);
 
 		expect(hiddenValue(container, "content").map((b) => b.id)).toEqual(["c", "a", "b"]);
+	});
+
+	it("reorders blocks inside the canvas by dragging a block's bar and dropping on the paper", () => {
+		const { container } = render(
+			<EditorialBlocksEditor
+				name="content"
+				initialDoc={[
+					{ id: "a", type: "paragraph", text: "primeiro" },
+					{ id: "b", type: "paragraph", text: "segundo" },
+					{ id: "c", type: "paragraph", text: "terceiro" },
+				]}
+			/>,
+		);
+
+		const bars = container.querySelectorAll(".ad-bbar");
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		// A real drag keeps the same DataTransfer across dragstart/dragover/drop.
+		const dataTransfer = fakeDataTransfer();
+
+		fireEvent.dragStart(bars[0], { dataTransfer }); // grab "primeiro"
+		// Dropping on the paper itself (no block hovered) appends at the end.
+		fireEvent.drop(paper, { dataTransfer });
+
+		expect(hiddenValue(container, "content").map((b) => b.id)).toEqual(["b", "c", "a"]);
+	});
+
+	it("shows the block being dragged from the canvas as dimmed until the drag ends", () => {
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+		const bars = container.querySelectorAll(".ad-bbar");
+		const blocks = container.querySelectorAll(".ad-blk");
+
+		fireEvent.dragStart(bars[0], { dataTransfer: fakeDataTransfer() });
+		expect(blocks[0]).toHaveStyle({ opacity: "0.4" });
+
+		fireEvent.dragEnd(bars[0]);
+		expect(blocks[0]).not.toHaveStyle({ opacity: "0.4" });
 	});
 
 	it("uploads a dropped image to the real backend and clears the pending blob src", async () => {

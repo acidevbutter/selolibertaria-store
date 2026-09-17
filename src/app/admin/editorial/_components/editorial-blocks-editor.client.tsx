@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { DragEvent, ReactNode } from "react";
 import { useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
 import {
@@ -24,6 +24,7 @@ import {
 	duplicateBlock,
 	insertBlockAfter,
 	moveBlock,
+	moveBlockToIndex,
 	removeBlock,
 	reorderBlock,
 	updateBlock,
@@ -80,6 +81,10 @@ const IMAGE_SHAPES = [
 
 /** Above this the upload is refused — with the alternative, never bare (§6). */
 const HEAVY_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/** Custom drag payload marking "this is one of our blocks", so the canvas's
+ *  drop zone can tell a reorder apart from a file dragged in from outside. */
+const BLOCK_DRAG_MIME = "application/x-editorial-block-id";
 
 function formatMegabytes(bytes: number) {
 	return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
@@ -408,6 +413,13 @@ export function EditorialBlocksEditor({
 						onDragOver={(event) => event.preventDefault()}
 						onDrop={(event) => {
 							event.preventDefault();
+							const draggedBlockId = event.dataTransfer.getData?.(BLOCK_DRAG_MIME);
+							if (draggedBlockId) {
+								setDoc(moveBlockToIndex(doc, draggedBlockId, dropIndex ?? doc.length));
+								setDraggedId(null);
+								setDropIndex(null);
+								return;
+							}
 							const file = event.dataTransfer.files[0];
 							if (file) acceptFile(file, dropIndex ?? doc.length);
 						}}
@@ -451,6 +463,7 @@ export function EditorialBlocksEditor({
 									index={index}
 									total={doc.length}
 									uploading={uploadingIds.has(block.id)}
+									dragging={draggedId === block.id}
 									onFocusBlock={() => setActiveId(block.id)}
 									onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
 									onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
@@ -462,6 +475,15 @@ export function EditorialBlocksEditor({
 										insertBlock(created, index);
 									}}
 									onDragOverBlock={(position) => setDropIndex(position)}
+									onDragStart={(event) => {
+										setDraggedId(block.id);
+										event.dataTransfer.setData(BLOCK_DRAG_MIME, block.id);
+										event.dataTransfer.effectAllowed = "move";
+									}}
+									onDragEnd={() => {
+										setDraggedId(null);
+										setDropIndex(null);
+									}}
 									onCrop={() => setCropBlockId(block.id)}
 									onSwap={() => {
 										swapBlockIdRef.current = block.id;
@@ -866,6 +888,8 @@ function BlockBar({
 	onCrop,
 	onSwap,
 	onFocusCaption,
+	onDragStart,
+	onDragEnd,
 }: {
 	block: EditorialBlock;
 	index: number;
@@ -876,11 +900,22 @@ function BlockBar({
 	onCrop: () => void;
 	onSwap: () => void;
 	onFocusCaption: () => void;
+	onDragStart: (event: DragEvent) => void;
+	onDragEnd: () => void;
 }) {
 	const isImage = block.type === "image" || block.type === "gallery";
 
 	return (
-		<span className="ad-bbar">
+		<span
+			className="ad-bbar"
+			draggable
+			onDragStart={onDragStart}
+			onDragEnd={onDragEnd}
+			style={{ cursor: "grab" }}
+		>
+			<span aria-hidden="true" style={{ letterSpacing: -1 }}>
+				⠿
+			</span>
 			<span>{block.type}</span>
 			{isImage ? (
 				<>
@@ -933,6 +968,7 @@ function BlockRow({
 	index,
 	total,
 	uploading,
+	dragging,
 	onFocusBlock,
 	onChange,
 	onMove,
@@ -940,6 +976,8 @@ function BlockRow({
 	onRemove,
 	onShortcut,
 	onDragOverBlock,
+	onDragStart,
+	onDragEnd,
 	onCrop,
 	onSwap,
 	shapePicker,
@@ -948,6 +986,7 @@ function BlockRow({
 	index: number;
 	total: number;
 	uploading: boolean;
+	dragging: boolean;
 	onFocusBlock: () => void;
 	onChange: (patch: Partial<EditorialBlock>) => void;
 	onMove: (direction: "up" | "down") => void;
@@ -955,6 +994,8 @@ function BlockRow({
 	onRemove: () => void;
 	onShortcut: (create: () => EditorialBlock) => void;
 	onDragOverBlock: (index: number | null) => void;
+	onDragStart: (event: DragEvent) => void;
+	onDragEnd: () => void;
 	onCrop: () => void;
 	onSwap: () => void;
 	shapePicker: ReactNode;
@@ -969,6 +1010,8 @@ function BlockRow({
 			onDuplicate={onDuplicate}
 			onRemove={onRemove}
 			onCrop={onCrop}
+			onDragStart={onDragStart}
+			onDragEnd={onDragEnd}
 			onSwap={onSwap}
 			onFocusCaption={() => document.getElementById(captionId)?.focus()}
 		/>
@@ -1008,6 +1051,7 @@ function BlockRow({
 	return (
 		<div
 			className="ad-blk"
+			style={dragging ? { opacity: 0.4 } : undefined}
 			onDragOver={(event) => {
 				event.preventDefault();
 				const box = event.currentTarget.getBoundingClientRect();
