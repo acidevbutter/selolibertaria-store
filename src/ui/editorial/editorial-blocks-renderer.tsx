@@ -21,6 +21,9 @@ const imageLayoutClass: Record<string, string> = {
 };
 
 function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" }> }) {
+	// A freshly inserted image block starts with an empty src until someone
+	// uploads a file -- render nothing rather than pass "" to next/image.
+	if (!block.src) return null;
 	const sideFloat =
 		block.layout === "side"
 			? block.align === "left"
@@ -54,23 +57,25 @@ function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" 
 function BlockGallery({ block }: { block: Extract<EditorialBlock, { type: "gallery" }> }) {
 	return (
 		<div className="my-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-			{block.images.map((image, index) => (
-				<figure key={`${image.assetId}-${index}`}>
-					<Image
-						src={image.src}
-						alt={image.alt ?? ""}
-						width={600}
-						height={600}
-						unoptimized
-						className="h-auto w-full object-cover"
-					/>
-					{image.caption ? (
-						<figcaption className="mt-1 text-xs text-[color:var(--editorial-muted)]">
-							{image.caption}
-						</figcaption>
-					) : null}
-				</figure>
-			))}
+			{block.images
+				.filter((image) => image.src)
+				.map((image, index) => (
+					<figure key={`${image.assetId}-${index}`}>
+						<Image
+							src={image.src}
+							alt={image.alt ?? ""}
+							width={600}
+							height={600}
+							unoptimized
+							className="h-auto w-full object-cover"
+						/>
+						{image.caption ? (
+							<figcaption className="mt-1 text-xs text-[color:var(--editorial-muted)]">
+								{image.caption}
+							</figcaption>
+						) : null}
+					</figure>
+				))}
 		</div>
 	);
 }
