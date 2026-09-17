@@ -136,7 +136,7 @@ export function EditorialBlocksEditor({
 	const [publishedAtSeen, setPublishedAtSeen] = useState(initialPublishedAt ?? "");
 	const [publishedDoc, setPublishedDoc] = useState(initialPublishedDoc);
 	const [activeId, setActiveId] = useState<string | null>(initialDoc[0]?.id ?? null);
-	const [pickerOpen, setPickerOpen] = useState(false);
+	const [pickerAnchor, setPickerAnchor] = useState<number | "end" | null>(null);
 	const [pickerQuery, setPickerQuery] = useState("");
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
 	const [dropTargetBlockId, setDropTargetBlockId] = useState<string | null>(null);
@@ -221,8 +221,8 @@ export function EditorialBlocksEditor({
 	}, [doc]);
 
 	useEffect(() => {
-		if (pickerOpen) pickerInputRef.current?.focus();
-	}, [pickerOpen]);
+		if (pickerAnchor !== null) pickerInputRef.current?.focus();
+	}, [pickerAnchor]);
 
 	useEffect(() => {
 		if (publishState.status === "published") setPublishedAtSeen(publishState.publishedAt);
@@ -241,8 +241,15 @@ export function EditorialBlocksEditor({
 		const anchorId = index >= 0 ? doc[index]?.id : doc[doc.length - 1]?.id;
 		setDoc(insertBlockAfter(doc, anchorId ?? null, block));
 		setActiveId(block.id);
-		setPickerOpen(false);
+		setPickerAnchor(null);
 		setPickerQuery("");
+	}
+
+	/** The popover's chosen type always lands right after whichever "+" opened
+	 *  it: the block at `pickerAnchor` if a specific one was hovered, or the
+	 *  active/last block for the bar at the end of the canvas. */
+	function pickInsert(type: EditorialBlockType) {
+		insertBlock(createEmptyBlock(type), typeof pickerAnchor === "number" ? pickerAnchor : undefined);
 	}
 
 	/** Third beat of the drag (§5): local preview immediately, node in `wide`,
@@ -319,6 +326,76 @@ export function EditorialBlocksEditor({
 
 	const activeBlock = doc.find((item) => item.id === activeId) ?? null;
 	const levelLabel = activeBlock?.type === "heading" ? `Título H${activeBlock.level}` : "Parágrafo";
+
+	/** One popover definition, mounted at whichever "+" opened it (the bar at
+	 *  the end of the canvas, or a specific block's hover button) -- never both. */
+	const insertPopover = (
+		<div className="ad-popover on">
+			<div
+				style={{
+					padding: "14px 18px",
+					borderBottom: "1px solid var(--ad-line)",
+					display: "flex",
+					flexDirection: "column",
+					gap: 2,
+				}}
+			>
+				<span className="ad-ml" style={{ color: "rgba(11,11,11,.55)" }}>
+					Inserir bloco
+				</span>
+				<input
+					ref={pickerInputRef}
+					className="ad-mono"
+					value={pickerQuery}
+					onChange={(event) => setPickerQuery(event.target.value)}
+					onKeyDown={(event) => {
+						if (event.key === "Escape") setPickerAnchor(null);
+						if (event.key === "Enter" && pickerResults[0]) {
+							event.preventDefault();
+							pickInsert(pickerResults[0].type);
+						}
+					}}
+					placeholder="digite para filtrar"
+					style={{
+						fontSize: 11,
+						color: "var(--ad-text-faint)",
+						border: 0,
+						outline: "none",
+						background: "none",
+					}}
+				/>
+			</div>
+			{pickerResults.map((entry, index) => (
+				<button
+					key={entry.type}
+					type="button"
+					className="ad-row"
+					style={index === 0 ? { background: "var(--ad-ink)", color: "var(--ad-on-shell)" } : undefined}
+					onClick={() => pickInsert(entry.type)}
+				>
+					<span className="ad-t">{entry.label}</span>
+					<span className="ad-d" style={index === 0 ? { color: "rgba(247,244,239,.55)" } : undefined}>
+						{entry.type}
+					</span>
+				</button>
+			))}
+			<div
+				style={{
+					background: "var(--ad-sand)",
+					padding: "12px 18px",
+					fontSize: 13,
+					lineHeight: 1.6,
+					color: "var(--ad-text-soft)",
+				}}
+			>
+				Onze tipos. O servidor recusa qualquer outro com{" "}
+				<span className="ad-mono" style={{ fontSize: 12 }}>
+					422
+				</span>
+				.
+			</div>
+		</div>
+	);
 
 	return (
 		<form action={publish} style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -463,7 +540,7 @@ export function EditorialBlocksEditor({
 								type="button"
 								className="ad-body"
 								style={{ width: "100%", margin: 0, textAlign: "left", padding: 0 }}
-								onClick={() => setPickerOpen(true)}
+								onClick={() => setPickerAnchor("end")}
 							>
 								Esta página ainda não tem blocos. Comece por um Título.
 							</button>
@@ -520,6 +597,8 @@ export function EditorialBlocksEditor({
 											/>
 										) : null
 									}
+									onToggleInsert={() => setPickerAnchor((current) => (current === index ? null : index))}
+									insertPopover={pickerAnchor === index ? insertPopover : null}
 								/>
 							</div>
 						))}
@@ -530,78 +609,16 @@ export function EditorialBlocksEditor({
 							</div>
 						) : null}
 
-						<button type="button" className="ad-insert" onClick={() => setPickerOpen((open) => !open)}>
+						<button
+							type="button"
+							className="ad-insert"
+							onClick={() => setPickerAnchor((current) => (current === "end" ? null : "end"))}
+						>
 							<span className="ad-p">+</span>
 							<span className="ad-l">Clique para inserir um bloco aqui</span>
 						</button>
 
-						<div className={`ad-popover${pickerOpen ? " on" : ""}`}>
-							<div
-								style={{
-									padding: "14px 18px",
-									borderBottom: "1px solid var(--ad-line)",
-									display: "flex",
-									flexDirection: "column",
-									gap: 2,
-								}}
-							>
-								<span className="ad-ml" style={{ color: "rgba(11,11,11,.55)" }}>
-									Inserir bloco
-								</span>
-								<input
-									ref={pickerInputRef}
-									className="ad-mono"
-									value={pickerQuery}
-									onChange={(event) => setPickerQuery(event.target.value)}
-									onKeyDown={(event) => {
-										if (event.key === "Escape") setPickerOpen(false);
-										if (event.key === "Enter" && pickerResults[0]) {
-											event.preventDefault();
-											insertBlock(createEmptyBlock(pickerResults[0].type));
-										}
-									}}
-									placeholder="digite para filtrar"
-									style={{
-										fontSize: 11,
-										color: "var(--ad-text-faint)",
-										border: 0,
-										outline: "none",
-										background: "none",
-									}}
-								/>
-							</div>
-							{pickerResults.map((entry, index) => (
-								<button
-									key={entry.type}
-									type="button"
-									className="ad-row"
-									style={
-										index === 0 ? { background: "var(--ad-ink)", color: "var(--ad-on-shell)" } : undefined
-									}
-									onClick={() => insertBlock(createEmptyBlock(entry.type))}
-								>
-									<span className="ad-t">{entry.label}</span>
-									<span className="ad-d" style={index === 0 ? { color: "rgba(247,244,239,.55)" } : undefined}>
-										{entry.type}
-									</span>
-								</button>
-							))}
-							<div
-								style={{
-									background: "var(--ad-sand)",
-									padding: "12px 18px",
-									fontSize: 13,
-									lineHeight: 1.6,
-									color: "var(--ad-text-soft)",
-								}}
-							>
-								Onze tipos. O servidor recusa qualquer outro com{" "}
-								<span className="ad-mono" style={{ fontSize: 12 }}>
-									422
-								</span>
-								.
-							</div>
-						</div>
+						{pickerAnchor === "end" ? insertPopover : null}
 					</div>
 				</div>
 
@@ -1022,6 +1039,8 @@ function BlockRow({
 	onCrop,
 	onSwap,
 	shapePicker,
+	onToggleInsert,
+	insertPopover,
 }: {
 	block: EditorialBlock;
 	index: number;
@@ -1042,6 +1061,8 @@ function BlockRow({
 	onCrop: () => void;
 	onSwap: () => void;
 	shapePicker: ReactNode;
+	onToggleInsert: () => void;
+	insertPopover: ReactNode;
 }) {
 	const captionId = `caption-${block.id}`;
 	const creditId = `credit-${block.id}`;
@@ -1298,6 +1319,13 @@ function BlockRow({
 			<span className="sr-only">
 				Bloco {index + 1} de {total}
 			</span>
+			{/* Nested inside .ad-blk (not a sibling) so hovering the button itself,
+			 *  even though it visually pokes past the block's bottom border, still
+			 *  counts as hovering .ad-blk and keeps it visible. */}
+			<button type="button" className="ad-blk-add" aria-label="Inserir bloco abaixo" onClick={onToggleInsert}>
+				+
+			</button>
+			{insertPopover}
 		</div>
 	);
 }
