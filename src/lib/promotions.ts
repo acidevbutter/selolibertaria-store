@@ -503,22 +503,3 @@ export async function updatePromotionStatus(args: {
 	)) as FastApiPromotion;
 	return mapPromotion(payload);
 }
-
-export async function recordPromotionRedemption(args: {
-	promotionId: string;
-	promotionCodeId: string;
-	userId: string;
-	purchaseId: string;
-	orderDraftId?: string | null;
-}) {
-	await promotionRequest("/promotions/redemptions", {
-		method: "POST",
-		body: JSON.stringify({
-			promotion_id: args.promotionId,
-			promotion_code_id: args.promotionCodeId,
-			user_id: args.userId,
-			purchase_id: args.purchaseId,
-			order_draft_id: args.orderDraftId ?? null,
-		}),
-	});
-}

@@ -7,8 +7,6 @@ export const EDITORIAL_LINK_OPTIONS = [
 	{ label: "Eventos", href: "/events" },
 ] as const;
 
-export const EDITORIAL_HOME_LINK_OPTIONS = EDITORIAL_LINK_OPTIONS;
-
 const EDITORIAL_ALLOWED_PATHS = EDITORIAL_LINK_OPTIONS.map((option) => option.href);
 
 const EDITORIAL_ALLOWED_CUSTOM_PROTOCOLS = ["http:", "https:", "mailto:", "tel:"] as const;
@@ -19,8 +17,6 @@ export const EDITORIAL_HOME_CUSTOM_LINK_VALUE = CUSTOM_LINK_VALUE;
 
 export const EDITORIAL_LINK_HINT =
 	"Escolha uma rota pública do site ou use Personalizado para link externo/outra rota.";
-
-export const EDITORIAL_HOME_LINK_HINT = EDITORIAL_LINK_HINT;
 
 function normalizeInternalHref(value: string, fieldLabel: string) {
 	if (!value.startsWith("/") || value.startsWith("//")) {
@@ -60,7 +56,7 @@ function normalizeCustomHref(value: string, fieldLabel: string) {
 	return parsed.toString();
 }
 
-export function isEditorialHomePresetHref(value?: string | null) {
+export function isEditorialPresetHref(value?: string | null) {
 	if (!value) return false;
 	const trimmed = value.trim();
 	if (!trimmed) return false;
@@ -71,8 +67,6 @@ export function isEditorialHomePresetHref(value?: string | null) {
 		return false;
 	}
 }
-
-export const isEditorialPresetHref = isEditorialHomePresetHref;
 
 export function parseEditorialHrefChoice(
 	formData: FormData,

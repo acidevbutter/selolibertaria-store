@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "../styles/glitch.css";
 @import "../styles/sl-tokens.css";
 
 /* Two faces only: Fertigo (--font-editorial-body) for headings + body,
@@ -25,24 +24,6 @@
 	font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 	font-synthesis: none;
 	letter-spacing: -0.015em;
-}
-
-.admin-editorial-shell {
-	background:
-		radial-gradient(circle at top left, rgba(122, 30, 34, 0.08), transparent 24%),
-		linear-gradient(180deg, #f8f3ec 0%, #f3ede3 100%);
-	color: var(--editorial-ink);
-}
-
-.admin-editorial-panel {
-	border: 1px solid var(--editorial-border);
-	background: rgba(255, 251, 245, 0.82);
-	backdrop-filter: blur(4px);
-}
-
-.admin-editorial-dark {
-	background: var(--editorial-ink);
-	color: var(--editorial-paper);
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -249,8 +230,7 @@
 
 	h1,
 	h2,
-	h3,
-	.seo-h1 {
+	h3 {
 		font-family: var(--font-editorial-body), "Iowan Old Style", Georgia, serif;
 		font-synthesis: none;
 		letter-spacing: -0.015em;
@@ -258,8 +238,7 @@
 
 	/* Slightly increase title sizes where the custom font is used.
 	   Use clamp() to keep sizes responsive and minimize layout shifts. */
-	h1,
-	.seo-h1 {
+	h1 {
 		font-size: clamp(1.9rem, 3.2vw, 2.25rem); /* ~30px on desktop */
 		line-height: 1.05;
 	}
@@ -414,89 +393,13 @@ input[type="search" i]::-webkit-search-cancel-button {
 	}
 }
 
-.nav-border-reveal::after {
-	@apply content-[''] w-full h-px absolute bottom-0 bg-neutral-200;
-
-	animation: nav-border-reveal;
-	animation-timeline: scroll();
-	animation-range: 0 100px;
-}
-
-@keyframes nav-border-reveal {
-	0% {
-		opacity: 0%;
-	}
-	100% {
-		opacity: 100%;
-	}
-}
-
-/* When the header has the `scrolled` class, make the bottom line red-700 */
-.nav-border-reveal.scrolled::after {
-	@apply bg-red-700;
-}
-
-/* When header is scrolled, make nav links red and keep hover color consistent */
-.nav-border-reveal.scrolled .nav-link {
-	@apply text-red-700;
-}
-.nav-border-reveal.scrolled .nav-link:hover,
-.nav-border-reveal.scrolled .nav-link:focus {
-	@apply text-red-700;
-}
-
-/* Always make nav link text red on hover (same tone used elsewhere) and show decorative "spikes" */
-.nav-link {
-	position: relative; /* for pseudo-elements */
-	z-index: 0;
-}
-.nav-link:hover,
-.nav-link:focus {
-	@apply text-red-700;
-}
-
-/* Decorative spikes above and below the link using repeating gradient */
-.nav-link::before,
-.nav-link::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	height: 8px;
-	pointer-events: none;
-	opacity: 0;
-	transform: translateY(4px) scaleY(0.8);
-	transition:
-		opacity 160ms ease,
-		transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1);
-	background-repeat: repeat-x;
-	background-size: 12px 8px;
-}
-.nav-link::before {
-	top: -10px;
-	/* repeating pattern: transparent then red spike */
-	background-image: repeating-linear-gradient(90deg, transparent 0 8px, #b91c1c 8px 12px);
-}
-.nav-link::after {
-	bottom: -10px;
-	background-image: repeating-linear-gradient(90deg, #b91c1c 0 4px, transparent 4px 12px);
-}
-.nav-link:hover::before,
-.nav-link:hover::after,
-.nav-link:focus::before,
-.nav-link:focus::after {
-	opacity: 1;
-	transform: translateY(0) scaleY(1);
-}
-
 /* Global hover/focus for links, buttons and icons
 	 - Use the project's red (text-red-700) on hover/focus
 	 - Ensure svg icons inherit text color using currentColor */
 a,
 button,
 [role="button"],
-.icon,
-.btn-icon {
+.icon {
 	transition:
 		color 150ms ease,
 		fill 150ms ease,
@@ -510,9 +413,7 @@ button:focus,
 [role="button"]:hover,
 [role="button"]:focus,
 .icon:hover,
-.icon:focus,
-.btn-icon:hover,
-.btn-icon:focus {
+.icon:focus {
 	@apply text-red-700;
 }
 
@@ -524,9 +425,7 @@ button:focus svg,
 [role="button"]:hover svg,
 [role="button"]:focus svg,
 .icon:hover svg,
-.icon:focus svg,
-.btn-icon:hover svg,
-.btn-icon:focus svg {
+.icon:focus svg {
 	fill: currentColor;
 	stroke: currentColor;
 }

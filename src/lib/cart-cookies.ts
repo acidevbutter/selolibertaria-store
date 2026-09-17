@@ -1,5 +1,4 @@
 import { cookies, headers } from "next/headers";
-import type { Cart } from "@/lib/commerce-types";
 
 export const CART_COOKIE = "yns_cart_id";
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -201,36 +200,6 @@ export async function setCartId(
 		if (isReadOnlyCookieError(error)) return;
 		console.error("Failed to set cart ID cookie", error);
 	}
-}
-
-export async function persistCartSnapshot(
-	cart: Pick<Cart, "id" | "items" | "couponCode"> | null | undefined,
-): Promise<void> {
-	if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
-		await clearCartId();
-		return;
-	}
-
-	const minimal = cart.items
-		.map((item) => ({
-			productId: item.productId,
-			variantId: item.variantId,
-			quantity: item.quantity,
-		}))
-		.filter(
-			(item) =>
-				typeof item.productId === "string" &&
-				typeof item.variantId === "string" &&
-				Number.isFinite(item.quantity) &&
-				item.quantity > 0,
-		);
-
-	if (minimal.length === 0) {
-		await clearCartId();
-		return;
-	}
-
-	await setCartId(cart.id, minimal, cart.couponCode ?? null);
 }
 
 export async function clearCartId(): Promise<void> {

@@ -25,16 +25,6 @@ async function authorization() {
 	return { authorization: `Bearer ${token}` };
 }
 
-export async function recordOrderAuditEntry(entry: OrderAuditEntry) {
-	const response = await fetch(`${env.FASTAPI_API_URL}/orders/${encodeURIComponent(entry.orderId)}/audit`, {
-		method: "POST",
-		headers: { ...(await authorization()), "content-type": "application/json" },
-		body: JSON.stringify({ action: entry.action, details: entry.details }),
-		cache: "no-store",
-	});
-	if (!response.ok) throw new Error("Não foi possível registrar a auditoria do pedido");
-}
-
 export async function listOrderAuditEntries(orderId: string, limit = 20): Promise<OrderAuditEntry[]> {
 	const target = new URL(`${env.FASTAPI_API_URL}/orders/${encodeURIComponent(orderId)}/audit`);
 	target.searchParams.set("limit", String(limit));

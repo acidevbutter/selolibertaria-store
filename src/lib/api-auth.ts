@@ -1,6 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { env } from "@/env.mjs";
-import { type Capability, canBuyOnSelolibertaria, hasCapability, normalizeUserRole } from "@/lib/authz";
+import { type Capability, hasCapability, normalizeUserRole } from "@/lib/authz";
 
 async function currentUser(token: string) {
 	const response = await fetch(`${env.FASTAPI_API_URL}/auth/me`, {
@@ -31,14 +31,6 @@ export async function requireAdmin() {
 export async function requireCapability(capability: Capability) {
 	const auth = await requireAuth();
 	if ("error" in auth || !hasCapability(auth.session.role, capability)) {
-		return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
-	}
-	return auth;
-}
-
-export async function requireSelolibertariaBuyer() {
-	const auth = await requireAuth();
-	if ("error" in auth || !canBuyOnSelolibertaria(auth.session.role)) {
 		return { error: new Response(JSON.stringify({ error: "Acesso negado" }), { status: 403 }) };
 	}
 	return auth;

@@ -6,7 +6,7 @@ import {
 	type OAuthProviderDefinition,
 	type OAuthProviderId,
 } from "@/lib/oauth/catalog";
-import type { OAuthProviderSettings, SettingsDoc } from "@/lib/settings";
+import type { OAuthProviderSettings } from "@/lib/settings";
 import { getSettingsDoc } from "@/lib/settings-store";
 
 export type ResolvedOAuthProviderConfig = OAuthProviderDefinition & {
@@ -59,33 +59,4 @@ export async function getPublicOAuthProviders() {
 			label: provider.label,
 			href: `/api/auth/oauth/${provider.id}/start`,
 		}));
-}
-
-export function serializeSettingsForAdmin(doc: SettingsDoc | null): SettingsDoc {
-	const current = doc?.current ?? {};
-	const oauthProviders = Object.fromEntries(
-		OAUTH_PROVIDER_IDS.map((providerId) => {
-			const raw = current.oauthProviders?.[providerId];
-			const normalized = normalizeProviderSettings(raw);
-			return [
-				providerId,
-				{
-					enabled: normalized.enabled,
-					clientId: normalized.clientId || "",
-					clientIdMasked: normalized.clientIdMasked ?? null,
-					clientSecretMasked: normalized.clientSecretMasked ?? null,
-					lastUpdatedAt: normalized.lastUpdatedAt ?? null,
-					lastUpdatedBy: normalized.lastUpdatedBy ?? null,
-				},
-			];
-		}),
-	);
-	return {
-		_id: doc?._id,
-		current: {
-			...current,
-			oauthProviders,
-		},
-		history: doc?.history ?? [],
-	};
 }
