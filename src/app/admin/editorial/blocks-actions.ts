@@ -1,8 +1,27 @@
 "use server";
 
+import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { type EditorialContentDoc, editorialContentDocSchema } from "@/lib/editorial-blocks";
+
+/**
+ * The block editor screen (fatia 05.3-05.4) is currently a single fixed demo
+ * route (src/app/admin/editorial/blocos/page.tsx), not yet wired to a real
+ * per-page picker -- that's later fatia work. Until the route carries a real
+ * content_type/slug, this is the one page identity the editor writes to on
+ * the backend (app/editorial/router.py's {content_type}/{slug} path params).
+ */
+const CONTENT_TYPE = "page";
+const DEFAULT_SLUG = "blocos-demo";
+
+function backendHeaders(actorId: string) {
+	return {
+		"Content-Type": "application/json",
+		"X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY,
+		"X-Actor-User-ID": actorId,
+	};
+}
 
 export type PublishState =
 	| { status: "idle" }
@@ -69,24 +88,82 @@ export async function publishEditorialDraftAction(
 		};
 	}
 
-	// Optimistic concurrency: the editor sends the publishedAt it loaded with.
-	const seen = String(formData.get("publishedAt") ?? "");
-	const theirs = String(formData.get("serverPublishedAt") ?? "");
-	if (theirs && seen && theirs !== seen) {
+	const actorId = session.user.id;
+	const slug = String(formData.get("slug") ?? "") || DEFAULT_SLUG;
+	const seen = String(formData.get("publishedAt") ?? "") || null;
+
+	try {
+		// PUT …/draft first: publish() on the backend promotes whatever
+		// draft_doc is currently stored, so the doc being published has to
+		// land there before the publish call.
+		const draftResponse = await fetch(
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${CONTENT_TYPE}/${slug}/draft`,
+			{
+				method: "PUT",
+				headers: backendHeaders(actorId),
+				body: JSON.stringify({ draft_doc: doc }),
+				cache: "no-store",
+			},
+		);
+		if (draftResponse.status === 403) {
+			return { status: "failed", message: "Você não tem permissão para publicar esta página." };
+		}
+		if (!draftResponse.ok) {
+			return {
+				status: "failed",
+				message: `Não foi possível salvar o rascunho no servidor (${draftResponse.status}). O rascunho local está salvo às ${savedAt}.`,
+			};
+		}
+
+		const publishResponse = await fetch(
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${CONTENT_TYPE}/${slug}/publish`,
+			{
+				method: "POST",
+				headers: backendHeaders(actorId),
+				body: JSON.stringify({ publishedAt: seen }),
+				cache: "no-store",
+			},
+		);
+
+		if (publishResponse.status === 409) {
+			const body = (await publishResponse.json().catch(() => null)) as { publishedAt?: string } | null;
+			const theirs = body?.publishedAt ?? new Date().toISOString();
+			return {
+				status: "conflict",
+				message: `Alguém publicou esta página às ${timeLabel(new Date(theirs))}. Veja o que mudou antes de publicar por cima.`,
+				theirs,
+			};
+		}
+		if (publishResponse.status === 403) {
+			return { status: "failed", message: "Você não tem permissão para publicar esta página." };
+		}
+		if (publishResponse.status === 422) {
+			const body = (await publishResponse.json().catch(() => null)) as { detail?: unknown } | null;
+			return {
+				status: "invalid",
+				code: 422,
+				message: `O servidor recusou o documento: ${JSON.stringify(body?.detail ?? "erro de validação")}.`,
+			};
+		}
+		if (!publishResponse.ok) {
+			return {
+				status: "failed",
+				message: `Não foi possível publicar (${publishResponse.status}). O rascunho está salvo às ${savedAt}.`,
+			};
+		}
+
+		const published = (await publishResponse.json()) as { published_at: string };
 		return {
-			status: "conflict",
-			message: `Alguém publicou esta página às ${timeLabel(new Date(theirs))}. Veja o que mudou antes de publicar por cima.`,
-			theirs,
+			status: "published",
+			publishedAt: published.published_at,
+			blocks: doc.length,
+			images: countImages(doc),
+		};
+	} catch (error) {
+		console.error("[publishEditorialDraftAction]", error);
+		return {
+			status: "failed",
+			message: `Não foi possível falar com o servidor. O rascunho está salvo às ${savedAt} — tente publicar de novo.`,
 		};
 	}
-
-	// TODO(fatia 02.3): POST …/publish once the endpoint exists; it also rewrites
-	// the page's MediaUsage. Until then the validated document is returned so the
-	// screen reports exactly what would be sent.
-	return {
-		status: "published",
-		publishedAt: new Date().toISOString(),
-		blocks: doc.length,
-		images: countImages(doc),
-	};
 }
