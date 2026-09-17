@@ -6,7 +6,9 @@ import {
 	duplicateBlock,
 	insertBlockAfter,
 	moveBlock,
+	moveBlockToIndex,
 	removeBlock,
+	reorderBlock,
 	updateBlock,
 } from "@/lib/editorial-blocks-ops";
 
@@ -62,6 +64,30 @@ describe("editorial-blocks-ops", () => {
 		expect(moveBlock(doc(), "b", "down").map((b) => b.id)).toEqual(["a", "c", "b"]);
 		expect(moveBlock(doc(), "a", "up").map((b) => b.id)).toEqual(["a", "b", "c"]);
 		expect(moveBlock(doc(), "c", "down").map((b) => b.id)).toEqual(["a", "b", "c"]);
+	});
+
+	it("drops a dragged block where the drop target currently sits", () => {
+		expect(reorderBlock(doc(), "c", "a").map((b) => b.id)).toEqual(["c", "a", "b"]);
+		expect(reorderBlock(doc(), "a", "c").map((b) => b.id)).toEqual(["b", "c", "a"]);
+	});
+
+	it("is a no-op when reordering onto itself or an unknown id", () => {
+		expect(reorderBlock(doc(), "b", "b")).toEqual(doc());
+		expect(reorderBlock(doc(), "missing", "a")).toEqual(doc());
+		expect(reorderBlock(doc(), "a", "missing")).toEqual(doc());
+	});
+
+	it("drops a block at the target index, accounting for the removal shift (canvas drag)", () => {
+		// Dragging "c" (index 2) to "before index 0" -- no shift needed since the
+		// removal happens after the target.
+		expect(moveBlockToIndex(doc(), "c", 0).map((b) => b.id)).toEqual(["c", "a", "b"]);
+		// Dragging "a" (index 0) to "before index 2" -- the removal shifts the
+		// target left by one, landing "a" between "b" and "c", not after "c".
+		expect(moveBlockToIndex(doc(), "a", 2).map((b) => b.id)).toEqual(["b", "a", "c"]);
+		// Dropping past the end appends.
+		expect(moveBlockToIndex(doc(), "a", doc().length).map((b) => b.id)).toEqual(["b", "c", "a"]);
+		// Unknown id is a no-op.
+		expect(moveBlockToIndex(doc(), "missing", 1)).toEqual(doc());
 	});
 
 	it("patches a single block's fields without touching the others", () => {

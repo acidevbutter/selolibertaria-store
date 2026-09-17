@@ -63,6 +63,7 @@ export default async function AdminEditorialBlocksPage({ params }: { params: Pro
 				contentType={page.type}
 				slug={slug}
 				initialPublishedAt={record?.publishedAt ?? null}
+				initialPublishedDoc={record?.publishedDoc ?? null}
 			/>
 		</>
 	);

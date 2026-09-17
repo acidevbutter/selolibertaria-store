@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EditorialBlocksEditor } from "./editorial-blocks-editor.client";
 
@@ -15,7 +15,24 @@ function hiddenValue(container: HTMLElement, name: string) {
 	return JSON.parse(input.value) as EditorialContentDoc;
 }
 
+/** jsdom doesn't implement DataTransfer -- a plain object with the two
+ *  methods the component calls, sharing state across dragstart/drop like a
+ *  real drag operation does. */
+function fakeDataTransfer() {
+	const store = new Map<string, string>();
+	return {
+		effectAllowed: "",
+		setData: (type: string, value: string) => store.set(type, value),
+		getData: (type: string) => store.get(type) ?? "",
+	};
+}
+
 describe("EditorialBlocksEditor", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.restoreAllMocks();
+	});
+
 	it("inserts a divider block via the toolbar without touching code", () => {
 		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
 		fireEvent.click(screen.getByRole("button", { name: "Separador" }));
@@ -58,5 +75,146 @@ describe("EditorialBlocksEditor", () => {
 				expect(label.toLowerCase()).not.toMatch(new RegExp(`\\b${term}\\b`));
 			}
 		}
+	});
+
+	it("moves a block down and up via the fixed direction buttons, disabling at the edges", () => {
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+
+		const downButtons = screen.getAllByRole("button", { name: "Mover para baixo" });
+		// First block can move down, second (last) can't.
+		expect(downButtons[0]).toBeEnabled();
+		expect(downButtons[1]).toBeDisabled();
+		fireEvent.click(downButtons[0]);
+		expect(hiddenValue(container, "content").map((b) => b.id)).toEqual(["b", "a"]);
+
+		const upButtons = screen.getAllByRole("button", { name: "Mover para cima" });
+		expect(upButtons[0]).toBeDisabled();
+		expect(upButtons[1]).toBeEnabled();
+	});
+
+	it("reorders blocks by dragging one row onto another in the outline", () => {
+		const { container } = render(
+			<EditorialBlocksEditor
+				name="content"
+				initialDoc={[
+					{ id: "a", type: "paragraph", text: "primeiro" },
+					{ id: "b", type: "paragraph", text: "segundo" },
+					{ id: "c", type: "paragraph", text: "terceiro" },
+				]}
+			/>,
+		);
+
+		const rows = screen.getAllByText(/^0[1-3]$/).map((el) => el.closest("button") as HTMLButtonElement);
+		fireEvent.dragStart(rows[2]);
+		fireEvent.drop(rows[0]);
+
+		expect(hiddenValue(container, "content").map((b) => b.id)).toEqual(["c", "a", "b"]);
+	});
+
+	it("reorders blocks inside the canvas by dragging a block's bar and dropping on the paper", () => {
+		const { container } = render(
+			<EditorialBlocksEditor
+				name="content"
+				initialDoc={[
+					{ id: "a", type: "paragraph", text: "primeiro" },
+					{ id: "b", type: "paragraph", text: "segundo" },
+					{ id: "c", type: "paragraph", text: "terceiro" },
+				]}
+			/>,
+		);
+
+		const bars = container.querySelectorAll(".ad-bbar");
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		// A real drag keeps the same DataTransfer across dragstart/dragover/drop.
+		const dataTransfer = fakeDataTransfer();
+
+		fireEvent.dragStart(bars[0], { dataTransfer }); // grab "primeiro"
+		// Dropping on the paper itself (no block hovered) appends at the end.
+		fireEvent.drop(paper, { dataTransfer });
+
+		expect(hiddenValue(container, "content").map((b) => b.id)).toEqual(["b", "c", "a"]);
+	});
+
+	it("shows the block being dragged from the canvas as dimmed until the drag ends", () => {
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+		const bars = container.querySelectorAll(".ad-bbar");
+		const blocks = container.querySelectorAll(".ad-blk");
+
+		fireEvent.dragStart(bars[0], { dataTransfer: fakeDataTransfer() });
+		expect(blocks[0]).toHaveStyle({ opacity: "0.4" });
+
+		fireEvent.dragEnd(bars[0]);
+		expect(blocks[0]).not.toHaveStyle({ opacity: "0.4" });
+	});
+
+	it("uploads a dropped image to the real backend and clears the pending blob src", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ url: "https://cdn.example/real.jpg", publicId: "abc123" }), {
+				status: 200,
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={[]} />);
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		const file = new File(["fake"], "photo.png", { type: "image/png" });
+
+		fireEvent.drop(paper, { dataTransfer: { files: [file] } });
+
+		await waitFor(() => {
+			const next = hiddenValue(container, "content");
+			expect(next).toHaveLength(1);
+			expect(next[0]).toMatchObject({
+				type: "image",
+				src: "https://cdn.example/real.jpg",
+				assetId: "abc123",
+			});
+		});
+		expect(fetchMock).toHaveBeenCalledWith(
+			"/api/admin/media/upload",
+			expect.objectContaining({ method: "POST" }),
+		);
+	});
+
+	it("shows an error and keeps the block if the upload fails", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "Falhou" }), { status: 500 })),
+		);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={[]} />);
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		const file = new File(["fake"], "photo.png", { type: "image/png" });
+		fireEvent.drop(paper, { dataTransfer: { files: [file] } });
+
+		await screen.findByText("Falhou");
+		expect(hiddenValue(container, "content")[0]).toMatchObject({ src: "blob:mock" });
+	});
+
+	it("opens 'Ver como fica' and renders the current draft", () => {
+		render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+		fireEvent.click(screen.getByRole("button", { name: "Ver como fica" }));
+		const dialog = screen.getByRole("dialog", { name: "Ver como fica" });
+		expect(within(dialog).getByText("primeiro parágrafo")).toBeInTheDocument();
+	});
+
+	it("disables 'Voltar ao publicado' when there is nothing published yet", () => {
+		render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+		expect(screen.getByRole("button", { name: "Voltar ao publicado" })).toBeDisabled();
+	});
+
+	it("reverts the draft to the published version on confirm", () => {
+		const published: EditorialContentDoc = [{ id: "p", type: "paragraph", text: "versão publicada" }];
+		vi.spyOn(window, "confirm").mockReturnValue(true);
+		const { container } = render(
+			<EditorialBlocksEditor name="content" initialDoc={doc()} initialPublishedDoc={published} />,
+		);
+
+		const revertButton = screen.getByRole("button", { name: "Voltar ao publicado" });
+		expect(revertButton).toBeEnabled();
+		fireEvent.click(revertButton);
+		expect(hiddenValue(container, "content")).toEqual(published);
 	});
 });
