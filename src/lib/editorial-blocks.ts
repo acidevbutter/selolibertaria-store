@@ -26,9 +26,19 @@ export type EditorialBlockType = (typeof EDITORIAL_BLOCK_TYPES)[number];
 export const EDITORIAL_IMAGE_LAYOUTS = ["wide", "side", "center", "gallery"] as const;
 export type EditorialImageLayout = (typeof EDITORIAL_IMAGE_LAYOUTS)[number];
 
+export const EDITORIAL_BLOCK_WIDTHS = ["full", "half"] as const;
+export type EditorialBlockWidth = (typeof EDITORIAL_BLOCK_WIDTHS)[number];
+
+/** Every node can sit at full row width or share a row with the next
+ *  half-width node -- spread into each schema below (mirrors DocumentNode's
+ *  shared `width` field on the backend, since zod has no schema inheritance
+ *  as clean as a shared Python base class). */
+const widthField = { width: z.enum(EDITORIAL_BLOCK_WIDTHS).nullable().optional() };
+
 const headingBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("heading"),
+	...widthField,
 	level: z.union([z.literal(2), z.literal(3)]),
 	text: z.string(),
 });
@@ -36,12 +46,14 @@ const headingBlockSchema = z.object({
 const paragraphBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("paragraph"),
+	...widthField,
 	text: z.string(),
 });
 
 const listBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("list"),
+	...widthField,
 	style: z.enum(["bullet", "number"]),
 	items: z.array(z.string()),
 });
@@ -49,6 +61,7 @@ const listBlockSchema = z.object({
 const quoteBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("quote"),
+	...widthField,
 	text: z.string(),
 	attribution: z.string().nullable().optional(),
 });
@@ -56,12 +69,14 @@ const quoteBlockSchema = z.object({
 const highlightBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("highlight"),
+	...widthField,
 	text: z.string(),
 });
 
 const imageBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("image"),
+	...widthField,
 	assetId: z.string(),
 	cropId: z.string().nullable().optional(),
 	/** Resolved by whoever serializes the doc (backend on publish, admin preview on the fly) -- the renderer never resolves assetId itself. */
@@ -69,6 +84,8 @@ const imageBlockSchema = z.object({
 	layout: z.enum(EDITORIAL_IMAGE_LAYOUTS),
 	align: z.enum(["left", "right"]).nullable().optional(),
 	caption: z.string().nullable().optional(),
+	/** Photographer/source attribution -- distinct from the reader-facing caption, rendered smaller/separately. */
+	credit: z.string().nullable().optional(),
 	href: z.string().nullable().optional(),
 	alt: z.string().nullable().optional(),
 });
@@ -78,18 +95,21 @@ const galleryImageSchema = z.object({
 	cropId: z.string().nullable().optional(),
 	src: z.string(),
 	caption: z.string().nullable().optional(),
+	credit: z.string().nullable().optional(),
 	alt: z.string().nullable().optional(),
 });
 
 const galleryBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("gallery"),
+	...widthField,
 	images: z.array(galleryImageSchema),
 });
 
 const buttonBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("button"),
+	...widthField,
 	label: z.string(),
 	href: z.string(),
 	variant: z.enum(["primary", "secondary"]).nullable().optional(),
@@ -98,11 +118,13 @@ const buttonBlockSchema = z.object({
 const dividerBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("divider"),
+	...widthField,
 });
 
 const productShelfBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("productShelf"),
+	...widthField,
 	title: z.string().nullable().optional(),
 	productSlugs: z.array(z.string()),
 });
@@ -110,6 +132,7 @@ const productShelfBlockSchema = z.object({
 const agendaBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("agenda"),
+	...widthField,
 	title: z.string().nullable().optional(),
 	eventSlugs: z.array(z.string()),
 });
