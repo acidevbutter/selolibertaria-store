@@ -7,6 +7,7 @@ import {
 	insertBlockAfter,
 	moveBlock,
 	removeBlock,
+	reorderBlock,
 	updateBlock,
 } from "@/lib/editorial-blocks-ops";
 
@@ -62,6 +63,17 @@ describe("editorial-blocks-ops", () => {
 		expect(moveBlock(doc(), "b", "down").map((b) => b.id)).toEqual(["a", "c", "b"]);
 		expect(moveBlock(doc(), "a", "up").map((b) => b.id)).toEqual(["a", "b", "c"]);
 		expect(moveBlock(doc(), "c", "down").map((b) => b.id)).toEqual(["a", "b", "c"]);
+	});
+
+	it("drops a dragged block where the drop target currently sits", () => {
+		expect(reorderBlock(doc(), "c", "a").map((b) => b.id)).toEqual(["c", "a", "b"]);
+		expect(reorderBlock(doc(), "a", "c").map((b) => b.id)).toEqual(["b", "c", "a"]);
+	});
+
+	it("is a no-op when reordering onto itself or an unknown id", () => {
+		expect(reorderBlock(doc(), "b", "b")).toEqual(doc());
+		expect(reorderBlock(doc(), "missing", "a")).toEqual(doc());
+		expect(reorderBlock(doc(), "a", "missing")).toEqual(doc());
 	});
 
 	it("patches a single block's fields without touching the others", () => {

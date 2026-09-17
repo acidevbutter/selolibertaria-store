@@ -102,6 +102,18 @@ export function convertTextBlockLevel(
 	});
 }
 
+/** Drops `fromId`'s block where `toId`'s block currently sits, shifting the rest — the semantic a drag-and-drop reorder needs. */
+export function reorderBlock(doc: EditorialContentDoc, fromId: string, toId: string): EditorialContentDoc {
+	if (fromId === toId) return doc;
+	const fromIndex = doc.findIndex((block) => block.id === fromId);
+	const toIndex = doc.findIndex((block) => block.id === toId);
+	if (fromIndex === -1 || toIndex === -1) return doc;
+	const next = [...doc];
+	const [moved] = next.splice(fromIndex, 1) as [EditorialBlock];
+	next.splice(toIndex, 0, moved);
+	return next;
+}
+
 export function updateBlock<T extends EditorialBlock>(
 	doc: EditorialContentDoc,
 	id: string,

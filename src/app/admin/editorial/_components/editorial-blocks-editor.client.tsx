@@ -25,8 +25,10 @@ import {
 	insertBlockAfter,
 	moveBlock,
 	removeBlock,
+	reorderBlock,
 	updateBlock,
 } from "@/lib/editorial-blocks-ops";
+import { EditorialBlocksRenderer } from "@/ui/editorial/editorial-blocks-renderer";
 
 type Action = { kind: "replace"; doc: EditorialContentDoc } | { kind: "undo" } | { kind: "redo" };
 
@@ -105,6 +107,7 @@ export function EditorialBlocksEditor({
 	contentType = "page",
 	slug = "blocos-demo",
 	initialPublishedAt = null,
+	initialPublishedDoc = null,
 }: {
 	name: string;
 	initialDoc: EditorialContentDoc;
@@ -112,9 +115,11 @@ export function EditorialBlocksEditor({
 	contentType?: EditorialPageType | "page";
 	slug?: string;
 	initialPublishedAt?: string | null;
+	initialPublishedDoc?: EditorialContentDoc | null;
 }) {
 	const [state, dispatch] = useReducer(reducer, initialDoc, initEditorialBlocksHistory);
 	const [publishedAtSeen, setPublishedAtSeen] = useState(initialPublishedAt ?? "");
+	const [publishedDoc, setPublishedDoc] = useState(initialPublishedDoc);
 	const [activeId, setActiveId] = useState<string | null>(initialDoc[0]?.id ?? null);
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const [pickerQuery, setPickerQuery] = useState("");
@@ -124,12 +129,19 @@ export function EditorialBlocksEditor({
 	const [cropBlockId, setCropBlockId] = useState<string | null>(null);
 	const [shapeBlockId, setShapeBlockId] = useState<string | null>(null);
 	const [heavyImage, setHeavyImage] = useState<string | null>(null);
+	const [uploadingIds, setUploadingIds] = useState<ReadonlySet<string>>(new Set());
+	const [uploadError, setUploadError] = useState<string | null>(null);
+	const [draggedId, setDraggedId] = useState<string | null>(null);
+	const [previewOpen, setPreviewOpen] = useState(false);
 	const pickerInputRef = useRef<HTMLInputElement>(null);
+	const swapInputRef = useRef<HTMLInputElement>(null);
+	const swapBlockIdRef = useRef<string | null>(null);
 	const [publishState, publish, publishing] = useActionState<PublishState, FormData>(
 		publishEditorialDraftAction,
 		{ status: "idle" },
 	);
 	const doc = state.doc;
+	const docRef = useRef(doc);
 	const imageCount = doc.reduce(
 		(total, node) => total + (node.type === "image" ? 1 : node.type === "gallery" ? node.images.length : 0),
 		0,
@@ -137,6 +149,49 @@ export function EditorialBlocksEditor({
 
 	function setDoc(next: EditorialContentDoc) {
 		dispatch({ kind: "replace", doc: next });
+	}
+
+	useEffect(() => {
+		docRef.current = doc;
+	}, [doc]);
+
+	useEffect(() => {
+		if (publishState.status === "published") setPublishedDoc(doc);
+	}, [publishState, doc]);
+
+	/** Uploads to the real backend (§6) — replaces the block's local blob preview
+	 *  with the real URL/asset id once it lands, so `firstPendingImage` in
+	 *  blocks-actions.ts stops seeing it as unfinished. */
+	async function uploadImage(file: File, blockId: string) {
+		setUploadingIds((prev) => new Set(prev).add(blockId));
+		setUploadError(null);
+		try {
+			const formData = new FormData();
+			formData.set("file", file);
+			const response = await fetch("/api/admin/media/upload", { method: "POST", body: formData });
+			const payload = (await response.json().catch(() => ({}))) as {
+				error?: string;
+				url?: string;
+				publicId?: string;
+			};
+			if (!response.ok || !payload.url || !payload.publicId) {
+				throw new Error(payload.error || "Não foi possível enviar a imagem.");
+			}
+			setDoc(
+				updateBlock(docRef.current, blockId, {
+					src: payload.url,
+					assetId: payload.publicId,
+				} as Partial<EditorialBlock>),
+			);
+		} catch (error) {
+			setUploadError(error instanceof Error ? error.message : "Não foi possível enviar a imagem.");
+		} finally {
+			setUploadingIds((prev) => {
+				const next = new Set(prev);
+				next.delete(blockId);
+				return next;
+			});
+		}
 	}
 
 	// Autosave writes the draft only, on a debounce. No spinner over the text.
@@ -174,8 +229,9 @@ export function EditorialBlocksEditor({
 		setPickerQuery("");
 	}
 
-	/** Third beat of the drag (§5): upload, node in `wide`, shape picker on the
-	 *  new block. The old path — pasting a link — still exists elsewhere. */
+	/** Third beat of the drag (§5): local preview immediately, node in `wide`,
+	 *  shape picker on the new block, real upload kicked off in the background —
+	 *  the block's src/assetId swap to the real ones once it lands. */
 	function acceptFile(file: File, atIndex: number) {
 		setDropIndex(null);
 		if (!file.type.startsWith("image/")) return;
@@ -198,6 +254,26 @@ export function EditorialBlocksEditor({
 		setDoc(insertBlockAfter(doc, anchorId ?? null, created));
 		setActiveId(created.id);
 		setShapeBlockId(created.id);
+		void uploadImage(file, created.id);
+	}
+
+	/** Same upload, but replacing an existing block's image ("Trocar") instead of inserting a new one. */
+	function swapImage(file: File, blockId: string) {
+		if (!file.type.startsWith("image/")) return;
+		if (file.size > HEAVY_IMAGE_BYTES) {
+			setHeavyImage(
+				`Esta foto tem ${formatMegabytes(file.size)}. Podemos reduzir para 2 MB sem perda visível — ou escolha outra.`,
+			);
+			return;
+		}
+		setHeavyImage(null);
+		setDoc(
+			updateBlock(doc, blockId, {
+				src: URL.createObjectURL(file),
+				assetId: file.name,
+			} as Partial<EditorialBlock>),
+		);
+		void uploadImage(file, blockId);
 	}
 
 	function setShape(blockId: string, layout: (typeof IMAGE_SHAPES)[number]["id"]) {
@@ -374,6 +450,7 @@ export function EditorialBlocksEditor({
 									block={block}
 									index={index}
 									total={doc.length}
+									uploading={uploadingIds.has(block.id)}
 									onFocusBlock={() => setActiveId(block.id)}
 									onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
 									onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
@@ -386,6 +463,10 @@ export function EditorialBlocksEditor({
 									}}
 									onDragOverBlock={(position) => setDropIndex(position)}
 									onCrop={() => setCropBlockId(block.id)}
+									onSwap={() => {
+										swapBlockIdRef.current = block.id;
+										swapInputRef.current?.click();
+									}}
 									shapePicker={
 										shapeBlockId === block.id ? (
 											<ImageShapePicker
@@ -500,16 +581,77 @@ export function EditorialBlocksEditor({
 					</span>
 					<span style={{ fontSize: 14, color: "rgba(11,11,11,.6)" }}>só vai ao ar quando você publicar</span>
 					<span style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
-						<button type="button" className="ad-btn ad-sec">
+						<button
+							type="button"
+							className="ad-btn ad-sec"
+							disabled={!publishedDoc}
+							onClick={() => {
+								if (!publishedDoc) return;
+								if (
+									window.confirm(
+										"Substituir o rascunho pela última versão publicada? Isso descarta as edições não publicadas.",
+									)
+								) {
+									setDoc(publishedDoc);
+								}
+							}}
+						>
 							Voltar ao publicado
 						</button>
-						<button type="button" className="ad-btn ad-sec">
+						<button type="button" className="ad-btn ad-sec" onClick={() => setPreviewOpen(true)}>
 							Ver como fica
 						</button>
 						<button type="submit" className="ad-btn ad-pri">
 							Publicar
 						</button>
 					</span>
+				</div>
+				{uploadError ? (
+					<div
+						style={{
+							background: "var(--ad-wine-wash-solid)",
+							border: "1px solid var(--ad-wine-line)",
+							color: "var(--ad-wine)",
+							padding: "12px 14px",
+							fontSize: 14,
+							lineHeight: 1.7,
+						}}
+					>
+						{uploadError}
+					</div>
+				) : null}
+			</div>
+
+			<input
+				ref={swapInputRef}
+				type="file"
+				accept="image/*"
+				style={{ display: "none" }}
+				onChange={(event) => {
+					const file = event.target.files?.[0];
+					const blockId = swapBlockIdRef.current;
+					if (file && blockId) swapImage(file, blockId);
+					event.target.value = "";
+				}}
+			/>
+
+			<div className={`ad-scrim${previewOpen ? " on" : ""}`}>
+				<div className="ad-modal" role="dialog" aria-label="Ver como fica">
+					<div className="ad-mh">
+						<b>Ver como fica</b>
+						<span className="ad-f">{doc.length} blocos</span>
+						<button
+							type="button"
+							style={{ marginLeft: "auto", fontSize: 18, color: "rgba(247,244,239,.7)" }}
+							onClick={() => setPreviewOpen(false)}
+							aria-label="Fechar"
+						>
+							✕
+						</button>
+					</div>
+					<div style={{ padding: "36px 40px", background: "var(--ad-paper)" }}>
+						<EditorialBlocksRenderer doc={doc} />
+					</div>
 				</div>
 			</div>
 
@@ -541,8 +683,21 @@ export function EditorialBlocksEditor({
 					<button
 						key={block.id}
 						type="button"
+						draggable
 						className={`ad-orow${block.id === activeId ? " on" : ""}`}
+						style={draggedId === block.id ? { opacity: 0.4 } : undefined}
 						onClick={() => setActiveId(block.id)}
+						onDragStart={(event) => {
+							setDraggedId(block.id);
+							if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+						}}
+						onDragEnd={() => setDraggedId(null)}
+						onDragOver={(event) => event.preventDefault()}
+						onDrop={(event) => {
+							event.preventDefault();
+							if (draggedId) setDoc(reorderBlock(doc, draggedId, block.id));
+							setDraggedId(null);
+						}}
 					>
 						<span className="ad-i">{String(index + 1).padStart(2, "0")}</span>
 						<span style={{ fontSize: 14 }}>{BLOCK_LABEL.get(block.type) ?? block.type}</span>
@@ -703,16 +858,24 @@ function ImageShapePicker({
 
 function BlockBar({
 	block,
+	index,
+	total,
 	onMove,
 	onDuplicate,
 	onRemove,
 	onCrop,
+	onSwap,
+	onFocusCaption,
 }: {
 	block: EditorialBlock;
+	index: number;
+	total: number;
 	onMove: (direction: "up" | "down") => void;
 	onDuplicate: () => void;
 	onRemove: () => void;
 	onCrop: () => void;
+	onSwap: () => void;
+	onFocusCaption: () => void;
 }) {
 	const isImage = block.type === "image" || block.type === "gallery";
 
@@ -726,14 +889,26 @@ function BlockBar({
 						Recortar
 					</button>
 					<i>|</i>
-					<button type="button">Trocar</button>
+					<button type="button" onClick={onSwap}>
+						Trocar
+					</button>
 					<i>|</i>
-					<button type="button">Legenda</button>
+					<button type="button" onClick={onFocusCaption}>
+						Legenda
+					</button>
 				</>
 			) : null}
 			<i>|</i>
-			<button type="button" onClick={() => onMove("up")}>
-				Mover ⇅
+			<button type="button" disabled={index === 0} onClick={() => onMove("up")} aria-label="Mover para cima">
+				▲
+			</button>
+			<button
+				type="button"
+				disabled={index === total - 1}
+				onClick={() => onMove("down")}
+				aria-label="Mover para baixo"
+			>
+				▼
 			</button>
 			{isImage ? null : (
 				<>
@@ -757,6 +932,7 @@ function BlockRow({
 	block,
 	index,
 	total,
+	uploading,
 	onFocusBlock,
 	onChange,
 	onMove,
@@ -765,11 +941,13 @@ function BlockRow({
 	onShortcut,
 	onDragOverBlock,
 	onCrop,
+	onSwap,
 	shapePicker,
 }: {
 	block: EditorialBlock;
 	index: number;
 	total: number;
+	uploading: boolean;
 	onFocusBlock: () => void;
 	onChange: (patch: Partial<EditorialBlock>) => void;
 	onMove: (direction: "up" | "down") => void;
@@ -778,10 +956,22 @@ function BlockRow({
 	onShortcut: (create: () => EditorialBlock) => void;
 	onDragOverBlock: (index: number | null) => void;
 	onCrop: () => void;
+	onSwap: () => void;
 	shapePicker: ReactNode;
 }) {
+	const captionId = `caption-${block.id}`;
 	const bar = (
-		<BlockBar block={block} onMove={onMove} onDuplicate={onDuplicate} onRemove={onRemove} onCrop={onCrop} />
+		<BlockBar
+			block={block}
+			index={index}
+			total={total}
+			onMove={onMove}
+			onDuplicate={onDuplicate}
+			onRemove={onRemove}
+			onCrop={onCrop}
+			onSwap={onSwap}
+			onFocusCaption={() => document.getElementById(captionId)?.focus()}
+		/>
 	);
 
 	function handleText(value: string) {
@@ -793,8 +983,9 @@ function BlockRow({
 		onChange({ text: value } as Partial<EditorialBlock>);
 	}
 
-	const editable = (className: string, value: string, placeholder: string) => (
+	const editable = (className: string, value: string, placeholder: string, id?: string) => (
 		<div
+			id={id}
 			className={className}
 			contentEditable
 			suppressContentEditableWarning
@@ -864,29 +1055,88 @@ function BlockRow({
 			{block.type === "image" ? (
 				<div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
 					<div style={{ flex: "none", width: 260, display: "flex", flexDirection: "column", gap: 8 }}>
-						<div
-							className="ad-hatch"
-							style={{
-								width: "100%",
-								aspectRatio: "4 / 3",
-								display: "flex",
-								alignItems: "flex-end",
-								padding: 10,
-							}}
-						>
-							<span
-								className="ad-mono"
+						{block.src ? (
+							<div
 								style={{
-									fontSize: 11,
-									background: "var(--ad-paper)",
-									padding: "3px 6px",
-									color: "rgba(11,11,11,.6)",
+									position: "relative",
+									width: "100%",
+									aspectRatio: "4 / 3",
+									overflow: "hidden",
+									background: "var(--ad-sand)",
 								}}
 							>
-								{block.src || "sem imagem"} · {block.layout}
-							</span>
+								{/* Local blob and remote URLs both render fine with a plain <img>. */}
+								<img
+									src={block.src}
+									alt={block.alt ?? ""}
+									style={{ width: "100%", height: "100%", objectFit: "cover", opacity: uploading ? 0.5 : 1 }}
+								/>
+								{uploading ? (
+									<span
+										className="ad-mono"
+										style={{
+											position: "absolute",
+											left: 8,
+											bottom: 8,
+											fontSize: 11,
+											background: "var(--ad-ink)",
+											color: "var(--ad-on-shell)",
+											padding: "3px 6px",
+										}}
+									>
+										Enviando…
+									</span>
+								) : null}
+							</div>
+						) : (
+							<button
+								type="button"
+								className="ad-hatch"
+								onClick={onSwap}
+								style={{
+									width: "100%",
+									aspectRatio: "4 / 3",
+									display: "flex",
+									alignItems: "flex-end",
+									padding: 10,
+									border: 0,
+									textAlign: "left",
+								}}
+							>
+								<span
+									className="ad-mono"
+									style={{
+										fontSize: 11,
+										background: "var(--ad-paper)",
+										padding: "3px 6px",
+										color: "rgba(11,11,11,.6)",
+									}}
+								>
+									Clique para enviar uma imagem · {block.layout}
+								</span>
+							</button>
+						)}
+						<div
+							id={captionId}
+							className="ad-doc-cap"
+							contentEditable
+							suppressContentEditableWarning
+							role="textbox"
+							tabIndex={0}
+							aria-label="Legenda"
+							data-placeholder="Legenda"
+							onFocus={onFocusBlock}
+							onInput={(event) =>
+								onChange({ caption: event.currentTarget.textContent ?? "" } as Partial<EditorialBlock>)
+							}
+							onPaste={(event) => {
+								event.preventDefault();
+								const text = event.clipboardData.getData("text/plain");
+								document.execCommand("insertText", false, text);
+							}}
+						>
+							{block.caption ?? ""}
 						</div>
-						{editable("ad-doc-cap", block.caption ?? "", "Legenda")}
 						{shapePicker}
 					</div>
 				</div>
