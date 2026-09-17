@@ -193,6 +193,113 @@ describe("EditorialBlocksEditor", () => {
 		expect(hiddenValue(container, "content")[0]).toMatchObject({ src: "blob:mock" });
 	});
 
+	it("changes the image preview's width when picking a different shape (not just the stored layout)", () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "n/a" }), { status: 500 })),
+		);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={[]} />);
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		fireEvent.drop(paper, { dataTransfer: { files: [new File(["x"], "p.png", { type: "image/png" })] } });
+
+		// The shape picker opens automatically after a drop; default layout is "wide".
+		// Scoped to .ad-blk (the canvas block) -- the always-mounted "Ver como
+		// fica" preview renders its own <img> for the same block via a
+		// completely different layout system (Tailwind classes, not this style).
+		const wrapper = () => container.querySelector(".ad-blk img")?.parentElement?.parentElement as HTMLElement;
+		expect(wrapper()).toHaveStyle({ width: "100%" });
+
+		fireEvent.click(screen.getByRole("button", { name: "Ao lado" }));
+		expect(hiddenValue(container, "content")[0]).toMatchObject({ layout: "side" });
+		expect(wrapper()).toHaveStyle({ width: "260px" });
+
+		fireEvent.click(screen.getByRole("button", { name: "Centralizada" }));
+		expect(hiddenValue(container, "content")[0]).toMatchObject({ layout: "center" });
+		expect(wrapper()).toHaveStyle({ width: "440px", marginInline: "auto" });
+	});
+
+	it("toggles a block between full row and half row, side by side in the canvas", () => {
+		const { container } = render(
+			<EditorialBlocksEditor
+				name="content"
+				initialDoc={[
+					{ id: "a", type: "paragraph", text: "primeiro" },
+					{ id: "b", type: "paragraph", text: "segundo" },
+				]}
+			/>,
+		);
+		const canvasWrapper = (index: number) =>
+			container.querySelectorAll(".ad-paper > div")[index] as HTMLElement;
+
+		expect(canvasWrapper(0)).toHaveStyle({ width: "100%" });
+		expect(hiddenValue(container, "content")[0].width).toBeUndefined();
+
+		fireEvent.click(screen.getAllByRole("button", { name: "Linha inteira" })[0]);
+		expect(hiddenValue(container, "content")[0]).toMatchObject({ width: "half" });
+		expect(canvasWrapper(0)).toHaveStyle({ width: "calc(50% - 10px)" });
+
+		fireEvent.click(screen.getByRole("button", { name: "Metade" }));
+		expect(hiddenValue(container, "content")[0]).toMatchObject({ width: "full" });
+		expect(canvasWrapper(0)).toHaveStyle({ width: "100%" });
+	});
+
+	it("mirrors the block width toggle and the image layout in EditorialBlocksRenderer (ver como fica)", () => {
+		render(
+			<EditorialBlocksEditor
+				name="content"
+				initialDoc={[{ id: "a", type: "heading", level: 2, text: "Meio a meio" }]}
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Linha inteira" }));
+		fireEvent.click(screen.getByRole("button", { name: "Ver como fica" }));
+
+		const dialog = screen.getByRole("dialog", { name: "Ver como fica" });
+		const previewWrapper = within(dialog).getByText("Meio a meio").closest("div.clear-both") as HTMLElement;
+		expect(previewWrapper.className).toContain("sm:w-[calc(50%-10px)]");
+	});
+
+	it("edits an image's credit separately from its caption", () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "n/a" }), { status: 500 })),
+		);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={[]} />);
+		const paper = container.querySelector(".ad-paper") as HTMLElement;
+		fireEvent.drop(paper, { dataTransfer: { files: [new File(["x"], "p.png", { type: "image/png" })] } });
+
+		const credit = screen.getByRole("textbox", { name: "Crédito" });
+		credit.textContent = "Foto: Alguém";
+		fireEvent.input(credit);
+
+		const caption = screen.getByRole("textbox", { name: "Legenda" });
+		caption.textContent = "Uma legenda";
+		fireEvent.input(caption);
+
+		expect(hiddenValue(container, "content")[0]).toMatchObject({
+			credit: "Foto: Alguém",
+			caption: "Uma legenda",
+		});
+	});
+
+	it("focuses the credit field when 'Crédito' is clicked, same as 'Legenda' does for the caption", () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "n/a" }), { status: 500 })),
+		);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		render(<EditorialBlocksEditor name="content" initialDoc={[]} />);
+		const paper = document.querySelector(".ad-paper") as HTMLElement;
+		fireEvent.drop(paper, { dataTransfer: { files: [new File(["x"], "p.png", { type: "image/png" })] } });
+
+		fireEvent.click(screen.getByRole("button", { name: "Crédito" }));
+		expect(screen.getByRole("textbox", { name: "Crédito" })).toHaveFocus();
+	});
+
 	it("opens 'Ver como fica' and renders the current draft", () => {
 		render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
 		fireEvent.click(screen.getByRole("button", { name: "Ver como fica" }));

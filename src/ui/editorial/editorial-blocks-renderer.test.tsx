@@ -124,4 +124,77 @@ describe("EditorialBlocksRenderer", () => {
 		expect(container.querySelectorAll("img")).toHaveLength(1);
 		expect(container.querySelector("img")).toHaveAttribute("src", "https://cdn.example.com/a1.jpg");
 	});
+
+	it("gives a half-width block a narrower responsive class so it can sit beside another", () => {
+		const twoColumns: EditorialContentDoc = [
+			{ id: "b1", type: "paragraph", text: "Esquerda", width: "half" },
+			{ id: "b2", type: "paragraph", text: "Direita", width: "half" },
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={twoColumns} />);
+		const wrappers = container.querySelectorAll(":scope > div > div");
+		expect(wrappers).toHaveLength(2);
+		for (const wrapper of wrappers) {
+			expect(wrapper.className).toContain("sm:w-[calc(50%-10px)]");
+		}
+	});
+
+	it("defaults a block with no explicit width to the full row", () => {
+		const { container } = render(
+			<EditorialBlocksRenderer doc={[{ id: "b1", type: "paragraph", text: "Sozinho" }]} />,
+		);
+		const wrapper = container.querySelector(":scope > div > div") as HTMLElement;
+		expect(wrapper.className).toContain("w-full");
+		expect(wrapper.className).not.toContain("calc(50%");
+	});
+
+	it("renders an image's credit distinct from its caption, and tolerates either alone", () => {
+		const withBoth: EditorialContentDoc = [
+			{
+				id: "b1",
+				type: "image",
+				assetId: "a",
+				cropId: null,
+				src: "https://cdn.example.com/a.jpg",
+				layout: "wide",
+				caption: "Uma legenda",
+				credit: "Foto: Fulano",
+				alt: null,
+			},
+		];
+		const { container, rerender } = render(<EditorialBlocksRenderer doc={withBoth} />);
+		expect(container.querySelector("figcaption")?.textContent).toBe("Uma legenda Foto: Fulano");
+
+		const creditOnly: EditorialContentDoc = [
+			{ ...withBoth[0], caption: null } as EditorialContentDoc[number],
+		];
+		rerender(<EditorialBlocksRenderer doc={creditOnly} />);
+		expect(container.querySelector("figcaption")?.textContent).toBe("Foto: Fulano");
+
+		const neither: EditorialContentDoc = [
+			{ ...withBoth[0], caption: null, credit: null } as EditorialContentDoc[number],
+		];
+		rerender(<EditorialBlocksRenderer doc={neither} />);
+		expect(container.querySelector("figcaption")).toBeNull();
+	});
+
+	it("renders a gallery image's credit distinct from its caption", () => {
+		const docs: EditorialContentDoc = [
+			{
+				id: "b1",
+				type: "gallery",
+				images: [
+					{
+						assetId: "a1",
+						cropId: null,
+						src: "https://cdn.example.com/a1.jpg",
+						caption: "Legenda da galeria",
+						credit: "Foto: Ciclana",
+						alt: null,
+					},
+				],
+			},
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={docs} />);
+		expect(container.querySelector("figcaption")?.textContent).toBe("Legenda da galeria Foto: Ciclana");
+	});
 });
