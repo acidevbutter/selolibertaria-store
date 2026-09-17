@@ -5,15 +5,66 @@ import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { type EditorialContentDoc, editorialContentDocSchema } from "@/lib/editorial-blocks";
 
+/** The nine editorial page identities the block editor can load/save (§1). */
+export type EditorialPageType =
+	| "page_home"
+	| "page_events"
+	| "page_projects"
+	| "page_products"
+	| "page_product"
+	| "page_about"
+	| "page_contact"
+	| "page_sarau"
+	| "site_global";
+
+export type EditorialBlocksRecord = {
+	title: string;
+	content: Record<string, unknown>;
+	draftDoc: EditorialContentDoc | null;
+	publishedDoc: EditorialContentDoc | null;
+	publishedAt: string | null;
+};
+
+type FastApiEditorialFull = {
+	slug: string;
+	title: string;
+	content: Record<string, unknown>;
+	draft_doc: EditorialContentDoc | null;
+	published_doc: EditorialContentDoc | null;
+	published_at: string | null;
+};
+
 /**
- * The block editor screen (fatia 05.3-05.4) is currently a single fixed demo
- * route (src/app/admin/editorial/blocos/page.tsx), not yet wired to a real
- * per-page picker -- that's later fatia work. Until the route carries a real
- * content_type/slug, this is the one page identity the editor writes to on
- * the backend (app/editorial/router.py's {content_type}/{slug} path params).
+ * Reads the record behind a page's block editor, including `draft_doc`/
+ * `published_doc` — fields `editorial-content-store.ts`'s `mapEditorial()`
+ * discards, since that module only serves the legacy per-field forms.
+ * There is no admin GET-by-slug endpoint, so this lists the content type and
+ * filters (same pattern as `getEditorialProjectRecordBySlug` in actions.ts).
  */
-const CONTENT_TYPE = "page";
-const DEFAULT_SLUG = "blocos-demo";
+export async function getEditorialBlocksRecord(
+	type: EditorialPageType,
+	slug: string,
+): Promise<EditorialBlocksRecord | null> {
+	try {
+		const response = await fetch(`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}`, {
+			headers: { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
+			cache: "no-store",
+		});
+		if (!response.ok) return null;
+		const items = (await response.json()) as FastApiEditorialFull[];
+		const item = items.find((entry) => entry.slug === slug);
+		if (!item) return null;
+		return {
+			title: item.title,
+			content: item.content ?? {},
+			draftDoc: item.draft_doc,
+			publishedDoc: item.published_doc,
+			publishedAt: item.published_at,
+		};
+	} catch {
+		return null;
+	}
+}
 
 function backendHeaders(actorId: string) {
 	return {
@@ -51,6 +102,10 @@ function timeLabel(date: Date) {
  * Publica o rascunho (§9). Validation is Zod against the closed list of eleven
  * types — anything else is a 422, never a silent render. The draft is never
  * discarded by a refusal: every failure says what to do and what was not lost.
+ *
+ * `type`/`slug` identify which of the nine pages this is — the editor is one
+ * component/route, parameterized by these two hidden fields instead of the
+ * fixed demo document the route used to carry.
  */
 export async function publishEditorialDraftAction(
 	_state: PublishState,
@@ -88,8 +143,13 @@ export async function publishEditorialDraftAction(
 		};
 	}
 
+	const type = String(formData.get("type") ?? "");
+	const slug = String(formData.get("slug") ?? "");
+	if (!type || !slug) {
+		return { status: "failed", message: "Página inválida: identidade da página ausente." };
+	}
+
 	const actorId = session.user.id;
-	const slug = String(formData.get("slug") ?? "") || DEFAULT_SLUG;
 	const seen = String(formData.get("publishedAt") ?? "") || null;
 
 	try {
@@ -97,7 +157,7 @@ export async function publishEditorialDraftAction(
 		// draft_doc is currently stored, so the doc being published has to
 		// land there before the publish call.
 		const draftResponse = await fetch(
-			`${env.FASTAPI_API_URL}/editorial/internal/admin/${CONTENT_TYPE}/${slug}/draft`,
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/draft`,
 			{
 				method: "PUT",
 				headers: backendHeaders(actorId),
@@ -116,7 +176,7 @@ export async function publishEditorialDraftAction(
 		}
 
 		const publishResponse = await fetch(
-			`${env.FASTAPI_API_URL}/editorial/internal/admin/${CONTENT_TYPE}/${slug}/publish`,
+			`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/publish`,
 			{
 				method: "POST",
 				headers: backendHeaders(actorId),

@@ -1,5 +1,3 @@
-import { PUBLIC_NAVIGATION } from "@/lib/public-navigation";
-
 export const seloSiteMeta = {
 	name: "Selo Libertária",
 	title: "Selo Libertária",
@@ -11,14 +9,6 @@ export const seloSiteMeta = {
 	youtube: "https://www.youtube.com/@selolibertaria",
 	facebook: "https://www.facebook.com/selolibertaria",
 };
-
-export const seloPrimaryLinks = [
-	{ label: "Loja", href: PUBLIC_NAVIGATION.shop },
-	{ label: "Projetos", href: PUBLIC_NAVIGATION.projects },
-	{ label: "Sarau Safado", href: PUBLIC_NAVIGATION.sarau },
-	{ label: "Sobre", href: PUBLIC_NAVIGATION.about },
-	{ label: "Contato", href: PUBLIC_NAVIGATION.contact },
-];
 
 export const seloSocialLinks = [
 	{ label: "Instagram", href: seloSiteMeta.instagram, icon: "/images/icons/instagram.svg" },
@@ -39,170 +29,6 @@ export const seloEditorialAssets = {
 	illustrationStatueRider: "/images/selolibertaria/illustration-statue-rider.png",
 	illustrationSaturn: "/images/selolibertaria/illustration-saturn.png",
 } as const;
-
-export const seloHomeHighlights = [
-	{
-		title: "Publicação autoral",
-		description: "Livros e publicações sonoras que carregam a voz editorial do selo no catálogo público.",
-	},
-	{
-		title: "Programação cultural",
-		description: "Leituras, oficinas, festivais e encontros conectados ao catálogo e à prática autoral.",
-	},
-	{
-		title: "Curadoria autoral",
-		description:
-			"Uma plataforma híbrida onde publicação, performance e rituais comunitários convivem lado a lado.",
-	},
-];
-
-export const seloHomeEditorialCtas = [
-	{
-		eyebrow: "Ver loja",
-		title: "Os livros permanecem no centro da experiência.",
-		description:
-			"O site atual mantém fluxo de carrinho, checkout e produto enquanto ganha contexto editorial mais forte para cada lançamento.",
-		href: PUBLIC_NAVIGATION.shop,
-		label: "Ver loja",
-	},
-	{
-		eyebrow: "Acompanhar a programação",
-		title: "Eventos, oficinas e projetos constroem o mundo em torno dos livros.",
-		description:
-			"A programação pública não deve parecer desconectada do catálogo. Deve estender a mesma voz para leituras, laboratórios e performances.",
-		href: PUBLIC_NAVIGATION.events,
-		label: "Ver eventos",
-	},
-];
-
-export const seloHomeTopBar = {
-	message: "Novos livros, programação ao vivo e literatura erótica com direção cultural.",
-};
-
-export const seloHomeHero = {
-	eyebrow: "Livros, performance e literatura erótica",
-	title: "Uma livraria-editora para quem lê com o corpo inteiro.",
-	description:
-		"O Selo Libertaria reúne livros, projetos culturais, saraus e publicações autorais em uma experiência de leitura, presença e desejo.",
-	primaryCta: {
-		label: "Ver loja",
-		href: PUBLIC_NAVIGATION.shop,
-	},
-	secondaryCta: {
-		label: "Conhecer o Sarau Safado",
-		href: PUBLIC_NAVIGATION.sarau,
-	},
-	supportingLine: "Livros impressos, edições sonoras, encontros ao vivo e projetos culturais.",
-	featureEyebrow: "Site editorial",
-	featureTitle:
-		"Uma home híbrida onde catálogo, programação cultural e contexto autoral convivem sem fricção.",
-	featureBody: seloSiteMeta.tagline,
-	featureQuote: "Ler também pode ser uma forma de acender presença.",
-	featureImage: {
-		src: seloEditorialAssets.bookStandingMock,
-		alt: "Mockup do livro Virus do Beijo em composição editorial",
-	},
-};
-
-export const seloHomeFeaturedBooksIntro = {
-	eyebrow: "Catálogo em destaque",
-	title: "Livros para entrar nesse universo pela leitura.",
-	linkLabel: "Ver loja",
-	linkHref: "/products",
-};
-
-export const seloHomeManifesto = {
-	title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-	body: "Entre publicações, encontros e performance, o selo constrói uma leitura autoral em que livro, presença e imaginação cultural continuam a mesma conversa.",
-	linkLabel: "Conheça o selo",
-	linkHref: PUBLIC_NAVIGATION.about,
-};
-
-export const seloHomeAgenda = {
-	eyebrow: "Agenda",
-	title: "Próximos encontros, leituras e aparições públicas do selo.",
-	archiveTitle: "Arquivo de encontros e intervenções culturais",
-	linkLabel: "Ver todos os eventos",
-	linkHref: PUBLIC_NAVIGATION.events,
-};
-
-export const seloHomeProjectsIntro = {
-	eyebrow: "Projetos",
-	title: "Uma prática que atravessa livros, palco e formação.",
-	linkLabel: "Ver projetos",
-	linkHref: PUBLIC_NAVIGATION.projects,
-};
-
-export const seloHomeImmersiveGallery = {
-	eyebrow: "Atmosfera",
-	quote: "Ler também pode ser uma forma de acender presença.",
-	images: [
-		{
-			src: seloEditorialAssets.bookOpenSpread,
-			alt: "Livro aberto do Selo Libertária com ilustração interna",
-		},
-		{ src: seloEditorialAssets.bookStackedMock, alt: "Mockup empilhado do livro Virus do Beijo" },
-		{
-			src: seloEditorialAssets.illustrationMermaid,
-			alt: "Ilustração circular em preto e branco do universo do selo",
-		},
-	],
-};
-
-export const seloHomeAuthorSpotlight = {
-	eyebrow: "Autora e curadoria",
-	title: "Natália Nolli Sasso e a órbita do Selo Libertaria",
-	body: "Os livros seguem no centro, mas o catálogo cresce em diálogo com programas públicos, oficinas, saraus e trabalho cultural colaborativo.",
-	secondaryBody:
-		"O site deve permitir que a pessoa leitora passe naturalmente de um título para o contexto artístico e cultural que o cerca.",
-	primaryCta: {
-		label: "Sobre a autora",
-		href: PUBLIC_NAVIGATION.about,
-	},
-	secondaryCta: {
-		label: "Conhecer o Sarau Safado",
-		href: PUBLIC_NAVIGATION.sarau,
-	},
-	imageSrc: seloEditorialAssets.illustrationReader,
-	imageAlt: "Ilustração em preto e branco de leitora no universo do Selo Libertária",
-};
-
-export const seloHomeCommunityCta = {
-	title: "Acompanhe os próximos livros, saraus e projetos culturais.",
-	body: "Receba atualizações, acompanhe as redes e entre em contato para convites, parcerias e programação.",
-	primaryCta: {
-		label: "Entrar em contato",
-		href: PUBLIC_NAVIGATION.contact,
-	},
-	secondaryLinks: [
-		{ label: "Instagram", href: seloSiteMeta.instagram },
-		{ label: "YouTube", href: seloSiteMeta.youtube },
-		{ label: "Facebook", href: seloSiteMeta.facebook },
-	],
-};
-
-export const seloContactPage = {
-	eyebrow: "Contato",
-	title: "Fale com o selo sobre livros, convites, parcerias e programação.",
-	description:
-		"Use este espaço para falar sobre livros, convites culturais, oficinas, imprensa, colaborações ou programação.",
-	formTitle: "Enviar mensagem",
-	formDescription:
-		"Vamos encaminhar sua mensagem para o caminho certo dentro de livros, eventos, parcerias ou suporte.",
-	directTitle: "Canais diretos",
-	directDescription: "Fale com o selo pelos principais pontos de contato editoriais e sociais.",
-	pathsTitle: "Caminhos comuns",
-	pathsDescription: "Navegue rapidamente entre catálogo, programação e páginas institucionais.",
-};
-
-export const seloAbout = {
-	title: "Um site editorial moldado por livros, performance e programação cultural.",
-	body: "O Selo Libertária é uma plataforma editorial e cultural autoral que reúne livros impressos, lançamentos sonoros, oficinas, eventos e projetos de longa duração. Em vez de separar a camada comercial do conteúdo institucional, o site deve permitir que a pessoa leitora passe naturalmente da descoberta de um título para o contexto artístico e cultural ao seu redor.",
-	extended:
-		"No centro está o trabalho de Natália Nolli Sasso e a órbita mais ampla de colaboradoras, espaços e iniciativas culturais que sustentam o selo. O site precisa sustentar essas duas funções ao mesmo tempo: ser um lugar confiável para comprar livros e uma vitrine clara para projetos, eventos e identidade editorial.",
-	imageSrc: seloEditorialAssets.bookOpenSpread,
-	imageAlt: "Livro aberto com miolo ilustrado do acervo do Selo Libertária",
-};
 
 export const seloProjects = [
 	{
@@ -322,15 +148,3 @@ export const seloEvents = [
 		imageAlt: "Ilustração circular em preto e branco para oficinas e laboratórios",
 	},
 ];
-
-export const seloSarauSafado = {
-	title: "Sarau Safado",
-	intro:
-		"Uma iniciativa recorrente dedicada às literaturas eróticas, às leituras, às performances e aos encontros em torno do desejo, da autoria e da escuta pública.",
-	body: "Criado por Natália Nolli Sasso, o Sarau Safado começou online em 2020 e passou a ter edições presenciais em 2025. Ele opera ao mesmo tempo como programa cultural e extensão editorial: um lugar em que o catálogo encontra o público por meio de artistas convidadas, leituras compartilhadas e continuidade curatorial.",
-	details: [
-		"Construído em torno das literaturas eróticas, e não de uma programação genérica de eventos.",
-		"Curado com meses de antecedência, com forte ponto de vista autoral.",
-		"Conectado a livros, bibliotecas públicas e instituições culturais em São Paulo.",
-	],
-};

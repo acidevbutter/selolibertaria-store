@@ -28,12 +28,10 @@ export function MediaLibraryGrid({ items }: { items: MediaLibraryItem[] }) {
 
 	if (items.length === 0) {
 		return (
-			<div className="flex flex-col items-center gap-2 border border-dashed border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-6 py-12 text-center">
-				<ImageOff className="h-6 w-6 text-[var(--sl-text-muted)]" />
-				<p className="text-sm font-semibold text-[var(--sl-ink)]">
-					Nenhuma imagem ainda — arraste a primeira.
-				</p>
-				<p className="max-w-md text-sm leading-6 text-[var(--sl-text-muted)]">
+			<div className="ad-empty">
+				<ImageOff className="h-6 w-6" style={{ color: "var(--ad-text-soft)" }} />
+				<p style={{ fontSize: 14, fontWeight: 900 }}>Nenhuma imagem ainda — arraste a primeira.</p>
+				<p style={{ maxWidth: 480, fontSize: 13, lineHeight: 1.6, color: "var(--ad-text-muted)" }}>
 					Envie uma imagem pelo editorial ou por um produto. Ela passa a aparecer nesta biblioteca
 					automaticamente.
 				</p>
@@ -43,16 +41,19 @@ export function MediaLibraryGrid({ items }: { items: MediaLibraryItem[] }) {
 
 	return (
 		<>
-			<div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+			<div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
 				{items.map((item) => (
 					<button
 						key={item.id}
 						type="button"
 						onClick={() => setSelected(item)}
-						className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] text-left"
-						style={{ borderRadius: "var(--sl-radius)" }}
+						className="ad-panel"
+						style={{ textAlign: "left", padding: 0 }}
 					>
-						<div className="relative aspect-square overflow-hidden border-b border-[var(--sl-line)] bg-[var(--sl-surface-quiet)]">
+						<div
+							className="relative aspect-square overflow-hidden"
+							style={{ borderBottom: "1px solid var(--ad-line)", background: "var(--ad-sand)" }}
+						>
 							<NextImage
 								src={item.url}
 								alt={item.alt || item.filename}
@@ -62,15 +63,17 @@ export function MediaLibraryGrid({ items }: { items: MediaLibraryItem[] }) {
 								{...getProductImageOptimizationProps(item.url)}
 							/>
 						</div>
-						<div className="space-y-1 p-3">
-							<p className="truncate text-xs font-semibold text-[var(--sl-ink)]" title={item.filename}>
+						<div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+							<p className="truncate" style={{ fontSize: 12, fontWeight: 900 }} title={item.filename}>
 								{item.filename}
 							</p>
-							<p className="text-[11px] text-[var(--sl-text-muted)]">
+							<p className="ad-mono" style={{ fontSize: 11, color: "var(--ad-text-soft)" }}>
 								{item.width && item.height ? `${item.width}×${item.height} · ` : ""}
 								{formatBytes(item.bytes)}
 							</p>
-							<p className="text-[11px] text-[var(--sl-text-muted)]">{item.createdAtLabel}</p>
+							<p className="ad-mono" style={{ fontSize: 11, color: "var(--ad-text-soft)" }}>
+								{item.createdAtLabel}
+							</p>
 						</div>
 					</button>
 				))}

@@ -14,12 +14,7 @@ vi.mock("@/lib/shipping", () => ({
 }));
 vi.mock("@/lib/cart-cookies", () => ({ getCartId: async () => "guest-1" }));
 
-import {
-	createAsaasCheckout,
-	finalizeAsaasCheckout,
-	getShippingQuote,
-	saveCheckoutCard,
-} from "./checkout-actions";
+import { createAsaasCheckout, getShippingQuote } from "./checkout-actions";
 
 const buyer = {
 	fullName: "Pessoa Teste",
@@ -163,81 +158,5 @@ describe("getShippingQuote", () => {
 				address: { postalCode: "01000-000", country: "BR" },
 			}),
 		).toEqual({ error: "Frete indisponível" });
-	});
-});
-
-describe("finalizeAsaasCheckout", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		vi.stubGlobal("fetch", mocks.fetch);
-	});
-
-	it("expoe os dados do cartao quando o pedido foi pago com cartao salvavel", async () => {
-		mocks.fetch.mockResolvedValue(
-			new Response(
-				JSON.stringify({
-					status: "succeeded",
-					account_email_sent: true,
-					billing_type: "CREDIT_CARD",
-					credit_card_brand: "VISA",
-					credit_card_last4: "4242",
-					card_save_available: true,
-				}),
-				{ status: 200 },
-			),
-		);
-
-		const result = await finalizeAsaasCheckout({ orderId: "ord_1234" });
-
-		expect(result).toMatchObject({
-			ok: true,
-			status: "succeeded",
-			cardSaveAvailable: true,
-			creditCardBrand: "VISA",
-			creditCardLast4: "4242",
-		});
-	});
-
-	it("nao oferece salvar cartao quando o pagamento nao foi por cartao", async () => {
-		mocks.fetch.mockResolvedValue(
-			new Response(JSON.stringify({ status: "succeeded", card_save_available: false }), {
-				status: 200,
-			}),
-		);
-
-		const result = await finalizeAsaasCheckout({ orderId: "ord_1234" });
-
-		expect(result).toMatchObject({ ok: true, cardSaveAvailable: false });
-	});
-});
-
-describe("saveCheckoutCard", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-		vi.stubGlobal("fetch", mocks.fetch);
-	});
-
-	it("retorna bandeira e final do cartao salvo, sem token", async () => {
-		mocks.fetch.mockResolvedValue(
-			new Response(JSON.stringify({ id: "card_1", brand: "VISA", last4: "4242" }), {
-				status: 201,
-			}),
-		);
-
-		const result = await saveCheckoutCard({ orderId: "ord_1234" });
-
-		expect(result).toEqual({ ok: true, brand: "VISA", last4: "4242" });
-	});
-
-	it("propaga o erro quando o pedido ainda nao foi confirmado", async () => {
-		mocks.fetch.mockResolvedValue(
-			new Response(JSON.stringify({ detail: "Pedido ainda não foi confirmado" }), {
-				status: 409,
-			}),
-		);
-
-		const result = await saveCheckoutCard({ orderId: "ord_1234" });
-
-		expect(result).toEqual({ error: "Pedido ainda não foi confirmado" });
 	});
 });

@@ -20,7 +20,9 @@ vi.mock("@/env.mjs", () => ({
 	env: { FASTAPI_API_URL: "http://localhost:8000", FASTAPI_INTERNAL_API_KEY: "test-internal-key" },
 }));
 
-const { publishEditorialDraftAction } = await import("@/app/admin/editorial/blocks-actions");
+const { publishEditorialDraftAction, getEditorialBlocksRecord } = await import(
+	"@/app/admin/editorial/blocks-actions"
+);
 
 function form(fields: Record<string, string>) {
 	const data = new FormData();
@@ -33,6 +35,7 @@ function jsonResponse(status: number, body: unknown) {
 }
 
 const paragraph = { id: "b1", type: "paragraph", text: "Uma noite de leitura aberta." };
+const identity = { type: "page_sarau", slug: "sarau-safado" };
 
 describe("publishEditorialDraftAction", () => {
 	let fetchMock: ReturnType<typeof vi.fn>;
@@ -46,14 +49,14 @@ describe("publishEditorialDraftAction", () => {
 		vi.unstubAllGlobals();
 	});
 
-	it("publishes a valid document: saves the draft, then calls the real publish endpoint", async () => {
+	it("publishes a valid document: saves the draft, then calls the real publish endpoint for the given page", async () => {
 		fetchMock
 			.mockResolvedValueOnce(jsonResponse(200, { draft_doc: [paragraph] })) // PUT .../draft
 			.mockResolvedValueOnce(jsonResponse(200, { published_at: "2026-09-14T12:00:00.000Z" })); // POST .../publish
 
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
-			form({ contentDoc: JSON.stringify([paragraph]) }),
+			form({ ...identity, contentDoc: JSON.stringify([paragraph]) }),
 		);
 
 		expect(state).toMatchObject({
@@ -64,21 +67,31 @@ describe("publishEditorialDraftAction", () => {
 		});
 		expect(fetchMock).toHaveBeenCalledTimes(2);
 		const [draftUrl, draftInit] = fetchMock.mock.calls[0] as [string, RequestInit];
-		expect(draftUrl).toMatch(/\/editorial\/internal\/admin\/page\/[^/]+\/draft$/);
+		expect(draftUrl).toBe("http://localhost:8000/editorial/internal/admin/page_sarau/sarau-safado/draft");
 		expect(draftInit.method).toBe("PUT");
 		expect((draftInit.headers as Record<string, string>)["X-Internal-API-Key"]).toBeTruthy();
 		expect((draftInit.headers as Record<string, string>)["X-Actor-User-ID"]).toBe(
 			"11111111-1111-1111-1111-111111111111",
 		);
 		const [publishUrl, publishInit] = fetchMock.mock.calls[1] as [string, RequestInit];
-		expect(publishUrl).toMatch(/\/editorial\/internal\/admin\/page\/[^/]+\/publish$/);
+		expect(publishUrl).toBe("http://localhost:8000/editorial/internal/admin/page_sarau/sarau-safado/publish");
 		expect(publishInit.method).toBe("POST");
+	});
+
+	it("refuses to publish without a page identity -- never calls the backend", async () => {
+		const state = await publishEditorialDraftAction(
+			{ status: "idle" },
+			form({ contentDoc: JSON.stringify([paragraph]) }),
+		);
+
+		expect(state).toMatchObject({ status: "failed" });
+		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
 	it("refuses a forged twelfth type with 422 instead of rendering it silently -- never calls the backend", async () => {
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
-			form({ contentDoc: JSON.stringify([{ id: "x", type: "carousel", slides: [] }]) }),
+			form({ ...identity, contentDoc: JSON.stringify([{ id: "x", type: "carousel", slides: [] }]) }),
 		);
 
 		expect(state).toMatchObject({ status: "invalid", code: 422 });
@@ -89,7 +102,7 @@ describe("publishEditorialDraftAction", () => {
 		const pending = { id: "b2", type: "image", assetId: "a", src: "blob:x", layout: "wide" };
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
-			form({ contentDoc: JSON.stringify([paragraph, pending]) }),
+			form({ ...identity, contentDoc: JSON.stringify([paragraph, pending]) }),
 		);
 
 		expect(state.status).toBe("failed");
@@ -112,6 +125,7 @@ describe("publishEditorialDraftAction", () => {
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
 			form({
+				...identity,
 				contentDoc: JSON.stringify([paragraph]),
 				publishedAt: "2026-09-14T10:00:00.000Z",
 			}),
@@ -128,7 +142,7 @@ describe("publishEditorialDraftAction", () => {
 
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
-			form({ contentDoc: JSON.stringify([paragraph]) }),
+			form({ ...identity, contentDoc: JSON.stringify([paragraph]) }),
 		);
 
 		expect(state).toMatchObject({
@@ -142,11 +156,68 @@ describe("publishEditorialDraftAction", () => {
 
 		const state = await publishEditorialDraftAction(
 			{ status: "idle" },
-			form({ contentDoc: JSON.stringify([paragraph]) }),
+			form({ ...identity, contentDoc: JSON.stringify([paragraph]) }),
 		);
 
 		expect(state.status).toBe("failed");
 		if (state.status !== "failed") return;
 		expect(state.message).toContain("Não foi possível falar com o servidor");
+	});
+});
+
+describe("getEditorialBlocksRecord", () => {
+	let fetchMock: ReturnType<typeof vi.fn>;
+
+	beforeEach(() => {
+		fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("lists the content type and returns the matching slug's record, including draft/published docs", async () => {
+		fetchMock.mockResolvedValueOnce(
+			jsonResponse(200, [
+				{
+					slug: "other",
+					title: "Outra",
+					content: {},
+					draft_doc: null,
+					published_doc: null,
+					published_at: null,
+				},
+				{
+					slug: "sarau-safado",
+					title: "Sarau Safado",
+					content: { title: "Sarau Safado", summary: "Uma noite de leitura." },
+					draft_doc: [paragraph],
+					published_doc: null,
+					published_at: null,
+				},
+			]),
+		);
+
+		const record = await getEditorialBlocksRecord("page_sarau", "sarau-safado");
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"http://localhost:8000/editorial/internal/admin/page_sarau",
+			expect.objectContaining({ headers: { "X-Internal-API-Key": "test-internal-key" } }),
+		);
+		expect(record).toMatchObject({
+			title: "Sarau Safado",
+			draftDoc: [paragraph],
+			publishedDoc: null,
+			publishedAt: null,
+		});
+	});
+
+	it("returns null when the slug isn't found or the backend fails", async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, []));
+		expect(await getEditorialBlocksRecord("page_sarau", "missing")).toBeNull();
+
+		fetchMock.mockRejectedValueOnce(new Error("network down"));
+		expect(await getEditorialBlocksRecord("page_sarau", "sarau-safado")).toBeNull();
 	});
 });

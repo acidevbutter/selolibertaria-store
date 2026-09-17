@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: docker/Dockerfile.dev
+      dockerfile: Dockerfile.dev
     container_name: selolibertaria-frontend
     restart: unless-stopped
     env_file:
@@ -24,7 +24,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: relay-mailpit
+    container_name: selolibertaria-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"

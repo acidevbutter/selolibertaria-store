@@ -44,17 +44,6 @@ async function verifyPayload<T>(token: string | undefined): Promise<T | null> {
 	}
 }
 
-export async function setOAuthStateCookie(payload: OAuthStatePayload) {
-	const token = await signPayload(payload, 15);
-	(await cookies()).set(OAUTH_STATE_COOKIE, token, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "lax",
-		maxAge: 60 * 15,
-		path: "/",
-	});
-}
-
 export async function readOAuthStateCookie() {
 	const token = (await cookies()).get(OAUTH_STATE_COOKIE)?.value;
 	return await verifyPayload<OAuthStatePayload>(token);
