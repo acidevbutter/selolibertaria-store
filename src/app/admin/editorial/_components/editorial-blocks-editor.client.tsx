@@ -8,7 +8,7 @@ import {
 	type PublishState,
 	publishEditorialDraftAction,
 } from "@/app/admin/editorial/blocks-actions";
-import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
+import type { EditorialBlock, EditorialBlockWidth, EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
 	EDITORIAL_BLOCKS_HISTORY_LIMIT,
@@ -78,6 +78,16 @@ const IMAGE_SHAPES = [
 	{ id: "center", label: "Centralizada" },
 	{ id: "gallery", label: "Galeria" },
 ] as const;
+
+/** Mirrors imageLayoutClass in editorial-blocks-renderer.tsx (roughly, in
+ *  pixels instead of Tailwind widths) so choosing a shape here actually
+ *  looks different, instead of the fixed-260px box every layout used to get. */
+const EDITOR_IMAGE_PREVIEW_WIDTH: Record<string, string> = {
+	wide: "100%",
+	side: "260px",
+	center: "440px",
+	gallery: "440px",
+};
 
 /** Above this the upload is refused — with the alternative, never bare (§6). */
 const HEAVY_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -427,6 +437,7 @@ export function EditorialBlocksEditor({
 						{heavyImage ? (
 							<p
 								style={{
+									width: "100%",
 									margin: 0,
 									background: "var(--ad-wine-wash-solid)",
 									border: "1px solid var(--ad-wine-line)",
@@ -443,7 +454,7 @@ export function EditorialBlocksEditor({
 							<button
 								type="button"
 								className="ad-body"
-								style={{ margin: 0, textAlign: "left", padding: 0 }}
+								style={{ width: "100%", margin: 0, textAlign: "left", padding: 0 }}
 								onClick={() => setPickerOpen(true)}
 							>
 								Esta página ainda não tem blocos. Comece por um Título.
@@ -451,7 +462,7 @@ export function EditorialBlocksEditor({
 						) : null}
 
 						{doc.map((block, index) => (
-							<div key={block.id}>
+							<div key={block.id} style={{ width: block.width === "half" ? "calc(50% - 10px)" : "100%" }}>
 								{/* The guide only ever lands between blocks, never mid-sentence. */}
 								{dropIndex === index ? (
 									<div className="ad-guide">
@@ -888,6 +899,8 @@ function BlockBar({
 	onCrop,
 	onSwap,
 	onFocusCaption,
+	onFocusCredit,
+	onSetWidth,
 	onDragStart,
 	onDragEnd,
 }: {
@@ -900,10 +913,13 @@ function BlockBar({
 	onCrop: () => void;
 	onSwap: () => void;
 	onFocusCaption: () => void;
+	onFocusCredit: () => void;
+	onSetWidth: (width: EditorialBlockWidth) => void;
 	onDragStart: (event: DragEvent) => void;
 	onDragEnd: () => void;
 }) {
 	const isImage = block.type === "image" || block.type === "gallery";
+	const isHalf = block.width === "half";
 
 	return (
 		<span
@@ -917,6 +933,10 @@ function BlockBar({
 				⠿
 			</span>
 			<span>{block.type}</span>
+			<i>|</i>
+			<button type="button" onClick={() => onSetWidth(isHalf ? "full" : "half")}>
+				{isHalf ? "Metade" : "Linha inteira"}
+			</button>
 			{isImage ? (
 				<>
 					<i>|</i>
@@ -931,6 +951,14 @@ function BlockBar({
 					<button type="button" onClick={onFocusCaption}>
 						Legenda
 					</button>
+					{block.type === "image" ? (
+						<>
+							<i>|</i>
+							<button type="button" onClick={onFocusCredit}>
+								Crédito
+							</button>
+						</>
+					) : null}
 				</>
 			) : null}
 			<i>|</i>
@@ -1001,6 +1029,7 @@ function BlockRow({
 	shapePicker: ReactNode;
 }) {
 	const captionId = `caption-${block.id}`;
+	const creditId = `credit-${block.id}`;
 	const bar = (
 		<BlockBar
 			block={block}
@@ -1014,6 +1043,8 @@ function BlockRow({
 			onDragEnd={onDragEnd}
 			onSwap={onSwap}
 			onFocusCaption={() => document.getElementById(captionId)?.focus()}
+			onFocusCredit={() => document.getElementById(creditId)?.focus()}
+			onSetWidth={(width) => onChange({ width } as Partial<EditorialBlock>)}
 		/>
 	);
 
@@ -1098,7 +1129,16 @@ function BlockRow({
 			{block.type === "divider" ? <hr style={{ border: 0, borderTop: "1px solid var(--ad-line)" }} /> : null}
 			{block.type === "image" ? (
 				<div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-					<div style={{ flex: "none", width: 260, display: "flex", flexDirection: "column", gap: 8 }}>
+					<div
+						style={{
+							flex: "none",
+							width: EDITOR_IMAGE_PREVIEW_WIDTH[block.layout] ?? "100%",
+							marginInline: block.layout === "center" || block.layout === "gallery" ? "auto" : undefined,
+							display: "flex",
+							flexDirection: "column",
+							gap: 8,
+						}}
+					>
 						{block.src ? (
 							<div
 								style={{
@@ -1181,6 +1221,30 @@ function BlockRow({
 						>
 							{block.caption ?? ""}
 						</div>
+						{block.type === "image" ? (
+							<div
+								id={creditId}
+								className="ad-doc-cap"
+								style={{ opacity: 0.7 }}
+								contentEditable
+								suppressContentEditableWarning
+								role="textbox"
+								tabIndex={0}
+								aria-label="Crédito"
+								data-placeholder="Crédito (ex: Foto de Fulano)"
+								onFocus={onFocusBlock}
+								onInput={(event) =>
+									onChange({ credit: event.currentTarget.textContent ?? "" } as Partial<EditorialBlock>)
+								}
+								onPaste={(event) => {
+									event.preventDefault();
+									const text = event.clipboardData.getData("text/plain");
+									document.execCommand("insertText", false, text);
+								}}
+							>
+								{block.credit ?? ""}
+							</div>
+						) : null}
 						{shapePicker}
 					</div>
 				</div>

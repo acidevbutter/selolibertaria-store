@@ -40,8 +40,12 @@ function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" 
 				unoptimized
 				className="h-auto w-full object-cover"
 			/>
-			{block.caption ? (
-				<figcaption className="mt-2 text-xs text-[color:var(--editorial-muted)]">{block.caption}</figcaption>
+			{block.caption || block.credit ? (
+				<figcaption className="mt-2 text-xs text-[color:var(--editorial-muted)]">
+					{block.caption}
+					{block.caption && block.credit ? " " : null}
+					{block.credit ? <span className="opacity-70">{block.credit}</span> : null}
+				</figcaption>
 			) : null}
 		</figure>
 	);
@@ -69,9 +73,11 @@ function BlockGallery({ block }: { block: Extract<EditorialBlock, { type: "galle
 							unoptimized
 							className="h-auto w-full object-cover"
 						/>
-						{image.caption ? (
+						{image.caption || image.credit ? (
 							<figcaption className="mt-1 text-xs text-[color:var(--editorial-muted)]">
 								{image.caption}
+								{image.caption && image.credit ? " " : null}
+								{image.credit ? <span className="opacity-70">{image.credit}</span> : null}
 							</figcaption>
 						) : null}
 					</figure>
@@ -176,9 +182,12 @@ export function EditorialBlocksRenderer({
 	if (doc.length === 0) return null;
 
 	return (
-		<div className={cn("space-y-5 clear-both", className)}>
+		<div className={cn("flex flex-wrap gap-5", className)}>
 			{doc.map((block) => (
-				<div key={block.id} className="clear-both">
+				<div
+					key={block.id}
+					className={cn("clear-both", block.width === "half" ? "w-full sm:w-[calc(50%-10px)]" : "w-full")}
+				>
 					{renderBlock(block)}
 				</div>
 			))}
