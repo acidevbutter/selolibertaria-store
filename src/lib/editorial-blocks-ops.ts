@@ -102,6 +102,39 @@ export function convertTextBlockLevel(
 	});
 }
 
+/** Drops `fromId`'s block where `toId`'s block currently sits, shifting the rest — the semantic a drag-and-drop reorder needs. */
+export function reorderBlock(doc: EditorialContentDoc, fromId: string, toId: string): EditorialContentDoc {
+	if (fromId === toId) return doc;
+	const fromIndex = doc.findIndex((block) => block.id === fromId);
+	const toIndex = doc.findIndex((block) => block.id === toId);
+	if (fromIndex === -1 || toIndex === -1) return doc;
+	const next = [...doc];
+	const [moved] = next.splice(fromIndex, 1) as [EditorialBlock];
+	next.splice(toIndex, 0, moved);
+	return next;
+}
+
+/**
+ * Drops a dragged block at `targetIndex` — the "insert before this position"
+ * semantic the canvas's drop guide already computes (above/below a block's
+ * vertical midpoint). Accounts for the removal shifting later indices down
+ * by one, so dropping "before index 3" lands the block there regardless of
+ * which side of the list it was dragged from.
+ */
+export function moveBlockToIndex(
+	doc: EditorialContentDoc,
+	id: string,
+	targetIndex: number,
+): EditorialContentDoc {
+	const fromIndex = doc.findIndex((block) => block.id === id);
+	if (fromIndex === -1) return doc;
+	const next = [...doc];
+	const [moved] = next.splice(fromIndex, 1) as [EditorialBlock];
+	const adjusted = fromIndex < targetIndex ? targetIndex - 1 : targetIndex;
+	next.splice(Math.max(0, Math.min(adjusted, next.length)), 0, moved);
+	return next;
+}
+
 export function updateBlock<T extends EditorialBlock>(
 	doc: EditorialContentDoc,
 	id: string,
