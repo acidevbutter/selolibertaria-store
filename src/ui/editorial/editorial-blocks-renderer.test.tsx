@@ -86,4 +86,42 @@ describe("EditorialBlocksRenderer", () => {
 		const { container } = render(<EditorialBlocksRenderer doc={[]} />);
 		expect(container).toBeEmptyDOMElement();
 	});
+
+	it('skips an image block with an empty src instead of passing "" to next/image', () => {
+		const docWithEmptyImage: EditorialContentDoc = [
+			{ id: "b1", type: "heading", level: 2, text: "Título" },
+			{
+				id: "b2",
+				type: "image",
+				assetId: "",
+				cropId: null,
+				src: "",
+				layout: "wide",
+				align: null,
+				caption: null,
+				href: null,
+				alt: null,
+			},
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={docWithEmptyImage} />);
+		expect(container.querySelector("h2")).toHaveTextContent("Título");
+		expect(container.querySelector("img")).toBeNull();
+		expect(container.querySelector("figure")).toBeNull();
+	});
+
+	it("skips a gallery image with an empty src while keeping the rest", () => {
+		const docWithPartialGallery: EditorialContentDoc = [
+			{
+				id: "b1",
+				type: "gallery",
+				images: [
+					{ assetId: "a1", cropId: null, src: "https://cdn.example.com/a1.jpg", caption: null, alt: null },
+					{ assetId: "", cropId: null, src: "", caption: null, alt: null },
+				],
+			},
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={docWithPartialGallery} />);
+		expect(container.querySelectorAll("img")).toHaveLength(1);
+		expect(container.querySelector("img")).toHaveAttribute("src", "https://cdn.example.com/a1.jpg");
+	});
 });
