@@ -4,19 +4,9 @@ import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
-import { SlButton } from "@/ui/sl/sl-button";
 
 export const dynamic = "force-dynamic";
 
-const fieldClassName =
-	"h-10 w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
-const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
 const PAGE_SIZE = 25;
 
 type SearchParams = { q?: string | string[]; page?: string | string[] };
@@ -82,59 +72,33 @@ export default async function AdminMediaPage({ searchParams }: { searchParams?: 
 	const nextHref = page * PAGE_SIZE < total ? buildPageHref({ q, page: page + 1 }) : null;
 
 	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Mídia"
-				title="Biblioteca de mídia"
-				description="Reveja o que já foi enviado antes de subir uma imagem nova."
-				actions={
-					<div className="w-full max-w-2xl border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4">
-						<form method="get" className="flex flex-wrap items-end gap-3">
-							<div className="min-w-[220px] flex-1">
-								<label htmlFor="media-search" className="mb-2 block text-sm text-[var(--sl-text-muted)]">
-									Buscar por nome do arquivo ou descrição
-								</label>
-								<input
-									id="media-search"
-									name="q"
-									defaultValue={q}
-									placeholder="capa-evento.png, sarau..."
-									className={fieldClassName}
-									style={fieldStyle}
-								/>
-							</div>
-							<div className="flex flex-wrap gap-2">
-								<SlButton type="submit" variant="primary">
-									Buscar
-								</SlButton>
-								<SlButton href="/admin/media" variant="secondary">
-									Limpar
-								</SlButton>
-							</div>
-						</form>
-					</div>
-				}
-			/>
-			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Arquivos" value={total} helper="Resultados do filtro atual." />
-				<AdminEditorialStat
-					label="Espaço nesta página"
-					value={formatBytes(totalBytes)}
-					helper={`Somado entre os ${items.length} itens exibidos.`}
-				/>
-				<AdminEditorialStat
-					label="Envio de imagens"
-					value="Pelos formulários"
-					helper="Envie imagens diretamente no editorial ou no produto; elas aparecem aqui automaticamente."
-				/>
+		<>
+			<div className="ad-head">
+				<h1>Biblioteca de mídia</h1>
+				<span className="ad-meta">
+					{total} arquivo(s) · {formatBytes(totalBytes)} nesta página
+				</span>
 			</div>
-			<EditorialPanel className="p-0">
-				<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
-					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-						Arquivos enviados
-					</div>
+
+			<form method="get" className="ad-filters" style={{ gap: 10 }}>
+				<label htmlFor="media-search" className="ad-ml" style={{ display: "none" }}>
+					Buscar por nome do arquivo ou descrição
+				</label>
+				<div className="ad-field" style={{ flex: "1 1 260px" }}>
+					<input id="media-search" name="q" defaultValue={q} placeholder="capa-evento.png, sarau..." />
 				</div>
-				<div className="space-y-4 p-6 sm:p-8">
+				<button type="submit" className="ad-btn ad-pri">
+					Buscar
+				</button>
+				{q ? (
+					<a className="ad-btn ad-sec" href="/admin/media">
+						Limpar
+					</a>
+				) : null}
+			</form>
+
+			<div className="ad-panel">
+				<div style={{ padding: 20 }}>
 					<MediaLibraryGrid
 						items={items.map((item) => ({
 							id: item.id,
@@ -149,27 +113,27 @@ export default async function AdminMediaPage({ searchParams }: { searchParams?: 
 							),
 						}))}
 					/>
-
-					<div className="flex flex-col gap-3 border-t border-[var(--sl-line)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-						<p className="text-sm text-[var(--sl-text-muted)]">
-							Mostrando {items.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0} -{" "}
-							{(page - 1) * PAGE_SIZE + items.length} de {total} arquivo(s).
-						</p>
-						<div className="flex items-center gap-2">
-							{previousHref ? (
-								<SlButton href={previousHref} variant="secondary" size="sm">
-									Anterior
-								</SlButton>
-							) : null}
-							{nextHref ? (
-								<SlButton href={nextHref} variant="secondary" size="sm">
-									Próximo
-								</SlButton>
-							) : null}
-						</div>
-					</div>
 				</div>
-			</EditorialPanel>
-		</AdminEditorialPage>
+
+				<div className="ad-foot">
+					<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
+						Mostrando {items.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0} -{" "}
+						{(page - 1) * PAGE_SIZE + items.length} de {total} arquivo(s)
+					</span>
+					<span style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+						{previousHref ? (
+							<a className="ad-btn ad-sec" href={previousHref}>
+								Anterior
+							</a>
+						) : null}
+						{nextHref ? (
+							<a className="ad-btn ad-sec" href={nextHref}>
+								Próximo
+							</a>
+						) : null}
+					</span>
+				</div>
+			</div>
+		</>
 	);
 }

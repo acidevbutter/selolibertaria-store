@@ -58,15 +58,15 @@ export default async function AdminEditorialIndexPage() {
 		]);
 
 	const rows: PageRow[] = [
-		{ title: "Home", href: "/admin/editorial/home", record: home },
-		{ title: "Loja", href: "/admin/editorial/products", record: productsPage },
-		{ title: "Página do produto", href: "/admin/editorial/pagina-do-produto", record: productPage },
-		{ title: "Eventos", href: "/admin/editorial/events", record: eventsPage },
-		{ title: "Projetos", href: "/admin/editorial/projects", record: projectsPage },
-		{ title: "Sobre", href: "/admin/editorial/about", record: about },
-		{ title: "Contato", href: "/admin/editorial/contact", record: contact },
-		{ title: "Sarau Safado", href: "/admin/editorial/sarau-safado", record: sarau },
-		{ title: "Newsletter e rodapé", href: "/admin/editorial/global", record: globalPage },
+		{ title: "Home", href: "/admin/editorial/blocos/home", record: home },
+		{ title: "Loja", href: "/admin/editorial/blocos/products", record: productsPage },
+		{ title: "Página do produto", href: "/admin/editorial/blocos/product", record: productPage },
+		{ title: "Eventos", href: "/admin/editorial/blocos/events", record: eventsPage },
+		{ title: "Projetos", href: "/admin/editorial/blocos/projects", record: projectsPage },
+		{ title: "Sobre", href: "/admin/editorial/blocos/about", record: about },
+		{ title: "Contato", href: "/admin/editorial/blocos/contact", record: contact },
+		{ title: "Sarau Safado", href: "/admin/editorial/blocos/sarau-safado", record: sarau },
+		{ title: "Newsletter e rodapé", href: "/admin/editorial/blocos/public-global", record: globalPage },
 	];
 
 	const drafts = rows.filter((row) => !row.record?.published).length;
@@ -81,9 +81,6 @@ export default async function AdminEditorialIndexPage() {
 				<div className="ad-acts">
 					<Link className="ad-btn ad-sec" href="/">
 						Ver o site
-					</Link>
-					<Link className="ad-btn ad-pri" href="/admin/editorial/blocos">
-						Editor de blocos
 					</Link>
 				</div>
 			</div>
