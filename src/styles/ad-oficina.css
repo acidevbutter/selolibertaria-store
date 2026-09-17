@@ -642,6 +642,26 @@
 .ad-root .ad-blk:hover .ad-bbar {
 	display: inline-flex;
 }
+.ad-root .ad-blk-add {
+	position: absolute;
+	left: 50%;
+	bottom: -14px;
+	transform: translateX(-50%);
+	width: 24px;
+	height: 24px;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	background: var(--ad-ink);
+	color: var(--ad-on-shell);
+	border: 0;
+	font-size: 15px;
+	line-height: 1;
+	z-index: 4;
+}
+.ad-root .ad-blk:hover .ad-blk-add {
+	display: inline-flex;
+}
 .ad-root .ad-guide {
 	position: relative;
 	width: 100%;
