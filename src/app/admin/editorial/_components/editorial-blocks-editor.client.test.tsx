@@ -220,6 +220,46 @@ describe("EditorialBlocksEditor", () => {
 		expect(wrapper()).toHaveStyle({ width: "440px", marginInline: "auto" });
 	});
 
+	it("fills an existing empty image block instead of inserting a new one when a file lands on it", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ url: "https://cdn.example/real.jpg", publicId: "abc123" }), {
+				status: 200,
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+		URL.createObjectURL = vi.fn(() => "blob:mock");
+
+		const initial: EditorialContentDoc = [
+			{ id: "a", type: "paragraph", text: "primeiro parágrafo" },
+			{
+				id: "img",
+				type: "image",
+				assetId: "",
+				cropId: null,
+				src: "",
+				layout: "wide",
+				align: null,
+				caption: null,
+				href: null,
+				alt: null,
+			},
+		];
+		const { container } = render(<EditorialBlocksEditor name="content" initialDoc={initial} />);
+		const emptyImageBlock = container.querySelectorAll(".ad-blk")[1] as HTMLElement;
+		const file = new File(["fake"], "photo.png", { type: "image/png" });
+
+		fireEvent.dragOver(emptyImageBlock);
+		expect(screen.getByText("Solte para usar nesta imagem")).toBeInTheDocument();
+
+		fireEvent.drop(emptyImageBlock, { dataTransfer: { files: [file] } });
+
+		await waitFor(() => {
+			const next = hiddenValue(container, "content");
+			expect(next).toHaveLength(2);
+			expect(next[1]).toMatchObject({ id: "img", src: "https://cdn.example/real.jpg", assetId: "abc123" });
+		});
+	});
+
 	it("toggles a block between full row and half row, side by side in the canvas", () => {
 		const { container } = render(
 			<EditorialBlocksEditor
