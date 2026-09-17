@@ -71,11 +71,6 @@ export function hasCapability(role: string | null | undefined, capability: Capab
 	return getRoleCapabilities(role).includes(capability);
 }
 
-export function isInternalOperatorRole(role?: string | null): boolean {
-	const normalized = normalizeUserRole(role);
-	return normalized === "admin" || normalized === "vendor";
-}
-
 export function isBackofficeRole(role?: string | null): boolean {
 	return hasCapability(role, "admin.access");
 }
@@ -89,6 +84,3 @@ export function isUserBlocked(
 ): boolean {
 	return Boolean(user?.access?.blockedAt);
 }
-
-// Compatibility alias for legacy importers that used a different casing
-export const canBuyOnselolibertaria = canBuyOnSelolibertaria;

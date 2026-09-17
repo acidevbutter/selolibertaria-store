@@ -28,7 +28,3 @@ export function getDefaultCurrencyForLocale(
 	if (normalized.startsWith("es")) return "EUR";
 	return "USD";
 }
-
-export function getCurrencyLabel(currency: SupportedCurrency) {
-	return CURRENCY_OPTIONS.find((option) => option.code === currency)?.label ?? currency;
-}

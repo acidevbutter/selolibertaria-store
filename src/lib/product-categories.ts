@@ -45,10 +45,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 	return (await response.json()) as T;
 }
 
-export async function syncSystemCategoriesFromCatalog() {
-	return 0;
-}
-
 export async function listSystemCategories(_options: { syncCatalog?: boolean } = {}) {
 	const categories = await request<FastApiCategory[]>("/catalog/categories/");
 	return categories.map(toCategory);

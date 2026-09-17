@@ -1,8 +1,7 @@
 import "server-only";
 
-import { createHash, randomBytes } from "crypto";
 import { env, publicUrl } from "@/env.mjs";
-import { OAUTH_PROVIDER_DEFINITIONS, type OAuthProviderId } from "@/lib/oauth/catalog";
+import type { OAuthProviderId } from "@/lib/oauth/catalog";
 
 export type OAuthProfile = {
 	provider: OAuthProviderId;
@@ -13,39 +12,8 @@ export type OAuthProfile = {
 	avatarUrl?: string | null;
 };
 
-export function createOAuthState() {
-	return randomBytes(24).toString("hex");
-}
-
-export function createPkcePair() {
-	const verifier = randomBytes(48).toString("base64url");
-	const challenge = createHash("sha256").update(verifier).digest("base64url");
-	return { verifier, challenge };
-}
-
 export function getOAuthCallbackUrl(providerId: OAuthProviderId) {
 	return `${publicUrl}/api/auth/oauth/${providerId}/callback`;
-}
-
-export function buildAuthorizationUrl(
-	providerId: OAuthProviderId,
-	options: { state: string; codeChallenge?: string },
-) {
-	const provider = OAUTH_PROVIDER_DEFINITIONS[providerId];
-	const url = new URL(provider.authorizationUrl);
-	url.searchParams.set("client_id", "");
-	url.searchParams.set("redirect_uri", getOAuthCallbackUrl(providerId));
-	url.searchParams.set("response_type", "code");
-	url.searchParams.set("scope", provider.defaultScopes.join(" "));
-	url.searchParams.set("state", options.state);
-	if (providerId === "google" && options.codeChallenge) {
-		url.searchParams.set("access_type", "online");
-		url.searchParams.set("include_granted_scopes", "true");
-		url.searchParams.set("prompt", "select_account");
-		url.searchParams.set("code_challenge", options.codeChallenge);
-		url.searchParams.set("code_challenge_method", "S256");
-	}
-	return url;
 }
 
 export async function exchangeCodeForProfile(input: {

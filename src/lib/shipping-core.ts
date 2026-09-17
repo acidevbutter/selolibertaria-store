@@ -2,7 +2,6 @@ import type {
 	ShippingProviderEnvironment,
 	ShippingProviderMode,
 	ShippingProviderSettings,
-	ShippingProvidersSettings,
 } from "@/lib/settings";
 import { getShippingProviderPreset } from "@/lib/shipping-provider-presets";
 
@@ -240,10 +239,4 @@ export function toShippingRate(quote: ShippingQuote | null): ShippingRate | null
 		estimated_days: quote.estimatedDays,
 		quotedAt: quote.quotedAt ?? null,
 	};
-}
-
-export function sortShippingProviders(providers: ShippingProvidersSettings) {
-	return [...providers].sort(
-		(a, b) => (a.priority ?? 0) - (b.priority ?? 0) || a.label.localeCompare(b.label),
-	);
 }

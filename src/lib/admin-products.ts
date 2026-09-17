@@ -150,8 +150,4 @@ export function getCatalogCurrency() {
 	return parseCurrencyCode(null, env.CATALOG_CURRENCY || "BRL");
 }
 
-export function toPriceDecimal(amount: number | null, currency: string) {
-	return typeof amount === "number" ? getDecimalFromMinorAmount({ amount, currency }) : null;
-}
-
 import { env } from "@/env.mjs";

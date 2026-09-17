@@ -21,17 +21,11 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
 	{ code: "CO", name: "Colombia", dialCode: "+57", postalLabel: "Postal code" },
 ];
 
-export const COUNTRY_CODES = COUNTRY_OPTIONS.map((country) => country.code);
-
 export function getCountryOption(code: string | undefined | null) {
 	return (
 		COUNTRY_OPTIONS.find((country) => country.code === String(code || "").toUpperCase()) ??
 		COUNTRY_OPTIONS[0]!
 	);
-}
-
-export function findCountriesByDialCode(dialCode: string) {
-	return COUNTRY_OPTIONS.filter((country) => country.dialCode === dialCode);
 }
 
 export function getCountryFlag(code: string) {
@@ -122,12 +116,6 @@ export function formatNationalPhone(countryCode: string, digits: string) {
 	}
 }
 
-export function formatInternationalPhone(countryCode: string, digits: string) {
-	const country = getCountryOption(countryCode);
-	const national = formatNationalPhone(country.code, digits);
-	return national ? `${country.dialCode} ${national}` : country.dialCode;
-}
-
 export function normalizePostalCode(countryCode: string, raw: string) {
 	const value = raw.toUpperCase().trim();
 	switch (countryCode.toUpperCase()) {
@@ -162,51 +150,5 @@ export function normalizePhoneParts(countryCode: string, rawNational: string) {
 		national,
 		e164,
 		display: national ? `${country.dialCode} ${formatNationalPhone(country.code, national)}` : "",
-	};
-}
-
-export function parsePhoneInput(rawInput: string, fallbackCountryCode: string) {
-	const fallbackCountry = getCountryOption(fallbackCountryCode);
-	const trimmed = rawInput.trim();
-	if (!trimmed) return normalizePhoneParts(fallbackCountry.code, "");
-
-	if (!trimmed.startsWith("+")) {
-		return normalizePhoneParts(fallbackCountry.code, trimmed);
-	}
-
-	const digits = trimmed.slice(1).replace(/\D+/g, "");
-	if (!digits) {
-		return {
-			...normalizePhoneParts(fallbackCountry.code, ""),
-			display: "+",
-		};
-	}
-
-	const exactMatches = COUNTRY_OPTIONS.filter((country) =>
-		digits.startsWith(country.dialCode.replace(/\D+/g, "")),
-	).sort((a, b) => b.dialCode.replace(/\D+/g, "").length - a.dialCode.replace(/\D+/g, "").length);
-
-	if (exactMatches.length > 0) {
-		const matched =
-			exactMatches.find((country) => country.code === fallbackCountry.code) ??
-			exactMatches[0] ??
-			fallbackCountry;
-		const dialDigits = matched.dialCode.replace(/\D+/g, "");
-		return normalizePhoneParts(matched.code, digits.slice(dialDigits.length));
-	}
-
-	const possibleMatches = COUNTRY_OPTIONS.filter((country) =>
-		country.dialCode.replace(/\D+/g, "").startsWith(digits),
-	);
-	if (possibleMatches.length === 1) {
-		return {
-			...normalizePhoneParts(possibleMatches[0]!.code, ""),
-			display: `+${digits}`,
-		};
-	}
-
-	return {
-		...normalizePhoneParts(fallbackCountry.code, digits),
-		display: `+${digits}`,
 	};
 }
