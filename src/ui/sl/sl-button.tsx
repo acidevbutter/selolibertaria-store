@@ -66,7 +66,7 @@ export function SlButton({
 		);
 	}
 
-	const buttonProps = rest as ButtonProps;
+	const { href: _href, ...buttonProps } = rest as ButtonProps & { href?: string };
 	return (
 		<button type={buttonProps.type ?? "button"} className={classes} style={mergedStyle} {...buttonProps}>
 			{children}

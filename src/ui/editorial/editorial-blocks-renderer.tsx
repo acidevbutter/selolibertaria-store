@@ -1,5 +1,10 @@
 import Image from "next/image";
-import type { EditorialBlock, EditorialContentDoc } from "@/lib/editorial-blocks";
+import {
+	cropWindowStyle,
+	decodeCropId,
+	type EditorialBlock,
+	type EditorialContentDoc,
+} from "@/lib/editorial-blocks";
 import { cn } from "@/lib/utils";
 import { renderInline } from "@/ui/editorial/editorial-rich-text";
 import { SlButton } from "@/ui/sl/sl-button";
@@ -30,16 +35,31 @@ function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" 
 				? "sm:float-left sm:mr-6"
 				: "sm:float-right sm:ml-6"
 			: "";
+	const cropRect = decodeCropId(block.cropId);
 	const figure = (
 		<figure className={cn("my-6", imageLayoutClass[block.layout], sideFloat)}>
-			<Image
-				src={block.src}
-				alt={block.alt ?? ""}
-				width={1200}
-				height={800}
-				unoptimized
-				className="h-auto w-full object-cover"
-			/>
+			{cropRect ? (
+				<div className="relative w-full overflow-hidden" style={{ aspectRatio: cropRect.ratio }}>
+					<Image
+						src={block.src}
+						alt={block.alt ?? ""}
+						fill
+						unoptimized
+						sizes="(min-width: 640px) 50vw, 100vw"
+						className="object-cover"
+						style={cropWindowStyle(cropRect)}
+					/>
+				</div>
+			) : (
+				<Image
+					src={block.src}
+					alt={block.alt ?? ""}
+					width={1200}
+					height={800}
+					unoptimized
+					className="h-auto w-full object-cover"
+				/>
+			)}
 			{block.caption || block.credit ? (
 				<figcaption className="mt-2 text-xs text-[color:var(--editorial-muted)]">
 					{block.caption}
@@ -138,10 +158,12 @@ function renderBlock(block: EditorialBlock) {
 		case "gallery":
 			return <BlockGallery block={block} />;
 		case "button":
-			return (
+			return block.href ? (
 				<SlButton href={block.href} variant={block.variant === "secondary" ? "secondary" : "primary"}>
 					{block.label}
 				</SlButton>
+			) : (
+				<SlButton variant={block.variant === "secondary" ? "secondary" : "primary"}>{block.label}</SlButton>
 			);
 		case "divider":
 			return <hr className="border-t border-[color:var(--editorial-border)]" />;

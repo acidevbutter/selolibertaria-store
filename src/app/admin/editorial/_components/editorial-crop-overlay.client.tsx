@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { cropWindowStyle, encodeCropId } from "@/lib/editorial-blocks";
 
 /** Named ratios (§5.2). The frame changes shape with the chip. */
 const RATIOS = [
@@ -15,8 +16,26 @@ type Frame = { left: number; top: number; width: number; height: number };
 
 const INITIAL_FRAME: Frame = { left: 8, top: 12, width: 84, height: 62 };
 
+/** The stage is a fixed box regardless of ratio -- the canvas is letterboxed
+ *  to fit inside it, so switching chips never reflows the rest of the modal. */
+const STAGE_BOX = { width: 420, height: 420 };
+
 function clamp(value: number, min: number, max: number) {
 	return Math.min(Math.max(value, min), max);
+}
+
+function parseRatio(id: string): number {
+	const parts = id.split("/");
+	return Number(parts[0] ?? 1) / Number(parts[1] ?? 1);
+}
+
+/** Contain-fits a `ratio`-shaped canvas inside the fixed stage box. */
+function fitCanvas(ratio: string): { width: number; height: number } {
+	const target = parseRatio(ratio);
+	const box = STAGE_BOX.width / STAGE_BOX.height;
+	return target > box
+		? { width: STAGE_BOX.width, height: STAGE_BOX.width / target }
+		: { width: STAGE_BOX.height * target, height: STAGE_BOX.height };
 }
 
 /**
@@ -29,6 +48,7 @@ function clamp(value: number, min: number, max: number) {
  */
 export function EditorialCropOverlay({
 	open,
+	imageUrl,
 	fileName,
 	dimensions,
 	initialAlt,
@@ -37,6 +57,7 @@ export function EditorialCropOverlay({
 	onConfirm,
 }: {
 	open: boolean;
+	imageUrl?: string;
 	fileName: string;
 	dimensions: string;
 	initialAlt?: string;
@@ -48,6 +69,7 @@ export function EditorialCropOverlay({
 	const [frame, setFrame] = useState<Frame>(INITIAL_FRAME);
 	const [alt, setAlt] = useState(initialAlt ?? "");
 	const stageRef = useRef<HTMLDivElement>(null);
+	const canvas = useMemo(() => fitCanvas(ratio), [ratio]);
 	const dragRef = useRef<{
 		kind: "move" | "nw" | "ne" | "sw" | "se";
 		x: number;
@@ -119,7 +141,7 @@ export function EditorialCropOverlay({
 
 	return (
 		<div className={`ad-scrim${open ? " on" : ""}`}>
-			<div className="ad-modal" role="dialog" aria-label="Recortar imagem">
+			<div className="ad-modal ad-modal-crop" role="dialog" aria-label="Recortar imagem">
 				<div className="ad-mh">
 					<b>Recortar imagem</b>
 					<span className="ad-f">
@@ -136,27 +158,43 @@ export function EditorialCropOverlay({
 				</div>
 
 				<div className="ad-mb">
-					<div style={{ flex: "none", width: 260, display: "flex", flexDirection: "column", gap: 8 }}>
-						<div className="ad-crop" ref={stageRef} style={{ aspectRatio: ratio }}>
-							<span className="ad-dark" />
-							<div
-								className="ad-fr"
-								style={{
-									left: `${frame.left}%`,
-									top: `${frame.top}%`,
-									width: `${frame.width}%`,
-									height: `${frame.height}%`,
-								}}
-								onPointerDown={(event) => startDrag("move", event)}
-							>
-								{(["nw", "ne", "sw", "se"] as const).map((handle) => (
-									<span
-										key={handle}
-										className={`ad-h ad-${handle}`}
-										onPointerDown={(event) => startDrag(handle, event)}
-									/>
-								))}
-								<span className="ad-tag">Área visível</span>
+					<div
+						style={{
+							flex: "none",
+							width: STAGE_BOX.width,
+							display: "flex",
+							flexDirection: "column",
+							gap: 8,
+						}}
+					>
+						<div className="ad-crop-stage" style={{ width: STAGE_BOX.width, height: STAGE_BOX.height }}>
+							<div className="ad-crop" ref={stageRef} style={{ width: canvas.width, height: canvas.height }}>
+								{imageUrl ? <img className="ad-crop-bg" src={imageUrl} alt="" /> : null}
+								<span className="ad-dark" />
+								<div
+									className="ad-fr"
+									style={{
+										left: `${frame.left}%`,
+										top: `${frame.top}%`,
+										width: `${frame.width}%`,
+										height: `${frame.height}%`,
+									}}
+									onPointerDown={(event) => startDrag("move", event)}
+								>
+									{imageUrl ? (
+										<div className="ad-fr-window">
+											<img src={imageUrl} alt="" style={cropWindowStyle(frame)} />
+										</div>
+									) : null}
+									{(["nw", "ne", "sw", "se"] as const).map((handle) => (
+										<span
+											key={handle}
+											className={`ad-h ad-${handle}`}
+											onPointerDown={(event) => startDrag(handle, event)}
+										/>
+									))}
+									<span className="ad-tag">Área visível</span>
+								</div>
 							</div>
 						</div>
 						<p className="ad-doc-cap">Arraste a moldura para escolher o que aparece.</p>
@@ -222,7 +260,7 @@ export function EditorialCropOverlay({
 							className="ad-btn ad-pri"
 							onClick={() =>
 								onConfirm({
-									cropId: `${ratio.replace("/", "x")}-${Math.round(frame.left)}-${Math.round(frame.top)}-${Math.round(frame.width)}-${Math.round(frame.height)}`,
+									cropId: encodeCropId(ratio, frame),
 									alt,
 								})
 							}

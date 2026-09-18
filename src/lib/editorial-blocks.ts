@@ -167,3 +167,47 @@ export function parseEditorialContentDoc(value: unknown): EditorialContentDoc | 
 	const result = editorialContentDocSchema.safeParse(value);
 	return result.success ? result.data : null;
 }
+
+/** The visible sub-rectangle of a photo, in percent of the photo's displayed (cover-fit) size. */
+export type EditorialCropRect = { ratio: string; left: number; top: number; width: number; height: number };
+
+const CROP_ID_PATTERN = /^(\d+)x(\d+)-(-?\d+)-(-?\d+)-(\d+)-(\d+)$/;
+
+/** Inverse of `encodeCropId` -- both live here so the crop UI and every renderer read the same shape. */
+export function encodeCropId(ratio: string, rect: Omit<EditorialCropRect, "ratio">): string {
+	return `${ratio.replace("/", "x")}-${Math.round(rect.left)}-${Math.round(rect.top)}-${Math.round(rect.width)}-${Math.round(rect.height)}`;
+}
+
+export function decodeCropId(cropId: string | null | undefined): EditorialCropRect | null {
+	if (!cropId) return null;
+	const match = CROP_ID_PATTERN.exec(cropId);
+	if (!match) return null;
+	const [, ratioW, ratioH, left, top, width, height] = match;
+	return {
+		ratio: `${ratioW}/${ratioH}`,
+		left: Number(left),
+		top: Number(top),
+		width: Number(width),
+		height: Number(height),
+	};
+}
+
+/**
+ * CSS for an <img> that fills a `{ratio}`-shaped, `overflow: hidden` box with
+ * exactly the `rect` sub-region of the photo: the image is scaled up by the
+ * inverse of the rect's own size and shifted so that region lands in view.
+ * No distortion -- the math cancels back to the photo's own displayed size.
+ */
+export function cropWindowStyle(rect: Omit<EditorialCropRect, "ratio">): {
+	width: string;
+	height: string;
+	left: string;
+	top: string;
+} {
+	return {
+		width: `${10000 / rect.width}%`,
+		height: `${10000 / rect.height}%`,
+		left: `${(-rect.left / rect.width) * 100}%`,
+		top: `${(-rect.top / rect.height) * 100}%`,
+	};
+}

@@ -7,9 +7,15 @@ import {
 	type EditorialPageType,
 	type PublishState,
 	publishEditorialDraftAction,
+	saveEditorialDraftAction,
 } from "@/app/admin/editorial/blocks-actions";
 import type { EditorialBlock, EditorialBlockWidth, EditorialContentDoc } from "@/lib/editorial-blocks";
-import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
+import {
+	cropWindowStyle,
+	decodeCropId,
+	EDITORIAL_BLOCK_TYPES,
+	type EditorialBlockType,
+} from "@/lib/editorial-blocks";
 import {
 	EDITORIAL_BLOCKS_HISTORY_LIMIT,
 	type EditorialBlocksHistory,
@@ -112,10 +118,6 @@ function normalize(value: string) {
 		.toLowerCase();
 }
 
-function savedAtLabel(date: Date) {
-	return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
-
 export function EditorialBlocksEditor({
 	name,
 	initialDoc,
@@ -141,7 +143,8 @@ export function EditorialBlocksEditor({
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
 	const [dropTargetBlockId, setDropTargetBlockId] = useState<string | null>(null);
 	const [savedAt, setSavedAt] = useState<string | null>(null);
-	const [saving, setSaving] = useState(true);
+	const [saving, setSaving] = useState(false);
+	const [saveError, setSaveError] = useState<string | null>(null);
 	const [cropBlockId, setCropBlockId] = useState<string | null>(null);
 	const [shapeBlockId, setShapeBlockId] = useState<string | null>(null);
 	const [heavyImage, setHeavyImage] = useState<string | null>(null);
@@ -158,6 +161,8 @@ export function EditorialBlocksEditor({
 	);
 	const doc = state.doc;
 	const docRef = useRef(doc);
+	const hasMountedRef = useRef(false);
+	const saveTokenRef = useRef(0);
 	const imageCount = doc.reduce(
 		(total, node) => total + (node.type === "image" ? 1 : node.type === "gallery" ? node.images.length : 0),
 		0,
@@ -210,15 +215,32 @@ export function EditorialBlocksEditor({
 		}
 	}
 
-	// Autosave writes the draft only, on a debounce. No spinner over the text.
+	/** Autosave writes the draft to the backend (not just a local timer) on a
+	 *  debounce, so a closed tab never silently loses unpublished edits.
+	 *  `contentType === "page"` is the component's demo/standalone default —
+	 *  there's no real record behind it, so autosave is a no-op there. */
 	useEffect(() => {
+		if (!hasMountedRef.current) {
+			hasMountedRef.current = true;
+			return;
+		}
+		if (contentType === "page") return;
+		const type = contentType;
+		const token = ++saveTokenRef.current;
 		setSaving(true);
-		const timer = window.setTimeout(() => {
+		setSaveError(null);
+		const timer = window.setTimeout(async () => {
+			const result = await saveEditorialDraftAction(type, slug, docRef.current);
+			if (saveTokenRef.current !== token) return;
 			setSaving(false);
-			setSavedAt(savedAtLabel(new Date()));
+			if (result.status === "saved") {
+				setSavedAt(result.savedAt);
+			} else {
+				setSaveError(result.message);
+			}
 		}, 800);
 		return () => window.clearTimeout(timer);
-	}, [doc]);
+	}, [doc, contentType, slug]);
 
 	useEffect(() => {
 		if (pickerAnchor !== null) pickerInputRef.current?.focus();
@@ -637,8 +659,17 @@ export function EditorialBlocksEditor({
 							}}
 						/>
 					) : null}
-					<span className="ad-mono" style={{ fontSize: 12, color: "var(--ad-text-soft)" }}>
-						{saving || !savedAt ? "Salvando…" : `Rascunho salvo às ${savedAt}`}
+					<span
+						className="ad-mono"
+						style={{ fontSize: 12, color: saveError ? "var(--ad-wine)" : "var(--ad-text-soft)" }}
+					>
+						{saveError
+							? saveError
+							: saving
+								? "Salvando…"
+								: savedAt
+									? `Rascunho salvo às ${savedAt}`
+									: "Nenhuma alteração ainda"}
 					</span>
 					<span style={{ fontSize: 14, color: "rgba(11,11,11,.6)" }}>só vai ao ar quando você publicar</span>
 					<span style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
@@ -718,6 +749,9 @@ export function EditorialBlocksEditor({
 
 			<EditorialCropOverlay
 				open={cropBlockId !== null}
+				imageUrl={
+					(doc.find((item) => item.id === cropBlockId) as { src?: string } | undefined)?.src ?? undefined
+				}
 				fileName={
 					(doc.find((item) => item.id === cropBlockId) as { assetId?: string } | undefined)?.assetId ??
 					"imagem"
@@ -1116,6 +1150,7 @@ function BlockRow({
 	);
 
 	const isEmptyImage = block.type === "image" && !block.src;
+	const cropRect = block.type === "image" ? decodeCropId(block.cropId) : null;
 
 	return (
 		<div
@@ -1193,7 +1228,7 @@ function BlockRow({
 								style={{
 									position: "relative",
 									width: "100%",
-									aspectRatio: "4 / 3",
+									aspectRatio: cropRect?.ratio ?? "4 / 3",
 									overflow: "hidden",
 									background: "var(--ad-sand)",
 								}}
@@ -1202,7 +1237,16 @@ function BlockRow({
 								<img
 									src={block.src}
 									alt={block.alt ?? ""}
-									style={{ width: "100%", height: "100%", objectFit: "cover", opacity: uploading ? 0.5 : 1 }}
+									style={
+										cropRect
+											? {
+													position: "absolute",
+													...cropWindowStyle(cropRect),
+													objectFit: "cover",
+													opacity: uploading ? 0.5 : 1,
+												}
+											: { width: "100%", height: "100%", objectFit: "cover", opacity: uploading ? 0.5 : 1 }
+									}
 								/>
 								{uploading ? (
 									<span
