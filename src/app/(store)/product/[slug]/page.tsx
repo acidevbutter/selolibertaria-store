@@ -8,6 +8,7 @@ import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import type { YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProductPage } from "@/lib/editorial-content-store";
 import { isFavorite } from "@/lib/favorites";
 import { buildSlProductRows } from "@/lib/sl-catalog";
@@ -33,8 +34,9 @@ export const generateMetadata = async (props: { params: Promise<{ slug: string }
 
 	if (!product) {
 		return {
-			title: `${pageContent.notFound?.title || "Produto não encontrado"} · Selo Libertária`,
+			title: `${blockText(pageContent.contentDoc, "product-notfound-title") || pageContent.notFound?.title || "Produto não encontrado"} · Selo Libertária`,
 			description:
+				blockText(pageContent.contentDoc, "product-notfound-body") ||
 				pageContent.notFound?.body ||
 				"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo.",
 		};
@@ -69,16 +71,21 @@ export default async function SingleProductPage(props: {
 					<div className="flex flex-col gap-5">
 						<p className="sl-eyebrow m-0 text-[color:var(--sl-text-on-ink-label)]">Catálogo</p>
 						<h1 className="sl-head m-0 text-[clamp(40px,7vw,var(--sl-size-hero-md))] leading-[0.92]">
-							{pageContent.notFound?.title || "Produto não encontrado"}
+							{blockText(pageContent.contentDoc, "product-notfound-title") ||
+								pageContent.notFound?.title ||
+								"Produto não encontrado"}
 						</h1>
 						<p className="m-0 max-w-2xl text-[16px] leading-[1.8] text-[color:var(--sl-text-on-ink-muted)]">
-							{pageContent.notFound?.body ||
+							{blockText(pageContent.contentDoc, "product-notfound-body") ||
+								pageContent.notFound?.body ||
 								"Este título não está disponível agora. Continue pelo catálogo ou fale com o selo."}
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
 						<SlButton href={pageContent.notFound?.primaryCtaHref || "/products"} variant="buy">
-							{pageContent.notFound?.primaryCtaLabel || "Ver a loja"}
+							{blockText(pageContent.contentDoc, "product-notfound-cta-label") ||
+								pageContent.notFound?.primaryCtaLabel ||
+								"Ver a loja"}
 						</SlButton>
 						<SlButton href="/contact" variant="secondary" onInk>
 							Falar com o selo
