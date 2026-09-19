@@ -1,3 +1,4 @@
+import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialSiteGlobal } from "@/lib/editorial-content-store";
 import { listSystemCategoriesWithProducts } from "@/lib/product-categories";
 import { seloSiteMeta, seloSocialLinks } from "@/lib/selolibertaria-content";
@@ -28,21 +29,38 @@ export async function Footer() {
 			socialLinks={seloSocialLinks}
 			brandName={seloSiteMeta.name}
 			brandEmail={supportEmail || seloSiteMeta.email}
-			brandEyebrow={footer?.brandEyebrow || "Selo Libertária"}
+			brandEyebrow={
+				blockText(globalContent.contentDoc, "global-footer-brand-eyebrow") ||
+				footer?.brandEyebrow ||
+				"Selo Libertária"
+			}
 			brandDescription={
+				blockText(globalContent.contentDoc, "global-footer-brand-description") ||
 				footer?.brandDescription ||
 				"Livros, performances, oficinas e programação cultural reunidos em um mesmo site editorial."
 			}
-			newsletterTitle={newsletter?.title || "Receba lançamentos, saraus e textos do selo."}
+			newsletterTitle={
+				blockText(globalContent.contentDoc, "global-newsletter-title") ||
+				newsletter?.title ||
+				"Receba lançamentos, saraus e textos do selo."
+			}
 			newsletterDescription={
+				blockText(globalContent.contentDoc, "global-newsletter-description") ||
 				newsletter?.description ||
 				"Atualizações de livros, agenda e circulação editorial em um único campo público editável."
 			}
 			newsletterPlaceholder={newsletter?.placeholder || "seu@email.com"}
-			newsletterButtonLabel={newsletter?.buttonLabel || "Assinar"}
+			newsletterButtonLabel={
+				blockText(globalContent.contentDoc, "global-newsletter-button-label") ||
+				newsletter?.buttonLabel ||
+				"Assinar"
+			}
 			sections={[
 				{
-					header: footer?.catalogueTitle || "Loja",
+					header:
+						blockText(globalContent.contentDoc, "global-footer-catalogue-title") ||
+						footer?.catalogueTitle ||
+						"Loja",
 					links: [
 						{ label: "Catálogo", href: "/products" },
 						...dynamicCategories.map(({ name, slug }) => ({
@@ -52,7 +70,10 @@ export async function Footer() {
 					],
 				},
 				{
-					header: footer?.editorialTitle || "Editorial",
+					header:
+						blockText(globalContent.contentDoc, "global-footer-editorial-title") ||
+						footer?.editorialTitle ||
+						"Editorial",
 					links: [
 						{ label: "Projetos", href: "/projects" },
 						{ label: "Sarau Safado", href: "/sarau-safado" },
@@ -61,7 +82,10 @@ export async function Footer() {
 					],
 				},
 				{
-					header: footer?.supportTitle || "Suporte",
+					header:
+						blockText(globalContent.contentDoc, "global-footer-support-title") ||
+						footer?.supportTitle ||
+						"Suporte",
 					links: footer?.auxiliaryLinks
 						?.filter((link) => link.label && link.href)
 						.map((link) => ({
@@ -74,7 +98,11 @@ export async function Footer() {
 					],
 				},
 			]}
-			copyrightText={footer?.copyrightText || "Selo Libertária."}
+			copyrightText={
+				blockText(globalContent.contentDoc, "global-footer-copyright") ||
+				footer?.copyrightText ||
+				"Selo Libertária."
+			}
 			developedByLabel="Desenvolvido por"
 			paymentMethodsLabel="Métodos de pagamento aceitos"
 		/>

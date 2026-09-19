@@ -1,6 +1,7 @@
 import "server-only";
 
 import { env } from "@/env.mjs";
+import type { EditorialContentDoc } from "@/lib/editorial-blocks";
 import type { EditorialDocument } from "@/lib/editorial-content";
 import {
 	getMockEditorialAboutPage,
@@ -23,7 +24,12 @@ type FastApiEditorial = {
 	slug: string;
 	title: string;
 	content: Record<string, unknown>;
-	published: boolean;
+	/** Only the public list/detail routes serve this (from published_doc) -- see
+	 *  blocks-actions.ts for the admin-only draft_doc/published_doc pair. */
+	content_doc?: EditorialContentDoc | null;
+	/** Only the admin route serves this -- the public route already guarantees every
+	 *  returned row is published and doesn't repeat the field, see mapEditorial(). */
+	published?: boolean;
 	order: number;
 	created_at: string;
 	updated_at: string;
@@ -36,10 +42,11 @@ function mapEditorial<T extends EditorialDocument["type"]>(value: FastApiEditori
 		type: value.type,
 		slug: value.slug,
 		title: value.title,
-		published: value.published,
+		published: value.published ?? true,
 		order: value.order,
 		createdAt: value.created_at,
 		updatedAt: value.updated_at,
+		contentDoc: value.content_doc ?? null,
 	} as Extract<EditorialDocument, { type: T }>;
 }
 
@@ -54,10 +61,6 @@ async function listEditorialFromApi<T extends EditorialDocument["type"]>(type: T
 	return payload.map((item) => mapEditorial<T>(item));
 }
 
-function selectFirstPublished<T extends { published: boolean }>(items: T[]) {
-	return items.find((item) => item.published) ?? null;
-}
-
 function getFallbackDocument<T extends EditorialDocument["type"]>(type: T) {
 	return getMockEditorialDocuments().find(
 		(item): item is Extract<EditorialDocument, { type: T }> => item.type === type,
@@ -69,8 +72,11 @@ async function getSingleEditorialPage<T extends EditorialDocument["type"]>(
 	fallback: () => Extract<EditorialDocument, { type: T }>,
 ) {
 	try {
+		// The public route (GET /editorial/public/{type}) already filters to
+		// published-only server-side and its response never carries a `published`
+		// field to re-check -- the first (best-ordered) item is already the right one.
 		const items = await listEditorialFromApi(type);
-		const item = selectFirstPublished(items);
+		const item = items[0] ?? null;
 		if (item) return item;
 	} catch {}
 	return fallback();

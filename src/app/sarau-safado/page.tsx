@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
+import { blockButtonLabel, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
@@ -25,7 +26,9 @@ export default async function SarauSafadoPage() {
 	const [sarau, events] = await Promise.all([getEditorialSarauPage(), listEditorialEvents()]);
 	const agenda = events.filter((event) => event.published).slice(0, 3);
 	const signals = sarau.signals?.filter(Boolean).slice(0, 3) ?? [];
-	const heroSignals = signals.length > 0 ? signals : ["Leitura em voz alta", "Convidadas", "Entrada franca"];
+	const heroSignals =
+		blockList(sarau.contentDoc, "sarau-hero-signals") ||
+		(signals.length > 0 ? signals : ["Leitura em voz alta", "Convidadas", "Entrada franca"]);
 
 	const notes = sarau.programNotes?.length
 		? sarau.programNotes.slice(0, 3)
@@ -65,12 +68,14 @@ export default async function SarauSafadoPage() {
 					innerClassName="flex flex-wrap items-end justify-between gap-8 px-4 py-14 sm:px-8 lg:px-12"
 				>
 					<div className="flex max-w-[52ch] flex-col gap-3.5">
-						<SlEyebrow onInk>{sarau.hero?.eyebrow || t("nav.sarau")}</SlEyebrow>
+						<SlEyebrow onInk>
+							{blockText(sarau.contentDoc, "sarau-hero-eyebrow") || sarau.hero?.eyebrow || t("nav.sarau")}
+						</SlEyebrow>
 						<h1 className="sl-head m-0 text-[clamp(38px,6vw,var(--sl-size-hero-md))] leading-[0.95]">
-							{sarau.hero?.title || t("sarau.heroTitle")}
+							{blockText(sarau.contentDoc, "sarau-hero-title") || sarau.hero?.title || t("sarau.heroTitle")}
 						</h1>
 						<p className="m-0 max-w-[48ch] text-[var(--sl-size-lead)] leading-[1.75] text-[color:var(--sl-text-on-ink-muted)]">
-							{sarau.hero?.body || t("sarau.heroBody")}
+							{blockText(sarau.contentDoc, "sarau-hero-body") || sarau.hero?.body || t("sarau.heroBody")}
 						</p>
 						<div className="flex flex-wrap gap-3 pt-2.5">
 							<SlButton
@@ -78,10 +83,14 @@ export default async function SarauSafadoPage() {
 								variant="primary"
 								className="bg-[color:var(--sl-paper)] text-[color:var(--sl-ink)] hover:bg-[color:var(--sl-sand)]"
 							>
-								{sarau.hero?.primaryCtaLabel || "Próxima edição"}
+								{blockButtonLabel(sarau.contentDoc, "sarau-hero-primary-label") ||
+									sarau.hero?.primaryCtaLabel ||
+									"Próxima edição"}
 							</SlButton>
 							<SlButton href={sarau.hero?.secondaryCtaHref || "/events"} variant="secondary" onInk>
-								{sarau.hero?.secondaryCtaLabel || "Memória do Sarau"}
+								{blockButtonLabel(sarau.contentDoc, "sarau-hero-secondary-label") ||
+									sarau.hero?.secondaryCtaLabel ||
+									"Memória do Sarau"}
 							</SlButton>
 						</div>
 					</div>
@@ -103,14 +112,19 @@ export default async function SarauSafadoPage() {
 					innerClassName="grid gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-start lg:px-12"
 				>
 					<div className="flex flex-col gap-4">
-						<SlEyebrow>{sarau.agenda?.eyebrow || "Agenda"}</SlEyebrow>
+						<SlEyebrow>
+							{blockText(sarau.contentDoc, "sarau-agenda-eyebrow") || sarau.agenda?.eyebrow || "Agenda"}
+						</SlEyebrow>
 						<div className="border-b border-[color:var(--sl-line-hairline)] pb-5">
 							<h2 className="sl-head m-0 text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
-								{sarau.agenda?.title || "Próxima edição e encontros recentes"}
+								{blockText(sarau.contentDoc, "sarau-agenda-title") ||
+									sarau.agenda?.title ||
+									"Próxima edição e encontros recentes"}
 							</h2>
 						</div>
 						<SlProse
 							source={
+								blockText(sarau.contentDoc, "sarau-agenda-body") ||
 								sarau.agenda?.body ||
 								"Cada edição reforça a circulação entre livros, artistas convidadas, bibliotecas, instituições e leitoras recorrentes."
 							}
@@ -153,12 +167,23 @@ export default async function SarauSafadoPage() {
 					innerClassName="grid gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-center lg:px-12"
 				>
 					<div className="flex flex-col gap-4">
-						<SlEyebrow onInk>{sarau.gallery?.eyebrow || "Galeria / memória"}</SlEyebrow>
+						<SlEyebrow onInk>
+							{blockText(sarau.contentDoc, "sarau-gallery-eyebrow") ||
+								sarau.gallery?.eyebrow ||
+								"Galeria / memória"}
+						</SlEyebrow>
 						<h2 className="sl-head m-0 max-w-[20ch] text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
-							{sarau.gallery?.title || "Fotos grandes, vídeos, textos e registros"}
+							{blockText(sarau.contentDoc, "sarau-gallery-title") ||
+								sarau.gallery?.title ||
+								"Fotos grandes, vídeos, textos e registros"}
 						</h2>
 						<SlProse
-							source={sarau.why?.body || sarau.gallery?.body || t("sarau.whyBody")}
+							source={
+								blockText(sarau.contentDoc, "sarau-why-body") ||
+								sarau.why?.body ||
+								sarau.gallery?.body ||
+								t("sarau.whyBody")
+							}
 							className="max-w-[46ch] text-[var(--sl-size-body)] leading-[1.8] text-[color:var(--sl-text-on-ink-muted)]"
 						/>
 					</div>
