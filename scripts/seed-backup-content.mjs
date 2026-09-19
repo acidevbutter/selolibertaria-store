@@ -111,6 +111,24 @@ async function saveDraftAndPublish(actorUserId, type, slug, draftDoc) {
 	return publishRes.json();
 }
 
+async function syncCatalogProductPublished(token, slug, published) {
+	const res = await fetch(`${API}/catalog/${encodeURIComponent(slug)}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+		body: JSON.stringify({ published }),
+	});
+	if (!res.ok)
+		throw new Error(
+			`sync product ${slug} published=${published} failed (${res.status}): ${await res.text()}`,
+		);
+	console.log(`OK: product ${slug} already existed -- synced published=${published}`);
+	return res.json();
+}
+
+// Creation is intentionally one-shot per product: once it exists, a re-run leaves its
+// content alone (an editor may have since hand-edited it) -- except `published`, which this
+// migration enforces every run, since that's the one field it makes an explicit claim about
+// (e.g. "little fish, big fish" must stay inactive until the pre-sale flow is defined).
 async function createCatalogProduct(token, payload) {
 	const res = await fetch(`${API}/catalog/`, {
 		method: "POST",
@@ -118,8 +136,7 @@ async function createCatalogProduct(token, payload) {
 		body: JSON.stringify(payload),
 	});
 	if (res.status === 409) {
-		console.log(`SKIP: product ${payload.slug} already exists`);
-		return null;
+		return syncCatalogProductPublished(token, payload.slug, payload.published);
 	}
 	if (!res.ok) throw new Error(`create product ${payload.slug} failed (${res.status}): ${await res.text()}`);
 	console.log(`OK: product ${payload.slug} created`);
@@ -231,6 +248,39 @@ const PRODUCTS = [
 					"*para que serve um livro se ele não conversar com você nas horas difíceis?*",
 					"#### Ficha técnica",
 					"- Autora: Natália Nolli Sasso\n- Desenhos: Deanna Ribeiro\n- Arte e design: Bárbara Gabriela\n- Lançamento: setembro de 2023\n- Páginas: 112\n- Edição e distribuição: Selo Libertária · São Paulo/SP",
+				].join("\n\n"),
+			},
+		],
+	},
+	{
+		// Quarto livro da autora, ainda sem sinopse, preço ou data confirmados (ver
+		// backup/conteudo/02-fichas-de-produto.md, item 4) -- por isso sobe INATIVO: a home
+		// já aponta para a pré-venda (/pre-venda/little-fish-big-fish), não para este PDP.
+		id: "product_little-fish-big-fish",
+		slug: "little-fish-big-fish",
+		name: "little fish, big fish",
+		description: "Quarto livro de Natália Nolli Sasso. Em breve.",
+		images: [`${IMG}/home-capa-destaque-lfbf.webp`],
+		category: LIVROS_CATEGORY,
+		stock: 0,
+		product_type: "book",
+		format: "print",
+		order: 6,
+		published: false,
+		variants: [
+			{
+				id: "variant_little-fish-big-fish_impresso",
+				label: "Impresso",
+				slug: "impresso",
+				price: 4990,
+				currency: "BRL",
+				images: [`${IMG}/home-capa-destaque-lfbf.webp`],
+				stock: 0,
+				published: false,
+				order: 1,
+				description: [
+					"Quarto livro de Natália Nolli Sasso. Em breve.",
+					"A pré-venda é avisada por e-mail antes de qualquer outro canal.",
 				].join("\n\n"),
 			},
 		],
