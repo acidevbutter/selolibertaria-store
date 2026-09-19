@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import {
 	getEditorialEventsPage,
@@ -145,7 +145,7 @@ export default async function EventsPage() {
 											: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
 									].join(" ")}
 								>
-									{blockText(page.contentDoc, "events-hero-primary-label") ||
+									{blockButtonLabel(page.contentDoc, "events-hero-primary-label") ||
 										page.hero?.primaryCtaLabel ||
 										"Ver próxima edição"}
 								</YnsLink>
@@ -158,7 +158,7 @@ export default async function EventsPage() {
 											: "border-[color:rgba(247,244,239,0.22)] text-[color:var(--editorial-paper)] hover:bg-[color:rgba(247,244,239,0.08)]",
 									].join(" ")}
 								>
-									{blockText(page.contentDoc, "events-hero-secondary-label") ||
+									{blockButtonLabel(page.contentDoc, "events-hero-secondary-label") ||
 										page.hero?.secondaryCtaLabel ||
 										"Conhecer projetos"}
 								</YnsLink>
@@ -352,7 +352,7 @@ export default async function EventsPage() {
 								href={page.finalCta?.primaryCtaHref || "/sarau-safado"}
 								className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 							>
-								{blockText(page.contentDoc, "events-final-cta-primary-label") ||
+								{blockButtonLabel(page.contentDoc, "events-final-cta-primary-label") ||
 									page.finalCta?.primaryCtaLabel ||
 									"Ver Sarau Safado"}
 							</YnsLink>
@@ -360,7 +360,7 @@ export default async function EventsPage() {
 								href={page.finalCta?.secondaryCtaHref || "/projects"}
 								className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 							>
-								{blockText(page.contentDoc, "events-final-cta-secondary-label") ||
+								{blockButtonLabel(page.contentDoc, "events-final-cta-secondary-label") ||
 									page.finalCta?.secondaryCtaLabel ||
 									"Ver projetos"}
 							</YnsLink>

@@ -8,7 +8,7 @@ import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import type { YnsProduct } from "@/lib/commerce-types";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import { blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProductPage } from "@/lib/editorial-content-store";
 import { isFavorite } from "@/lib/favorites";
 import { buildSlProductRows } from "@/lib/sl-catalog";
@@ -83,7 +83,7 @@ export default async function SingleProductPage(props: {
 					</div>
 					<div className="flex flex-wrap gap-3 lg:justify-end">
 						<SlButton href={pageContent.notFound?.primaryCtaHref || "/products"} variant="buy">
-							{blockText(pageContent.contentDoc, "product-notfound-cta-label") ||
+							{blockButtonLabel(pageContent.contentDoc, "product-notfound-cta-label") ||
 								pageContent.notFound?.primaryCtaLabel ||
 								"Ver a loja"}
 						</SlButton>

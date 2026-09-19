@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "@/i18n/server";
-import { blockList, blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
@@ -83,12 +83,12 @@ export default async function SarauSafadoPage() {
 								variant="primary"
 								className="bg-[color:var(--sl-paper)] text-[color:var(--sl-ink)] hover:bg-[color:var(--sl-sand)]"
 							>
-								{blockText(sarau.contentDoc, "sarau-hero-primary-label") ||
+								{blockButtonLabel(sarau.contentDoc, "sarau-hero-primary-label") ||
 									sarau.hero?.primaryCtaLabel ||
 									"Próxima edição"}
 							</SlButton>
 							<SlButton href={sarau.hero?.secondaryCtaHref || "/events"} variant="secondary" onInk>
-								{blockText(sarau.contentDoc, "sarau-hero-secondary-label") ||
+								{blockButtonLabel(sarau.contentDoc, "sarau-hero-secondary-label") ||
 									sarau.hero?.secondaryCtaLabel ||
 									"Memória do Sarau"}
 							</SlButton>

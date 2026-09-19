@@ -25,3 +25,17 @@ export function blockList(doc: EditorialContentDoc | null | undefined, id: strin
 	const block = doc?.find((node) => node.id === id);
 	return block?.type === "list" ? block.items : undefined;
 }
+
+/**
+ * Label of a `button` block -- for CTA slots seeded as real buttons (see
+ * scripts/seed_editorial_blocks.py) so the block editor previews them as buttons. Only the
+ * label is read: href/variant stay whatever the page itself computes (some are dynamic,
+ * e.g. depending on a featured event), so the block never overrides routing logic.
+ */
+export function blockButtonLabel(
+	doc: EditorialContentDoc | null | undefined,
+	id: string,
+): string | undefined {
+	const block = doc?.find((node) => node.id === id);
+	return block?.type === "button" ? block.label : undefined;
+}
