@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { formatMoney } from "@/lib/utils";
@@ -69,11 +70,17 @@ export default async function Home() {
 	return (
 		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
 			<SlHomeHero
-				eyebrow={hero?.eyebrow || "Lançamento"}
+				eyebrow={blockText(homeContent.contentDoc, "home-hero-eyebrow") || hero?.eyebrow || "Lançamento"}
 				tags={hero?.supportingLine ? [hero.supportingLine] : ["Catálogo do selo"]}
-				title={heroSource?.name || hero?.title || "little fish, big fish"}
+				title={
+					heroSource?.name ||
+					blockText(homeContent.contentDoc, "home-hero-title") ||
+					hero?.title ||
+					"little fish, big fish"
+				}
 				blurb={
 					heroSource?.summary ||
+					blockText(homeContent.contentDoc, "home-hero-blurb") ||
 					hero?.description ||
 					"Editora e produtora cultural dedicada à literatura erótica, à performance e aos encontros."
 				}
@@ -84,12 +91,18 @@ export default async function Home() {
 				primaryHref={heroSource ? `/product/${heroSource.slug}` : hero?.primaryCtaHref || "/products"}
 				primaryLabel={heroSource ? "Comprar agora" : hero?.primaryCtaLabel || "Ver a loja"}
 				secondaryHref={hero?.secondaryCtaHref || "/products"}
-				secondaryLabel={hero?.secondaryCtaLabel || "Ver o catálogo"}
-				metaItems={[
-					"Pix, cartão ou boleto",
-					"Frete calculado no carrinho",
-					"Envio com rastreio pelo Melhor Envio",
-				]}
+				secondaryLabel={
+					blockText(homeContent.contentDoc, "home-hero-secondary-cta") ||
+					hero?.secondaryCtaLabel ||
+					"Ver o catálogo"
+				}
+				metaItems={
+					blockList(homeContent.contentDoc, "home-hero-meta-items") || [
+						"Pix, cartão ou boleto",
+						"Frete calculado no carrinho",
+						"Envio com rastreio pelo Melhor Envio",
+					]
+				}
 			/>
 
 			<SlHomeCategoryBand categories={categories} />
@@ -97,19 +110,28 @@ export default async function Home() {
 			<SlHomeFeatured rows={rows} />
 
 			<SlHomeManifesto
-				title={homeContent.manifesto?.title || "Literatura que acende presença"}
+				title={
+					blockText(homeContent.contentDoc, "home-manifesto-title") ||
+					homeContent.manifesto?.title ||
+					"Literatura que acende presença"
+				}
 				body={
+					blockText(homeContent.contentDoc, "home-manifesto-body") ||
 					homeContent.manifesto?.body ||
 					"Editora e produtora cultural de São Paulo. Publicamos livros, edições sonoras, zines e objetos — e produzimos saraus e laboratórios de escrita."
 				}
-				linkLabel={homeContent.manifesto?.linkLabel || "Conhecer o selo"}
+				linkLabel={
+					blockText(homeContent.contentDoc, "home-manifesto-link-label") ||
+					homeContent.manifesto?.linkLabel ||
+					"Conhecer o selo"
+				}
 				linkHref={homeContent.manifesto?.linkHref || "/about"}
 				sarau={{
-					eyebrow: "Sarau Safado · próxima edição",
+					eyebrow: blockText(homeContent.contentDoc, "home-sarau-eyebrow") || "Sarau Safado · próxima edição",
 					data: featuredEvent?.period || "Agenda em breve",
 					local: featuredEvent?.location || "São Paulo · centro",
-					entrada: "R$ 30,00",
-					ctaLabel: "Garantir ingresso",
+					entrada: blockText(homeContent.contentDoc, "home-sarau-entrada") || "R$ 30,00",
+					ctaLabel: blockText(homeContent.contentDoc, "home-sarau-cta-label") || "Garantir ingresso",
 					ctaHref: featuredEvent ? "/events" : "/sarau-safado",
 				}}
 			/>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
@@ -12,8 +13,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 	const about = await getEditorialAboutPage();
 
 	return {
-		title: `${about.hero?.eyebrow || "Sobre"} · ${seloSiteMeta.name}`,
-		description: about.hero?.body || "Manifesto, autoria e linha editorial do Selo Libertária em pt-BR.",
+		title: `${blockText(about.contentDoc, "about-hero-eyebrow") || about.hero?.eyebrow || "Sobre"} · ${seloSiteMeta.name}`,
+		description:
+			blockText(about.contentDoc, "about-hero-body") ||
+			about.hero?.body ||
+			"Manifesto, autoria e linha editorial do Selo Libertária em pt-BR.",
 	};
 };
 
@@ -35,14 +39,18 @@ export default async function AboutPage() {
 					innerClassName="grid gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-end lg:px-12"
 				>
 					<div className="flex flex-col gap-4">
-						<SlEyebrow>{about.hero?.eyebrow || "Sobre o selo"}</SlEyebrow>
+						<SlEyebrow>
+							{blockText(about.contentDoc, "about-hero-eyebrow") || about.hero?.eyebrow || "Sobre o selo"}
+						</SlEyebrow>
 						<h1 className="sl-head m-0 max-w-[24ch] text-[clamp(40px,7vw,var(--sl-size-hero-lg))] leading-[0.9] text-balance">
-							{about.hero?.title ||
+							{blockText(about.contentDoc, "about-hero-title") ||
+								about.hero?.title ||
 								"Publicamos corpos, cidades, desejos e linguagens que escapam das margens"}
 						</h1>
 					</div>
 					<p className="m-0 max-w-[46ch] text-[var(--sl-size-lead)] leading-[1.75] text-[color:var(--sl-text-muted)]">
-						{about.hero?.body ||
+						{blockText(about.contentDoc, "about-hero-body") ||
+							about.hero?.body ||
 							"Editora e produtora cultural dedicada à literatura erótica, à performance, aos encontros públicos e a projetos autorais — uma linha curatorial só, em três frentes."}
 					</p>
 				</SlBand>
@@ -69,12 +77,19 @@ export default async function AboutPage() {
 						</div>
 					</div>
 					<div className="flex max-w-[56ch] flex-col gap-4">
-						<SlEyebrow onInk>{about.section?.eyebrow || "Autoria e curadoria"}</SlEyebrow>
+						<SlEyebrow onInk>
+							{blockText(about.contentDoc, "about-section-eyebrow") ||
+								about.section?.eyebrow ||
+								"Autoria e curadoria"}
+						</SlEyebrow>
 						<h2 className="sl-head m-0 max-w-[20ch] text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
-							{about.section?.title || "Natália Nolli Sasso e o universo do selo"}
+							{blockText(about.contentDoc, "about-section-title") ||
+								about.section?.title ||
+								"Natália Nolli Sasso e o universo do selo"}
 						</h2>
 						<SlProse
 							source={
+								blockText(about.contentDoc, "about-section-body") ||
 								about.section?.body ||
 								"A autoria não é uma bio protocolar: é o critério que define o que entra no catálogo, quem sobe ao palco do Sarau e como cada livro é editado, impresso e lido em público."
 							}
@@ -92,7 +107,9 @@ export default async function AboutPage() {
 							onInk
 							className="mt-2 self-start"
 						>
-							{about.section?.primaryCtaLabel || "Conhecer Sarau Safado"}
+							{blockText(about.contentDoc, "about-section-cta-label") ||
+								about.section?.primaryCtaLabel ||
+								"Conhecer Sarau Safado"}
 						</SlButton>
 					</div>
 				</SlBand>
@@ -130,12 +147,17 @@ export default async function AboutPage() {
 					innerClassName="grid gap-5 px-4 pb-16 pt-0 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-stretch lg:px-12"
 				>
 					<article className="flex flex-col gap-4 border-t-2 border-[color:var(--sl-wine)] bg-[color:var(--sl-surface-band)] px-6 py-8">
-						<p className="sl-lbl m-0">{about.closing?.eyebrow || "Manifesto"}</p>
+						<p className="sl-lbl m-0">
+							{blockText(about.contentDoc, "about-closing-eyebrow") || about.closing?.eyebrow || "Manifesto"}
+						</p>
 						<h2 className="sl-head m-0 max-w-[24ch] text-[clamp(26px,3.4vw,var(--sl-size-section-sm))] leading-[1]">
-							{about.closing?.title || "A programação e a autoria se reforçam mutuamente"}
+							{blockText(about.contentDoc, "about-closing-title") ||
+								about.closing?.title ||
+								"A programação e a autoria se reforçam mutuamente"}
 						</h2>
 						<SlProse
 							source={
+								blockText(about.contentDoc, "about-closing-body") ||
 								about.closing?.body ||
 								"Conhecer uma autora, descobrir uma programação e entrar num arquivo. A experiência deve formar um ecossistema cultural, não páginas paralelas."
 							}
@@ -147,10 +169,13 @@ export default async function AboutPage() {
 						style={{ background: "var(--sl-surface-invert)" }}
 					>
 						<p className="sl-eyebrow m-0 text-[color:var(--sl-text-on-ink-label)]">
-							{about.closing?.coreEyebrow || "Princípio central"}
+							{blockText(about.contentDoc, "about-closing-core-eyebrow") ||
+								about.closing?.coreEyebrow ||
+								"Princípio central"}
 						</p>
 						<p className="m-0 max-w-[32ch] font-[family-name:var(--sl-font-head)] text-[var(--sl-size-card-title)] leading-[1.35] font-black tracking-[var(--sl-track-card)]">
-							{about.closing?.coreTitle ||
+							{blockText(about.contentDoc, "about-closing-core-title") ||
+								about.closing?.coreTitle ||
 								"Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia."}
 						</p>
 					</div>

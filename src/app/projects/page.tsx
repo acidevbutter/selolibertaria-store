@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProjectsPage, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
@@ -14,8 +15,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 	const page = await getEditorialProjectsPage();
 
 	return {
-		title: `${page.hero?.eyebrow || "Projetos"} · ${seloSiteMeta.name}`,
-		description: page.hero?.body || "Portfólio cultural do selo em diálogo com cidade, erotismo e escrita.",
+		title: `${blockText(page.contentDoc, "projects-hero-eyebrow") || page.hero?.eyebrow || "Projetos"} · ${seloSiteMeta.name}`,
+		description:
+			blockText(page.contentDoc, "projects-hero-body") ||
+			page.hero?.body ||
+			"Portfólio cultural do selo em diálogo com cidade, erotismo e escrita.",
 	};
 };
 
@@ -38,12 +42,17 @@ export default async function ProjectsPage() {
 					innerClassName="grid gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] lg:items-end lg:px-12"
 				>
 					<div className="flex max-w-[52ch] flex-col gap-3.5">
-						<SlEyebrow onInk>{page.hero?.eyebrow || "Projetos"}</SlEyebrow>
+						<SlEyebrow onInk>
+							{blockText(page.contentDoc, "projects-hero-eyebrow") || page.hero?.eyebrow || "Projetos"}
+						</SlEyebrow>
 						<h1 className="sl-head m-0 text-[clamp(38px,6vw,var(--sl-size-hero-md))] leading-[0.95]">
-							{page.hero?.title || "Uma atuação que atravessa livro, palco e formação"}
+							{blockText(page.contentDoc, "projects-hero-title") ||
+								page.hero?.title ||
+								"Uma atuação que atravessa livro, palco e formação"}
 						</h1>
 						<p className="m-0 max-w-[48ch] text-[var(--sl-size-lead)] leading-[1.75] text-[color:var(--sl-text-on-ink-muted)]">
-							{page.hero?.body ||
+							{blockText(page.contentDoc, "projects-hero-body") ||
+								page.hero?.body ||
 								"Portfólio cultural do selo em diálogo com cidade, erotismo e escrita — com imagem, status, contexto e saída clara em cada item."}
 						</p>
 					</div>
@@ -71,16 +80,23 @@ export default async function ProjectsPage() {
 					innerClassName="grid gap-10 px-4 pb-10 pt-16 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-start lg:px-12"
 				>
 					<div className="flex flex-col gap-4">
-						<SlEyebrow>{page.listing?.label || "Portfólio cultural"}</SlEyebrow>
+						<SlEyebrow>
+							{blockText(page.contentDoc, "projects-listing-label") ||
+								page.listing?.label ||
+								"Portfólio cultural"}
+						</SlEyebrow>
 						<div className="border-b border-[color:var(--sl-line-hairline)] pb-5">
 							<h2 className="sl-head m-0 max-w-[22ch] text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
-								{page.curatorialNote?.title || "Projetos como atuação cultural do selo"}
+								{blockText(page.contentDoc, "projects-curatorial-title") ||
+									page.curatorialNote?.title ||
+									"Projetos como atuação cultural do selo"}
 							</h2>
 						</div>
 					</div>
 					<div className="flex flex-col gap-4">
 						<SlProse
 							source={
+								blockText(page.contentDoc, "projects-curatorial-body") ||
 								page.curatorialNote?.body ||
 								"Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item tem imagem, período, local, status e uma saída específica."
 							}
@@ -88,6 +104,7 @@ export default async function ProjectsPage() {
 						/>
 						<SlProse
 							source={
+								blockText(page.contentDoc, "projects-listing-body") ||
 								page.listing?.body ||
 								"Os projetos seguem vindo dos registros publicados do acervo editorial do admin."
 							}
@@ -100,7 +117,9 @@ export default async function ProjectsPage() {
 				<SlBand tone="paper" innerClassName="flex flex-col gap-6 px-4 pb-16 pt-0 sm:px-8 lg:px-12">
 					<div className="flex flex-wrap items-end justify-between gap-4 border-b border-[color:var(--sl-line-hairline)] pb-5">
 						<h2 className="sl-head m-0 text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
-							{page.listing?.title || "Projetos publicados"}
+							{blockText(page.contentDoc, "projects-listing-title") ||
+								page.listing?.title ||
+								"Projetos publicados"}
 						</h2>
 						{publishedProjects.length > 0 ? (
 							<SlChip>
@@ -153,7 +172,8 @@ export default async function ProjectsPage() {
 						</ul>
 					) : (
 						<div className="border border-dashed border-[color:var(--sl-line-strong)] bg-[color:var(--sl-surface-card)] px-6 py-10 text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]">
-							{page.listing?.emptyText ||
+							{blockText(page.contentDoc, "projects-listing-empty") ||
+								page.listing?.emptyText ||
 								"Os projetos publicados aparecerão aqui assim que forem cadastrados no admin editorial."}
 						</div>
 					)}
@@ -165,11 +185,14 @@ export default async function ProjectsPage() {
 					innerClassName="grid gap-8 px-4 py-12 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] lg:items-center lg:px-12"
 				>
 					<h2 className="sl-head m-0 max-w-[26ch] text-[clamp(26px,3.4vw,var(--sl-size-section-sm))] leading-[1]">
-						{page.finalCta?.title || "Projetos conectam criação, formação e comunidade"}
+						{blockText(page.contentDoc, "projects-final-cta-title") ||
+							page.finalCta?.title ||
+							"Projetos conectam criação, formação e comunidade"}
 					</h2>
 					<div className="flex flex-col gap-4">
 						<SlProse
 							source={
+								blockText(page.contentDoc, "projects-final-cta-body") ||
 								page.finalCta?.body ||
 								"Para propostas de curadoria, residência, oficina ou coedição, fale direto com o selo."
 							}
@@ -177,13 +200,17 @@ export default async function ProjectsPage() {
 						/>
 						<div className="flex flex-wrap gap-3">
 							<SlButton href={page.finalCta?.primaryCtaHref || "/contact"} variant="primary">
-								{page.finalCta?.primaryCtaLabel || "Falar sobre projeto"}
+								{blockText(page.contentDoc, "projects-final-cta-primary-label") ||
+									page.finalCta?.primaryCtaLabel ||
+									"Falar sobre projeto"}
 							</SlButton>
 							<YnsLink
 								href={page.finalCta?.secondaryCtaHref || "/sarau-safado"}
 								className="sl-btn sl-btn-secondary"
 							>
-								{page.finalCta?.secondaryCtaLabel || "Ver Sarau Safado"}
+								{blockText(page.contentDoc, "projects-final-cta-secondary-label") ||
+									page.finalCta?.secondaryCtaLabel ||
+									"Ver Sarau Safado"}
 							</YnsLink>
 						</div>
 					</div>
