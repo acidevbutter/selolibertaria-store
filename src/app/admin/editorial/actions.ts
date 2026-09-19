@@ -484,6 +484,7 @@ export async function updateEditorialProjectAction(formData: FormData) {
 		published: parseBoolean(formData.get("published"), true),
 		order: parseOrder(formData.get("order"), 1),
 		image: await parseImage(formData),
+		gallery: (await getEditorialProjectRecordBySlug(currentSlug))?.gallery ?? undefined,
 	};
 
 	await upsertEditorial(

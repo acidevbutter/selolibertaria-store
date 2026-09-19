@@ -59,8 +59,14 @@ export function buildSeedEditorialProjects(): EditorialProject[] {
 			? {
 					src: project.imageSrc,
 					alt: project.imageAlt,
+					caption: "credit" in project && project.credit ? `Fotos: ${project.credit}` : undefined,
 				}
 			: undefined,
+		gallery: project.gallery?.map((src, galleryIndex) => ({
+			src,
+			alt: `${project.title} (${galleryIndex + 1})`,
+			caption: "credit" in project && project.credit ? `Fotos: ${project.credit}` : undefined,
+		})),
 		published: true,
 		order: index + 1,
 		createdBy: MOCK_ACTOR,
@@ -76,28 +82,28 @@ export function buildSeedHomePage(): EditorialHomePage {
 		summary: "Home do selo com manifesto, publicações em destaque e programação cultural.",
 		...baseMeta,
 		hero: {
-			eyebrow: "Lançamento",
-			title: "Ninfas do Tietê",
+			eyebrow: "em breve",
+			title: "little fish, big fish",
 			description:
-				"Livro, presença e linguagem em uma página que assume o catálogo como gesto editorial, não como grade genérica.",
-			primaryCtaLabel: "Comprar",
-			primaryCtaHref: "/products",
-			secondaryCtaLabel: "Ler trecho",
+				"O quarto livro de Natália Nolli Sasso. Peixe pequeno, peixe grande — quem engole quem, e com que boca.",
+			primaryCtaLabel: "Quero saber da estreia",
+			primaryCtaHref: "/#newsletter",
+			secondaryCtaLabel: "Ver o catálogo",
 			secondaryCtaHref: "/products",
-			supportingLine: "poemas, corpos e margens",
-			featureEyebrow: "Produto em destaque",
-			featureTitle: "Ninfas do Tietê",
-			featureBody: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",
-			featureQuote: "O livro como objeto, presença e faísca.",
+			supportingLine: "trilogia s3xo são paulo",
+			featureImage: {
+				src: "/images/selolibertaria/home-capa-destaque-lfbf.webp",
+				alt: "Capa de little fish, big fish, de Natália Nolli Sasso: dois peixes em traço preto e laranja sobre fundo preto",
+			},
 		},
 		manifesto: {
 			title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-			body: "Entre publicações, encontros e performance, o selo constrói uma leitura autoral em que livro, presença e imaginação cultural continuam a mesma conversa.",
+			body: "Editora e produtora cultural de São Paulo. Literatura erótica, performance, encontros e projetos autorais.",
 			linkLabel: "Conhecer o selo",
 			linkHref: "/about",
 		},
 		featuredBook: {
-			productSlug: "ninfas-do-tiete",
+			productSlug: "little-fish-big-fish",
 			eyebrow: "Produto em destaque",
 			title: "Ninfas do Tietê",
 			body: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",
@@ -207,7 +213,7 @@ export function buildSeedProjectsPage(): EditorialProjectsPage {
 		listing: {
 			label: "Portfólio cultural",
 			title: "Projetos",
-			body: "Cada projeto registra uma frente de criação, formação ou articulação cultural do selo.",
+			body: "Cada projeto registra uma frente de criação, formação ou articulação cultural do selo. Ordem: mais recente primeiro.",
 			emptyText:
 				"Os projetos culturais serão publicados em breve. Enquanto isso, acompanhe o Sarau Safado e fale com o selo.",
 		},
@@ -230,14 +236,14 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 		summary: "Catálogo autoral com capas, trechos e caminhos de compra preservados.",
 		...baseMeta,
 		hero: {
-			eyebrow: "Produtos",
-			title: "Produtos para entrar no universo do selo pela leitura.",
-			body: "Catálogo autoral de literatura erótica, urbana e dissidente, com capas, trechos e caminhos de compra preservados.",
+			eyebrow: "Catálogo",
+			title: "Catálogo",
+			body: "Tudo que o selo publica passa por aqui: os três livros da trilogia s3xo são paulo, os audiolivros gratuitos e o que vier. Edição, distribuição e venda são feitas pelo próprio selo, com artistas e colaboradorxs convidadxs a cada título.",
 			primaryCtaLabel: "Ver catálogo",
 			primaryCtaHref: "/products",
 			secondaryCtaLabel: "Comprar destaque",
 			secondaryCtaHref: "/products",
-			quote: "Uma prateleira curta, quente e curada.",
+			quote: "Livro, presença e linguagem — o catálogo como gesto editorial.",
 		},
 		curatorialNote: {
 			title: "Catálogo como mesa de curadoria, não como vitrine genérica.",
@@ -248,7 +254,7 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 			title: "Catálogo",
 			body: "Cada capa abre uma rota: compra, trecho e contexto editorial.",
 			emptyText:
-				"O catálogo ainda não tem produtos publicados. Volte em breve para acompanhar os próximos lançamentos.",
+				"Ainda não há títulos publicados nesta categoria. Enquanto isso, os três livros da trilogia estão em Livros, e os audiolivros são gratuitos.",
 			cardPrimaryFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
 			cardSecondaryFallback: "Produto em preparação dentro do mesmo universo literário do selo.",
 			viewBookLabel: "Ver produto",
@@ -375,31 +381,37 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 		hero: {
 			eyebrow: "Sobre o selo",
 			title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-			body: "Editora e produtora cultural dedicada à literatura erótica, performance, encontros e projetos autorais.",
+			body: "Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia. É isso que o Selo Libertária persegue desde o primeiro livro: erotismo como linguagem e como posição política, não como embalagem.",
 		},
 		section: {
-			eyebrow: "Autoria e curadoria",
-			title: "Natália Nolli Sasso e o universo do Selo Libertária.",
-			body: "A página Sobre apresenta história, linha editorial, autoria e manifesto sem parecer uma bio protocolar ou institucional fria.",
-			extended: "Literatura, performance e presença urbana aparecem aqui como uma mesma linha curatorial.",
+			eyebrow: "A autora",
+			title: "Natália Nolli Sasso",
+			body: "Escritora, pesquisadora e editora. Autora de *Ninfas do Tietê* (2018, segunda edição revisada em 2021), *sexo estranho com desconhecidos em lugares impróprios* (2020) e *vírus do beijo* (2023), todos em formato impresso e sonoro. É a criadora do Sarau Safado e está à frente do Selo Libertária.",
+			extended:
+				"Mora há mais de uma década na região central de São Paulo — e é dessa vivência que sai boa parte do que escreve. Coordena laboratórios de escrita no Sesc São Paulo e já participou do Festival Mário de Andrade, da Flipenha e da Mostra Solo Mulheres.",
+			image: {
+				src: "/images/selolibertaria/natalia-nolli-sasso-sarau-safado.webp",
+				alt: "Cartaz do Sarau Safado sobre um microfone iluminado por luz vermelha",
+				caption: "Sarau Safado",
+			},
 			primaryCtaLabel: "Conhecer Sarau Safado",
 			primaryCtaHref: "/sarau-safado",
 		},
 		cards: [
 			{
-				eyebrow: "Literatura adulta",
-				title: "Erotismo sugerido pela linguagem, sem clichê visual.",
-				body: "A camada pública do selo deve manter densidade literária sem escorregar para uma identidade óbvia.",
+				eyebrow: "Literatura",
+				title: "O erotismo através da linguagem.",
+				body: "Poesia que não pede licença e não explica o desejo.",
 			},
 			{
 				eyebrow: "Cidade e corpo",
-				title: "Texto, performance e presença urbana como matéria.",
-				body: "Cidade, encontro e linguagem aparecem como partes do mesmo ecossistema cultural.",
+				title: "São Paulo como texto.",
+				body: "Ruas, linhas de transporte e espaços públicos lidos pelo corpo.",
 			},
 			{
 				eyebrow: "Publicação autoral",
-				title: "Livro como objeto editorial, cultural e afetivo.",
-				body: "A interface deve sustentar leitura e contexto sem reduzir o projeto a uma vitrine comercial.",
+				title: "O livro como objeto cultural.",
+				body: "Ilustração, arte, revisão e performance tratadas como parte da obra.",
 			},
 		],
 		closing: {
@@ -476,11 +488,10 @@ export function buildSeedSiteGlobal(): EditorialSiteGlobal {
 		summary: "Newsletter e rodapé editáveis do site público.",
 		...baseMeta,
 		newsletter: {
-			title: "Receba lançamentos, saraus e textos do selo.",
-			description:
-				"Atualizações de livros, agenda e circulação editorial em um único campo público editável.",
-			placeholder: "seu@email.com",
-			buttonLabel: "Assinar",
+			title: "Receba o aviso",
+			description: "Um e-mail quando abrir uma pré-venda ou uma nova edição do Sarau. Nada além disso.",
+			placeholder: "seu e-mail",
+			buttonLabel: "Quero saber",
 		},
 		footer: {
 			brandEyebrow: "Selo Libertária",

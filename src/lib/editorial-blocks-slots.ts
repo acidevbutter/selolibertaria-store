@@ -26,6 +26,14 @@ export function blockList(doc: EditorialContentDoc | null | undefined, id: strin
 	return block?.type === "list" ? block.items : undefined;
 }
 
+export function blockQuote(
+	doc: EditorialContentDoc | null | undefined,
+	id: string,
+): { text: string; attribution?: string | null } | undefined {
+	const block = doc?.find((node) => node.id === id);
+	return block?.type === "quote" ? { text: block.text, attribution: block.attribution } : undefined;
+}
+
 /**
  * Label of a `button` block -- for CTA slots seeded as real buttons (see
  * scripts/seed_editorial_blocks.py) so the block editor previews them as buttons. Only the
