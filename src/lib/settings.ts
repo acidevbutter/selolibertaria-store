@@ -80,25 +80,6 @@ export type MelhorEnvioSettings = {
 	lastUpdatedBy?: string | null;
 };
 
-/** Controle editorial público para a pré-venda (landing + modal de contagem). */
-export type PreSaleModeSettings = {
-	/**
-	 * @deprecated Compat: lido como `pageEnabled` quando `pageEnabled` está
-	 * ausente. O admin passa a gravar `pageEnabled` explicitamente.
-	 */
-	enabled?: boolean;
-	/** Ativa a rota pública `/pre-venda/{slug}`. */
-	pageEnabled?: boolean;
-	/** Faz o modal de contagem aparecer em toda a loja, independente da página. */
-	popupEnabled?: boolean;
-	/** Data de estreia (ISO 8601). Alimenta a contagem regressiva. */
-	launchAt?: string | null;
-	/** Janela: antes disso, página/modal ficam desligados mesmo com o toggle ligado. */
-	windowStartAt?: string | null;
-	/** Janela: depois disso, página/modal ficam desligados. */
-	windowEndAt?: string | null;
-};
-
 export type SettingsCurrent = {
 	theme?: "light" | "dark";
 	supportEmail?: string | null;
@@ -111,7 +92,6 @@ export type SettingsCurrent = {
 	/** Whether boleto is offered at checkout. Off by default; the backend must
 	 * also accept `payment_method: { type: "boleto" }` for it to work. */
 	paymentBoletoEnabled?: boolean;
-	preSale?: PreSaleModeSettings;
 };
 
 export type SettingsDoc = {

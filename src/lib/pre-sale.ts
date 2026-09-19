@@ -31,8 +31,13 @@ export type PreSaleCampaign = {
 	 * contagem regressiva do modal — sem ela, o modal não abre.
 	 */
 	launchAt?: string;
-	/** destino do botão "Comprar" (checkout / produto / link de pagamento) */
+	/** destino do botão "Comprar" quando não há variante para adicionar ao carrinho */
 	buyHref: string;
+	/** produto/variante do catálogo -- quando presentes, o botão "Comprar" adiciona
+	 * ao carrinho de verdade (preço de pré-venda já resolvido pelo backend) em vez
+	 * de navegar para `buyHref`. */
+	productId?: string;
+	variantId?: string;
 	/** link "voltar para a loja" no topo */
 	backHref: string;
 	/** nota de pagamento sob o card (ex.: "Pagamento via Asaas · Pix.") */
@@ -166,7 +171,7 @@ export const LFBF_CAMPAIGN: PreSaleCampaign = {
 		primaryCta: { label: "Garantir na pré-venda", href: "#" },
 		dismissLabel: "Continuar navegando",
 		autoOpenDelayMs: 1500,
-		snoozeHours: 24,
+		snoozeHours: 2,
 	},
 };
 
