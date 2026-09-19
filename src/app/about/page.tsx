@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockList, blockQuote, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
@@ -23,7 +23,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function AboutPage() {
 	const about = await getEditorialAboutPage();
-	const cards = (about.cards ?? []).slice(0, 3);
+	const cards = (about.cards ?? []).slice(0, 4);
 
 	return (
 		<div
@@ -140,6 +140,35 @@ export default async function AboutPage() {
 						</ul>
 					</SlBand>
 				) : null}
+
+				{/* Na imprensa — paper */}
+				{(blockList(about.contentDoc, "about-press-items") ||
+					blockQuote(about.contentDoc, "about-press-quote")) && (
+					<SlBand tone="paper" innerClassName="flex flex-col gap-6 px-4 pb-16 pt-0 sm:px-8 lg:px-12">
+						<div className="border-b border-[color:var(--sl-line-hairline)] pb-5">
+							<h2 className="sl-head m-0 text-[clamp(28px,4vw,var(--sl-size-section))] leading-[0.98]">
+								{blockText(about.contentDoc, "about-press-title") || "Na imprensa"}
+							</h2>
+						</div>
+						{blockList(about.contentDoc, "about-press-items") ? (
+							<ul className="m-0 max-w-[68ch] list-disc space-y-3 pl-5 text-[var(--sl-size-body)] leading-[1.7] text-[color:var(--sl-text-muted)]">
+								{blockList(about.contentDoc, "about-press-items")?.map((item) => (
+									<li key={item}>{item}</li>
+								))}
+							</ul>
+						) : null}
+						{blockQuote(about.contentDoc, "about-press-quote") ? (
+							<blockquote className="m-0 max-w-[52ch] border-l-2 border-[color:var(--sl-wine)] pl-4 italic text-[var(--sl-size-lead)] leading-[1.6]">
+								{blockQuote(about.contentDoc, "about-press-quote")?.text}
+								{blockQuote(about.contentDoc, "about-press-quote")?.attribution ? (
+									<footer className="mt-2 text-[var(--sl-size-meta)] not-italic text-[color:var(--sl-text-soft)]">
+										— {blockQuote(about.contentDoc, "about-press-quote")?.attribution}
+									</footer>
+								) : null}
+							</blockquote>
+						) : null}
+					</SlBand>
+				)}
 
 				{/* Manifesto + princípio central — paper split */}
 				<SlBand

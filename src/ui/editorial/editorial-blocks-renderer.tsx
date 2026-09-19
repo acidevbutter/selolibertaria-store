@@ -17,6 +17,12 @@ import { YnsLink } from "@/ui/yns-link";
  * fica" preview and the public page renderer, so "ver como fica" being true
  * is a structural guarantee, not a convention someone can drift away from.
  * Every node maps to real JSX below -- none of them ever inject raw markup.
+ *
+ * Every image uses loading="eager": today this renderer only mounts inside
+ * the admin preview's `.ad-scrim`, which starts `display: none`, and native
+ * lazy-loading's intersection check can permanently miss images that were
+ * `display: none` at mount. Revisit once this renders on the live public
+ * page too, where lazy-loading long articles is worth the tradeoff.
  */
 
 const imageLayoutClass: Record<string, string> = {
@@ -44,11 +50,12 @@ function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" 
 					<Image
 						src={block.src}
 						alt={block.alt ?? ""}
-						fill
+						width={1200}
+						height={800}
 						unoptimized
-						sizes="(min-width: 640px) 50vw, 100vw"
+						loading="eager"
 						className="object-cover"
-						style={cropWindowStyle(cropRect)}
+						style={{ position: "absolute", ...cropWindowStyle(cropRect) }}
 					/>
 				</div>
 			) : (
@@ -58,6 +65,7 @@ function BlockImage({ block }: { block: Extract<EditorialBlock, { type: "image" 
 					width={1200}
 					height={800}
 					unoptimized
+					loading="eager"
 					className="h-auto w-full object-cover"
 				/>
 			)}
@@ -92,6 +100,7 @@ function BlockGallery({ block }: { block: Extract<EditorialBlock, { type: "galle
 							width={600}
 							height={600}
 							unoptimized
+							loading="eager"
 							className="h-auto w-full object-cover"
 						/>
 						{image.caption || image.credit ? (

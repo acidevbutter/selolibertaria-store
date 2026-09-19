@@ -126,6 +126,41 @@ export default async function ProjectDetailPage(props: ProjectPageProps) {
 					</div>
 				</SlBand>
 
+				{(project.gallery ?? []).filter((entry) => entry.src).length > 0 ? (
+					<SlBand tone="paper" innerClassName="flex flex-col gap-6 px-4 pb-16 pt-0 sm:px-8 lg:px-12">
+						<div className="border-b border-[color:var(--sl-line-hairline)] pb-5">
+							<h2 className="sl-head m-0 text-[clamp(22px,2.6vw,32px)] leading-[1]">Registros</h2>
+						</div>
+						<ul className="m-0 grid list-none gap-[var(--sl-grid-gap)] p-0 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
+							{(project.gallery ?? [])
+								.filter((entry) => entry.src)
+								.map((entry, index) => (
+									<li key={`${entry.src}-${index}`} className="flex flex-col gap-2">
+										<div
+											className="relative aspect-[4/3] overflow-hidden border border-[color:var(--sl-line-hairline)]"
+											style={{ background: "var(--sl-surface-band)" }}
+										>
+											<Image
+												src={entry.src}
+												alt={entry.alt || `${project.title} (${index + 1})`}
+												fill
+												sizes="(max-width: 768px) 100vw, 320px"
+												className="object-cover"
+											/>
+										</div>
+										{entry.caption || entry.credit ? (
+											<p className="m-0 text-[11px] leading-[1.4] text-[color:var(--sl-text-soft)]">
+												{entry.caption}
+												{entry.caption && entry.credit ? " · " : null}
+												{entry.credit}
+											</p>
+										) : null}
+									</li>
+								))}
+						</ul>
+					</SlBand>
+				) : null}
+
 				{/* Outros projetos — paper cards */}
 				{others.length > 0 ? (
 					<SlBand tone="paper" innerClassName="flex flex-col gap-6 px-4 pb-16 pt-0 sm:px-8 lg:px-12">
