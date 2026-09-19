@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProjectsPage, listEditorialProjects } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
@@ -200,7 +200,7 @@ export default async function ProjectsPage() {
 						/>
 						<div className="flex flex-wrap gap-3">
 							<SlButton href={page.finalCta?.primaryCtaHref || "/contact"} variant="primary">
-								{blockText(page.contentDoc, "projects-final-cta-primary-label") ||
+								{blockButtonLabel(page.contentDoc, "projects-final-cta-primary-label") ||
 									page.finalCta?.primaryCtaLabel ||
 									"Falar sobre projeto"}
 							</SlButton>
@@ -208,7 +208,7 @@ export default async function ProjectsPage() {
 								href={page.finalCta?.secondaryCtaHref || "/sarau-safado"}
 								className="sl-btn sl-btn-secondary"
 							>
-								{blockText(page.contentDoc, "projects-final-cta-secondary-label") ||
+								{blockButtonLabel(page.contentDoc, "projects-final-cta-secondary-label") ||
 									page.finalCta?.secondaryCtaLabel ||
 									"Ver Sarau Safado"}
 							</YnsLink>

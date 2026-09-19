@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import { blockList, blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { formatMoney } from "@/lib/utils";
@@ -92,7 +92,7 @@ export default async function Home() {
 				primaryLabel={heroSource ? "Comprar agora" : hero?.primaryCtaLabel || "Ver a loja"}
 				secondaryHref={hero?.secondaryCtaHref || "/products"}
 				secondaryLabel={
-					blockText(homeContent.contentDoc, "home-hero-secondary-cta") ||
+					blockButtonLabel(homeContent.contentDoc, "home-hero-secondary-cta") ||
 					hero?.secondaryCtaLabel ||
 					"Ver o catálogo"
 				}
@@ -121,7 +121,7 @@ export default async function Home() {
 					"Editora e produtora cultural de São Paulo. Publicamos livros, edições sonoras, zines e objetos — e produzimos saraus e laboratórios de escrita."
 				}
 				linkLabel={
-					blockText(homeContent.contentDoc, "home-manifesto-link-label") ||
+					blockButtonLabel(homeContent.contentDoc, "home-manifesto-link-label") ||
 					homeContent.manifesto?.linkLabel ||
 					"Conhecer o selo"
 				}
@@ -131,7 +131,7 @@ export default async function Home() {
 					data: featuredEvent?.period || "Agenda em breve",
 					local: featuredEvent?.location || "São Paulo · centro",
 					entrada: blockText(homeContent.contentDoc, "home-sarau-entrada") || "R$ 30,00",
-					ctaLabel: blockText(homeContent.contentDoc, "home-sarau-cta-label") || "Garantir ingresso",
+					ctaLabel: blockButtonLabel(homeContent.contentDoc, "home-sarau-cta-label") || "Garantir ingresso",
 					ctaHref: featuredEvent ? "/events" : "/sarau-safado",
 				}}
 			/>

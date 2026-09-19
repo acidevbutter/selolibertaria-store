@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { Footer } from "@/ui/footer/footer";
@@ -107,7 +107,7 @@ export default async function AboutPage() {
 							onInk
 							className="mt-2 self-start"
 						>
-							{blockText(about.contentDoc, "about-section-cta-label") ||
+							{blockButtonLabel(about.contentDoc, "about-section-cta-label") ||
 								about.section?.primaryCtaLabel ||
 								"Conhecer Sarau Safado"}
 						</SlButton>
