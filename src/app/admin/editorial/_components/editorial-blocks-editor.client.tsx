@@ -1,14 +1,19 @@
 "use client";
 
 import type { DragEvent, ReactNode } from "react";
-import { useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Fragment, useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
 import {
 	type EditorialPageType,
 	type PublishState,
 	publishEditorialDraftAction,
 } from "@/app/admin/editorial/blocks-actions";
-import type { EditorialBlock, EditorialBlockWidth, EditorialContentDoc } from "@/lib/editorial-blocks";
+import type {
+	EditorialBlock,
+	EditorialBlockColumn,
+	EditorialBlockWidth,
+	EditorialContentDoc,
+} from "@/lib/editorial-blocks";
 import { EDITORIAL_BLOCK_TYPES, type EditorialBlockType } from "@/lib/editorial-blocks";
 import {
 	EDITORIAL_BLOCKS_HISTORY_LIMIT,
@@ -114,6 +119,56 @@ function normalize(value: string) {
 
 function savedAtLabel(date: Date) {
 	return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+/** A doc entry paired with its real array index -- BlockRow's index/total props and the
+ *  drag guide (`dropIndex === index`) key off the flat array position regardless of how
+ *  deeply this entry ends up nested for display, so every grouping below carries it along. */
+type IndexedBlock = { block: EditorialBlock; index: number };
+
+/** Mirrors editorial-blocks-renderer.tsx's grouping so the canvas shows the same
+ *  section dividers and row/column layout editors will see in "ver como fica" and on
+ *  the live preview -- built by matching `row` ids anywhere in the doc, not just
+ *  adjacent entries, so a block added elsewhere still joins its row. */
+type CanvasItem =
+	| { kind: "block"; entry: IndexedBlock }
+	| { kind: "row"; rowId: string; left: IndexedBlock[]; right: IndexedBlock[] };
+
+function groupDocIntoCanvasItems(doc: EditorialContentDoc): CanvasItem[] {
+	const seenRows = new Set<string>();
+	const items: CanvasItem[] = [];
+	doc.forEach((block, index) => {
+		if (block.row) {
+			if (seenRows.has(block.row)) return;
+			seenRows.add(block.row);
+			const rowEntries: IndexedBlock[] = doc
+				.map((candidate, candidateIndex) => ({ block: candidate, index: candidateIndex }))
+				.filter((entry) => entry.block.row === block.row);
+			items.push({
+				kind: "row",
+				rowId: block.row,
+				left: rowEntries.filter((entry) => entry.block.column !== "right"),
+				right: rowEntries.filter((entry) => entry.block.column === "right"),
+			});
+		} else {
+			items.push({ kind: "block", entry: { block, index } });
+		}
+	});
+	return items;
+}
+
+function sectionOfCanvasItem(item: CanvasItem): string | null {
+	const first = item.kind === "block" ? item.entry.block : (item.left[0] ?? item.right[0])?.block;
+	return first?.section ?? null;
+}
+
+function CanvasSectionDivider({ label }: { label: string }) {
+	return (
+		<div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6, paddingTop: 4 }}>
+			<p className="ad-eb">{label}</p>
+			<hr style={{ border: 0, borderTop: "1px solid var(--ad-line)", margin: 0 }} />
+		</div>
+	);
 }
 
 export function EditorialBlocksEditor({
@@ -546,62 +601,116 @@ export function EditorialBlocksEditor({
 							</button>
 						) : null}
 
-						{doc.map((block, index) => (
-							<div key={block.id} style={{ width: block.width === "half" ? "calc(50% - 10px)" : "100%" }}>
-								{/* The guide only ever lands between blocks, never mid-sentence. */}
-								{dropIndex === index ? (
-									<div className="ad-guide">
-										<span>Solta aqui</span>
+						{(() => {
+							/** One doc entry's full editing row -- shared by standalone blocks and by
+							 *  blocks nested inside a row's column, so drag/drop, insert, and every
+							 *  other callback stay wired exactly the same regardless of visual nesting. */
+							function renderEntry({ block, index }: IndexedBlock) {
+								return (
+									<div key={block.id}>
+										{/* The guide only ever lands between blocks, never mid-sentence. */}
+										{dropIndex === index ? (
+											<div className="ad-guide">
+												<span>Solta aqui</span>
+											</div>
+										) : null}
+										<BlockRow
+											block={block}
+											index={index}
+											total={doc.length}
+											uploading={uploadingIds.has(block.id)}
+											dragging={draggedId === block.id}
+											isDropTarget={dropTargetBlockId === block.id}
+											onFocusBlock={() => setActiveId(block.id)}
+											onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
+											onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
+											onDuplicate={() => setDoc(duplicateBlock(doc, block.id))}
+											onRemove={() => setDoc(removeBlock(doc, block.id))}
+											onShortcut={(create) => {
+												const created = create();
+												setDoc(updateBlock(doc, block.id, { text: "" } as Partial<EditorialBlock>));
+												insertBlock(created, index);
+											}}
+											onDragOverBlock={(position) => setDropIndex(position)}
+											onDragOverImageTarget={(id) => setDropTargetBlockId(id)}
+											onDragStart={(event) => {
+												setDraggedId(block.id);
+												event.dataTransfer.setData(BLOCK_DRAG_MIME, block.id);
+												event.dataTransfer.effectAllowed = "move";
+											}}
+											onDragEnd={() => {
+												setDraggedId(null);
+												setDropIndex(null);
+												setDropTargetBlockId(null);
+											}}
+											onCrop={() => setCropBlockId(block.id)}
+											onSwap={() => {
+												swapBlockIdRef.current = block.id;
+												swapInputRef.current?.click();
+											}}
+											shapePicker={
+												shapeBlockId === block.id ? (
+													<ImageShapePicker
+														current={block.type === "image" ? block.layout : "wide"}
+														onPick={(layout) => setShape(block.id, layout)}
+														onClose={() => setShapeBlockId(null)}
+													/>
+												) : null
+											}
+											onToggleInsert={() => setPickerAnchor((current) => (current === index ? null : index))}
+											insertPopover={pickerAnchor === index ? insertPopover : null}
+										/>
 									</div>
-								) : null}
-								<BlockRow
-									block={block}
-									index={index}
-									total={doc.length}
-									uploading={uploadingIds.has(block.id)}
-									dragging={draggedId === block.id}
-									isDropTarget={dropTargetBlockId === block.id}
-									onFocusBlock={() => setActiveId(block.id)}
-									onChange={(patch) => setDoc(updateBlock(doc, block.id, patch))}
-									onMove={(direction) => setDoc(moveBlock(doc, block.id, direction))}
-									onDuplicate={() => setDoc(duplicateBlock(doc, block.id))}
-									onRemove={() => setDoc(removeBlock(doc, block.id))}
-									onShortcut={(create) => {
-										const created = create();
-										setDoc(updateBlock(doc, block.id, { text: "" } as Partial<EditorialBlock>));
-										insertBlock(created, index);
-									}}
-									onDragOverBlock={(position) => setDropIndex(position)}
-									onDragOverImageTarget={(id) => setDropTargetBlockId(id)}
-									onDragStart={(event) => {
-										setDraggedId(block.id);
-										event.dataTransfer.setData(BLOCK_DRAG_MIME, block.id);
-										event.dataTransfer.effectAllowed = "move";
-									}}
-									onDragEnd={() => {
-										setDraggedId(null);
-										setDropIndex(null);
-										setDropTargetBlockId(null);
-									}}
-									onCrop={() => setCropBlockId(block.id)}
-									onSwap={() => {
-										swapBlockIdRef.current = block.id;
-										swapInputRef.current?.click();
-									}}
-									shapePicker={
-										shapeBlockId === block.id ? (
-											<ImageShapePicker
-												current={block.type === "image" ? block.layout : "wide"}
-												onPick={(layout) => setShape(block.id, layout)}
-												onClose={() => setShapeBlockId(null)}
-											/>
-										) : null
-									}
-									onToggleInsert={() => setPickerAnchor((current) => (current === index ? null : index))}
-									insertPopover={pickerAnchor === index ? insertPopover : null}
-								/>
-							</div>
-						))}
+								);
+							}
+
+							let lastSection: string | null = null;
+
+							return groupDocIntoCanvasItems(doc).map((item) => {
+								const section = sectionOfCanvasItem(item);
+								const divider =
+									section && section !== lastSection ? <CanvasSectionDivider label={section} /> : null;
+								lastSection = section ?? lastSection;
+
+								if (item.kind === "block") {
+									return (
+										<Fragment key={item.entry.block.id}>
+											{divider}
+											<div
+												style={{
+													width: item.entry.block.width === "half" ? "calc(50% - 10px)" : "100%",
+												}}
+											>
+												{renderEntry(item.entry)}
+											</div>
+										</Fragment>
+									);
+								}
+
+								return (
+									<Fragment key={item.rowId}>
+										{divider}
+										<div
+											style={{
+												width: "100%",
+												display: "grid",
+												gridTemplateColumns: item.right.length > 0 ? "1fr 1fr" : "1fr",
+												gap: 20,
+											}}
+										>
+											<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+												{item.left.map((entry) => renderEntry(entry))}
+											</div>
+											{item.right.length > 0 ? (
+												<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+													{item.right.map((entry) => renderEntry(entry))}
+												</div>
+											) : null}
+										</div>
+									</Fragment>
+								);
+							});
+						})()}
 
 						{dropIndex === doc.length ? (
 							<div className="ad-guide">
@@ -929,6 +1038,9 @@ function BlockBar({
 	onFocusCaption,
 	onFocusCredit,
 	onSetWidth,
+	onSetSection,
+	onSetRow,
+	onSetColumn,
 	onDragStart,
 	onDragEnd,
 }: {
@@ -943,11 +1055,22 @@ function BlockBar({
 	onFocusCaption: () => void;
 	onFocusCredit: () => void;
 	onSetWidth: (width: EditorialBlockWidth) => void;
+	onSetSection: (section: string | null) => void;
+	onSetRow: (row: string | null) => void;
+	onSetColumn: (column: EditorialBlockColumn) => void;
 	onDragStart: (event: DragEvent) => void;
 	onDragEnd: () => void;
 }) {
 	const isImage = block.type === "image" || block.type === "gallery";
 	const isHalf = block.width === "half";
+	const inputStyle = {
+		width: 72,
+		border: 0,
+		outline: "none",
+		background: "none",
+		font: "inherit",
+		color: "inherit",
+	} as const;
 
 	return (
 		<span
@@ -965,6 +1088,29 @@ function BlockBar({
 			<button type="button" onClick={() => onSetWidth(isHalf ? "full" : "half")}>
 				{isHalf ? "Metade" : "Linha inteira"}
 			</button>
+			<i>|</i>
+			<input
+				className="ad-mono"
+				style={inputStyle}
+				placeholder="seção"
+				aria-label="Seção da página"
+				value={block.section ?? ""}
+				onChange={(event) => onSetSection(event.target.value || null)}
+			/>
+			<i>|</i>
+			<input
+				className="ad-mono"
+				style={inputStyle}
+				placeholder="linha"
+				aria-label="Agrupar em linha"
+				value={block.row ?? ""}
+				onChange={(event) => onSetRow(event.target.value || null)}
+			/>
+			{block.row ? (
+				<button type="button" onClick={() => onSetColumn(block.column === "right" ? "left" : "right")}>
+					{block.column === "right" ? "Direita" : "Esquerda"}
+				</button>
+			) : null}
 			{isImage ? (
 				<>
 					<i>|</i>
@@ -1081,6 +1227,9 @@ function BlockRow({
 			onFocusCaption={() => document.getElementById(captionId)?.focus()}
 			onFocusCredit={() => document.getElementById(creditId)?.focus()}
 			onSetWidth={(width) => onChange({ width } as Partial<EditorialBlock>)}
+			onSetSection={(section) => onChange({ section } as Partial<EditorialBlock>)}
+			onSetRow={(row) => onChange({ row } as Partial<EditorialBlock>)}
+			onSetColumn={(column) => onChange({ column } as Partial<EditorialBlock>)}
 		/>
 	);
 

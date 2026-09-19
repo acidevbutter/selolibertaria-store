@@ -39,3 +39,11 @@ export function blockButtonLabel(
 	const block = doc?.find((node) => node.id === id);
 	return block?.type === "button" ? block.label : undefined;
 }
+
+/** Source URL of an `image` block, for slots seeded with a real media asset (see
+ * scripts/seed_editorial_blocks.py). Only `.src` is read -- a live product/commerce image,
+ * where one exists, still wins ahead of this in the caller's own fallback chain. */
+export function blockImageSrc(doc: EditorialContentDoc | null | undefined, id: string): string | undefined {
+	const block = doc?.find((node) => node.id === id);
+	return block?.type === "image" && block.src ? block.src : undefined;
+}

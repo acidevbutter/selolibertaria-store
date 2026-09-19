@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
-import { blockButtonLabel, blockList, blockText } from "@/lib/editorial-blocks-slots";
+import { blockButtonLabel, blockImageSrc, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { formatMoney } from "@/lib/utils";
@@ -84,7 +84,12 @@ export default async function Home() {
 					hero?.description ||
 					"Editora e produtora cultural dedicada à literatura erótica, à performance e aos encontros."
 				}
-				imageUrl={heroSource?.images[0] || hero?.featureImage?.src || HERO_FALLBACK_IMAGE}
+				imageUrl={
+					heroSource?.images[0] ||
+					blockImageSrc(homeContent.contentDoc, "home-hero-image") ||
+					hero?.featureImage?.src ||
+					HERO_FALLBACK_IMAGE
+				}
 				imageAlt={hero?.featureImage?.alt || heroSource?.name || "Selo Libertária"}
 				priceLabel={heroPrice}
 				installmentLabel={heroInstallment}
