@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Fragment } from "react";
 import {
 	cropWindowStyle,
 	decodeCropId,
@@ -194,6 +195,49 @@ function renderBlock(block: EditorialBlock) {
 	}
 }
 
+function SectionDivider({ label }: { label: string }) {
+	return (
+		<div className="w-full">
+			<p className="mb-1.5 text-[11px] font-bold tracking-[0.14em] text-[color:var(--editorial-muted)] uppercase">
+				{label}
+			</p>
+			<hr className="border-t border-[color:var(--editorial-border)]" />
+		</div>
+	);
+}
+
+/** A standalone block, or a `row` group split into its `left`/`right` `column`s -- rows are
+ *  built by matching `row` ids anywhere in the doc, not just adjacent entries, so a block
+ *  added elsewhere still joins its row instead of silently rendering on its own. */
+type RenderItem =
+	| { kind: "block"; block: EditorialBlock }
+	| { kind: "row"; rowId: string; left: EditorialBlock[]; right: EditorialBlock[] };
+
+function groupIntoRenderItems(doc: EditorialContentDoc): RenderItem[] {
+	const seenRows = new Set<string>();
+	const items: RenderItem[] = [];
+	for (const block of doc) {
+		if (block.row) {
+			if (seenRows.has(block.row)) continue;
+			seenRows.add(block.row);
+			const rowBlocks = doc.filter((candidate) => candidate.row === block.row);
+			items.push({
+				kind: "row",
+				rowId: block.row,
+				left: rowBlocks.filter((candidate) => candidate.column !== "right"),
+				right: rowBlocks.filter((candidate) => candidate.column === "right"),
+			});
+		} else {
+			items.push({ kind: "block", block });
+		}
+	}
+	return items;
+}
+
+function sectionOfItem(item: RenderItem): string | null {
+	return (item.kind === "block" ? item.block.section : (item.left[0] ?? item.right[0])?.section) ?? null;
+}
+
 export function EditorialBlocksRenderer({
 	doc,
 	className,
@@ -203,16 +247,56 @@ export function EditorialBlocksRenderer({
 }) {
 	if (doc.length === 0) return null;
 
+	let lastSection: string | null = null;
+
 	return (
 		<div className={cn("flex flex-wrap gap-5", className)}>
-			{doc.map((block) => (
-				<div
-					key={block.id}
-					className={cn("clear-both", block.width === "half" ? "w-full sm:w-[calc(50%-10px)]" : "w-full")}
-				>
-					{renderBlock(block)}
-				</div>
-			))}
+			{groupIntoRenderItems(doc).map((item) => {
+				const section = sectionOfItem(item);
+				const divider = section && section !== lastSection ? <SectionDivider label={section} /> : null;
+				lastSection = section ?? lastSection;
+
+				if (item.kind === "block") {
+					return (
+						<Fragment key={item.block.id}>
+							{divider}
+							<div
+								className={cn(
+									"clear-both",
+									item.block.width === "half" ? "w-full sm:w-[calc(50%-10px)]" : "w-full",
+								)}
+							>
+								{renderBlock(item.block)}
+							</div>
+						</Fragment>
+					);
+				}
+
+				return (
+					<Fragment key={item.rowId}>
+						{divider}
+						<div
+							className={cn(
+								"grid w-full gap-5",
+								item.right.length > 0 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1",
+							)}
+						>
+							<div className="flex flex-col gap-4">
+								{item.left.map((block) => (
+									<div key={block.id}>{renderBlock(block)}</div>
+								))}
+							</div>
+							{item.right.length > 0 ? (
+								<div className="flex flex-col gap-4">
+									{item.right.map((block) => (
+										<div key={block.id}>{renderBlock(block)}</div>
+									))}
+								</div>
+							) : null}
+						</div>
+					</Fragment>
+				);
+			})}
 		</div>
 	);
 }

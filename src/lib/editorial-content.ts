@@ -143,6 +143,9 @@ export type EditorialBase = {
 	updatedAt?: string;
 	createdBy?: string | null;
 	updatedBy?: string | null;
+	/** The published block doc (fatia 02), when the block editor has ever published this page --
+	 *  see editorial-blocks-slots.ts for how pages read individual blocks out of it by id. */
+	contentDoc?: import("@/lib/editorial-blocks").EditorialContentDoc | null;
 };
 
 export type EditorialEvent = EditorialBase & {

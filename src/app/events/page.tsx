@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { blockButtonLabel, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialBackgroundContrast, getEditorialBackgroundStyle } from "@/lib/editorial-content";
 import {
 	getEditorialEventsPage,
@@ -17,8 +18,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
 	const page = await getEditorialEventsPage();
 
 	return {
-		title: `${page.hero?.eyebrow || "Eventos"} · ${seloSiteMeta.name}`,
-		description: page.hero?.body || "Agenda pública, arquivo e memória editorial do universo do selo.",
+		title: `${blockText(page.contentDoc, "events-hero-eyebrow") || page.hero?.eyebrow || "Eventos"} · ${seloSiteMeta.name}`,
+		description:
+			blockText(page.contentDoc, "events-hero-body") ||
+			page.hero?.body ||
+			"Agenda pública, arquivo e memória editorial do universo do selo.",
 	};
 };
 
@@ -109,13 +113,17 @@ export default async function EventsPage() {
 										: "text-[color:rgba(247,244,239,0.7)] sm:text-sm"
 								}
 							>
-								{page.hero?.eyebrow || "Eventos"}
+								{blockText(page.contentDoc, "events-hero-eyebrow") || page.hero?.eyebrow || "Eventos"}
 							</EditorialEyebrow>
 							<h1 className="title-font text-5xl leading-[0.88] font-black tracking-[-0.06em] sm:text-6xl lg:text-7xl">
-								{page.hero?.title || featuredEvent?.title || "Agenda pública"}
+								{blockText(page.contentDoc, "events-hero-title") ||
+									page.hero?.title ||
+									featuredEvent?.title ||
+									"Agenda pública"}
 							</h1>
 							<EditorialRichText
 								source={
+									blockText(page.contentDoc, "events-hero-body") ||
 									page.hero?.body ||
 									featuredEvent?.summary ||
 									"Eventos, leituras e memória editorial em circulação pública."
@@ -137,7 +145,9 @@ export default async function EventsPage() {
 											: "bg-[color:var(--editorial-paper)] text-[color:var(--editorial-ink)] hover:bg-[color:var(--editorial-beige)]",
 									].join(" ")}
 								>
-									{page.hero?.primaryCtaLabel || "Ver próxima edição"}
+									{blockButtonLabel(page.contentDoc, "events-hero-primary-label") ||
+										page.hero?.primaryCtaLabel ||
+										"Ver próxima edição"}
 								</YnsLink>
 								<YnsLink
 									href={page.hero?.secondaryCtaHref || "/projects"}
@@ -148,7 +158,9 @@ export default async function EventsPage() {
 											: "border-[color:rgba(247,244,239,0.22)] text-[color:var(--editorial-paper)] hover:bg-[color:rgba(247,244,239,0.08)]",
 									].join(" ")}
 								>
-									{page.hero?.secondaryCtaLabel || "Conhecer projetos"}
+									{blockButtonLabel(page.contentDoc, "events-hero-secondary-label") ||
+										page.hero?.secondaryCtaLabel ||
+										"Conhecer projetos"}
 								</YnsLink>
 							</div>
 						</div>
@@ -185,19 +197,22 @@ export default async function EventsPage() {
 					<section className="grid gap-10 border-t border-[color:var(--editorial-border)] pt-10 lg:grid-cols-[0.95fr_0.75fr] lg:gap-16">
 						<div>
 							<h2 className="title-font max-w-3xl text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
-								{page.curatorialNote?.title ||
+								{blockText(page.contentDoc, "events-curatorial-title") ||
+									page.curatorialNote?.title ||
 									"A agenda pública aproxima livro, presença e continuidade curatorial."}
 							</h2>
 						</div>
 						<div className="space-y-5 text-sm leading-8 text-[color:var(--editorial-muted)] sm:text-base">
 							<EditorialRichText
 								source={
+									blockText(page.contentDoc, "events-curatorial-body") ||
 									page.curatorialNote?.body ||
 									"Leituras, oficinas e memória de arquivo aparecem no mesmo fluxo para apresentar a programação como parte central da atuação cultural."
 								}
 							/>
 							<EditorialRichText
 								source={
+									blockText(page.contentDoc, "events-agenda-body") ||
 									page.agenda?.body ||
 									"A agenda mistura próxima edição, programação e memória sem perder clareza operacional."
 								}
@@ -208,7 +223,9 @@ export default async function EventsPage() {
 
 				<EditorialShell className="py-4">
 					<section className="space-y-6">
-						<EditorialEyebrow>{page.agenda?.label || "Agenda"}</EditorialEyebrow>
+						<EditorialEyebrow>
+							{blockText(page.contentDoc, "events-agenda-label") || page.agenda?.label || "Agenda"}
+						</EditorialEyebrow>
 						<div className="border-t border-[color:var(--editorial-border)]">
 							{agendaEvents.length > 0 ? (
 								agendaEvents.map((event, index) => {
@@ -251,7 +268,8 @@ export default async function EventsPage() {
 								})
 							) : (
 								<div className="border-b border-[color:var(--editorial-border)] py-10 text-sm leading-7 text-[color:var(--editorial-muted)]">
-									{page.agenda?.emptyText ||
+									{blockText(page.contentDoc, "events-agenda-empty") ||
+										page.agenda?.emptyText ||
 										"A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau Safado, conhecer os projetos e falar com o selo."}
 								</div>
 							)}
@@ -262,12 +280,19 @@ export default async function EventsPage() {
 				<section className="bg-[color:rgba(216,208,196,0.42)]">
 					<EditorialShell className="grid gap-8 py-16 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
 						<div className="space-y-4">
-							<EditorialEyebrow>{page.archive?.label || "Arquivo e memória"}</EditorialEyebrow>
+							<EditorialEyebrow>
+								{blockText(page.contentDoc, "events-archive-label") ||
+									page.archive?.label ||
+									"Arquivo e memória"}
+							</EditorialEyebrow>
 							<h2 className="title-font text-4xl leading-[0.92] font-black tracking-[-0.05em] text-[color:var(--editorial-ink)] sm:text-5xl">
-								{page.archive?.title || "A programação também deixa rastro, repertório e retorno aos livros."}
+								{blockText(page.contentDoc, "events-archive-title") ||
+									page.archive?.title ||
+									"A programação também deixa rastro, repertório e retorno aos livros."}
 							</h2>
 							<EditorialRichText
 								source={
+									blockText(page.contentDoc, "events-archive-body") ||
 									page.archive?.body ||
 									"A agenda não termina na data. Ela também organiza memória, fotos, textos e continuidade para a atuação cultural."
 								}
@@ -309,10 +334,13 @@ export default async function EventsPage() {
 					<section className="grid gap-6 bg-[color:var(--editorial-ink)] px-6 py-8 text-[color:var(--editorial-paper)] sm:px-8 sm:py-10 lg:grid-cols-[1.1fr_auto] lg:items-center">
 						<div>
 							<h2 className="title-font max-w-4xl text-3xl leading-[0.92] font-black tracking-[-0.05em] sm:text-4xl">
-								{page.finalCta?.title || "A agenda abre caminho para encontros, livros e projetos do selo."}
+								{blockText(page.contentDoc, "events-final-cta-title") ||
+									page.finalCta?.title ||
+									"A agenda abre caminho para encontros, livros e projetos do selo."}
 							</h2>
 							<EditorialRichText
 								source={
+									blockText(page.contentDoc, "events-final-cta-body") ||
 									page.finalCta?.body ||
 									"O caminho público segue para o programa central do selo e para o portfólio cultural."
 								}
@@ -324,13 +352,17 @@ export default async function EventsPage() {
 								href={page.finalCta?.primaryCtaHref || "/sarau-safado"}
 								className="inline-flex min-h-12 items-center justify-center bg-[color:var(--editorial-paper)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-ink)] transition-colors duration-300 hover:bg-[color:var(--editorial-beige)]"
 							>
-								{page.finalCta?.primaryCtaLabel || "Ver Sarau Safado"}
+								{blockButtonLabel(page.contentDoc, "events-final-cta-primary-label") ||
+									page.finalCta?.primaryCtaLabel ||
+									"Ver Sarau Safado"}
 							</YnsLink>
 							<YnsLink
 								href={page.finalCta?.secondaryCtaHref || "/projects"}
 								className="inline-flex min-h-12 items-center justify-center border border-[color:rgba(247,244,239,0.22)] px-5 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] transition-colors duration-300 hover:bg-[color:rgba(247,244,239,0.08)]"
 							>
-								{page.finalCta?.secondaryCtaLabel || "Ver projetos"}
+								{blockButtonLabel(page.contentDoc, "events-final-cta-secondary-label") ||
+									page.finalCta?.secondaryCtaLabel ||
+									"Ver projetos"}
 							</YnsLink>
 						</div>
 					</section>

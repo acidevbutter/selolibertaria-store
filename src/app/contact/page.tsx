@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialContactPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
@@ -14,8 +15,9 @@ export const generateMetadata = async (): Promise<Metadata> => {
 	const contact = await getEditorialContactPage();
 
 	return {
-		title: `${contact.hero?.eyebrow || "Contato"} · ${seloSiteMeta.name}`,
+		title: `${blockText(contact.contentDoc, "contact-hero-eyebrow") || contact.hero?.eyebrow || "Contato"} · ${seloSiteMeta.name}`,
 		description:
+			blockText(contact.contentDoc, "contact-hero-body") ||
 			contact.hero?.body ||
 			"Um canal direto para falar com o selo, livros, projetos, imprensa e Sarau Safado.",
 	};
@@ -31,9 +33,11 @@ export default async function ContactPage() {
 		{ label: "YouTube", href: seloSiteMeta.youtube, text: "Selo Libertária" },
 	];
 
-	const subjects = contact.form?.subjects?.length
-		? contact.form.subjects
-		: ["Comprar livro", "Enviar manuscrito", "Projetos", "Sarau Safado", "Imprensa", "Outro"];
+	const subjects =
+		blockList(contact.contentDoc, "contact-form-subjects") ||
+		(contact.form?.subjects?.length
+			? contact.form.subjects
+			: ["Comprar livro", "Enviar manuscrito", "Projetos", "Sarau Safado", "Imprensa", "Outro"]);
 
 	const closingLinks = contact.paths?.links?.slice(0, 3) || [
 		{ label: "Projetos", href: "/projects" },
@@ -54,18 +58,25 @@ export default async function ContactPage() {
 					innerClassName="grid gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] lg:items-end lg:px-12"
 				>
 					<div className="flex max-w-[52ch] flex-col gap-3.5">
-						<SlEyebrow onInk>{contact.hero?.eyebrow || "Contato"}</SlEyebrow>
+						<SlEyebrow onInk>
+							{blockText(contact.contentDoc, "contact-hero-eyebrow") || contact.hero?.eyebrow || "Contato"}
+						</SlEyebrow>
 						<h1 className="sl-head m-0 text-[clamp(38px,6vw,var(--sl-size-hero-md))] leading-[0.95]">
-							{contact.hero?.title || "Convites, parcerias, imprensa, livros e Sarau Safado"}
+							{blockText(contact.contentDoc, "contact-hero-title") ||
+								contact.hero?.title ||
+								"Convites, parcerias, imprensa, livros e Sarau Safado"}
 						</h1>
 						<p className="m-0 max-w-[48ch] text-[var(--sl-size-lead)] leading-[1.75] text-[color:var(--sl-text-on-ink-muted)]">
-							{contact.hero?.body ||
+							{blockText(contact.contentDoc, "contact-hero-body") ||
+								contact.hero?.body ||
 								"Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação."}
 						</p>
 					</div>
 					<div className="flex w-full max-w-[384px] flex-col gap-3.5 bg-[color:var(--sl-surface-page)] p-6 text-[color:var(--sl-text)] lg:justify-self-end">
 						<p className="sl-lbl m-0 text-[color:var(--sl-accent)]">
-							{contact.hero?.featuredLabel || "Email"}
+							{blockText(contact.contentDoc, "contact-hero-featured-label") ||
+								contact.hero?.featuredLabel ||
+								"Email"}
 						</p>
 						<p className="sl-price m-0 text-[clamp(20px,4vw,28px)] leading-[1.15] break-words">
 							{resolvedSupportEmail}
@@ -81,10 +92,13 @@ export default async function ContactPage() {
 					<div className="flex min-w-0 flex-[2_1_420px] flex-col gap-6 border border-[color:var(--sl-line-hairline)] bg-[color:var(--sl-surface-card)] p-6">
 						<div className="flex flex-col gap-2.5 border-b border-[color:var(--sl-line-hairline)] pb-5">
 							<h2 className="sl-head m-0 text-[clamp(28px,4vw,var(--sl-size-section-sm))] leading-[0.98]">
-								{contact.form?.title || "Escreva para o selo"}
+								{blockText(contact.contentDoc, "contact-form-title") ||
+									contact.form?.title ||
+									"Escreva para o selo"}
 							</h2>
 							<SlProse
 								source={
+									blockText(contact.contentDoc, "contact-form-description") ||
 									contact.form?.description ||
 									"Use o formulário para convites, imprensa, projetos, livros e assuntos editoriais."
 								}
@@ -124,10 +138,16 @@ export default async function ContactPage() {
 						<div className="flex flex-col gap-5 p-6" style={{ background: "var(--sl-surface-band)" }}>
 							<div className="flex flex-col gap-2.5 border-b border-[color:var(--sl-line)] pb-4">
 								<h2 className="sl-head m-0 text-[clamp(24px,3vw,36px)] leading-[1]">
-									{contact.direct?.title || "Canais diretos"}
+									{blockText(contact.contentDoc, "contact-direct-title") ||
+										contact.direct?.title ||
+										"Canais diretos"}
 								</h2>
 								<SlProse
-									source={contact.direct?.description || "Pontos de contato editoriais e sociais do selo."}
+									source={
+										blockText(contact.contentDoc, "contact-direct-description") ||
+										contact.direct?.description ||
+										"Pontos de contato editoriais e sociais do selo."
+									}
 									className="text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]"
 								/>
 							</div>
@@ -164,10 +184,12 @@ export default async function ContactPage() {
 				>
 					<div className="flex flex-col gap-3">
 						<p className="sl-eyebrow m-0 text-[color:var(--sl-text-on-ink-label)]">
-							{contact.paths?.title || "Continuar"}
+							{blockText(contact.contentDoc, "contact-paths-title") || contact.paths?.title || "Continuar"}
 						</p>
 						<h2 className="sl-head m-0 max-w-[26ch] text-[clamp(26px,3.4vw,var(--sl-size-section-sm))] leading-[1]">
-							{contact.closing?.title || "Siga pela agenda do Sarau ou pelo catálogo"}
+							{blockText(contact.contentDoc, "contact-closing-title") ||
+								contact.closing?.title ||
+								"Siga pela agenda do Sarau ou pelo catálogo"}
 						</h2>
 					</div>
 					<div className="flex flex-wrap gap-3">

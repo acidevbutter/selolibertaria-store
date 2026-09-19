@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { canBuyOnSelolibertaria } from "@/lib/authz";
 import { commerce } from "@/lib/commerce";
 import { getRequestPreferredCurrency } from "@/lib/currency-preference";
+import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProductsPage } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { SlCatalog } from "@/ui/products/sl-catalog.client";
@@ -38,13 +39,14 @@ export default async function AllProductsPage() {
 
 	const count = rows.length;
 	const lead =
+		blockText(page.contentDoc, "products-hero-lead") ||
 		page.hero?.body ||
 		"Livros, edições sonoras, zines, objetos, ingressos e laboratórios — uma mesa de curadoria, não uma vitrine.";
 
 	return (
 		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
 			<SlPageHero
-				eyebrow={page.hero?.eyebrow || "Loja"}
+				eyebrow={blockText(page.contentDoc, "products-hero-eyebrow") || page.hero?.eyebrow || "Loja"}
 				title={count > 0 ? `${count} ${count === 1 ? "item do selo" : "itens do selo"}` : "A loja do selo"}
 				lead={lead}
 			/>
@@ -54,7 +56,8 @@ export default async function AllProductsPage() {
 			) : (
 				<div className="mx-auto w-full max-w-[var(--sl-w-narrow)] px-4 py-16 sm:px-8 lg:px-12">
 					<p className="border border-[color:var(--sl-line-strong)] bg-[color:var(--sl-surface-card)] p-6 text-[14px] leading-[1.7] text-[color:var(--sl-text-muted)]">
-						{page.listing?.emptyText ||
+						{blockText(page.contentDoc, "products-listing-empty") ||
+							page.listing?.emptyText ||
 							"A loja ainda não tem produtos publicados. Volte em breve para acompanhar os próximos lançamentos."}
 					</p>
 				</div>
@@ -68,7 +71,9 @@ export default async function AllProductsPage() {
 					<div className="max-w-[48ch]">
 						<p className="sl-eyebrow m-0 text-[color:var(--sl-text-on-ink-label)]">Depois da compra</p>
 						<h2 className="sl-head mt-3 text-[clamp(28px,4vw,var(--sl-size-section-sm))] leading-[0.98]">
-							{page.finalCta?.title || "Continue pelo Sarau Safado e pelos projetos do selo."}
+							{blockText(page.contentDoc, "products-final-cta-title") ||
+								page.finalCta?.title ||
+								"Continue pelo Sarau Safado e pelos projetos do selo."}
 						</h2>
 					</div>
 					<div className="flex flex-wrap gap-3">
