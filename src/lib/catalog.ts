@@ -104,7 +104,7 @@ export async function getCatalogManagementProductBySlug(slug: string) {
 		{},
 		true,
 	);
-	return product ? fromFastApiProduct(product) : null;
+	return product ? fromFastApiProduct(product, { includeUnpublished: true }) : null;
 }
 
 export async function listCatalogProducts({
@@ -120,7 +120,7 @@ export async function listCatalogProducts({
 	if (category) params.set("category", slugify(category));
 	const path = includeUnpublished ? "/catalog/management/" : "/catalog/";
 	const body = await request<{ items: FastApiProduct[] }>(`${path}?${params}`, {}, includeUnpublished);
-	return body.items.map(fromFastApiProduct);
+	return body.items.map((item) => fromFastApiProduct(item, { includeUnpublished }));
 }
 
 type FastApiProduct = CatalogProductDocument & {
@@ -131,18 +131,24 @@ type FastApiProduct = CatalogProductDocument & {
 	updated_at: string;
 };
 
-function fromFastApiProduct(value: FastApiProduct): CatalogProductDocument {
-	return normalizeCatalogProductDocument({
-		...value,
-		category:
-			value.category_name && value.category_slug
-				? { name: value.category_name, slug: value.category_slug }
-				: null,
-		productType: value.product_type,
-		createdAt: new Date(value.created_at),
-		updatedAt: new Date(value.updated_at),
-		variants: value.variants,
-	});
+function fromFastApiProduct(
+	value: FastApiProduct,
+	options: { includeUnpublished?: boolean } = {},
+): CatalogProductDocument {
+	return normalizeCatalogProductDocument(
+		{
+			...value,
+			category:
+				value.category_name && value.category_slug
+					? { name: value.category_name, slug: value.category_slug }
+					: null,
+			productType: value.product_type,
+			createdAt: new Date(value.created_at),
+			updatedAt: new Date(value.updated_at),
+			variants: value.variants,
+		},
+		options,
+	);
 }
 
 function toFastApiVariant(variant: CatalogVariantDocument) {

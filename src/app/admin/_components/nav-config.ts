@@ -48,6 +48,7 @@ export const adminNavGroups: NavGroup[] = [
 			{ href: "/admin/orders", label: "Pedidos", capability: "orders.read", countKey: "orders" },
 			{ href: "/admin/products", label: "Produtos", capability: "catalog.write" },
 			{ href: "/admin/promotions", label: "Promoções", capability: "promotions.read" },
+			{ href: "/admin/pre-venda", label: "Pré-vendas", capability: "catalog.write" },
 			{ href: "/admin/users", label: "Clientes", capability: "customers.read" },
 		],
 	},
