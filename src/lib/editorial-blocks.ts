@@ -29,16 +29,28 @@ export type EditorialImageLayout = (typeof EDITORIAL_IMAGE_LAYOUTS)[number];
 export const EDITORIAL_BLOCK_WIDTHS = ["full", "half"] as const;
 export type EditorialBlockWidth = (typeof EDITORIAL_BLOCK_WIDTHS)[number];
 
+export const EDITORIAL_BLOCK_COLUMNS = ["left", "right"] as const;
+export type EditorialBlockColumn = (typeof EDITORIAL_BLOCK_COLUMNS)[number];
+
 /** Every node can sit at full row width or share a row with the next
- *  half-width node -- spread into each schema below (mirrors DocumentNode's
- *  shared `width` field on the backend, since zod has no schema inheritance
- *  as clean as a shared Python base class). */
-const widthField = { width: z.enum(EDITORIAL_BLOCK_WIDTHS).nullable().optional() };
+ *  half-width node, and carries admin-editor-only grouping metadata -- spread
+ *  into each schema below (mirrors DocumentNode's shared fields on the
+ *  backend, since zod has no schema inheritance as clean as a shared Python
+ *  base class). `section`/`row`/`column` are read only by the block editor's
+ *  own canvas/preview, never by the storefront: `section` labels a divider
+ *  header, `row` groups blocks sharing the same id into one row split into
+ *  stacked `column`s -- a flat-list alternative to a nested "row" node type. */
+const groupFields = {
+	width: z.enum(EDITORIAL_BLOCK_WIDTHS).nullable().optional(),
+	section: z.string().nullable().optional(),
+	row: z.string().nullable().optional(),
+	column: z.enum(EDITORIAL_BLOCK_COLUMNS).nullable().optional(),
+};
 
 const headingBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("heading"),
-	...widthField,
+	...groupFields,
 	level: z.union([z.literal(2), z.literal(3)]),
 	text: z.string(),
 });
@@ -46,14 +58,14 @@ const headingBlockSchema = z.object({
 const paragraphBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("paragraph"),
-	...widthField,
+	...groupFields,
 	text: z.string(),
 });
 
 const listBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("list"),
-	...widthField,
+	...groupFields,
 	style: z.enum(["bullet", "number"]),
 	items: z.array(z.string()),
 });
@@ -61,7 +73,7 @@ const listBlockSchema = z.object({
 const quoteBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("quote"),
-	...widthField,
+	...groupFields,
 	text: z.string(),
 	attribution: z.string().nullable().optional(),
 });
@@ -69,14 +81,14 @@ const quoteBlockSchema = z.object({
 const highlightBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("highlight"),
-	...widthField,
+	...groupFields,
 	text: z.string(),
 });
 
 const imageBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("image"),
-	...widthField,
+	...groupFields,
 	assetId: z.string(),
 	cropId: z.string().nullable().optional(),
 	/** Resolved by whoever serializes the doc (backend on publish, admin preview on the fly) -- the renderer never resolves assetId itself. */
@@ -102,14 +114,14 @@ const galleryImageSchema = z.object({
 const galleryBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("gallery"),
-	...widthField,
+	...groupFields,
 	images: z.array(galleryImageSchema),
 });
 
 const buttonBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("button"),
-	...widthField,
+	...groupFields,
 	label: z.string(),
 	href: z.string(),
 	variant: z.enum(["primary", "secondary"]).nullable().optional(),
@@ -118,13 +130,13 @@ const buttonBlockSchema = z.object({
 const dividerBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("divider"),
-	...widthField,
+	...groupFields,
 });
 
 const productShelfBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("productShelf"),
-	...widthField,
+	...groupFields,
 	title: z.string().nullable().optional(),
 	productSlugs: z.array(z.string()),
 });
@@ -132,7 +144,7 @@ const productShelfBlockSchema = z.object({
 const agendaBlockSchema = z.object({
 	id: z.string(),
 	type: z.literal("agenda"),
-	...widthField,
+	...groupFields,
 	title: z.string().nullable().optional(),
 	eventSlugs: z.array(z.string()),
 });

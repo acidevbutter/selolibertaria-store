@@ -197,4 +197,40 @@ describe("EditorialBlocksRenderer", () => {
 		const { container } = render(<EditorialBlocksRenderer doc={docs} />);
 		expect(container.querySelector("figcaption")?.textContent).toBe("Legenda da galeria Foto: Ciclana");
 	});
+
+	it("renders a section divider once, before the first block of each new section", () => {
+		const doc: EditorialContentDoc = [
+			{ id: "b1", type: "heading", level: 2, text: "Título do hero", section: "Hero" },
+			{ id: "b2", type: "paragraph", text: "Blurb do hero", section: "Hero" },
+			{ id: "b3", type: "heading", level: 2, text: "Título do manifesto", section: "Manifesto" },
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={doc} />);
+		const labels = Array.from(container.querySelectorAll("p")).map((p) => p.textContent);
+		expect(labels).toEqual(["Hero", "Blurb do hero", "Manifesto"]);
+	});
+
+	it("groups blocks sharing a row id into a left/right column layout, even if not adjacent", () => {
+		const doc: EditorialContentDoc = [
+			{ id: "left1", type: "heading", level: 2, text: "Esquerda 1", row: "hero", column: "left" },
+			{ id: "unrelated", type: "divider" },
+			{ id: "left2", type: "paragraph", text: "Esquerda 2", row: "hero", column: "left" },
+			{ id: "right1", type: "paragraph", text: "Direita 1", row: "hero", column: "right" },
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={doc} />);
+		const columns = container.querySelectorAll(":scope > div > div.grid > div");
+		expect(columns).toHaveLength(2);
+		expect(columns[0]?.textContent).toBe("Esquerda 1Esquerda 2");
+		expect(columns[1]?.textContent).toBe("Direita 1");
+	});
+
+	it("renders a single column when a row has no right-column blocks", () => {
+		const doc: EditorialContentDoc = [
+			{ id: "left1", type: "paragraph", text: "Sozinho na esquerda", row: "solo", column: "left" },
+		];
+		const { container } = render(<EditorialBlocksRenderer doc={doc} />);
+		const rowWrapper = container.querySelector(":scope > div > div.grid") as HTMLElement;
+		expect(rowWrapper.className).toContain("grid-cols-1");
+		expect(rowWrapper.className).not.toContain("sm:grid-cols-2");
+		expect(rowWrapper.querySelectorAll(":scope > div")).toHaveLength(1);
+	});
 });
