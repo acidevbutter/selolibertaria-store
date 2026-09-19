@@ -74,6 +74,53 @@ function backendHeaders(actorId: string) {
 	};
 }
 
+/** Shared by the explicit "Publicar" action and the editor's own autosave —
+ *  both write the same `draft_doc` field on the same record. */
+function putDraftDoc(type: string, slug: string, actorId: string, doc: EditorialContentDoc) {
+	return fetch(`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/draft`, {
+		method: "PUT",
+		headers: backendHeaders(actorId),
+		body: JSON.stringify({ draft_doc: doc }),
+		cache: "no-store",
+	});
+}
+
+export type SaveDraftState = { status: "saved"; savedAt: string } | { status: "failed"; message: string };
+
+/**
+ * The editor's autosave calls this on a debounce (§9 draft semantics): the
+ * "Rascunho salvo às HH:MM" indicator used to be cosmetic -- it flipped a
+ * local timer without ever reaching the backend, so a closed tab silently
+ * lost every unpublished edit. This is the only place that fixes that: it
+ * writes `draft_doc` for real, the same PUT the publish flow already used.
+ */
+export async function saveEditorialDraftAction(
+	type: EditorialPageType,
+	slug: string,
+	doc: EditorialContentDoc,
+): Promise<SaveDraftState> {
+	const session = await auth();
+	if (!session || !hasCapability(session.user.role, "editorial.write")) {
+		return { status: "failed", message: "Você não tem permissão para editar esta página." };
+	}
+
+	const result = editorialContentDocSchema.safeParse(doc);
+	if (!result.success) {
+		return { status: "failed", message: "O documento local ficou inválido — recarregue a página." };
+	}
+
+	try {
+		const response = await putDraftDoc(type, slug, session.user.id, result.data);
+		if (!response.ok) {
+			return { status: "failed", message: `Não foi possível salvar o rascunho (${response.status}).` };
+		}
+		return { status: "saved", savedAt: timeLabel(new Date()) };
+	} catch (error) {
+		console.error("[saveEditorialDraftAction]", error);
+		return { status: "failed", message: "Não foi possível falar com o servidor." };
+	}
+}
+
 export type PublishState =
 	| { status: "idle" }
 	| { status: "published"; publishedAt: string; blocks: number; images: number }
@@ -156,15 +203,7 @@ export async function publishEditorialDraftAction(
 		// PUT …/draft first: publish() on the backend promotes whatever
 		// draft_doc is currently stored, so the doc being published has to
 		// land there before the publish call.
-		const draftResponse = await fetch(
-			`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}/${slug}/draft`,
-			{
-				method: "PUT",
-				headers: backendHeaders(actorId),
-				body: JSON.stringify({ draft_doc: doc }),
-				cache: "no-store",
-			},
-		);
+		const draftResponse = await putDraftDoc(type, slug, actorId, doc);
 		if (draftResponse.status === 403) {
 			return { status: "failed", message: "Você não tem permissão para publicar esta página." };
 		}

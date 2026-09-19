@@ -897,6 +897,9 @@
 	border: 1px solid var(--ad-line);
 	margin-top: 40px;
 }
+.ad-root .ad-modal.ad-modal-crop {
+	max-width: 920px;
+}
 .ad-root .ad-modal .ad-mh {
 	height: var(--ad-h-topbar);
 	background: var(--ad-shell);
@@ -924,18 +927,45 @@
 	align-items: flex-start;
 	flex-wrap: wrap;
 }
+.ad-root .ad-crop-stage {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--ad-sand);
+	border: 1px solid var(--ad-line);
+}
 .ad-root .ad-crop {
 	position: relative;
-	width: 260px;
 	background: repeating-linear-gradient(135deg, #2a2522 0 10px, #1f1a16 10px 20px);
 	overflow: hidden;
 	user-select: none;
-	transition: aspect-ratio var(--ad-transition);
+	transition:
+		width var(--ad-transition),
+		height var(--ad-transition);
+}
+.ad-root .ad-crop .ad-crop-bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 .ad-root .ad-crop .ad-dark {
 	position: absolute;
 	inset: 0;
 	background: rgba(11, 11, 11, 0.58);
+}
+.ad-root .ad-crop .ad-fr-window {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+.ad-root .ad-crop .ad-fr-window img {
+	position: absolute;
+	object-fit: cover;
+	display: block;
 }
 .ad-root .ad-crop .ad-fr {
 	position: absolute;
