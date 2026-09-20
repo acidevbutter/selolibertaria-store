@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getPreSaleAvailability } from "@/lib/pre-sale.server";
+import { getCatalogProductById } from "@/lib/catalog";
+import { listPresales } from "@/lib/presales";
 import {
+	AdminEditorialEmptyState,
 	AdminEditorialHero,
 	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { AdminPreSaleToggle } from "./admin-pre-sale-toggle.client";
+import { Button } from "@/ui/shadcn/button";
+import { PresaleRow } from "./presale-row.client";
 
 export const dynamic = "force-dynamic";
 
@@ -16,41 +17,46 @@ export default async function AdminPreSalePage() {
 	const session = await auth();
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
-	const availability = await getPreSaleAvailability();
+
+	const presales = await listPresales();
+	const rows = await Promise.all(
+		presales.map(async (presale) => ({
+			presale,
+			productName: (await getCatalogProductById(presale.productId))?.name ?? presale.productId,
+		})),
+	);
 
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
-				eyebrow="Pré-venda"
-				title="Pré-venda"
-				description="Agende a página e o modal de estreia sem depender de variável de ambiente."
-			/>
-			<div className="grid gap-5 lg:grid-cols-2">
-				<AdminEditorialStat
-					label="Página pública"
-					value={availability.pageActive ? "Ativa" : "Inativa"}
-					helper={
-						availability.pageActive ? "A campanha está pública." : "A rota responde como não encontrada."
-					}
-				/>
-				<AdminEditorialStat
-					label="Modal no site"
-					value={availability.popupActive ? "Ativo" : "Inativo"}
-					helper={availability.inWindow ? "A janela de exibição está aberta." : "Fora da janela de exibição."}
-				/>
-			</div>
-			<EditorialPanel className="mt-5">
-				<AdminPreSaleToggle />
-				<div className="mt-5 border-t border-[color:var(--editorial-border)] pt-4">
-					<Link
-						href="/pre-venda/little-fish-big-fish"
-						target="_blank"
-						className="text-sm font-medium text-[color:var(--editorial-accent)] underline-offset-4 hover:underline"
-					>
-						Ver página pública
+				eyebrow="Pré-vendas"
+				title="Pré-vendas"
+				description="Descontos com data de estreia, aviso no site e reservas que não podem ser apagadas."
+				actions={
+					<Link href="/admin/pre-venda/nova">
+						<Button type="button">Nova pré-venda</Button>
 					</Link>
+				}
+			/>
+			{rows.length === 0 ? (
+				<AdminEditorialEmptyState
+					title="Nenhuma pré-venda"
+					description="A primeira abre quando você marcar uma data de estreia em um produto."
+				/>
+			) : (
+				<div className="space-y-3">
+					<div className="grid grid-cols-[minmax(0,2fr)_100px_90px_110px_100px] gap-3 px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+						<span>Produto</span>
+						<span>Estado</span>
+						<span>Reservas</span>
+						<span>A cobrar</span>
+						<span>Estreia</span>
+					</div>
+					{rows.map(({ presale, productName }) => (
+						<PresaleRow key={presale.id} presale={presale} productName={productName} />
+					))}
 				</div>
-			</EditorialPanel>
+			)}
 		</AdminEditorialPage>
 	);
 }

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const HERO_FALLBACK_IMAGE = "/images/selolibertaria/virus-do-beijo-cover.png";
+const HERO_FALLBACK_IMAGE = "/images/selolibertaria/home-capa-destaque-lfbf.webp";
 
 export default async function Home() {
 	const [homeContent, locale, session, currency] = await Promise.all([

@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { SlAddToCart } from "@/components/sl-add-to-cart.client";
 import { type CountdownRemaining, computeCountdown, ZERO_COUNTDOWN } from "@/lib/countdown";
 import { type PreSaleCampaign, resolveCountdownTarget } from "@/lib/pre-sale";
 import { YnsLink } from "@/ui/yns-link";
@@ -19,6 +21,8 @@ import { YnsLink } from "@/ui/yns-link";
  */
 export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign }) {
 	const titleId = useId();
+	const pathname = usePathname();
+	const hiddenOnThisRoute = pathname?.startsWith("/checkout") || pathname?.startsWith("/cart");
 	const storageKey = `presale:${campaign.slug}:popup-dismissed-until`;
 	// `null` = sem data de estreia no admin → o modal de contagem não abre.
 	const target = useMemo(() => resolveCountdownTarget(campaign), [campaign]);
@@ -80,7 +84,7 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 		};
 	}, [open, dismiss]);
 
-	if (!open || target === null) return null;
+	if (!open || target === null || hiddenOnThisRoute) return null;
 
 	const cells: Array<[string, string]> = [
 		[remaining.days, "dias"],
@@ -140,12 +144,22 @@ export function PreSaleCountdownPopup({ campaign }: { campaign: PreSaleCampaign 
 					</div>
 				) : null}
 
-				<YnsLink
-					href={campaign.popup.primaryCta.href}
-					className="mt-[6px] box-border inline-flex h-12 w-full items-center justify-center bg-[#F2891E] text-[11px] font-black uppercase tracking-[0.22em] text-[#0B0B0B]"
-				>
-					{campaign.popup.primaryCta.label}
-				</YnsLink>
+				{campaign.variantId ? (
+					<SlAddToCart
+						variantId={campaign.variantId}
+						redirectTo="/checkout"
+						className="mt-[6px] box-border flex h-12 w-full items-center justify-center bg-[#F2891E] text-[11px] font-black uppercase tracking-[0.22em] text-[#0B0B0B]"
+					>
+						{campaign.popup.primaryCta.label}
+					</SlAddToCart>
+				) : (
+					<YnsLink
+						href={campaign.popup.primaryCta.href}
+						className="mt-[6px] box-border inline-flex h-12 w-full items-center justify-center bg-[#F2891E] text-[11px] font-black uppercase tracking-[0.22em] text-[#0B0B0B]"
+					>
+						{campaign.popup.primaryCta.label}
+					</YnsLink>
+				)}
 				<button
 					type="button"
 					onClick={dismiss}

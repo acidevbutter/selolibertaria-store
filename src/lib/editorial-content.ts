@@ -2,6 +2,7 @@ export type EditorialImage = {
 	src: string;
 	alt?: string | null;
 	caption?: string | null;
+	credit?: string | null;
 };
 
 export const EDITORIAL_BACKGROUND_FITS = ["cover", "contain"] as const;
@@ -169,6 +170,7 @@ export type EditorialProject = EditorialBase & {
 	description?: string | null;
 	featured?: boolean;
 	image?: EditorialImage | null;
+	gallery?: EditorialImage[] | null;
 	meta?: {
 		relatedProductSlugs?: string[];
 		relatedEventSlugs?: string[];

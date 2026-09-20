@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { PublicPresale } from "@/lib/presales";
 
 // `vi.hoisted` so the mock factory (also hoisted) can safely close over the spy.
-const { getPreSaleModeSettings } = vi.hoisted(() => ({ getPreSaleModeSettings: vi.fn() }));
+const { getPublicPresaleByProduct } = vi.hoisted(() => ({ getPublicPresaleByProduct: vi.fn() }));
 
-vi.mock("@/lib/settings-store", () => ({ getPreSaleModeSettings }));
+vi.mock("@/lib/presales", () => ({
+	getPublicPresaleByProduct,
+	LFBF_PRODUCT_ID: "product_little-fish-big-fish",
+}));
 
 import {
 	LFBF_CAMPAIGN,
@@ -13,41 +17,56 @@ import {
 } from "@/lib/pre-sale";
 import { getPreSaleCampaign, getPreSalePopupCampaign, isPreSaleModeEnabled } from "@/lib/pre-sale.server";
 
+function fakePresale(overrides: Partial<PublicPresale> = {}): PublicPresale {
+	return {
+		productId: "product_little-fish-big-fish",
+		variantId: "variant_little-fish-big-fish_impresso",
+		launchAt: "2026-09-30T12:00:00.000Z",
+		presalePrice: 2990,
+		fullPrice: 4990,
+		status: "no_ar",
+		modalEnabled: true,
+		modalIntervalHours: 2,
+		modalTitle: "little fish, big fish está em pré-venda",
+		modalBody: "Reserve agora com desconto.",
+		...overrides,
+	};
+}
+
 beforeEach(() => {
-	getPreSaleModeSettings.mockReset();
+	getPublicPresaleByProduct.mockReset();
 });
 
 describe("modo de pré-venda", () => {
-	it("usa a configuração persistida do admin", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: true });
+	it("usa a configuração persistida no backend", async () => {
+		getPublicPresaleByProduct.mockResolvedValueOnce(fakePresale());
 		expect(await isPreSaleModeEnabled()).toBe(true);
 	});
 
-	it("mantém a rota indisponível quando o admin desativa o modo", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: false });
+	it("mantém a rota indisponível enquanto a pré-venda é rascunho", async () => {
+		getPublicPresaleByProduct.mockResolvedValueOnce(fakePresale({ status: "rascunho" }));
 		expect(await getPreSaleCampaign("little-fish-big-fish")).toBeNull();
 	});
 
-	it("retorna a campanha estática quando o admin ativa o modo", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: true });
+	it("retorna a campanha com preço e data quando a pré-venda está no ar", async () => {
+		getPublicPresaleByProduct.mockResolvedValueOnce(fakePresale());
 		const campaign = await getPreSaleCampaign("little-fish-big-fish");
 		expect(campaign?.slug).toBe("little-fish-big-fish");
+		expect(campaign?.variantId).toBe("variant_little-fish-big-fish_impresso");
 	});
 
-	it("permite modal global sem publicar a landing", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({
-			popupEnabled: true,
-			launchAt: "2026-09-30T12:00:00.000Z",
-		});
+	it("permite modal global usando o intervalo configurado", async () => {
+		getPublicPresaleByProduct.mockResolvedValueOnce(fakePresale({ modalIntervalHours: 6 }));
 		const campaign = await getPreSalePopupCampaign();
 		expect(campaign?.launchAt).toBe("2026-09-30T12:00:00.000Z");
+		expect(campaign?.popup.snoozeHours).toBe(6);
 	});
 
-	it("não abre o modal sem data de estreia no admin", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ popupEnabled: true });
+	it("não abre o modal sem pré-venda configurada", async () => {
+		getPublicPresaleByProduct.mockResolvedValueOnce(null);
 		expect(await getPreSalePopupCampaign()).toBeNull();
 
-		getPreSaleModeSettings.mockResolvedValueOnce({ popupEnabled: true, launchAt: "não é data" });
+		getPublicPresaleByProduct.mockResolvedValueOnce(fakePresale({ status: "rascunho" }));
 		expect(await getPreSalePopupCampaign()).toBeNull();
 	});
 });

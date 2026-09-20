@@ -174,6 +174,11 @@ export default async function ContactPage() {
 								))}
 							</ul>
 						</div>
+						{blockText(contact.contentDoc, "contact-press-note") ? (
+							<p className="m-0 border border-[color:var(--sl-line)] bg-[color:var(--sl-surface-card)] px-5 py-4 text-[var(--sl-size-meta)] leading-[1.7] text-[color:var(--sl-text-muted)]">
+								{blockText(contact.contentDoc, "contact-press-note")}
+							</p>
+						) : null}
 					</div>
 				</SlBand>
 
