@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicUrl } from "@/env.mjs";
 import { findOrCreateOAuthUser } from "@/lib/auth/oauth-users";
 import { mergeGuestCartIntoUserCart, resolvePostAuthRedirect } from "@/lib/auth/post-auth";
 import { OAUTH_PROVIDER_IDS, type OAuthProviderId } from "@/lib/oauth/catalog";
@@ -21,13 +22,13 @@ function getProviderId(value: string | string[] | undefined): OAuthProviderId | 
 	return candidate as OAuthProviderId;
 }
 
-function buildLoginRedirect(req: Request, search: string) {
-	return NextResponse.redirect(new URL(`/login${search}`, req.url));
+function buildLoginRedirect(search: string) {
+	return NextResponse.redirect(new URL(`/login${search}`, publicUrl));
 }
 
 export async function GET(req: Request, context: RouteContext) {
 	const providerId = getProviderId((await context.params).provider);
-	if (!providerId) return buildLoginRedirect(req, "?oauth_error=provider");
+	if (!providerId) return buildLoginRedirect("?oauth_error=provider");
 
 	const url = new URL(req.url);
 	const state = url.searchParams.get("state") || "";
@@ -36,14 +37,14 @@ export async function GET(req: Request, context: RouteContext) {
 	await clearOAuthStateCookie();
 
 	if (!stateCookie || stateCookie.provider !== providerId || stateCookie.state !== state) {
-		return buildLoginRedirect(req, "?oauth_error=state");
+		return buildLoginRedirect("?oauth_error=state");
 	}
 
 	const config = await getResolvedOAuthProviderConfig(providerId);
 	if (!config.enabled || !config.ready || !config.clientId || !config.clientSecret) {
-		return buildLoginRedirect(req, "?oauth_error=disabled");
+		return buildLoginRedirect("?oauth_error=disabled");
 	}
-	if (!code) return buildLoginRedirect(req, "?oauth_error=code");
+	if (!code) return buildLoginRedirect("?oauth_error=code");
 
 	try {
 		const profile = await exchangeCodeForProfile({
@@ -61,7 +62,7 @@ export async function GET(req: Request, context: RouteContext) {
 				displayName: profile.name ?? undefined,
 				avatarUrl: profile.avatarUrl ?? undefined,
 			});
-			return buildLoginRedirect(req, "?oauth_complete=instagram");
+			return buildLoginRedirect("?oauth_complete=instagram");
 		}
 
 		const user = await findOrCreateOAuthUser({
@@ -76,7 +77,7 @@ export async function GET(req: Request, context: RouteContext) {
 		await mergeGuestCartIntoUserCart(user.id);
 		const target = await resolvePostAuthRedirect(user.id, user.role);
 		const session = await createPersistentSession(user);
-		const redirectRes = NextResponse.redirect(new URL(target, req.url));
+		const redirectRes = NextResponse.redirect(new URL(target, publicUrl));
 		redirectRes.cookies.set({
 			name: "session",
 			value: session.jwt,
@@ -89,9 +90,9 @@ export async function GET(req: Request, context: RouteContext) {
 		return redirectRes;
 	} catch (error) {
 		if (error instanceof Error && error.message.includes("blocked")) {
-			return buildLoginRedirect(req, "?oauth_error=blocked");
+			return buildLoginRedirect("?oauth_error=blocked");
 		}
 		console.error(`[oauth callback:${providerId}]`, error);
-		return buildLoginRedirect(req, `?oauth_error=${providerId}`);
+		return buildLoginRedirect(`?oauth_error=${providerId}`);
 	}
 }
