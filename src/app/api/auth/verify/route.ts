@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "@/env.mjs";
+import { env, publicUrl } from "@/env.mjs";
 import { getCartCookieItems } from "@/lib/cart-cookies";
 
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 	if (!response.ok) return new Response("Invalid or expired token", { status: 400 });
 	const session = (await response.json()) as { access_token: string; expires_at: string };
 	const target = (await getCartCookieItems())?.length ? "/checkout" : "/";
-	const redirect = NextResponse.redirect(new URL(target, request.url));
+	const redirect = NextResponse.redirect(new URL(target, publicUrl));
 	redirect.cookies.set({
 		name: "session",
 		value: session.access_token,

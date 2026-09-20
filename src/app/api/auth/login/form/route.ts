@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { publicUrl } from "@/env.mjs";
 import { authenticateAndCreateSession } from "@/lib/auth-login";
 import { isBackofficeRole } from "@/lib/authz";
 import { CURRENCY_COOKIE_NAME, resolveSupportedCurrency } from "@/lib/currency";
 
-function buildLoginRedirect(req: Request, query = "") {
-	return NextResponse.redirect(new URL(`/login${query}`, req.url), 303);
+function buildLoginRedirect(query = "") {
+	return NextResponse.redirect(new URL(`/login${query}`, publicUrl), 303);
 }
 
 export async function POST(req: Request) {
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
 	const passwordRaw = formData.get("password");
 
 	if (typeof emailRaw !== "string" || typeof passwordRaw !== "string") {
-		return buildLoginRedirect(req, "?login_error=invalid");
+		return buildLoginRedirect("?login_error=invalid");
 	}
 
 	const result = await authenticateAndCreateSession({
@@ -24,11 +25,11 @@ export async function POST(req: Request) {
 
 	if (!result.ok) {
 		const query = result.error === "Credenciais inválidas" ? "?login_error=invalid" : "?login_error=server";
-		return buildLoginRedirect(req, query);
+		return buildLoginRedirect(query);
 	}
 
 	const response = NextResponse.redirect(
-		new URL(isBackofficeRole(result.role) ? "/admin" : "/", req.url),
+		new URL(isBackofficeRole(result.role) ? "/admin" : "/", publicUrl),
 		303,
 	);
 	const preferredCurrency = resolveSupportedCurrency(result.preferredCurrency);
