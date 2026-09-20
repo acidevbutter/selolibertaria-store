@@ -1,50 +1,30 @@
 import "server-only";
 
-import {
-	getPreSaleCampaignDefinition,
-	type PreSaleCampaign,
-	resolvePreSaleAvailability,
-	withPreSaleLaunchAt,
-} from "@/lib/pre-sale";
-import { getPreSaleModeSettings } from "@/lib/settings-store";
+import { getPreSaleCampaignDefinition, type PreSaleCampaign } from "@/lib/pre-sale";
+import { formatBRL, LITTLE_FISH_BIG_FISH_PRODUCT_ID } from "@/lib/presales";
+import { getPublicPresaleByProduct } from "@/lib/presales.server";
 
 /**
  * Lado servidor da pré-venda: junta a definição estática da campanha
- * (`pre-sale.ts`, isomórfico) com o "modo pré-venda" persistido no admin
- * (`settings-store.ts`, `server-only`). Componentes client importam só de
- * `@/lib/pre-sale`.
+ * (`pre-sale.ts`, isomórfico) com o estado real vindo do backend
+ * (`app/presales/`, via `presales.server.ts`). Componentes client importam
+ * só de `@/lib/pre-sale`.
  */
 
-/**
- * A fonte de verdade do modo pré-venda é o ajuste salvo no admin. Sem uma
- * configuração disponível, o fallback seguro é manter a página indisponível.
- */
+/** A landing e o "modo pré-venda" ficam disponíveis assim que a pré-venda
+ * existir e não estiver mais em rascunho (publicada ou já encerrada — uma
+ * pré-venda encerrada ainda deve ser navegável, só sem o desconto ativo). */
 export async function isPreSaleModeEnabled(): Promise<boolean> {
-	return (await getPreSaleAvailability()).pageActive;
+	const presale = await getPublicPresaleByProduct(LITTLE_FISH_BIG_FISH_PRODUCT_ID);
+	return presale !== null && presale.status !== "rascunho";
 }
 
-export async function getPreSaleAvailability() {
-	return resolvePreSaleAvailability(await getPreSaleModeSettings());
-}
-
-/** Campanha ativa da pré-venda, ou `null` quando o modo está desligado / slug desconhecido. */
+/** Campanha ativa da pré-venda, com preço/data reais, ou `null` quando ainda
+ * não há pré-venda publicada / slug desconhecido. */
 export async function getPreSaleCampaign(slug: string): Promise<PreSaleCampaign | null> {
-	const settings = await getPreSaleModeSettings();
-	if (!resolvePreSaleAvailability(settings).pageActive) return null;
+	const presale = await getPublicPresaleByProduct(LITTLE_FISH_BIG_FISH_PRODUCT_ID);
+	if (!presale || presale.status === "rascunho") return null;
 	const campaign = getPreSaleCampaignDefinition(slug);
-	return campaign ? withPreSaleLaunchAt(campaign, settings.launchAt) : null;
-}
-
-/**
- * Campanha do modal global, independente da landing estar publicada.
- * O modal é uma contagem regressiva: sem uma data de estreia válida no admin
- * (`launchAt`) não há o que contar, então não abre.
- */
-export async function getPreSalePopupCampaign(): Promise<PreSaleCampaign | null> {
-	const settings = await getPreSaleModeSettings();
-	if (!resolvePreSaleAvailability(settings).popupActive) return null;
-	const campaign = getPreSaleCampaignDefinition("little-fish-big-fish");
 	if (!campaign) return null;
-	const dated = withPreSaleLaunchAt(campaign, settings.launchAt);
-	return dated.launchAt ? dated : null;
+	return { ...campaign, price: formatBRL(presale.presalePrice), launchAt: presale.launchAt };
 }

@@ -1,100 +1,81 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+// @vitest-environment node
 
-// `vi.hoisted` so the mock factory (also hoisted) can safely close over the spy.
-const { getPreSaleModeSettings } = vi.hoisted(() => ({ getPreSaleModeSettings: vi.fn() }));
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { LFBF_CAMPAIGN } from "@/lib/pre-sale";
 
-vi.mock("@/lib/settings-store", () => ({ getPreSaleModeSettings }));
+async function loadWithFetch(fetchImpl: typeof fetch) {
+	vi.resetModules();
+	vi.stubGlobal("fetch", fetchImpl);
+	return import("@/lib/pre-sale.server");
+}
 
-import {
-	LFBF_CAMPAIGN,
-	resolveCountdownTarget,
-	resolvePreSaleAvailability,
-	withPreSaleLaunchAt,
-} from "@/lib/pre-sale";
-import { getPreSaleCampaign, getPreSalePopupCampaign, isPreSaleModeEnabled } from "@/lib/pre-sale.server";
+function presalePublicResponse(overrides: Record<string, unknown> = {}) {
+	return Response.json({
+		product_id: "product_little-fish-big-fish",
+		variant_id: "variant_little-fish-big-fish_impresso",
+		launch_at: "2026-10-14T19:00:00Z",
+		presale_price: "57.60",
+		full_price: "72.00",
+		status: "no_ar",
+		modal_enabled: true,
+		modal_interval_hours: 2,
+		modal_title: "little fish, big fish está em pré-venda",
+		modal_body: "Reserve agora com desconto.",
+		...overrides,
+	});
+}
 
-beforeEach(() => {
-	getPreSaleModeSettings.mockReset();
+afterEach(() => {
+	vi.unstubAllGlobals();
 });
 
-describe("modo de pré-venda", () => {
-	it("usa a configuração persistida do admin", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: true });
-		expect(await isPreSaleModeEnabled()).toBe(true);
-	});
-
-	it("mantém a rota indisponível quando o admin desativa o modo", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: false });
+describe("modo de pré-venda (backend real)", () => {
+	it("está desligado quando não existe pré-venda para o produto", async () => {
+		const { isPreSaleModeEnabled, getPreSaleCampaign } = await loadWithFetch(
+			vi.fn(async () => Response.json(null)),
+		);
+		expect(await isPreSaleModeEnabled()).toBe(false);
 		expect(await getPreSaleCampaign("little-fish-big-fish")).toBeNull();
 	});
 
-	it("retorna a campanha estática quando o admin ativa o modo", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ pageEnabled: true });
+	it("está desligado enquanto a pré-venda é só rascunho", async () => {
+		const { isPreSaleModeEnabled, getPreSaleCampaign } = await loadWithFetch(
+			vi.fn(async () => presalePublicResponse({ status: "rascunho" })),
+		);
+		expect(await isPreSaleModeEnabled()).toBe(false);
+		expect(await getPreSaleCampaign("little-fish-big-fish")).toBeNull();
+	});
+
+	it("liga a campanha com preço/data reais quando publicada", async () => {
+		const { isPreSaleModeEnabled, getPreSaleCampaign } = await loadWithFetch(
+			vi.fn(async () => presalePublicResponse({ status: "no_ar" })),
+		);
+		expect(await isPreSaleModeEnabled()).toBe(true);
 		const campaign = await getPreSaleCampaign("little-fish-big-fish");
 		expect(campaign?.slug).toBe("little-fish-big-fish");
+		expect(campaign?.price).toBe("R$ 57,60");
+		expect(campaign?.launchAt).toBe("2026-10-14T19:00:00Z");
+		expect(campaign?.title).toBe(LFBF_CAMPAIGN.title);
 	});
 
-	it("permite modal global sem publicar a landing", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({
-			popupEnabled: true,
-			launchAt: "2026-09-30T12:00:00.000Z",
-		});
-		const campaign = await getPreSalePopupCampaign();
-		expect(campaign?.launchAt).toBe("2026-09-30T12:00:00.000Z");
-	});
-
-	it("não abre o modal sem data de estreia no admin", async () => {
-		getPreSaleModeSettings.mockResolvedValueOnce({ popupEnabled: true });
-		expect(await getPreSalePopupCampaign()).toBeNull();
-
-		getPreSaleModeSettings.mockResolvedValueOnce({ popupEnabled: true, launchAt: "não é data" });
-		expect(await getPreSalePopupCampaign()).toBeNull();
-	});
-});
-
-describe("contagem regressiva", () => {
-	it("mira a data de estreia quando ela é válida", () => {
-		const dated = withPreSaleLaunchAt(LFBF_CAMPAIGN, "2026-09-30T12:00:00.000Z");
-		expect(resolveCountdownTarget(dated)).toBe(Date.parse("2026-09-30T12:00:00.000Z"));
-	});
-
-	it("retorna null sem data de estreia (modal não conta nada)", () => {
-		expect(resolveCountdownTarget(LFBF_CAMPAIGN)).toBeNull();
-	});
-});
-
-describe("janela de pré-venda", () => {
-	it("ativa cada canal dentro da janela", () => {
-		const availability = resolvePreSaleAvailability(
-			{
-				pageEnabled: true,
-				popupEnabled: true,
-				windowStartAt: "2026-09-01T00:00:00.000Z",
-				windowEndAt: "2026-09-30T00:00:00.000Z",
-			},
-			Date.parse("2026-09-15T00:00:00.000Z"),
+	it("fica navegável (sem desconto ativo) depois de encerrada", async () => {
+		const { isPreSaleModeEnabled } = await loadWithFetch(
+			vi.fn(async () => presalePublicResponse({ status: "encerrada" })),
 		);
-		expect(availability).toEqual({ pageActive: true, popupActive: true, inWindow: true });
+		expect(await isPreSaleModeEnabled()).toBe(true);
 	});
 
-	it("falha fechado fora ou com janela inválida", () => {
-		expect(
-			resolvePreSaleAvailability(
-				{
-					pageEnabled: true,
-					popupEnabled: true,
-					windowStartAt: "2026-10-01T00:00:00.000Z",
-					windowEndAt: "2026-09-01T00:00:00.000Z",
-				},
-				Date.parse("2026-09-15T00:00:00.000Z"),
-			),
-		).toEqual({ pageActive: false, popupActive: false, inWindow: false });
-	});
-
-	it("aplica somente uma data de estreia válida", () => {
-		expect(withPreSaleLaunchAt(LFBF_CAMPAIGN, "2026-09-30T12:00:00.000Z").launchAt).toBe(
-			"2026-09-30T12:00:00.000Z",
+	it("falha fechado (desligado) quando o backend está fora do ar", async () => {
+		const { isPreSaleModeEnabled } = await loadWithFetch(
+			vi.fn(async () => {
+				throw new Error("network error");
+			}),
 		);
-		expect(withPreSaleLaunchAt(LFBF_CAMPAIGN, "inválida")).toBe(LFBF_CAMPAIGN);
+		expect(await isPreSaleModeEnabled()).toBe(false);
+	});
+
+	it("retorna null pra slug desconhecido mesmo com pré-venda publicada", async () => {
+		const { getPreSaleCampaign } = await loadWithFetch(vi.fn(async () => presalePublicResponse()));
+		expect(await getPreSaleCampaign("slug-que-nao-existe")).toBeNull();
 	});
 });

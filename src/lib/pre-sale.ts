@@ -1,9 +1,10 @@
 /**
- * Pré-venda ("modo pré-venda") — configuração e flag de ativação.
+ * Conteúdo editorial estático da campanha de pré-venda (landing page).
  *
- * A tela e o pop-up de pré-venda são presentational: recebem uma `PreSaleCampaign`
- * e não sabem de onde ela veio. A campanha é estática por enquanto, enquanto sua
- * ativação é uma configuração editorial persistida e alterada no admin.
+ * A tela é presentational: recebe uma `PreSaleCampaign` e não sabe de onde
+ * vieram os dados. A cópia (hero, sobre, autora) é estática; o que é real
+ * (preço, disponibilidade, data de estreia) vem do backend real
+ * (`app/presales/`) via `pre-sale.server.ts` — ver `lib/presales.server.ts`.
  */
 
 export type PreSaleCta = {
@@ -22,16 +23,13 @@ export type PreSaleCampaign = {
 	byline: string;
 	/** parágrafo de abertura no hero */
 	intro: string;
-	/** preço exibido no card de pré-venda; "a definir" enquanto não houver valor */
+	/** preço exibido no card de pré-venda; "a definir" enquanto não houver pré-venda publicada */
 	price: string;
 	/** janela de lançamento em texto livre (ex.: "agosto de 2026") */
 	launchWindow: string;
-	/**
-	 * Data/hora de estreia em ISO 8601, definida no admin. É a única fonte da
-	 * contagem regressiva do modal — sem ela, o modal não abre.
-	 */
+	/** Data/hora de estreia em ISO 8601, vinda de `Presale.launch_at`. */
 	launchAt?: string;
-	/** destino do botão "Comprar" (checkout / produto / link de pagamento) */
+	/** destino do botão "Comprar" — a página real do produto */
 	buyHref: string;
 	/** link "voltar para a loja" no topo */
 	backHref: string;
@@ -60,63 +58,7 @@ export type PreSaleCampaign = {
 		title: string;
 		cta: PreSaleCta;
 	};
-	popup: {
-		eyebrow: string;
-		title: string;
-		primaryCta: PreSaleCta;
-		dismissLabel: string;
-		/** atraso até a abertura automática, em ms */
-		autoOpenDelayMs: number;
-		/** horas de silêncio após o visitante fechar o pop-up */
-		snoozeHours: number;
-	};
 };
-
-export type PreSaleAvailability = {
-	pageActive: boolean;
-	popupActive: boolean;
-	inWindow: boolean;
-};
-
-export type PreSaleScheduleSettings = {
-	enabled?: boolean;
-	pageEnabled?: boolean;
-	popupEnabled?: boolean;
-	launchAt?: string | null;
-	windowStartAt?: string | null;
-	windowEndAt?: string | null;
-};
-
-function parseDate(value?: string | null): number | null {
-	if (!value) return null;
-	const timestamp = Date.parse(value);
-	return Number.isNaN(timestamp) ? null : timestamp;
-}
-
-/** Resolve os dois canais públicos, sempre falhando fechado para janela inválida. */
-export function resolvePreSaleAvailability(
-	settings: PreSaleScheduleSettings | null | undefined,
-	now: number = Date.now(),
-): PreSaleAvailability {
-	const startAt = parseDate(settings?.windowStartAt);
-	const endAt = parseDate(settings?.windowEndAt);
-	const invalidWindow =
-		(settings?.windowStartAt != null && startAt === null) ||
-		(settings?.windowEndAt != null && endAt === null) ||
-		(startAt !== null && endAt !== null && startAt > endAt);
-	const inWindow = !invalidWindow && (startAt === null || now >= startAt) && (endAt === null || now <= endAt);
-	const pageEnabled = settings?.pageEnabled ?? settings?.enabled ?? false;
-	return {
-		pageActive: pageEnabled && inWindow,
-		popupActive: (settings?.popupEnabled ?? false) && inWindow,
-		inWindow,
-	};
-}
-
-/** Aplica a data editorial ao countdown sem modificar a definição estática. */
-export function withPreSaleLaunchAt(campaign: PreSaleCampaign, launchAt?: string | null): PreSaleCampaign {
-	return parseDate(launchAt) === null ? campaign : { ...campaign, launchAt: launchAt ?? undefined };
-}
 
 /**
  * Campanha "little fish, big fish" — Natália Nolli Sasso.
@@ -132,7 +74,7 @@ export const LFBF_CAMPAIGN: PreSaleCampaign = {
 	price: "a definir",
 	launchWindow: "agosto de 2026",
 	launchAt: undefined,
-	buyHref: "#",
+	buyHref: "/product/little-fish-big-fish",
 	backHref: "/",
 	paymentNote: "Pagamento via Asaas · Pix.",
 	images: {
@@ -158,15 +100,7 @@ export const LFBF_CAMPAIGN: PreSaleCampaign = {
 	closing: {
 		eyebrow: "Pré-venda aberta",
 		title: "Garanta seu exemplar antes do lançamento",
-		cta: { label: "Comprar na pré-venda", href: "#" },
-	},
-	popup: {
-		eyebrow: "Contagem regressiva",
-		title: "little fish, big fish chega em:",
-		primaryCta: { label: "Garantir na pré-venda", href: "#" },
-		dismissLabel: "Continuar navegando",
-		autoOpenDelayMs: 1500,
-		snoozeHours: 24,
+		cta: { label: "Comprar na pré-venda", href: "/product/little-fish-big-fish" },
 	},
 };
 
@@ -175,10 +109,9 @@ const CAMPAIGNS: Record<string, PreSaleCampaign> = {
 };
 
 /**
- * Definição estática da campanha de um slug, sem qualquer checagem do "modo
- * pré-venda". O gating pela configuração do admin vive em `pre-sale.server.ts`
- * — este módulo é isomórfico e não pode tocar `settings-store` (`server-only`),
- * senão o bundle client do pop-up de contagem quebra no build.
+ * Definição estática da campanha de um slug. Este módulo é isomórfico e não
+ * pode tocar `presales.server`/`settings-store` (`server-only`), senão o
+ * bundle client quebra no build.
  */
 export function getPreSaleCampaignDefinition(slug: string): PreSaleCampaign | null {
 	return CAMPAIGNS[slug] ?? null;
@@ -187,12 +120,4 @@ export function getPreSaleCampaignDefinition(slug: string): PreSaleCampaign | nu
 /** Substitui os placeholders `{price}` / `{launchWindow}` no texto da campanha. */
 export function fillCampaignText(template: string, campaign: PreSaleCampaign): string {
 	return template.replaceAll("{price}", campaign.price).replaceAll("{launchWindow}", campaign.launchWindow);
-}
-
-/**
- * Alvo da contagem regressiva em epoch ms: a data de estreia (`launchAt`, definida
- * no admin) quando válida, senão `null` — sem data, o modal não mostra countdown.
- */
-export function resolveCountdownTarget(campaign: PreSaleCampaign): number | null {
-	return parseDate(campaign.launchAt);
 }
