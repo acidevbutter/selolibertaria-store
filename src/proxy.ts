@@ -4,6 +4,7 @@ import { publicUrl } from "@/env.mjs";
 import { matchLocale } from "@/i18n/config";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
+import { STORE_DISABLED } from "@/lib/store-status";
 
 type ProxySessionPayload = { role?: string | null };
 
@@ -67,6 +68,21 @@ function getLocaleRedirect(request: NextRequest) {
 	return NextResponse.redirect(redirectUrl, { status: 307 });
 }
 
+const STORE_ROUTE_PREFIXES = [
+	"/products",
+	"/category",
+	"/product",
+	"/search",
+	"/checkout",
+	"/orders",
+	"/pre-venda",
+	"/api/cart",
+];
+
+function isStoreRoute(pathname: string) {
+	return STORE_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
 function isMaintenanceAllowedPath(pathname: string) {
 	return (
 		pathname === "/login" ||
@@ -81,6 +97,13 @@ export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 	const localeRedirect = getLocaleRedirect(request);
 	if (localeRedirect) return localeRedirect;
+
+	if (STORE_DISABLED && isStoreRoute(pathname) && pathname !== "/loja-desativada") {
+		if (pathname.startsWith("/api")) {
+			return NextResponse.json({ error: "Loja desativada", code: "STORE_DISABLED" }, { status: 503 });
+		}
+		return NextResponse.redirect(new URL("/loja-desativada", publicUrl));
+	}
 
 	if (isMaintenanceModeEnabled() && !isMaintenanceAllowedPath(pathname)) {
 		const session = request.cookies.get("session")?.value;

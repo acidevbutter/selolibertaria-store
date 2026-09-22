@@ -74,14 +74,14 @@ describe("proxy public auth paths", () => {
 
 describe("proxy maintenance mode", () => {
 	it("does not redirect when maintenance mode is off", async () => {
-		const res = await proxy(new NextRequest("http://localhost/products"));
+		const res = await proxy(new NextRequest("http://localhost/about"));
 
 		expect(res.status).toBe(200);
 	});
 
 	it("redirects anonymous visitors of any page to /maintenance, not /login", async () => {
 		process.env.MAINTENANCE_MODE = "true";
-		const res = await proxy(new NextRequest("http://localhost/products"));
+		const res = await proxy(new NextRequest("http://localhost/about"));
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
@@ -89,7 +89,7 @@ describe("proxy maintenance mode", () => {
 
 	it("returns a JSON 503 for api routes instead of redirecting to an HTML page", async () => {
 		process.env.MAINTENANCE_MODE = "true";
-		const res = await proxy(new NextRequest("http://localhost/api/cart"));
+		const res = await proxy(new NextRequest("http://localhost/api/user"));
 
 		expect(res.status).toBe(503);
 		expect(res.headers.get("content-type")).toContain("application/json");
@@ -143,5 +143,33 @@ describe("proxy maintenance mode", () => {
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
+	});
+});
+
+describe("proxy store-disabled mode", () => {
+	it("redirects shop pages to /loja-desativada", async () => {
+		const res = await proxy(new NextRequest("http://localhost/products"));
+
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toBe("http://localhost:3000/loja-desativada");
+	});
+
+	it("returns a JSON 503 for shop api routes", async () => {
+		const res = await proxy(new NextRequest("http://localhost/api/cart"));
+
+		expect(res.status).toBe(503);
+		await expect(res.json()).resolves.toMatchObject({ code: "STORE_DISABLED" });
+	});
+
+	it("leaves non-shop pages accessible", async () => {
+		const res = await proxy(new NextRequest("http://localhost/about"));
+
+		expect(res.status).toBe(200);
+	});
+
+	it("lets /loja-desativada itself load", async () => {
+		const res = await proxy(new NextRequest("http://localhost/loja-desativada"));
+
+		expect(res.status).toBe(200);
 	});
 });

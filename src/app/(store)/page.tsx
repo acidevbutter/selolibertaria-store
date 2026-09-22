@@ -8,6 +8,7 @@ import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { blockButtonLabel, blockImageSrc, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
+import { STORE_DISABLED } from "@/lib/store-status";
 import { formatMoney } from "@/lib/utils";
 import { SlHomeCategoryBand } from "@/ui/home/sl/sl-home-category-band";
 import { SlHomeFeatured } from "@/ui/home/sl/sl-home-featured";
@@ -32,13 +33,15 @@ export default async function Home() {
 
 	const [featuredEvents, heroProduct, featuredProduct, browse] = await Promise.all([
 		listEditorialEvents(),
-		homeContent.hero?.mode === "product" && homeContent.hero.productSlug
+		!STORE_DISABLED && homeContent.hero?.mode === "product" && homeContent.hero.productSlug
 			? commerce.product.get({ slug: homeContent.hero.productSlug, currency }).catch(() => null)
 			: Promise.resolve(null),
-		homeContent.featuredBook?.productSlug
+		!STORE_DISABLED && homeContent.featuredBook?.productSlug
 			? commerce.product.get({ slug: homeContent.featuredBook.productSlug, currency }).catch(() => null)
 			: Promise.resolve(null),
-		commerce.product.browse({ first: 100, currency }).catch(() => ({ data: [] })),
+		STORE_DISABLED
+			? Promise.resolve({ data: [] })
+			: commerce.product.browse({ first: 100, currency }).catch(() => ({ data: [] })),
 	]);
 
 	const canPurchase = canBuyOnSelolibertaria(session?.user.role);
@@ -110,9 +113,9 @@ export default async function Home() {
 				}
 			/>
 
-			<SlHomeCategoryBand categories={categories} />
+			{!STORE_DISABLED && <SlHomeCategoryBand categories={categories} />}
 
-			<SlHomeFeatured rows={rows} />
+			{!STORE_DISABLED && <SlHomeFeatured rows={rows} />}
 
 			<SlHomeManifesto
 				title={
