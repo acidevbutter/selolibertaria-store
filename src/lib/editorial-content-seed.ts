@@ -82,15 +82,15 @@ export function buildSeedHomePage(): EditorialHomePage {
 		summary: "Home do selo com manifesto, publicações em destaque e programação cultural.",
 		...baseMeta,
 		hero: {
-			eyebrow: "em breve",
+			eyebrow: "Lançamento",
 			title: "little fish, big fish",
 			description:
-				"O quarto livro de Natália Nolli Sasso. Peixe pequeno, peixe grande — quem engole quem, e com que boca.",
-			primaryCtaLabel: "Quero saber da estreia",
-			primaryCtaHref: "/#newsletter",
-			secondaryCtaLabel: "Ver o catálogo",
+				"poesia erótica pra ler de um fôlego só. o quarto livro da Natália chega em breve — enquanto isso, o catálogo segue de pé.",
+			primaryCtaLabel: "Comprar",
+			primaryCtaHref: "/products",
+			secondaryCtaLabel: "Ler trecho",
 			secondaryCtaHref: "/products",
-			supportingLine: "trilogia s3xo são paulo",
+			supportingLine: "poemas, corpos e margens",
 			featureImage: {
 				src: "/images/selolibertaria/home-capa-destaque-lfbf.webp",
 				alt: "Capa de little fish, big fish, de Natália Nolli Sasso: dois peixes em traço preto e laranja sobre fundo preto",
@@ -98,39 +98,39 @@ export function buildSeedHomePage(): EditorialHomePage {
 		},
 		manifesto: {
 			title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-			body: "Editora e produtora cultural de São Paulo. Literatura erótica, performance, encontros e projetos autorais.",
+			body: "entre publicações, encontros e performance, o selo mantém livro, presença e imaginação cultural na mesma conversa.",
 			linkLabel: "Conhecer o selo",
 			linkHref: "/about",
 		},
 		featuredBook: {
 			productSlug: "little-fish-big-fish",
-			eyebrow: "Produto em destaque",
-			title: "Ninfas do Tietê",
-			body: "Produto com cara de página literária: sinopse curta, preço claro, amostra e compra.",
+			eyebrow: "Livro em destaque",
+			title: "little fish, big fish",
+			body: "sinopse direta, preço à vista, um trecho pra provar antes de levar.",
 			primaryCtaLabel: "Comprar agora",
 			secondaryCtaLabel: "Ver produto",
 		},
 		catalog: {
 			title: "Catálogo",
-			body: "Uma prateleira curta e curada para entrar no universo do selo pela leitura.",
-			primaryCardFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
-			defaultCardFallback: "Produto em preparação dentro do mesmo universo literário do selo.",
+			body: "uma prateleira curta e curada — não uma grade genérica de produtos.",
+			primaryCardFallback: "poesia erótica em trânsito pela cidade, corpo e linguagem em tensão.",
+			defaultCardFallback: "produto em preparação, dentro do mesmo universo literário do selo.",
 			viewBookLabel: "Ver produto",
 			launchAlertLabel: "Avise-me",
 		},
 		program: {
 			eyebrow: "Sarau Safado",
-			title: "Agenda, memória e presença pública em torno das literaturas eróticas.",
-			body: "O programa conecta livro, performance e encontro ao vivo sem se tornar um bloco lateral genérico.",
+			title: "agenda, memória e presença pública em torno da literatura erótica.",
+			body: "leitura, performance e encontro ao vivo — o sarau é onde o catálogo ganha corpo.",
 			ctaLabel: "Conhecer o Sarau Safado",
 			ctaHref: "/sarau-safado",
 		},
 		author: {
 			eyebrow: "Autoria e curadoria",
 			title: "Natália Nolli Sasso e a órbita do Selo Libertária",
-			body: "Os livros seguem no centro, mas o catálogo cresce em diálogo com programas públicos, oficinas, saraus e trabalho cultural colaborativo.",
+			body: "os livros seguem no centro, mas o catálogo cresce em diálogo com oficinas, saraus e outros projetos culturais.",
 			secondaryBody:
-				"O site deve permitir que a pessoa leitora passe naturalmente de um título para o contexto artístico e cultural que o cerca.",
+				"de um título você chega fácil no resto: eventos, oficinas, o sarau. é tudo a mesma conversa.",
 			primaryCtaLabel: "Sobre a autora",
 			primaryCtaHref: "/about",
 			secondaryCtaLabel: "Conhecer o Sarau Safado",
@@ -138,7 +138,7 @@ export function buildSeedHomePage(): EditorialHomePage {
 		},
 		community: {
 			title: "Receba lançamentos, saraus e textos do selo.",
-			body: "Acompanhe próximos livros, saraus e projetos culturais sem depender de ajustes no código.",
+			body: "acompanhe as redes e fale com a gente pra convites, parcerias e programação.",
 			primaryCtaLabel: "Entrar em contato",
 			primaryCtaHref: "/contact",
 			secondaryLinks: [
@@ -158,33 +158,33 @@ export function buildSeedEventsPage(): EditorialEventsPage {
 		summary: "Página auxiliar para consultar agenda, arquivo e memória das ações do selo.",
 		...baseMeta,
 		hero: {
-			eyebrow: "Agenda do selo",
+			eyebrow: "Eventos",
 			title: "Eventos, encontros e aparições públicas.",
-			body: "Uma página auxiliar para consultar agenda, arquivo e memória das ações do Selo Libertária. O menu principal continua priorizando Sarau Safado.",
+			body: "arquivo e agenda do que a gente faz ao vivo. pra não perder a próxima data, o Sarau Safado tem página própria.",
 			primaryCtaLabel: "Ver próxima edição",
 			primaryCtaHref: "/sarau-safado",
 			secondaryCtaLabel: "Conhecer Sarau",
 			secondaryCtaHref: "/sarau-safado",
 		},
 		curatorialNote: {
-			title: "Eventos não entram no menu principal, mas continuam existindo como rota pública.",
-			body: "Use esta página para agenda, arquivo e registros. Ela deve apontar para Sarau Safado, Projetos e Contato, mantendo a navegação pública enxuta.",
+			title: "O que já rolou, e o que vem por aí.",
+			body: "aqui fica registrado o que já rolou; o que vem por aí, você acompanha pelo Sarau Safado.",
 		},
 		agenda: {
 			label: "Próximos eventos",
 			title: "Agenda pública",
 			body: "A agenda mistura próxima edição, programação e memória sem perder clareza operacional.",
 			emptyText:
-				"A agenda pública será atualizada em breve. Enquanto isso, você pode acompanhar o Sarau Safado, conhecer os projetos e falar com o selo.",
+				"por enquanto não tem data marcada por aqui. dá uma olhada no Sarau Safado, nos projetos, ou manda um oi pra gente.",
 		},
 		archive: {
 			label: "Arquivo / memória",
 			title: "Registros de encontros, leituras e aparições.",
-			body: "A agenda não termina na data. Ela também organiza memória, fotos, textos e continuidade para a atuação cultural do selo.",
+			body: "fotos, textos e memória do que já vivemos ao vivo.",
 		},
 		finalCta: {
 			title: "A agenda continua no Sarau Safado e nos projetos.",
-			body: "O caminho público segue para o programa central do selo e para o portfólio cultural.",
+			body: "pra saber o que vem por aí, é por lá.",
 			primaryCtaLabel: "Ver Sarau Safado",
 			primaryCtaHref: "/sarau-safado",
 			secondaryCtaLabel: "Ver projetos",
@@ -203,23 +203,23 @@ export function buildSeedProjectsPage(): EditorialProjectsPage {
 		hero: {
 			eyebrow: "Projetos",
 			title: "Uma atuação que atravessa livro, palco e formação.",
-			body: "Laboratórios, encontros, publicações e ações culturais do Selo Libertária em diálogo com cidade, erotismo e escrita.",
+			body: "laboratórios, encontros, publicações e ações culturais do Selo Libertária, em diálogo com cidade, erotismo e escrita.",
 			imageLabel: "Foto / performance / oficina",
 		},
 		curatorialNote: {
-			title: "Projetos como atuação cultural do selo.",
-			body: "Esta página apresenta o portfólio cultural sem virar uma lista homogênea de cards. Cada item precisa ter imagem, status, contexto e saída clara.",
+			title: "Cada projeto aprofunda o catálogo.",
+			body: "cada projeto aqui aprofunda o catálogo — não é uma lista de eventos soltos.",
 		},
 		listing: {
 			label: "Portfólio cultural",
 			title: "Projetos",
 			body: "Cada projeto registra uma frente de criação, formação ou articulação cultural do selo. Ordem: mais recente primeiro.",
 			emptyText:
-				"Os projetos culturais serão publicados em breve. Enquanto isso, acompanhe o Sarau Safado e fale com o selo.",
+				"os próximos projetos culturais chegam em breve por aqui. enquanto isso, acompanhe o Sarau Safado ou fale com a gente.",
 		},
 		finalCta: {
 			title: "Projetos conectam criação, formação e comunidade.",
-			body: "A página de projetos deve abrir saídas diretas para contato e Sarau Safado.",
+			body: "quer propor algo? fala com a gente.",
 			primaryCtaLabel: "Falar sobre projeto",
 			primaryCtaHref: "/contact",
 			secondaryCtaLabel: "Ver Sarau Safado",
@@ -236,14 +236,14 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 		summary: "Catálogo autoral com capas, trechos e caminhos de compra preservados.",
 		...baseMeta,
 		hero: {
-			eyebrow: "Catálogo",
-			title: "Catálogo",
-			body: "Tudo que o selo publica passa por aqui: os três livros da trilogia s3xo são paulo, os audiolivros gratuitos e o que vier. Edição, distribuição e venda são feitas pelo próprio selo, com artistas e colaboradorxs convidadxs a cada título.",
+			eyebrow: "Loja",
+			title: "Produtos para entrar no universo do selo pela leitura.",
+			body: "catálogo de literatura erótica, urbana e dissidente — cada capa com trecho, preço e contexto.",
 			primaryCtaLabel: "Ver catálogo",
 			primaryCtaHref: "/products",
 			secondaryCtaLabel: "Comprar destaque",
 			secondaryCtaHref: "/products",
-			quote: "Livro, presença e linguagem — o catálogo como gesto editorial.",
+			quote: "livro como objeto, presença e faísca.",
 		},
 		curatorialNote: {
 			title: "Catálogo como mesa de curadoria, não como vitrine genérica.",
@@ -253,15 +253,14 @@ export function buildSeedProductsPage(): EditorialProductsPage {
 			label: "Catálogo",
 			title: "Catálogo",
 			body: "Cada capa abre uma rota: compra, trecho e contexto editorial.",
-			emptyText:
-				"Ainda não há títulos publicados nesta categoria. Enquanto isso, os três livros da trilogia estão em Livros, e os audiolivros são gratuitos.",
-			cardPrimaryFallback: "Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.",
-			cardSecondaryFallback: "Produto em preparação dentro do mesmo universo literário do selo.",
+			emptyText: "ainda não tem produto publicado aqui. volta em breve pros próximos lançamentos.",
+			cardPrimaryFallback: "poesia erótica em trânsito pela cidade, corpo e linguagem em tensão.",
+			cardSecondaryFallback: "produto em preparação, dentro do mesmo universo literário do selo.",
 			viewBookLabel: "Ver produto",
 			launchAlertLabel: "Avise-me",
 		},
 		finalCta: {
-			title: "Depois da compra, continue pelo Sarau Safado e pelos projetos.",
+			title: "Depois da compra, siga pelo Sarau Safado e pelos projetos.",
 			body: "O catálogo não termina na compra: ele abre caminhos para agenda, performance, encontros e portfólio cultural.",
 			primaryCtaLabel: "Falar sobre produtos",
 			primaryCtaHref: "/contact",
@@ -281,8 +280,7 @@ export function buildSeedProductPage(): EditorialProductPage {
 		},
 		excerpt: {
 			title: "Trecho",
-			bodyFallback:
-				"Trecho retirado da própria sinopse para sustentar desejo de leitura sem inventar texto persistido.",
+			bodyFallback: "em breve, um trecho deste livro por aqui.",
 		},
 		details: {
 			title: "Ficha técnica",
@@ -294,7 +292,7 @@ export function buildSeedProductPage(): EditorialProductPage {
 			fallbackSummary: "Novo título em breve",
 		},
 		continuity: {
-			title: "Um produto pode levar ao Sarau, aos projetos e de volta ao catálogo.",
+			title: "Um livro pode levar ao Sarau, aos projetos e de volta ao catálogo.",
 			body: "A PDP continua orientada à compra, mas ganha saídas editoriais claras para ampliar leitura, contexto e continuidade cultural.",
 			links: [
 				{ label: "Ver Sarau Safado", href: "/sarau-safado" },
@@ -304,7 +302,7 @@ export function buildSeedProductPage(): EditorialProductPage {
 		},
 		notFound: {
 			title: "Produto não encontrado",
-			body: "Este item não está disponível agora. Continue pelo catálogo ou fale com o selo.",
+			body: "Este título não está disponível agora. Siga pelo catálogo ou fale com o selo.",
 			primaryCtaLabel: "Ver catálogo",
 			primaryCtaHref: "/products",
 		},
@@ -323,7 +321,7 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 		hero: {
 			eyebrow: "Poesia · performance · corpo",
 			title: "Sarau Safado",
-			body: "Encontro para pessoas que escrevem, pesquisam, leem e são apaixonadas por literaturas eróticas.",
+			body: "encontro para quem escreve, pesquisa, lê e é apaixonada por literatura erótica.",
 			primaryCtaLabel: "Próxima edição",
 			primaryCtaHref: "/events",
 			secondaryCtaLabel: "Memória do Sarau",
@@ -336,17 +334,17 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 		},
 		why: {
 			title: "Por que esse programa existe",
-			body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
+			body: "o sarau nasceu online em 2020, em plena pandemia, e ganhou sua primeira edição presencial em 2025. desde então, transforma leitura em acontecimento público — com curadoria da Natália e meses de antecedência para cada line-up.",
 		},
 		gallery: {
 			eyebrow: "Galeria / memória",
 			title: "Fotos grandes, vídeos, textos e registros.",
-			body: "A memória do Sarau também precisa ser editável sem depender de deploy.",
+			body: "a memória do sarau é tão importante quanto a próxima edição.",
 		},
 		signals: [
-			"O Sarau existe como ritual recorrente de leitura, presença e escuta.",
-			"Origem",
-			"Continuidade",
+			"ritual recorrente, não evento isolado.",
+			"curadoria com meses de antecedência.",
+			"line-up que celebra artistas dissidentes — inclusive as banidas de outras redes.",
 		],
 		programNotes: [
 			{
@@ -359,7 +357,7 @@ export function buildSeedSarauPage(): EditorialSarauPage {
 			},
 			{
 				title: "Presença",
-				body: "O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo.",
+				body: "o sarau transforma leitura em acontecimento público e dá corpo ao que o selo defende.",
 			},
 		],
 		continueLinks: [
@@ -381,14 +379,14 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 		hero: {
 			eyebrow: "Sobre o selo",
 			title: "O Selo Libertária publica corpos, cidades, desejos e linguagens que escapam das margens.",
-			body: "Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia. É isso que o Selo Libertária persegue desde o primeiro livro: erotismo como linguagem e como posição política, não como embalagem.",
+			body: "editora e produtora cultural dedicada à literatura erótica, à performance, aos encontros públicos e a projetos autorais.",
 		},
 		section: {
-			eyebrow: "A autora",
-			title: "Natália Nolli Sasso",
-			body: "Escritora, pesquisadora e editora. Autora de *Ninfas do Tietê* (2018, segunda edição revisada em 2021), *sexo estranho com desconhecidos em lugares impróprios* (2020) e *vírus do beijo* (2023), todos em formato impresso e sonoro. É a criadora do Sarau Safado e está à frente do Selo Libertária.",
+			eyebrow: "Autoria e curadoria",
+			title: "Natália Nolli Sasso e o universo do Selo Libertária",
+			body: "Natália escreve, edita e cura tudo que sai com o nome do selo. Aqui, literatura erótica, performance e presença urbana são a mesma linha de trabalho — não seções separadas de um site institucional.",
 			extended:
-				"Mora há mais de uma década na região central de São Paulo — e é dessa vivência que sai boa parte do que escreve. Coordena laboratórios de escrita no Sesc São Paulo e já participou do Festival Mário de Andrade, da Flipenha e da Mostra Solo Mulheres.",
+				"Livros como vírus do beijo e sexo estranho com desconhecidos em lugares impróprios nasceram dessa mesma prática, que também é o Sarau Safado e as oficinas de escrita erótica que a Natália conduz.",
 			image: {
 				src: "/images/selolibertaria/natalia-nolli-sasso-sarau-safado.webp",
 				alt: "Cartaz do Sarau Safado sobre um microfone iluminado por luz vermelha",
@@ -399,25 +397,25 @@ export function buildSeedAboutPage(): EditorialAboutPage {
 		},
 		cards: [
 			{
-				eyebrow: "Literatura",
-				title: "O erotismo através da linguagem.",
-				body: "Poesia que não pede licença e não explica o desejo.",
+				eyebrow: "Literatura adulta",
+				title: "Erotismo que vem da linguagem, não do clichê visual.",
+				body: "o selo trata o corpo e o desejo como matéria literária — sem precisar de capa apelativa pra provar isso.",
 			},
 			{
 				eyebrow: "Cidade e corpo",
-				title: "São Paulo como texto.",
-				body: "Ruas, linhas de transporte e espaços públicos lidos pelo corpo.",
+				title: "Texto, performance e presença urbana como matéria.",
+				body: "cidade, encontro e linguagem fazem parte do mesmo trabalho, dentro e fora do livro.",
 			},
 			{
 				eyebrow: "Publicação autoral",
-				title: "O livro como objeto cultural.",
-				body: "Ilustração, arte, revisão e performance tratadas como parte da obra.",
+				title: "Livro como objeto editorial, cultural e afetivo.",
+				body: "cada lançamento carrega contexto — não é só um produto na prateleira.",
 			},
 		],
 		closing: {
 			eyebrow: "Manifesto",
 			title: "A programação e a autoria se reforçam mutuamente.",
-			body: "Conhecer uma autora, descobrir uma programação e entrar num arquivo. A experiência deve formar um ecossistema cultural, não páginas paralelas.",
+			body: "conhecer a Natália, descobrir uma data do sarau, entrar num arquivo de fotos — tudo isso devia parecer o mesmo lugar, não páginas soltas.",
 			coreEyebrow: "Princípio central",
 			coreTitle:
 				"Uma livraria para adultos pode ser quente, literária e sensual sem se tornar visualmente óbvia.",
@@ -436,18 +434,18 @@ export function buildSeedContactPage(): EditorialContactPage {
 		hero: {
 			eyebrow: "Contato",
 			title: "Convites, parcerias, imprensa, livros e Sarau Safado.",
-			body: "Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação.",
+			body: "fale com a gente pra comprar livro, propor parceria, imprensa ou saber da programação.",
 			featuredLabel: "Email",
 			featuredValue: "contato@selolibertaria.com.br",
 		},
 		form: {
-			title: "Escreva para o selo",
-			description: "Use o formulário para convites, imprensa, projetos, livros e assuntos editoriais.",
+			title: "Escreva pro selo",
+			description: "convite, imprensa, projeto, manuscrito, ou dúvida sobre livro — é só escolher o assunto.",
 			subjects: ["Comprar livro", "Enviar manuscrito", "Projetos", "Sarau Safado", "Imprensa", "Outro"],
 		},
 		direct: {
 			title: "Canais diretos",
-			description: "Fale com o selo pelos principais pontos de contato editoriais e sociais.",
+			description: "fale direto com o selo pelos canais oficiais.",
 			links: [
 				{
 					label: "Email",
@@ -460,7 +458,7 @@ export function buildSeedContactPage(): EditorialContactPage {
 		},
 		paths: {
 			title: "Caminhos comuns",
-			description: "Navegue rapidamente entre catálogo, programação e páginas institucionais.",
+			description: "atalho rápido pra catálogo, programação e páginas institucionais.",
 			links: [
 				{ label: "Projetos", href: "/projects" },
 				{ label: "Eventos", href: "/events" },
@@ -471,7 +469,7 @@ export function buildSeedContactPage(): EditorialContactPage {
 			],
 		},
 		closing: {
-			title: "Continue pelo Instagram, newsletter ou agenda do Sarau.",
+			title: "Continue pelo Instagram, pela newsletter ou pela agenda do Sarau.",
 			primaryCtaLabel: "Ver Sarau Safado",
 			primaryCtaHref: "/sarau-safado",
 			secondaryCtaLabel: "Ver produtos",
@@ -488,10 +486,10 @@ export function buildSeedSiteGlobal(): EditorialSiteGlobal {
 		summary: "Newsletter e rodapé editáveis do site público.",
 		...baseMeta,
 		newsletter: {
-			title: "Receba o aviso",
-			description: "Um e-mail quando abrir uma pré-venda ou uma nova edição do Sarau. Nada além disso.",
+			title: "Receba lançamentos, saraus e textos do selo.",
+			description: "atualizações de livro, agenda e o que mais sai por aqui — sem enrolação.",
 			placeholder: "seu e-mail",
-			buttonLabel: "Quero saber",
+			buttonLabel: "Assinar",
 		},
 		footer: {
 			brandEyebrow: "Selo Libertária",
