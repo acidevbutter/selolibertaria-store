@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import { DataTable } from "@/app/admin/_components/ui/DataTable";
 import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
+import { listPresalesAction } from "@/app/admin/pre-venda/presale-actions";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { getAdminDashboardData } from "@/lib/admin-dashboard";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
-import { getPresaleByProduct, LFBF_PRODUCT_ID } from "@/lib/presales";
+import { LITTLE_FISH_BIG_FISH_PRODUCT_ID } from "@/lib/presales";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { RevenueSparkline } from "@/ui/charts/revenue-sparkline.client";
 import { RevenueZoomBrush } from "@/ui/charts/revenue-zoom-brush.client";
@@ -116,7 +117,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 	const sort = (asStr(sp?.sort) ?? "date-desc").toLowerCase();
 
 	const dashboard = await getAdminDashboardData({ status, period, sort });
-	const lfbfPresale = await getPresaleByProduct(LFBF_PRODUCT_ID).catch(() => null);
+	const presales = await listPresalesAction();
+	const lfbfPresale =
+		presales.find((presale) => presale.productId === LITTLE_FISH_BIG_FISH_PRODUCT_ID) ?? null;
 	const needsPresaleSetup = !lfbfPresale || lfbfPresale.status === "rascunho";
 	const couponRate = `${Math.round(dashboard.couponOrdersRate * 100)}%`;
 	const urgentOrders =
@@ -190,7 +193,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 								little fish, big fish ainda não tem data de estreia nem preço de pré-venda definidos.
 							</p>
 						</div>
-						<Link href="/admin/pre-venda/nova" className="sl-btn sl-btn-accent">
+						<Link href="/admin/pre-venda" className="sl-btn sl-btn-accent">
 							Configurar pré-venda
 						</Link>
 					</section>

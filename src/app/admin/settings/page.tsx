@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getSiteActivationForAdmin } from "@/app/ativacao/activation-actions";
 import { auth } from "@/lib/auth";
 import {
 	AdminEditorialHero,
@@ -11,6 +12,7 @@ import AdminOAuthProviders from "../_components/admin-oauth-providers.client";
 import AdminPaymentMethods from "../_components/admin-payment-methods.client";
 import AdminRegionalSettings from "../_components/admin-regional-settings.client";
 import AdminShippingProviders from "../_components/admin-shipping-providers.client";
+import { AdminStoreActivation } from "../_components/admin-store-activation.client";
 import AdminSupportEmail from "../_components/admin-support-email.client";
 import { AdminThemeSelector } from "./theme-selector.client";
 
@@ -21,6 +23,8 @@ export default async function AdminSettingsPage() {
 	if (!session) redirect("/login");
 	if (session.user.role !== "admin") redirect("/forbidden");
 
+	const activation = await getSiteActivationForAdmin();
+
 	return (
 		<AdminEditorialPage>
 			<AdminEditorialHero
@@ -29,7 +33,7 @@ export default async function AdminSettingsPage() {
 				description="Centralize idioma, suporte, autenticação e frete em blocos curtos, com contexto claro antes de cada ajuste."
 			/>
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat label="Blocos" value="6" helper="Ajustes organizados por tema." />
+				<AdminEditorialStat label="Blocos" value="7" helper="Ajustes organizados por tema." />
 				<AdminEditorialStat
 					label="Padrão regional"
 					value="Idioma e país"
@@ -41,6 +45,31 @@ export default async function AdminSettingsPage() {
 				/>
 			</div>
 			<div className="grid gap-5">
+				<EditorialPanel className="p-0">
+					<details open className="group">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">
+							<div className="space-y-2">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
+									Loja
+								</p>
+								<div className="text-lg font-semibold text-[var(--sl-ink)]">Status da loja</div>
+								<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
+									Coloque a loja em manutenção ou reative o acesso público sem depender de deploy.
+								</p>
+							</div>
+							<span className="pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:hidden">
+								Expandir
+							</span>
+							<span className="hidden pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)] group-open:block">
+								Recolher
+							</span>
+						</summary>
+						<div className="border-t border-[var(--sl-line)] px-6 py-6 sm:px-8">
+							<AdminStoreActivation initial={activation} />
+						</div>
+					</details>
+				</EditorialPanel>
+
 				<EditorialPanel className="p-0">
 					<details open className="group">
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 sm:px-8">

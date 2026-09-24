@@ -3,7 +3,7 @@ import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 import { SeloLibertariaMaintenance } from "@/ui/maintenance/selo-libertaria-maintenance";
 
 export default async function MaintenancePage() {
-	if (!isMaintenanceModeEnabled()) {
+	if (!(await isMaintenanceModeEnabled())) {
 		redirect("/");
 	}
 

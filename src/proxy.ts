@@ -3,9 +3,29 @@ import { NextResponse } from "next/server";
 import { publicUrl } from "@/env.mjs";
 import { matchLocale } from "@/i18n/config";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
-import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
 type ProxySessionPayload = { role?: string | null };
+
+/**
+ * Edge-safe: `lib/maintenance-mode.ts` is `"server-only"`-tagged for RSC use
+ * (React `cache()` doesn't behave the same in the Edge runtime), so this
+ * mirrors its fail-closed contract inline here instead of importing it —
+ * same shape as `decryptProxySession` below. Any non-200 response, thrown
+ * error, or timeout means "treat as not activated" (site in maintenance).
+ */
+async function fetchSiteActivated(): Promise<boolean> {
+	try {
+		const response = await fetch(
+			`${process.env.FASTAPI_API_URL || "http://localhost:8000"}/site-activation/public`,
+			{ cache: "no-store" },
+		);
+		if (!response.ok) return false;
+		const body = (await response.json()) as { activated?: boolean };
+		return body.activated === true;
+	} catch {
+		return false;
+	}
+}
 
 function isPublicApiPath(pathname: string) {
 	return (
@@ -82,7 +102,7 @@ export async function proxy(request: NextRequest) {
 	const localeRedirect = getLocaleRedirect(request);
 	if (localeRedirect) return localeRedirect;
 
-	if (isMaintenanceModeEnabled() && !isMaintenanceAllowedPath(pathname)) {
+	if (!(await fetchSiteActivated()) && !isMaintenanceAllowedPath(pathname)) {
 		const session = request.cookies.get("session")?.value;
 		const data = session ? await decryptProxySession(session) : null;
 		const isAuthenticatedAdmin = normalizeUserRole(data?.role) === "admin";

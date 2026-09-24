@@ -31,7 +31,10 @@ export default function AdminUiSandboxPage() {
 			<section className="mb-10">
 				<h2 className="sl-eyebrow mb-4 text-[var(--sl-accent)]">Sidebar / Topbar (fatia 00.4)</h2>
 				<div className="flex h-[420px] max-w-3xl overflow-hidden border border-[var(--sl-line)]">
-					<AdminSidebar user={{ name: "Marcos Pereira", email: "contact@devbutter.tech", role: "admin" }} />
+					<AdminSidebar
+						user={{ name: "Marcos Pereira", email: "contact@devbutter.tech", role: "admin" }}
+						logoutAction={noopLogout}
+					/>
 					<div className="flex-1 bg-[var(--sl-paper)]" />
 				</div>
 				<div className="mt-4 max-w-3xl border border-[var(--sl-line)]">

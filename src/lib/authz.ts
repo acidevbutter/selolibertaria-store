@@ -53,6 +53,8 @@ const ROLE_CAPABILITIES: Record<UserRole, readonly Capability[]> = {
 		"customers.read",
 		"promotions.read",
 		"promotions.write",
+		"presale.read",
+		"presale.write",
 		"account.self",
 	],
 	customer: ["selolibertaria.buy", "account.self"],

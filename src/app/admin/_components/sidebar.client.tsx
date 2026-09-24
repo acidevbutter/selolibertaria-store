@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Fragment } from "react";
+import { useEffect, useState } from "react";
 import { useAdminRouteProgress } from "@/app/admin/_components/admin-route-progress.client";
 import { adminNavGroups, type NavCounts, resolveNavState } from "@/app/admin/_components/nav-config";
 import { hasCapability, type UserRole } from "@/lib/authz";
@@ -18,9 +18,36 @@ type SidebarUser = {
  * The rail (ui_kit `.rail`, canvas 4b): 264px, shell ink, three groups, no icons.
  * One component for every admin screen — no per-page variation.
  */
-export function AdminSidebar({ user, counts = {} }: { user?: SidebarUser; counts?: NavCounts }) {
+export function AdminSidebar({
+	user,
+	counts = {},
+	logoutAction,
+}: {
+	user?: SidebarUser;
+	counts?: NavCounts;
+	logoutAction: () => Promise<void>;
+}) {
 	const pathname = usePathname();
 	const { pendingHref, navigate } = useAdminRouteProgress();
+
+	const visibleGroups = adminNavGroups
+		.map((group) => ({
+			...group,
+			items: group.items.filter((item) => hasCapability(user?.role, item.capability)),
+		}))
+		.filter((group) => group.items.length > 0);
+
+	const activeGroupLabel =
+		visibleGroups.find((group) => group.items.some((item) => resolveNavState(pathname, item.href) !== "idle"))
+			?.label ??
+		visibleGroups[0]?.label ??
+		null;
+
+	const [openGroup, setOpenGroup] = useState<string | null>(activeGroupLabel);
+
+	useEffect(() => {
+		setOpenGroup(activeGroupLabel);
+	}, [activeGroupLabel]);
 
 	return (
 		<nav className="ad-rail hidden md:flex">
@@ -34,14 +61,23 @@ export function AdminSidebar({ user, counts = {} }: { user?: SidebarUser; counts
 				</div>
 			</div>
 
-			{adminNavGroups.map((group) => {
-				const visibleItems = group.items.filter((item) => hasCapability(user?.role, item.capability));
-				if (visibleItems.length === 0) return null;
-
-				return (
-					<Fragment key={group.label}>
-						<div className="ad-grp">{group.label}</div>
-						{visibleItems.map((item) => {
+			<div className="ad-rail-groups">
+				{visibleGroups.map((group) => (
+					<details
+						key={group.label}
+						name="ad-nav-group"
+						open={openGroup === group.label}
+						onToggle={(event) => {
+							if (event.currentTarget.open) setOpenGroup(group.label);
+						}}
+					>
+						<summary className="ad-grp">
+							{group.label}
+							<span className="ad-chev" aria-hidden="true">
+								›
+							</span>
+						</summary>
+						{group.items.map((item) => {
 							const state = resolveNavState(pathname, item.href);
 							const selected = state === "selected";
 							const count = item.countKey ? counts[item.countKey] : undefined;
@@ -63,9 +99,9 @@ export function AdminSidebar({ user, counts = {} }: { user?: SidebarUser; counts
 								</button>
 							);
 						})}
-					</Fragment>
-				);
-			})}
+					</details>
+				))}
+			</div>
 
 			<div className="ad-who">
 				<b>
@@ -73,6 +109,11 @@ export function AdminSidebar({ user, counts = {} }: { user?: SidebarUser; counts
 					{user?.role ? ` · ${user.role}` : ""}
 				</b>
 				<span>{user?.capability ?? "editorial.write"}</span>
+				<form action={logoutAction}>
+					<button type="submit" className="ad-mono ad-who-logout">
+						sair
+					</button>
+				</form>
 			</div>
 		</nav>
 	);
