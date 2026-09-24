@@ -1,6 +1,41 @@
 import Image from "next/image";
+import { SlAddToCart } from "@/components/sl-add-to-cart.client";
 import { fillCampaignText, type PreSaleCampaign } from "@/lib/pre-sale";
 import { YnsLink } from "@/ui/yns-link";
+
+/** Botão "Comprar" real quando a campanha carrega um variantId (preço de
+ * pré-venda já resolvido pelo backend); cai para um link comum sem isso. */
+function BuyButton({
+	campaign,
+	className,
+	children,
+}: {
+	campaign: PreSaleCampaign;
+	className: string;
+	children: React.ReactNode;
+}) {
+	if (campaign.variantId) {
+		return (
+			<SlAddToCart
+				variantId={campaign.variantId}
+				productInfo={
+					campaign.productId
+						? { id: campaign.productId, name: "little fish, big fish", images: [campaign.images.badge] }
+						: undefined
+				}
+				redirectTo="/checkout"
+				className={className}
+			>
+				{children}
+			</SlAddToCart>
+		);
+	}
+	return (
+		<YnsLink href={campaign.buyHref} className={className}>
+			{children}
+		</YnsLink>
+	);
+}
 
 /**
  * Tela de pré-venda — composição completa.
@@ -75,12 +110,12 @@ export function PreSaleLanding({ campaign }: { campaign: PreSaleCampaign }) {
 							Lançamento: {campaign.launchWindow} · edição de pré-venda com condições especiais em breve.
 						</p>
 						<div className="flex flex-wrap gap-3">
-							<YnsLink
-								href={campaign.buyHref}
+							<BuyButton
+								campaign={campaign}
 								className="inline-flex h-12 items-center bg-[#F2891E] px-[26px] text-[11px] font-black uppercase tracking-[0.24em] text-[#0B0B0B]"
 							>
 								Comprar agora
-							</YnsLink>
+							</BuyButton>
 							<YnsLink
 								href="#sobre-o-livro"
 								className="inline-flex h-12 items-center border border-[color:rgba(247,244,239,0.3)] px-[26px] text-[11px] font-black uppercase tracking-[0.24em] text-[color:#F7F4EF]"
@@ -171,12 +206,12 @@ export function PreSaleLanding({ campaign }: { campaign: PreSaleCampaign }) {
 				<h2 className="editorial-serif relative m-0 max-w-[16ch] text-[clamp(34px,4.4vw,58px)] font-black leading-[1.05] tracking-[-0.03em] text-[color:#F7F4EF]">
 					{campaign.closing.title}
 				</h2>
-				<YnsLink
-					href={campaign.closing.cta.href}
+				<BuyButton
+					campaign={campaign}
 					className="relative mt-2 inline-flex h-[52px] items-center bg-[#F2891E] px-8 text-xs font-black uppercase tracking-[0.24em] text-[#0B0B0B]"
 				>
 					{campaign.closing.cta.label}
-				</YnsLink>
+				</BuyButton>
 			</div>
 
 			{/* Blocos estruturais reutilizáveis (mesma linguagem visual da home) */}
@@ -244,12 +279,12 @@ export function PreSaleHeroBanner({ campaign }: { campaign: PreSaleCampaign }) {
 						</>
 					) : null}
 				</h3>
-				<YnsLink
-					href={campaign.buyHref}
+				<BuyButton
+					campaign={campaign}
 					className="mt-[6px] inline-flex h-11 items-center self-start bg-[#F7F4EF] px-[22px] text-[10px] font-black uppercase tracking-[0.22em] text-[#0B0B0B]"
 				>
 					Comprar agora
-				</YnsLink>
+				</BuyButton>
 			</div>
 			<div className="h-[280px] overflow-hidden">
 				<Image
@@ -287,12 +322,12 @@ export function PreSaleHighlightCard({ campaign }: { campaign: PreSaleCampaign }
 				<p className="m-0 text-xs text-[color:rgba(247,244,239,0.55)]">{campaign.author.name}</p>
 				<p className="editorial-serif m-0 mt-1 text-2xl font-black text-[color:#F2891E]">{campaign.price}</p>
 				<div className="mt-[6px] flex gap-[10px]">
-					<YnsLink
-						href={campaign.buyHref}
+					<BuyButton
+						campaign={campaign}
 						className="inline-flex h-[42px] flex-1 items-center justify-center bg-[#F7F4EF] text-[10px] font-black uppercase tracking-[0.2em] text-[#0B0B0B]"
 					>
 						Comprar
-					</YnsLink>
+					</BuyButton>
 					<YnsLink
 						href="#sobre-o-livro"
 						className="inline-flex h-[42px] flex-1 items-center justify-center border border-[color:rgba(247,244,239,0.24)] text-[10px] font-black uppercase tracking-[0.2em] text-[color:rgba(247,244,239,0.8)]"

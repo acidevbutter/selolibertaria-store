@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { publicUrl } from "@/env.mjs";
 import { matchLocale } from "@/i18n/config";
 import { isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 
@@ -109,7 +110,7 @@ export async function proxy(request: NextRequest) {
 			if (pathname.startsWith("/api")) {
 				return NextResponse.json({ error: "Site em manutenção", code: "MAINTENANCE_MODE" }, { status: 503 });
 			}
-			return NextResponse.redirect(new URL("/maintenance", request.url));
+			return NextResponse.redirect(new URL("/maintenance", publicUrl));
 		}
 	}
 
@@ -129,7 +130,7 @@ export async function proxy(request: NextRequest) {
 	if (pageProtected) {
 		const authResult = await verifyAuth(request);
 		if (!authResult.ok) {
-			const response = NextResponse.redirect(new URL("/login", request.url));
+			const response = NextResponse.redirect(new URL("/login", publicUrl));
 			return withUnauthorizedSessionCleared(response, authResult.clearSession);
 		}
 		return NextResponse.next();
@@ -137,15 +138,15 @@ export async function proxy(request: NextRequest) {
 
 	if (isAdmin) {
 		const session = request.cookies.get("session")?.value;
-		if (!session) return NextResponse.redirect(new URL("/login", request.url));
+		if (!session) return NextResponse.redirect(new URL("/login", publicUrl));
 		const data = await decryptProxySession(session);
 		if (!data) {
-			const response = NextResponse.redirect(new URL("/login", request.url));
+			const response = NextResponse.redirect(new URL("/login", publicUrl));
 			response.cookies.delete("session");
 			return response;
 		}
 		if (!isBackofficeRole(data.role)) {
-			return NextResponse.redirect(new URL("/forbidden", request.url));
+			return NextResponse.redirect(new URL("/forbidden", publicUrl));
 		}
 		return NextResponse.next();
 	}

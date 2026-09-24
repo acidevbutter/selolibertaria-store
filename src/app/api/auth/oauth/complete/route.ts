@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { env } from "@/env.mjs";
+import { env, publicUrl } from "@/env.mjs";
 import { findOrCreateOAuthUser } from "@/lib/auth/oauth-users";
 import { mergeGuestCartIntoUserCart, resolvePostAuthRedirect } from "@/lib/auth/post-auth";
 import { clearOAuthPendingCookie, readOAuthPendingCookie } from "@/lib/oauth/state";
@@ -13,21 +13,21 @@ const schema = z.object({
 
 export async function GET(req: Request) {
 	const ticket = new URL(req.url).searchParams.get("ticket");
-	if (!ticket) return NextResponse.redirect(new URL("/login?oauth_error=ticket", req.url));
+	if (!ticket) return NextResponse.redirect(new URL("/login?oauth_error=ticket", publicUrl));
 	const backend = await fetch(`${env.FASTAPI_API_URL}/auth/oauth/complete`, {
 		method: "POST",
 		headers: { "content-type": "application/json" },
 		body: JSON.stringify({ ticket }),
 		cache: "no-store",
 	});
-	if (!backend.ok) return NextResponse.redirect(new URL("/login?oauth_error=callback", req.url));
+	if (!backend.ok) return NextResponse.redirect(new URL("/login?oauth_error=callback", publicUrl));
 	const session = (await backend.json()) as {
 		access_token: string;
 		expires_at: string;
 		user: { role: string; id: string };
 	};
 	const target = await resolvePostAuthRedirect(session.user.id, session.user.role as never);
-	const response = NextResponse.redirect(new URL(target, req.url));
+	const response = NextResponse.redirect(new URL(target, publicUrl));
 	response.cookies.set({
 		name: "session",
 		value: session.access_token,

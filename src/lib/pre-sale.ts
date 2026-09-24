@@ -29,7 +29,11 @@ export type PreSaleCampaign = {
 	launchWindow: string;
 	/** Data/hora de estreia em ISO 8601, vinda de `Presale.launch_at`. */
 	launchAt?: string;
-	/** destino do botão "Comprar" — a página real do produto */
+	/** Quando presentes, o botão "Comprar" adiciona direto ao carrinho em vez de
+	 * navegar para `buyHref` — vêm de `Presale.variant_id`/`product_id`. */
+	variantId?: string;
+	productId?: string;
+	/** destino do botão "Comprar" — a página real do produto (fallback sem variantId) */
 	buyHref: string;
 	/** link "voltar para a loja" no topo */
 	backHref: string;

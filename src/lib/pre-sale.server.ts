@@ -26,5 +26,11 @@ export async function getPreSaleCampaign(slug: string): Promise<PreSaleCampaign 
 	if (!presale || presale.status === "rascunho") return null;
 	const campaign = getPreSaleCampaignDefinition(slug);
 	if (!campaign) return null;
-	return { ...campaign, price: formatBRL(presale.presalePrice), launchAt: presale.launchAt };
+	return {
+		...campaign,
+		price: formatBRL(presale.presalePrice),
+		launchAt: presale.launchAt,
+		variantId: presale.variantId,
+		productId: presale.productId,
+	};
 }
