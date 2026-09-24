@@ -25,7 +25,7 @@ import type {
 } from "@/lib/editorial-content";
 import {
 	getEditorialEventRecordBySlug,
-	getEditorialProjectRecordBySlug,
+	getEditorialProjectRecordBySlugForAdmin,
 	getEditorialRecordForAdmin,
 	listEditorialRecordsForAdmin,
 } from "@/lib/editorial-content-store";
@@ -484,7 +484,7 @@ export async function updateEditorialProjectAction(formData: FormData) {
 		published: parseBoolean(formData.get("published"), true),
 		order: parseOrder(formData.get("order"), 1),
 		image: await parseImage(formData),
-		gallery: (await getEditorialProjectRecordBySlug(currentSlug))?.gallery ?? undefined,
+		gallery: (await getEditorialProjectRecordBySlugForAdmin(currentSlug))?.gallery ?? undefined,
 	};
 
 	await upsertEditorial(
@@ -538,7 +538,7 @@ export async function deleteEditorialProjectAction(formData: FormData) {
 }
 
 export async function getEditorialProjectBySlug(slug: string) {
-	return await getEditorialProjectRecordBySlug(slug);
+	return await getEditorialProjectRecordBySlugForAdmin(slug);
 }
 
 export async function listEditorialProjectRecords() {

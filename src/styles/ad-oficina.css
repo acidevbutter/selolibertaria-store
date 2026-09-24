@@ -31,16 +31,20 @@
 /* ---------- estrutura ---------- */
 .ad-root .ad-app {
 	display: flex;
-	min-height: 100vh;
+	height: 100vh;
+	overflow: hidden;
 }
 .ad-root .ad-col {
 	flex: 1;
 	min-width: 0;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
+	overflow: hidden;
 }
 .ad-root .ad-desk {
 	flex: 1;
+	min-height: 0;
 	padding: 24px 28px 40px;
 	display: flex;
 	flex-direction: column;
@@ -57,13 +61,24 @@
 	padding: 24px 0;
 	display: flex;
 	flex-direction: column;
-	position: sticky;
-	top: 0;
-	min-height: 100vh;
-	overflow: auto;
 }
-.ad-root .ad-rail > * {
+/* Desktop rail (fatia responsividade): cabeçalho e rodapé fixos, só o meio
+   (.ad-rail-groups) rola. O drawer mobile (div.ad-rail no Sheet) mantém o
+   comportamento anterior — ver regra .ad-root div.ad-rail abaixo. */
+.ad-root nav.ad-rail {
+	height: 100vh;
+	overflow: hidden;
+}
+.ad-root div.ad-rail {
+	overflow-y: auto;
+}
+.ad-root .ad-rail > *:not(.ad-rail-groups) {
 	flex: none;
+}
+.ad-root .ad-rail-groups {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
 }
 .ad-root .ad-lockup {
 	padding: 0 28px 6px;
@@ -108,8 +123,39 @@
 	text-transform: uppercase;
 	color: var(--ad-on-shell-label);
 }
-.ad-root .ad-grp:first-of-type {
+/* Mobile drawer (flat .ad-grp divs): only the first group's label. Scoped by
+   adjacency to .ad-lockup, not :first-of-type, so it never matches a
+   summary.ad-grp inside the desktop accordion (each is "first" within its
+   own <details>). */
+.ad-root .ad-lockup + .ad-grp {
 	padding-top: 12px;
+}
+.ad-root .ad-rail-groups > details:first-child summary.ad-grp {
+	padding-top: 12px;
+}
+.ad-root .ad-rail-groups summary.ad-grp {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	list-style: none;
+	user-select: none;
+}
+.ad-root .ad-rail-groups summary.ad-grp::-webkit-details-marker {
+	display: none;
+}
+.ad-root .ad-rail-groups summary.ad-grp::marker {
+	content: "";
+}
+.ad-root .ad-rail-groups summary.ad-grp:hover {
+	color: var(--ad-on-shell);
+}
+.ad-root .ad-rail-groups summary.ad-grp .ad-chev {
+	font-family: var(--ad-font-mono);
+	transition: transform var(--ad-transition);
+}
+.ad-root .ad-rail-groups details[open] summary.ad-grp .ad-chev {
+	transform: rotate(90deg);
 }
 .ad-root .ad-nav {
 	width: 100%;
@@ -167,6 +213,18 @@
 	font-family: var(--ad-font-mono);
 	font-size: 11px;
 	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-who-logout {
+	display: block;
+	margin-top: 10px;
+	padding-bottom: 18px;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--ad-on-shell-label);
+}
+.ad-root .ad-who-logout:hover {
+	color: rgba(247, 244, 239, 0.85);
 }
 
 /* ---------- casca: topbar ---------- */

@@ -14,6 +14,7 @@ import { adminNavItems, type NavCounts } from "@/app/admin/_components/nav-confi
 import { fetchMediaCount, fetchOrdersCount } from "@/app/admin/_components/nav-counts";
 import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
 import { AdminTopbar } from "@/app/admin/_components/topbar.client";
+import { getSiteActivationForAdmin } from "@/app/ativacao/activation-actions";
 import { auth, logout } from "@/lib/auth";
 import { hasCapability, isBackofficeRole, normalizeUserRole } from "@/lib/authz";
 import { listEditorialRecordsForAdmin } from "@/lib/editorial-content-store";
@@ -41,6 +42,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 	if (!session) redirect("/login");
 	const role = normalizeUserRole(session.user.role);
 	if (!isBackofficeRole(role)) redirect("/forbidden");
+
+	const activation = await getSiteActivationForAdmin();
+	if (!activation?.activated) redirect("/ativacao");
 
 	let initialTheme: "light" | "dark" = "light";
 	const settings = await getSettingsDoc();
@@ -93,6 +97,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 							<AdminSidebar
 								user={{ name: session.user.name, email: session.user.email, role }}
 								counts={counts}
+								logoutAction={logout}
 							/>
 							<div className="ad-col">
 								<AdminTopbar

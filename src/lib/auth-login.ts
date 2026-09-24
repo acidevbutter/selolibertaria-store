@@ -30,7 +30,7 @@ export async function authenticateAndCreateSession(input: {
 			return { ok: false, error: body?.detail || "Credenciais inválidas" };
 		}
 		const role = normalizeUserRole(body.user?.role);
-		if (isMaintenanceModeEnabled() && role !== "admin") {
+		if ((await isMaintenanceModeEnabled()) && role !== "admin") {
 			return { ok: false, error: MAINTENANCE_LOGIN_RESTRICTED_ERROR };
 		}
 		return { ok: true, role, token: body.access_token, preferredCurrency: body.user?.preferred_currency };

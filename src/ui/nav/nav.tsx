@@ -42,7 +42,11 @@ export const Nav = async ({ hideAuthCta = false, lightweight = false }: NavProps
 	return (
 		<header
 			className="sl-scope sticky top-0 z-50"
-			style={{ background: "var(--sl-ink)", color: "var(--sl-text-on-ink)" }}
+			style={{
+				background: "var(--sl-ink)",
+				color: "var(--sl-text-on-ink)",
+				borderBottom: "1px dashed var(--sl-line-on-ink)",
+			}}
 		>
 			<div className="mx-auto flex h-[var(--sl-h-header)] w-full max-w-[var(--sl-w-desktop)] items-center justify-between gap-6 px-4 sm:px-8 lg:px-12">
 				<YnsLink href="/" className="flex shrink-0 items-center gap-3.5">

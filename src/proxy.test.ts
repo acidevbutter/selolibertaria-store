@@ -8,13 +8,21 @@ async function signSessionCookie(role: string, expiresInMs = 60_000) {
 	return `session=${role}:${expiresInMs > 0 ? "valid" : "expired"}`;
 }
 
-// Tests must not depend on whatever MAINTENANCE_MODE happens to be set to in
-// the real .env file — start every test from a known "off" state.
+// Site activation status is now backend-driven (GET /site-activation/public),
+// not an env var — tests control it via this flag instead of
+// process.env.MAINTENANCE_MODE. Default "activated" (maintenance off) so
+// tests don't depend on real backend state.
+let siteActivated = true;
+
 beforeEach(() => {
-	delete process.env.MAINTENANCE_MODE;
+	siteActivated = true;
 	vi.stubGlobal(
 		"fetch",
 		vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+			const url = input instanceof Request ? input.url : String(input);
+			if (url.includes("/site-activation/public")) {
+				return Response.json({ activated: siteActivated });
+			}
 			const authorization =
 				input instanceof Request
 					? input.headers.get("authorization")
@@ -73,14 +81,14 @@ describe("proxy public auth paths", () => {
 });
 
 describe("proxy maintenance mode", () => {
-	it("does not redirect when maintenance mode is off", async () => {
+	it("does not redirect when the site is activated", async () => {
 		const res = await proxy(new NextRequest("http://localhost/products"));
 
 		expect(res.status).toBe(200);
 	});
 
 	it("redirects anonymous visitors of any page to /maintenance, not /login", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const res = await proxy(new NextRequest("http://localhost/products"));
 
 		expect(res.status).toBe(307);
@@ -88,7 +96,7 @@ describe("proxy maintenance mode", () => {
 	});
 
 	it("returns a JSON 503 for api routes instead of redirecting to an HTML page", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const res = await proxy(new NextRequest("http://localhost/api/cart"));
 
 		expect(res.status).toBe(503);
@@ -97,21 +105,21 @@ describe("proxy maintenance mode", () => {
 	});
 
 	it("lets /maintenance itself load", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const res = await proxy(new NextRequest("http://localhost/maintenance"));
 
 		expect(res.status).toBe(200);
 	});
 
 	it("lets /login itself load — direct link is the only way in", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const res = await proxy(new NextRequest("http://localhost/login"));
 
 		expect(res.status).toBe(200);
 	});
 
 	it("lets the login submit routes through so credentials can be checked", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const submit = await proxy(new NextRequest("http://localhost/login/submit", { method: "POST" }));
 		const apiForm = await proxy(new NextRequest("http://localhost/api/auth/login/form", { method: "POST" }));
 
@@ -120,7 +128,7 @@ describe("proxy maintenance mode", () => {
 	});
 
 	it("redirects a non-admin session away from every page, to /maintenance", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const cookie = await signSessionCookie("customer");
 		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
 
@@ -129,7 +137,7 @@ describe("proxy maintenance mode", () => {
 	});
 
 	it("lets an authenticated admin session through to any page", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const cookie = await signSessionCookie("admin");
 		const res = await proxy(new NextRequest("http://localhost/admin", { headers: { cookie } }));
 
@@ -137,9 +145,22 @@ describe("proxy maintenance mode", () => {
 	});
 
 	it("does not let an expired admin session bypass maintenance mode", async () => {
-		process.env.MAINTENANCE_MODE = "true";
+		siteActivated = false;
 		const cookie = await signSessionCookie("admin", -1000);
 		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
+
+		expect(res.status).toBe(307);
+		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
+	});
+
+	it("fails closed to maintenance when the backend is unreachable", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => {
+				throw new Error("network error");
+			}),
+		);
+		const res = await proxy(new NextRequest("http://localhost/products"));
 
 		expect(res.status).toBe(307);
 		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
