@@ -92,7 +92,7 @@ describe("proxy maintenance mode", () => {
 		const res = await proxy(new NextRequest("http://localhost/products"));
 
 		expect(res.status).toBe(307);
-		expect(res.headers.get("location")).toBe("http://localhost:3001/maintenance");
+		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
 	});
 
 	it("returns a JSON 503 for api routes instead of redirecting to an HTML page", async () => {
@@ -133,7 +133,7 @@ describe("proxy maintenance mode", () => {
 		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
 
 		expect(res.status).toBe(307);
-		expect(res.headers.get("location")).toBe("http://localhost:3001/maintenance");
+		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
 	});
 
 	it("lets an authenticated admin session through to any page", async () => {
@@ -150,7 +150,7 @@ describe("proxy maintenance mode", () => {
 		const res = await proxy(new NextRequest("http://localhost/", { headers: { cookie } }));
 
 		expect(res.status).toBe(307);
-		expect(res.headers.get("location")).toBe("http://localhost:3001/maintenance");
+		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
 	});
 
 	it("fails closed to maintenance when the backend is unreachable", async () => {
@@ -163,6 +163,6 @@ describe("proxy maintenance mode", () => {
 		const res = await proxy(new NextRequest("http://localhost/products"));
 
 		expect(res.status).toBe(307);
-		expect(res.headers.get("location")).toBe("http://localhost:3001/maintenance");
+		expect(res.headers.get("location")).toBe("http://localhost:3000/maintenance");
 	});
 });
