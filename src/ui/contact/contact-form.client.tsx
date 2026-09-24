@@ -18,6 +18,22 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 	const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
 	const t = useTranslations("/contact.form");
 
+	// Native `required`/`type="email"` validation bubbles are localized by the
+	// browser's own UI language, not this page's `lang` -- without this the
+	// message shows in English even though the whole app is pt-BR only.
+	const onInvalid = useCallback(
+		(e: React.InvalidEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			const target = e.currentTarget;
+			target.setCustomValidity(
+				target.validity.typeMismatch ? t("validation.email") : t("validation.required"),
+			);
+		},
+		[t],
+	);
+	const onInput = useCallback((e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+		e.currentTarget.setCustomValidity("");
+	}, []);
+
 	const onSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			e.preventDefault();
@@ -45,6 +61,8 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 						id="name"
 						name="name"
 						required
+						onInvalid={onInvalid}
+						onInput={onInput}
 						placeholder={t("placeholders.name")}
 						autoComplete="name"
 						className={FIELD_CLASS}
@@ -59,6 +77,8 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 						name="email"
 						type="email"
 						required
+						onInvalid={onInvalid}
+						onInput={onInput}
 						placeholder={t("placeholders.email")}
 						autoComplete="email"
 						className={FIELD_CLASS}
@@ -74,6 +94,8 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 					id="subject"
 					name="subject"
 					required
+					onInvalid={onInvalid}
+					onInput={onInput}
 					placeholder={t("placeholders.subject")}
 					list={subjectSuggestions.length > 0 ? "contact-subject-suggestions" : undefined}
 					className={FIELD_CLASS}
@@ -95,6 +117,8 @@ export function ContactForm({ className, subjectSuggestions = [] }: ContactFormP
 					id="message"
 					name="message"
 					required
+					onInvalid={onInvalid}
+					onInput={onInput}
 					rows={6}
 					className={cn(
 						"min-h-44 w-full resize-y border border-[color:var(--sl-line-strong)] bg-[color:var(--sl-surface-card)] px-3.5 py-3 text-[var(--sl-size-body)] leading-[1.7] text-[color:var(--sl-text)] outline-none transition-colors placeholder:text-[color:var(--sl-text-disabled)] focus-visible:border-[color:var(--sl-ink)] focus-visible:shadow-[var(--sl-focus-ring)]",
