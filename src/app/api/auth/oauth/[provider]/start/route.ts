@@ -14,5 +14,16 @@ function getProviderId(value: string | string[] | undefined): OAuthProviderId | 
 export async function GET(_req: Request, context: RouteContext) {
 	const providerId = getProviderId((await context.params).provider);
 	if (!providerId) return NextResponse.redirect(new URL("/login?oauth_error=provider", publicUrl));
-	return NextResponse.redirect(new URL(`/auth/oauth/${providerId}/start`, env.FASTAPI_API_URL));
+
+	// FastAPI's GET /auth/oauth/{provider}/start returns {authorization_url}
+	// as JSON, not an HTTP redirect -- this BFF route is what turns that into
+	// the browser redirect to the provider's consent page.
+	const response = await fetch(new URL(`/auth/oauth/${providerId}/start`, env.FASTAPI_API_URL), {
+		cache: "no-store",
+	});
+	const payload = (await response.json().catch(() => ({}))) as { authorization_url?: string };
+	if (!response.ok || !payload.authorization_url) {
+		return NextResponse.redirect(new URL("/login?oauth_error=provider", publicUrl));
+	}
+	return NextResponse.redirect(payload.authorization_url);
 }
