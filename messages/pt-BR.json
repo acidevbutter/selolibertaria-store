@@ -667,6 +667,8 @@
 	"/contact.form.actions.sent": "Enviado!",
 	"/contact.form.actions.send": "Enviar mensagem",
 	"/contact.form.success": "Mensagem enviada com sucesso",
+	"/contact.form.validation.required": "Preencha este campo.",
+	"/contact.form.validation.email": "Informe um e-mail válido.",
 	"/faq.metadata.title": "FAQ · Selo Libertária",
 	"/faq.metadata.description": "Perguntas frequentes sobre compras, encomendas e atendimento.",
 	"/faq.page.title": "Perguntas frequentes",
