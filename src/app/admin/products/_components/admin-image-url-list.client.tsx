@@ -4,6 +4,7 @@ import { ImagePlus, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
 import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ADMIN_IMAGE_UPLOAD_MAX_LABEL, getAdminImageUploadError } from "@/lib/admin-image-upload";
 import { getProductImageOptimizationProps } from "@/lib/product-image-utils";
 import { cn } from "@/lib/utils";
@@ -157,18 +158,24 @@ export function AdminImageUrlList({
 	};
 
 	const appendValue = (nextValue: string) => {
-		setValues((current) => {
-			if (isSingleImage) {
-				return [nextValue];
-			}
+		// flushSync: the instant-upload path calls form.requestSubmit() right after this
+		// returns (see uploadFiles below), which reads the hidden <input> values straight
+		// off the DOM. A plain setValues() only schedules the re-render, so without
+		// flushSync that submit would race ahead of React and serialize the stale value.
+		flushSync(() => {
+			setValues((current) => {
+				if (isSingleImage) {
+					return [nextValue];
+				}
 
-			const emptyIndex = current.findIndex((item) => item.trim() === "");
-			if (emptyIndex >= 0) {
-				return current.map((item, itemIndex) => (itemIndex === emptyIndex ? nextValue : item));
-			}
+				const emptyIndex = current.findIndex((item) => item.trim() === "");
+				if (emptyIndex >= 0) {
+					return current.map((item, itemIndex) => (itemIndex === emptyIndex ? nextValue : item));
+				}
 
-			const appendedValues = [...current, nextValue];
-			return maxItems && maxItems > 0 ? appendedValues.slice(0, maxItems) : appendedValues;
+				const appendedValues = [...current, nextValue];
+				return maxItems && maxItems > 0 ? appendedValues.slice(0, maxItems) : appendedValues;
+			});
 		});
 	};
 

@@ -155,4 +155,40 @@ describe("AdminImageUrlList editorial on-submit flow", () => {
 			expect(screen.getByRole("alert")).toHaveTextContent("A imagem não pôde ser processada."),
 		);
 	});
+
+	it("submits the newly uploaded URL, not the stale pre-upload value, on instant upload", async () => {
+		fetchMock.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ url: "https://res.cloudinary.com/selo/nova-capa.jpg" }),
+		});
+
+		const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			return new FormData(event.currentTarget);
+		});
+
+		render(
+			<form onSubmit={onSubmit}>
+				<AdminImageUrlList
+					name="images"
+					initialValues={["https://cdn.example.com/capa-antiga.jpg"]}
+					autoSubmitOnUpload
+					maxItems={1}
+				/>
+			</form>,
+		);
+
+		const file = new File(["imagem"], "nova-capa.jpg", { type: "image/jpeg" });
+		fireEvent.change(screen.getByLabelText("Substituir imagem"), {
+			target: { files: [file] },
+		});
+		fireEvent.change(await screen.findByLabelText("Descrição da imagem"), {
+			target: { value: "Nova capa do livro" },
+		});
+		fireEvent.click(await screen.findByRole("button", { name: "Salvar e enviar" }));
+
+		await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+		const submittedForm = onSubmit.mock.results[0]?.value as FormData;
+		expect(submittedForm.get("images")).toBe("https://res.cloudinary.com/selo/nova-capa.jpg");
+	});
 });

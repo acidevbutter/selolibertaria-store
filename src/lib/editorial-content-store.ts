@@ -92,7 +92,10 @@ export async function listEditorialEvents() {
 
 export async function getEditorialEventRecordBySlug(slug: string) {
 	try {
-		const items = await listEditorialFromApi("event");
+		// Admin-only caller (there is no public /events/[slug] page) -- must see
+		// unpublished/draft records too, not just what's published, or an operator
+		// who unpublishes an event from its own detail page can no longer find it.
+		const items = await listEditorialFromApi("event", true);
 		const item = items.find((entry) => entry.slug === slug);
 		if (item) return item;
 	} catch {}
@@ -110,6 +113,21 @@ export async function listEditorialProjects() {
 export async function getEditorialProjectRecordBySlug(slug: string) {
 	try {
 		const items = await listEditorialFromApi("project");
+		const item = items.find((entry) => entry.slug === slug);
+		if (item) return item;
+	} catch {}
+	return getMockEditorialProjects().find((item) => item.slug === slug) ?? null;
+}
+
+/** Admin-only variant of getEditorialProjectRecordBySlug: sees unpublished/draft
+ *  records too, not just what's published. The public /projects/[slug] page must
+ *  keep using the published-only lookup above -- this one is for the admin detail
+ *  page and its write actions, where the record must be findable regardless of
+ *  publish state (otherwise unpublishing a project from its own page strands the
+ *  operator on a "not found" redirect). */
+export async function getEditorialProjectRecordBySlugForAdmin(slug: string) {
+	try {
+		const items = await listEditorialFromApi("project", true);
 		const item = items.find((entry) => entry.slug === slug);
 		if (item) return item;
 	} catch {}
