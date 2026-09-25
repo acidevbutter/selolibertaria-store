@@ -12,6 +12,21 @@ import { SlField } from "@/ui/sl/sl-field";
 
 type QuoteStatus = "idle" | "loading" | "ready" | "error";
 
+/**
+ * The account's stored phone is E.164 (`+5511987654321`, 13 digits for a BR
+ * mobile), but this form's national-format validator (getCheckoutBuyerFieldErrors)
+ * only accepts 10-11 digits -- prefilling the raw value silently blocked every
+ * logged-in checkout with "Informe um telefone válido." Length (>=12), not a
+ * "55" prefix match, disambiguates E.164-with-country-code from a legitimate
+ * DDD-55 (Santa Catarina) national number, which this app's checkout is
+ * BR-only anyway (countryMode="br-only" below).
+ */
+function toNationalPhone(value?: string | null) {
+	const digits = (value || "").replace(/\D+/g, "");
+	const national = digits.length >= 12 && digits.startsWith("55") ? digits.slice(2) : digits;
+	return formatCheckoutPhone(national);
+}
+
 export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) {
 	const [pending, startTransition] = useTransition();
 	const [message, setMessage] = useState<string | null>(null);
@@ -21,7 +36,7 @@ export function AsaasCheckoutForm({ checkout }: { checkout: CheckoutSnapshot }) 
 	const [fullName, setFullName] = useState(checkout.user.name ?? "");
 	const [email, setEmail] = useState(checkout.user.email ?? "");
 	const [cpf, setCpf] = useState(checkout.user.cpf ?? "");
-	const [phone, setPhone] = useState(checkout.user.phone ?? "");
+	const [phone, setPhone] = useState(() => toNationalPhone(checkout.user.phone));
 	const [deliveryMethod, setDeliveryMethod] = useState<CheckoutDeliveryMethod>(
 		checkout.user.address?.postalCode ? "saved-address" : "new-address",
 	);

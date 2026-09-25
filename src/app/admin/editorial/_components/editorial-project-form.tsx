@@ -1,3 +1,5 @@
+"use client";
+
 import type { FocusEvent, FormEvent, ReactNode } from "react";
 import { EditorialAccordionSection } from "@/app/admin/editorial/_components/editorial-accordion-section";
 import { EditorialFloatingSaveBar } from "@/app/admin/editorial/_components/editorial-floating-save-bar";
