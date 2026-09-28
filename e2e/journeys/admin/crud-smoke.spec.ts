@@ -57,17 +57,12 @@ test("create an editorial event, see it listed, then delete it", async ({ page }
 	// success message, so the redirect landing + the row's absence there is
 	// the real assertion.
 	await page.goto(`/admin/editorial/events/${slug}`);
-	// The floating "Salvar evento" bar is fixed to the viewport's
-	// bottom-right for the whole page and physically overlaps this sidebar
-	// button at normal viewport heights (confirmed via Playwright's
-	// actionability retries reporting "subtree intercepts pointer events",
-	// and `.click({ force: true })` still landing on the overlay instead of
-	// the button since force-click is still a coordinate-based real click —
-	// filed as selolibertaria-store#178). Invoking the DOM `.click()` method
-	// directly bypasses coordinate hit-testing entirely while still firing
-	// the exact same onClick handler the button owns, so this still
-	// exercises the real delete action end-to-end.
-	await page.getByRole("button", { name: "Excluir evento" }).evaluate((el) => (el as HTMLElement).click());
+	// The floating "Salvar evento" bar used to be `fixed` to the whole
+	// viewport's bottom-right, physically overlapping this sidebar button at
+	// normal viewport heights (selolibertaria-store#178). It's now `sticky`
+	// inside the main form column, so it can never extend past that column
+	// into the sidebar — a plain coordinate-based click works again.
+	await page.getByRole("button", { name: "Excluir evento" }).click();
 	await page.waitForURL("**/admin/editorial/events");
 
 	await expect(page.getByRole("heading", { name: title })).toHaveCount(0);
