@@ -1,18 +1,13 @@
 import { Mail } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { EmailTemplatesPreviewClient } from "@/app/admin/email-templates/_components/email-templates-preview.client";
 import { env, publicUrl } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -34,44 +29,40 @@ export default async function EmailTemplatesPage() {
 		.toUpperCase();
 
 	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="E-mails"
-				title="Modelos de email"
-				description="Revise a linguagem, a estrutura e a assinatura dos e-mails transacionais antes de alterar o envio real."
-				actions={
-					<div className="inline-flex items-center gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)]">
-						<Mail className="h-4 w-4 text-[var(--sl-accent)]" />
-						As prévias usam dados de exemplo e o e-mail de suporte salvo em configurações.
-					</div>
-				}
-			/>
+		<>
+			<div className="ad-head">
+				<h1>Modelos de email</h1>
+				<span className="ad-meta">
+					Revise a linguagem, a estrutura e a assinatura dos e-mails transacionais antes de alterar o envio
+					real.
+				</span>
+			</div>
 
-			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat
-					label="Modelos"
-					value={templateCount}
-					helper="Modelos ativos de e-mail para revisão."
-				/>
-				<AdminEditorialStat label="Prévia" value="Isolada" helper="Sem disparar e-mails reais." />
-				<AdminEditorialStat
+			<div
+				className="ad-panel flex items-center gap-3 px-4 py-3 text-sm"
+				style={{ color: "var(--ad-text-muted)" }}
+			>
+				<Mail className="h-4 w-4" style={{ color: "var(--ad-wine)" }} />
+				As prévias usam dados de exemplo e o e-mail de suporte salvo em configurações.
+			</div>
+
+			<div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+				<MetricCard label="Modelos" value={templateCount} note="Modelos ativos de e-mail para revisão." />
+				<MetricCard label="Prévia" value="Isolada" note="Sem disparar e-mails reais." />
+				<MetricCard
 					label="E-mail de suporte"
 					value={supportEmail}
-					helper={`Assinatura usada nos exemplos desta tela. Origem: ${supportEmailSource.toLowerCase()}.`}
+					note={`Assinatura usada nos exemplos desta tela. Origem: ${supportEmailSource.toLowerCase()}.`}
 				/>
 			</div>
 
-			<EditorialPanel className="p-0">
-				<div className="p-6 sm:p-8">
-					<EmailTemplatesPreviewClient
-						supportEmail={supportEmail}
-						supportEmailSource={supportEmailSource}
-						currency={currency}
-						baseUrl={baseUrl}
-						defaultTestRecipient={session.user.email ?? ""}
-					/>
-				</div>
-			</EditorialPanel>
-		</AdminEditorialPage>
+			<EmailTemplatesPreviewClient
+				supportEmail={supportEmail}
+				supportEmailSource={supportEmailSource}
+				currency={currency}
+				baseUrl={baseUrl}
+				defaultTestRecipient={session.user.email ?? ""}
+			/>
+		</>
 	);
 }

@@ -2,17 +2,12 @@ import { Activity } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DataTable, type DataTableColumn } from "@/app/admin/_components/ui/DataTable";
+import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 import { StatusBadge } from "@/ui/status-badge";
 import { ReconcileOrdersButton } from "./reconcile-orders-button.client";
 
@@ -85,156 +80,179 @@ export default async function AdminWebhooksPage({ searchParams }: { searchParams
 	const failedCount = items.filter((item) => item.status === "failed").length;
 	const unverifiedCount = items.filter((item) => item.verified === false).length;
 
-	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Recebimento"
-				title="Recebimento de webhooks"
-				description="Acompanhe eventos recebidos, falhas e validação de assinatura."
-				actions={
-					<div className="flex flex-wrap gap-2">
-						<ReconcileOrdersButton />
-						{[
-							{ href: "/admin/webhooks?status=all", label: "Todos", active: status === "all" },
-							{
-								href: "/admin/webhooks?status=processed",
-								label: "Processados",
-								active: status === "processed",
-							},
-							{ href: "/admin/webhooks?status=pending", label: "Pendentes", active: status === "pending" },
-							{ href: "/admin/webhooks?status=failed", label: "Com falha", active: status === "failed" },
-						].map((item) => (
-							<Link
-								key={item.href}
-								href={item.href}
-								className={
-									item.active
-										? "inline-flex h-10 items-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)]"
-										: "inline-flex h-10 items-center rounded-none border border-[color:var(--editorial-border)] bg-[#fbf7f1] px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-white"
-								}
+	const columns: DataTableColumn<WebhookLogDoc>[] = [
+		{
+			key: "received_at",
+			label: "Recebido em",
+			width: "170px",
+			numeric: true,
+			render: (item) => toDateString(item.received_at, locale),
+		},
+		{
+			key: "status",
+			label: "Status",
+			width: "140px",
+			render: (item) => <StatusBadge status={item.status || "unknown"} />,
+		},
+		{
+			key: "verified",
+			label: "Verificação",
+			width: "190px",
+			render: (item) => (item.verified ? "Assinatura validada" : "Assinatura sem validação"),
+		},
+		{
+			key: "event_type",
+			label: "Tipo",
+			width: "160px",
+			numeric: true,
+			render: (item) => item.event_type || "-",
+		},
+		{
+			key: "event_id",
+			label: "ID do evento",
+			numeric: true,
+			render: (item) => item.event_id || "-",
+		},
+		{
+			key: "error",
+			label: "Erro",
+			width: "220px",
+			render: (item) => (item.error ? <span style={{ color: "var(--ad-wine)" }}>{item.error}</span> : "-"),
+		},
+		{
+			key: "details",
+			label: "Detalhes",
+			width: "140px",
+			render: (item) => (
+				<details style={{ maxWidth: 420 }}>
+					<summary
+						className="ad-mono"
+						style={{ cursor: "pointer", fontSize: 12, textDecoration: "underline" }}
+					>
+						Ver detalhes
+					</summary>
+					<div className="mt-3 space-y-3">
+						<div>
+							<p className="ad-ml" style={{ marginBottom: 4 }}>
+								Cabeçalhos da requisição
+							</p>
+							<pre
+								className="ad-mono"
+								style={{
+									maxHeight: 224,
+									overflow: "auto",
+									border: "1px solid var(--ad-line-strong)",
+									background: "var(--ad-sand)",
+									padding: 12,
+									fontSize: 11,
+								}}
 							>
-								{item.label}
-							</Link>
-						))}
+								{formatJson(item.headers || {})}
+							</pre>
+						</div>
+						<div>
+							<p className="ad-ml" style={{ marginBottom: 4 }}>
+								Conteúdo recebido
+							</p>
+							<pre
+								className="ad-mono"
+								style={{
+									maxHeight: 320,
+									overflow: "auto",
+									border: "1px solid var(--ad-line-strong)",
+									background: "var(--ad-sand)",
+									padding: 12,
+									fontSize: 11,
+								}}
+							>
+								{formatJson(item.raw ?? null)}
+							</pre>
+						</div>
 					</div>
-				}
-			/>
-			<div className="grid gap-5 lg:grid-cols-4">
-				<AdminEditorialStat
-					label="Registros"
-					value={items.length}
-					helper={`Últimos ${limit} eventos carregados.`}
+				</details>
+			),
+		},
+	];
+
+	return (
+		<>
+			<div className="ad-head">
+				<h1>Recebimento de webhooks</h1>
+				<span className="ad-meta">Acompanhe eventos recebidos, falhas e validação de assinatura.</span>
+				<div className="ad-acts">
+					<ReconcileOrdersButton />
+					{[
+						{ href: "/admin/webhooks?status=all", label: "Todos", active: status === "all" },
+						{
+							href: "/admin/webhooks?status=processed",
+							label: "Processados",
+							active: status === "processed",
+						},
+						{ href: "/admin/webhooks?status=pending", label: "Pendentes", active: status === "pending" },
+						{ href: "/admin/webhooks?status=failed", label: "Com falha", active: status === "failed" },
+					].map((item) => (
+						<Link key={item.href} href={item.href} className={`ad-chip ${item.active ? "on" : ""}`}>
+							{item.label}
+						</Link>
+					))}
+				</div>
+			</div>
+
+			<div className="ad-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+				<MetricCard label="Registros" value={items.length} note={`Últimos ${limit} eventos carregados.`} />
+				<MetricCard label="Processados" value={processedCount} note="Recebidos sem falha." />
+				<MetricCard
+					label="Com falha"
+					value={failedCount}
+					note="Precisam de revisão."
+					tone={failedCount > 0 ? "danger" : "default"}
 				/>
-				<AdminEditorialStat label="Processados" value={processedCount} helper="Recebidos sem falha." />
-				<AdminEditorialStat label="Com falha" value={failedCount} helper="Precisam de revisão." />
-				<AdminEditorialStat
+				<MetricCard
 					label="Não verificados"
 					value={unverifiedCount}
-					helper="Assinatura sem validação."
+					note="Assinatura sem validação."
+					tone={unverifiedCount > 0 ? "danger" : "default"}
 				/>
 			</div>
-			<EditorialPanel className="p-0">
-				<div className="border-b border-[color:var(--editorial-border)] px-6 py-5 sm:px-8">
-					<div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--editorial-accent)]">
-						<Activity className="h-4 w-4" />
-						Eventos recebidos
+
+			<div className="ad-ml" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+				<Activity className="h-4 w-4" />
+				Eventos recebidos
+			</div>
+
+			<DataTable<WebhookLogDoc>
+				columns={columns}
+				rows={items}
+				empty="Nenhum registro encontrado para este filtro."
+			/>
+
+			{items.length === 0 ? (
+				<div
+					className="ad-panel"
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						gap: 16,
+						padding: "var(--ad-pad-sheet)",
+					}}
+				>
+					<div>
+						<p style={{ fontWeight: 900 }}>Ainda não há registros de recebimento neste filtro.</p>
+						<p className="ad-body">
+							Valide uma compra recente ou revise os pedidos para confirmar se os eventos estão chegando como
+							esperado.
+						</p>
+					</div>
+					<div className="ad-acts" style={{ marginLeft: 0 }}>
+						<Link href="/admin/orders" className="ad-btn ad-sec">
+							Ver pedidos
+						</Link>
+						<Link href="/admin/emails" className="ad-btn ad-ink">
+							Ver e-mails
+						</Link>
 					</div>
 				</div>
-				<div className="p-6 sm:p-8">
-					<div className="w-full overflow-x-auto">
-						<Table className="min-w-[980px]">
-							<TableHeader>
-								<TableRow>
-									<TableHead>Recebido em</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Verificação</TableHead>
-									<TableHead>Tipo</TableHead>
-									<TableHead>ID do evento</TableHead>
-									<TableHead>Erro</TableHead>
-									<TableHead>Detalhes</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{items.map((item) => (
-									<TableRow key={item.id}>
-										<TableCell>{toDateString(item.received_at, locale)}</TableCell>
-										<TableCell>
-											<StatusBadge status={item.status || "unknown"} />
-										</TableCell>
-										<TableCell>
-											{item.verified ? "Assinatura validada" : "Assinatura sem validação"}
-										</TableCell>
-										<TableCell className="font-mono text-xs">{item.event_type || "-"}</TableCell>
-										<TableCell className="font-mono text-xs break-all">{item.event_id || "-"}</TableCell>
-										<TableCell className="max-w-[320px] text-xs text-destructive">
-											{item.error ? <span className="break-words">{item.error}</span> : "-"}
-										</TableCell>
-										<TableCell>
-											<details className="max-w-[420px]">
-												<summary className="cursor-pointer text-sm underline underline-offset-4">
-													Ver detalhes
-												</summary>
-												<div className="mt-3 space-y-3">
-													<div>
-														<p className="mb-1 text-xs font-medium text-muted-foreground">
-															Cabeçalhos da requisição
-														</p>
-														<pre className="max-h-56 overflow-auto rounded-none border bg-muted p-3 text-xs">
-															{formatJson(item.headers || {})}
-														</pre>
-													</div>
-													<div>
-														<p className="mb-1 text-xs font-medium text-muted-foreground">
-															Conteúdo recebido
-														</p>
-														<pre className="max-h-80 overflow-auto rounded-none border bg-muted p-3 text-xs">
-															{formatJson(item.raw ?? null)}
-														</pre>
-													</div>
-												</div>
-											</details>
-										</TableCell>
-									</TableRow>
-								))}
-								{items.length === 0 && (
-									<TableRow>
-										<TableCell colSpan={7} className="py-8 text-[color:var(--editorial-muted)]">
-											Nenhum registro encontrado para este filtro.
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</div>
-					{items.length === 0 ? (
-						<div className="mt-4 flex flex-col gap-4 border border-[color:var(--editorial-border)] bg-[#fbf7f1] p-5 sm:flex-row sm:items-center sm:justify-between">
-							<div className="space-y-1">
-								<p className="text-sm font-semibold text-[color:var(--editorial-ink)]">
-									Ainda não há registros de recebimento neste filtro.
-								</p>
-								<p className="text-sm leading-6 text-[color:var(--editorial-muted)]">
-									Valide uma compra recente ou revise os pedidos para confirmar se os eventos estão chegando
-									como esperado.
-								</p>
-							</div>
-							<div className="flex flex-wrap gap-2">
-								<Link
-									href="/admin/orders"
-									className="inline-flex h-10 items-center justify-center rounded-none border border-[color:var(--editorial-border)] bg-white px-4 text-sm font-medium text-[color:var(--editorial-ink)] transition-colors hover:bg-[#f4eee5]"
-								>
-									Ver pedidos
-								</Link>
-								<Link
-									href="/admin/emails"
-									className="inline-flex h-10 items-center justify-center rounded-none bg-[color:var(--editorial-ink)] px-4 text-sm font-medium text-[color:var(--editorial-paper)] transition-colors hover:bg-[color:var(--editorial-accent)]"
-								>
-									Ver e-mails
-								</Link>
-							</div>
-						</div>
-					) : null}
-				</div>
-			</EditorialPanel>
-		</AdminEditorialPage>
+			) : null}
+		</>
 	);
 }

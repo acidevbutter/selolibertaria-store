@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 type StatusTone = "neutral" | "active" | "alert";
 
-const toneStyle: Record<StatusTone, string> = {
-	neutral: "bg-[var(--sl-sand)] text-[var(--sl-wine)]",
-	active: "bg-[var(--sl-ink)] text-[var(--sl-text-on-ink)]",
-	alert: "border border-[var(--sl-danger-line)] bg-[var(--sl-danger-wash)] text-[var(--sl-wine)]",
+const toneClass: Record<StatusTone, string> = {
+	neutral: "ad-b-pub",
+	active: "ad-b-run",
+	alert: "ad-b-err",
 };
 
 /**
@@ -22,16 +22,5 @@ export function StatusBadge({
 	children: ReactNode;
 	className?: string;
 }) {
-	return (
-		<span
-			className={cn(
-				"inline-flex h-[var(--sl-h-badge)] items-center px-[10px] text-[10px] font-black uppercase tracking-[var(--sl-track-label-tight)]",
-				toneStyle[tone],
-				className,
-			)}
-			style={{ borderRadius: "var(--sl-radius)" }}
-		>
-			{children}
-		</span>
-	);
+	return <span className={cn("ad-badge", toneClass[tone], className)}>{children}</span>;
 }
