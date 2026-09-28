@@ -267,6 +267,10 @@ export async function finalizeAsaasCheckout(input: { orderId: string }) {
 			status: string;
 			setup_password_required?: boolean;
 			account_email_sent?: boolean;
+			billing_type?: string | null;
+			credit_card_brand?: string | null;
+			credit_card_last4?: string | null;
+			card_save_available?: boolean;
 		}>(`/checkout/intents/${encodeURIComponent(input.orderId)}/finalize`, {
 			method: "POST",
 			headers: {
@@ -288,10 +292,52 @@ export async function finalizeAsaasCheckout(input: { orderId: string }) {
 			setupPasswordRequired: Boolean(remote.setup_password_required),
 			cartCleared,
 			accountEmailSent: Boolean(remote.account_email_sent),
+			billingType: remote.billing_type ?? null,
+			creditCardBrand: remote.credit_card_brand ?? null,
+			creditCardLast4: remote.credit_card_last4 ?? null,
+			cardSaveAvailable: Boolean(remote.card_save_available),
 		};
 	} catch (error) {
 		return {
 			error: error instanceof Error ? error.message : "Não foi possível confirmar o pagamento",
+		} as const;
+	}
+}
+
+/**
+ * Opt-in save of the card used for a just-finalized CREDIT_CARD checkout,
+ * called from the post-payment processing page when `finalizeAsaasCheckout`
+ * reported `cardSaveAvailable`. Reuses the same checkout-owner-key receipt as
+ * finalize -- the backend authorizes this by owner key, not by a logged-in
+ * user's session, since a guest checkout also gets an account created for it
+ * during finalize.
+ */
+export async function saveCheckoutCard(input: { orderId: string }) {
+	try {
+		const currentReceipt = await receipt(input.orderId);
+		const remote = await fastApiRequest<{
+			id: string;
+			provider: string;
+			brand: string | null;
+			last4: string | null;
+		}>(`/checkout/intents/${encodeURIComponent(input.orderId)}/save-card`, {
+			method: "POST",
+			headers: {
+				"X-Checkout-Owner-Key": currentReceipt?.ownerKey ?? (await checkoutOwnerKey()),
+			},
+		});
+		return {
+			ok: true as const,
+			card: {
+				id: remote.id,
+				provider: remote.provider,
+				brand: remote.brand,
+				last4: remote.last4,
+			},
+		};
+	} catch (error) {
+		return {
+			error: error instanceof Error ? error.message : "Não foi possível salvar o cartão",
 		} as const;
 	}
 }
