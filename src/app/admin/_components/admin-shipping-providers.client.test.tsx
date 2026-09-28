@@ -46,10 +46,17 @@ describe("AdminShippingProviders", () => {
 
 		render(<AdminShippingProviders />);
 
+		// The checkbox is rendered unconditionally from the very first paint
+		// (only its `disabled` state depends on the pending GET), so waiting
+		// for its mere presence resolves before the mocked fetch's settings
+		// have actually landed in state. Wait for a value that only exists
+		// once the GET response has been applied, so every assertion below
+		// is guaranteed to see post-load state instead of racing it.
 		await waitFor(() => {
-			expect(screen.getByLabelText("Ativar cálculo de frete")).toBeTruthy();
+			expect(screen.getByLabelText("CEP de origem")).toHaveValue("01310-100");
 		});
 
+		expect(screen.getByLabelText("Ativar cálculo de frete")).toBeTruthy();
 		expect(screen.getByText("Conexão Melhor Envio")).toBeTruthy();
 		expect(screen.getByText("Token de ambiente configurado")).toBeTruthy();
 		expect(screen.getByRole("button", { name: "Conectar Melhor Envio" })).toBeDisabled();
@@ -58,7 +65,6 @@ describe("AdminShippingProviders", () => {
 				"Nesta versão, a cotação usa o token configurado no ambiente da aplicação. A conexão OAuth completa fica preparada para uma próxima etapa.",
 			),
 		).toBeTruthy();
-		expect(screen.getByLabelText("CEP de origem")).toHaveValue("01310-100");
 		expect(screen.getByLabelText("País suportado")).toHaveValue("BR");
 		expect(screen.queryByText("env-token")).toBeNull();
 		expect(screen.queryByText("Correios")).toBeNull();
@@ -115,7 +121,21 @@ describe("AdminShippingProviders", () => {
 
 		render(<AdminShippingProviders />);
 
-		const checkbox = await screen.findByLabelText("Ativar cálculo de frete");
+		// Same reasoning as the test above: the checkbox exists on first paint
+		// regardless of whether the GET has resolved, so asserting on it alone
+		// doesn't guarantee the initial `shippingEnabled` from the mocked
+		// response has been applied yet. If the GET's state update landed
+		// *after* this click (order that varies with system load, which is
+		// why this only flaked under the full suite), it would silently
+		// overwrite the toggle back to its loaded value before "Salvar frete"
+		// captured it — producing exactly the `shippingEnabled` mismatch this
+		// test used to see intermittently. Waiting on a value that only
+		// exists post-load closes that race.
+		await waitFor(() => {
+			expect(screen.getByLabelText("CEP de origem")).toHaveValue("01310-100");
+		});
+
+		const checkbox = screen.getByLabelText("Ativar cálculo de frete");
 		fireEvent.click(checkbox);
 		fireEvent.change(screen.getByLabelText("URL base"), {
 			target: { value: "https://sandbox.melhorenvio.com.br/api/v2" },
