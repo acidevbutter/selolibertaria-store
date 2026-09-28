@@ -56,6 +56,7 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 	const [marketingOptIn, setMarketingOptIn] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [emailStatus, setEmailStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+	const [submitting, setSubmitting] = useState(false);
 
 	const strength = useMemo(
 		() => ({
@@ -164,6 +165,9 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 			return;
 		}
 
+		if (submitting) return;
+		setSubmitting(true);
+
 		const payload: Record<string, unknown> = {
 			name: name.trim(),
 			email: normalizedEmail,
@@ -213,6 +217,8 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 			onRegistered(normalizedEmail);
 		} catch {
 			setError(t("errors.unexpected"));
+		} finally {
+			setSubmitting(false);
 		}
 	}
 
@@ -237,7 +243,8 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 		}
 	}
 
-	const submitDisabled = pending || emailStatus === "taken" || !isStrong || password !== confirmPassword;
+	const submitDisabled =
+		pending || submitting || emailStatus === "taken" || !isStrong || password !== confirmPassword;
 	const stepMeta: Record<RegisterStep, { label: string; helper: string }> = {
 		1: {
 			label: t("steps.1.label"),
@@ -491,7 +498,7 @@ export function RegisterForm({ cart, defaultCountry, defaultCurrency, pending, o
 						className="h-12 rounded-none bg-[color:var(--editorial-ink)] px-8 text-xs font-black uppercase tracking-[0.22em] text-[color:var(--editorial-paper)] hover:bg-[color:var(--editorial-ink)]/92"
 						disabled={submitDisabled}
 					>
-						{pending ? t("actions.submitting") : t("actions.createAccount")}
+						{pending || submitting ? t("actions.submitting") : t("actions.createAccount")}
 					</Button>
 				)}
 			</div>

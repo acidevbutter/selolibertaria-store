@@ -1,0 +1,19 @@
+flowchart TD
+  U[Visitante anônimo] --> H[Home /]
+  H -->|Menu e rodapé| E[Editoriais: projetos, sarau, eventos, sobre, contato]
+  H -->|Busca virus| S[Resultado vírus do beijo]
+  H -->|Adicionar| C[Carrinho: 1 item e total correto]
+  C --> K[Checkout convidado]
+  K -->|Sem CEP| V[Pagamento bloqueado]
+  H -->|Ver a pré-venda| X[Pré-venda /pre-venda/little-fish-big-fish]
+  X --> F[FAIL: Página não encontrada]
+  E -->|Contato vazio| L[FAIL: validação nativa em inglês]
+  U -->|/admin, /user, /orders| A[Redireciona para /login]
+  T[Testes automatizados] --> R[FAIL: 3 expectativas usam localhost:3000]
+
+  classDef pass fill:#d7f5df,stroke:#287c3c,color:#102c17;
+  classDef fail fill:#ffe0e0,stroke:#b42318,color:#57100b;
+  classDef blocked fill:#fff1cc,stroke:#a66a00,color:#4f3300;
+  class H,E,S,C,K,V,A pass;
+  class X,F,L,R fail;
+  class T blocked;
