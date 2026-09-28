@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { emailTemplatePreviewDefinitions } from "@/lib/admin-email-template-previews";
-import { SlButton } from "@/ui/sl/sl-button";
+import { cn } from "@/lib/utils";
 
-const fieldClassName =
-	"h-10 w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
-const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
+const sectionHeadStyle = {
+	fontFamily: "var(--ad-font-head)",
+	fontSize: "var(--ad-size-section)",
+	fontWeight: 700,
+} as const;
 
 export function EmailTemplatesPreviewClient({
 	supportEmail,
@@ -77,10 +79,10 @@ export function EmailTemplatesPreviewClient({
 
 	return (
 		<div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-			<section className="space-y-4 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-5">
+			<section className="ad-panel space-y-4 p-5" style={{ background: "var(--ad-paper)" }}>
 				<div className="space-y-2">
-					<h2 className="editorial-serif text-2xl font-semibold">Biblioteca de modelos</h2>
-					<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
+					<h2 style={sectionHeadStyle}>Biblioteca de modelos</h2>
+					<p className="text-sm leading-6 text-[color:var(--ad-text-muted)]">
 						Escolha um modelo para revisar a estrutura, a copy e a assinatura.
 					</p>
 				</div>
@@ -93,8 +95,7 @@ export function EmailTemplatesPreviewClient({
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						placeholder="Conta, pedido, promoção..."
-						className={fieldClassName}
-						style={fieldStyle}
+						className="ad-field w-full"
 					/>
 				</div>
 				<div className="space-y-2">
@@ -105,8 +106,7 @@ export function EmailTemplatesPreviewClient({
 						id="email-template-select"
 						value={selectedValue}
 						onChange={(event) => setSelected(event.target.value)}
-						className={fieldClassName}
-						style={fieldStyle}
+						className="ad-field w-full"
 						disabled={filteredTemplates.length === 0}
 					>
 						{filteredTemplates.map((template) => (
@@ -124,94 +124,90 @@ export function EmailTemplatesPreviewClient({
 								key={template.id}
 								type="button"
 								onClick={() => setSelected(template.id)}
-								className={`w-full border px-4 py-4 text-left transition-colors ${
+								className={cn(
+									"w-full border px-4 py-4 text-left transition-colors",
 									active
-										? "border-[var(--sl-ink)] bg-[var(--sl-paper)]"
-										: "border-[var(--sl-line)] bg-[var(--sl-paper-pure)] hover:border-[var(--sl-text-muted)]"
-								}`}
+										? "border-[color:var(--ad-ink)] bg-[color:var(--ad-sheet)]"
+										: "border-[color:var(--ad-line)] bg-[color:var(--ad-paper)] hover:border-[color:var(--ad-text-muted)]",
+								)}
 							>
 								<div className="flex items-start justify-between gap-3">
 									<div className="space-y-2">
 										<div className="flex flex-wrap items-center gap-2">
-											<div className="text-sm font-semibold text-[var(--sl-ink)]">{template.label}</div>
-											<span className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
-												{template.category}
-											</span>
+											<div className="text-sm font-semibold" style={{ color: "var(--ad-text)" }}>
+												{template.label}
+											</div>
+											<span className="ad-badge ad-b-dra">{template.category}</span>
 										</div>
-										<p className="text-sm leading-6 text-[var(--sl-text-muted)]">{template.description}</p>
+										<p className="text-sm leading-6 text-[color:var(--ad-text-muted)]">
+											{template.description}
+										</p>
 									</div>
-									{active ? (
-										<span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-											Prévia
-										</span>
-									) : null}
+									{active ? <span className="ad-ml">Prévia</span> : null}
 								</div>
 							</button>
 						);
 					})}
 					{filteredTemplates.length === 0 ? (
-						<div className="border border-dashed border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-6 text-sm text-[var(--sl-text-muted)]">
+						<div
+							className="border border-dashed px-4 py-6 text-sm"
+							style={{ borderColor: "var(--ad-line)", color: "var(--ad-text-muted)" }}
+						>
 							Nenhum modelo encontrado para essa busca.
 						</div>
 					) : null}
 				</div>
 			</section>
 
-			<section className="space-y-4 border border-[var(--sl-line)] bg-[var(--sl-paper)] p-5">
-				<div className="flex flex-col gap-4 border-b border-[var(--sl-line)] pb-4 lg:flex-row lg:items-start lg:justify-between">
+			<section className="ad-panel space-y-4 p-5">
+				<div
+					className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-start lg:justify-between"
+					style={{ borderColor: "var(--ad-line)" }}
+				>
 					<div className="space-y-2">
-						<h2 className="editorial-serif text-2xl font-semibold">{current?.label ?? "Prévia"}</h2>
-						<p className="max-w-2xl text-sm leading-6 text-[var(--sl-text-muted)]">
+						<h2 style={sectionHeadStyle}>{current?.label ?? "Prévia"}</h2>
+						<p className="max-w-2xl text-sm leading-6 text-[color:var(--ad-text-muted)]">
 							{current?.description ?? "Refine a busca ou limpe o filtro para visualizar uma prévia."}
 						</p>
 						{current ? (
-							<div className="flex flex-wrap gap-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--sl-text-muted)]">
-								<span className="border border-[var(--sl-line)] px-2 py-1">{current.category}</span>
-								<span className="border border-[var(--sl-line)] px-2 py-1">
-									Assunto: {current.testSubject}
-								</span>
+							<div className="flex flex-wrap gap-2 pt-1">
+								<span className="ad-badge ad-b-dra">{current.category}</span>
+								<span className="ad-badge ad-b-dra">Assunto: {current.testSubject}</span>
 							</div>
 						) : null}
 					</div>
-					<div className="grid gap-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm">
+					<div className="ad-panel grid gap-3 px-4 py-3 text-sm">
 						<div>
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								E-mail de suporte
-							</div>
-							<div className="mt-2 font-medium text-[var(--sl-ink)]">
+							<div className="ad-eb">E-mail de suporte</div>
+							<div className="mt-2 font-medium" style={{ color: "var(--ad-text)" }}>
 								{supportEmail || "Ainda não configurado"}
 							</div>
 						</div>
-						<div className="text-xs leading-5 text-[var(--sl-text-muted)]">
+						<div className="text-xs leading-5 text-[color:var(--ad-text-muted)]">
 							Origem atual: {supportEmailSource}
 						</div>
 					</div>
 				</div>
 
 				{current ? (
-					<div className="grid gap-4 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+					<div className="ad-panel grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_320px]">
 						<div className="space-y-3">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								Variáveis de exemplo
-							</div>
+							<div className="ad-eb">Variáveis de exemplo</div>
 							<div className="grid gap-2 sm:grid-cols-2">
 								{current.variables.map((variable) => (
-									<div
-										key={`${current.id}:${variable.name}`}
-										className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3"
-									>
-										<div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--sl-text-muted)]">
+									<div key={`${current.id}:${variable.name}`} className="ad-panel px-3 py-3">
+										<div className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ad-text-muted)]">
 											{variable.name}
 										</div>
-										<div className="mt-2 text-sm text-[var(--sl-ink)]">{variable.example}</div>
+										<div className="mt-2 text-sm" style={{ color: "var(--ad-text)" }}>
+											{variable.example}
+										</div>
 									</div>
 								))}
 							</div>
 						</div>
 						<div className="space-y-3">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								Envio de teste
-							</div>
+							<div className="ad-eb">Envio de teste</div>
 							<label htmlFor="email-template-test-recipient" className="text-sm font-medium">
 								Enviar para
 							</label>
@@ -221,26 +217,24 @@ export function EmailTemplatesPreviewClient({
 								value={testRecipient}
 								onChange={(event) => setTestRecipient(event.target.value)}
 								placeholder="operacao@selolibertaria.com"
-								className={fieldClassName}
-								style={fieldStyle}
+								className="ad-field w-full"
 								autoCapitalize="none"
 								autoCorrect="off"
 								spellCheck={false}
 							/>
-							<SlButton
+							<button
 								type="button"
-								variant="primary"
-								fullWidth
+								className="ad-btn ad-pri w-full disabled:cursor-not-allowed disabled:opacity-40"
 								onClick={sendTestEmail}
 								disabled={!current || isSendingTest}
 							>
 								{isSendingTest ? "Enviando teste..." : "Enviar e-mail de teste"}
-							</SlButton>
-							<p className="text-xs leading-5 text-[var(--sl-text-muted)]">
+							</button>
+							<p className="text-xs leading-5 text-[color:var(--ad-text-muted)]">
 								O envio usa o HTML real deste modelo e registra a tentativa no histórico de comunicação.
 							</p>
 							{testStatus ? (
-								<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-3 text-sm text-[var(--sl-ink)]">
+								<div className="ad-panel px-3 py-3 text-sm" style={{ color: "var(--ad-text)" }}>
 									{testStatus}
 								</div>
 							) : null}
@@ -249,14 +243,14 @@ export function EmailTemplatesPreviewClient({
 				) : null}
 
 				<div className="flex flex-wrap gap-3">
-					<SlButton
+					<button
 						type="button"
-						variant="secondary"
+						className="ad-btn ad-sec disabled:cursor-not-allowed disabled:opacity-40"
 						onClick={() => setPreviewVersion((value) => value + 1)}
 						disabled={!current}
 					>
 						Atualizar prévia
-					</SlButton>
+					</button>
 				</div>
 
 				{current ? (
@@ -265,10 +259,13 @@ export function EmailTemplatesPreviewClient({
 						title={`Prévia do modelo ${current.label}`}
 						srcDoc={html}
 						sandbox=""
-						className="min-h-[760px] w-full border border-[var(--sl-line)] bg-[var(--sl-paper-pure)]"
+						className="ad-panel min-h-[760px] w-full"
 					/>
 				) : (
-					<div className="grid min-h-[760px] place-items-center border border-dashed border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-6 text-center text-sm leading-6 text-[var(--sl-text-muted)]">
+					<div
+						className="grid min-h-[760px] place-items-center border border-dashed px-6 text-center text-sm leading-6"
+						style={{ borderColor: "var(--ad-line)", color: "var(--ad-text-muted)" }}
+					>
 						Nenhum modelo corresponde ao filtro atual. Limpe a busca para continuar.
 					</div>
 				)}
