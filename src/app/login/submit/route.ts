@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { publicUrl } from "@/env.mjs";
-import { authenticateAndCreateSession } from "@/lib/auth-login";
+import { authenticateAndCreateSession, UNVERIFIED_LOGIN_ERROR } from "@/lib/auth-login";
 import { isBackofficeRole } from "@/lib/authz";
 
 function buildLoginRedirect(query = "") {
@@ -23,7 +23,12 @@ export async function POST(req: Request) {
 	});
 
 	if (!result.ok) {
-		const query = result.error === "Credenciais inválidas" ? "?login_error=invalid" : "?login_error=server";
+		const query =
+			result.error === "Credenciais inválidas"
+				? "?login_error=invalid"
+				: result.error === UNVERIFIED_LOGIN_ERROR
+					? "?login_error=unverified"
+					: "?login_error=server";
 		return buildLoginRedirect(query);
 	}
 

@@ -328,6 +328,7 @@
 	"Login.fields.password": "Senha",
 	"Login.errors.socialLoginFailed": "Falha no login social. Tente novamente ou use e-mail e senha.",
 	"Login.errors.invalidCredentials": "Credenciais inválidas",
+	"Login.errors.unverified": "E-mail não verificado. Enviamos um novo link de confirmação para o seu e-mail.",
 	"Login.errors.authentication": "Erro de autenticação",
 	"Login.recovery.enterEmail": "Digite seu e-mail",
 	"Login.recovery.sent": "O e-mail de recuperação foi enviado se o endereço existir",

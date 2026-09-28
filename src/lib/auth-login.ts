@@ -6,6 +6,13 @@ import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
 const MAINTENANCE_LOGIN_RESTRICTED_ERROR = "Login restrito à administração durante a manutenção.";
 
+// Exact string returned by the backend's AuthService.login (app/auth/service.py)
+// when the account's e-mail hasn't been verified yet. Kept as an exact match
+// (rather than a substring/regex) so routes can map it to a distinct
+// login_error bucket without misclassifying unrelated auth failures.
+export const UNVERIFIED_LOGIN_ERROR =
+	"E-mail não verificado. Enviamos um novo link de confirmação para o seu e-mail.";
+
 export async function authenticateAndCreateSession(input: {
 	email: string;
 	password: string;

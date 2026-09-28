@@ -107,7 +107,11 @@ export function LoginForm({
 						<div className="grid gap-6">
 							{loginError ? (
 								<p className="border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-									{loginError === "invalid" ? t("errors.invalidCredentials") : t("errors.authentication")}
+									{loginError === "invalid"
+										? t("errors.invalidCredentials")
+										: loginError === "unverified"
+											? t("errors.unverified")
+											: t("errors.authentication")}
 								</p>
 							) : null}
 
