@@ -3,7 +3,6 @@ import { PresaleAdminScreen } from "@/app/admin/pre-venda/_components/presale-ad
 import { listPresalesAction } from "@/app/admin/pre-venda/presale-actions";
 import { auth } from "@/lib/auth";
 import { hasCapability, normalizeUserRole } from "@/lib/authz";
-import { AdminEditorialHero, AdminEditorialPage } from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +15,15 @@ export default async function AdminPreSalePage() {
 	const presales = await listPresalesAction();
 
 	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Pré-venda"
-				title="Pré-vendas"
-				description="Preço, data de estreia e aviso no site — ligado direto ao checkout, sem depender de variável de ambiente."
-			/>
+		<>
+			<div className="ad-head">
+				<h1>Pré-vendas</h1>
+				<span className="ad-meta">
+					Preço, data de estreia e aviso no site — ligado direto ao checkout, sem depender de variável de
+					ambiente.
+				</span>
+			</div>
 			<PresaleAdminScreen initialPresales={presales} canWrite={hasCapability(role, "presale.write")} />
-		</AdminEditorialPage>
+		</>
 	);
 }

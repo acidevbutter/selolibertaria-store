@@ -16,7 +16,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { SlButton } from "@/ui/sl/sl-button";
 
 type ProductGroup = Awaited<ReturnType<typeof listAdminProductGroups>>[number];
 type ProductGroupRow = ProductGroup & { id: string };
@@ -89,15 +88,15 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 							/>
 						</form>
 						{hasCapability(session.user.role, "settings.write") ? (
-							<SlButton href="/admin/products/categories" variant="secondary">
+							<Link className="ad-btn ad-sec" href="/admin/products/categories">
 								<Tags className="h-4 w-4" />
 								Categorias
-							</SlButton>
+							</Link>
 						) : null}
-						<SlButton href="/admin/products/new" variant="primary">
+						<Link className="ad-btn ad-pri" href="/admin/products/new">
 							<PackagePlus className="h-4 w-4" />
 							Novo livro
-						</SlButton>
+						</Link>
 					</>
 				}
 			/>
@@ -222,9 +221,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
 								empty={
 									<div className="flex flex-wrap items-center justify-between gap-3">
 										<span>Nenhum livro encontrado.</span>
-										<SlButton href="/admin/products/new" variant="secondary" size="sm">
+										<Link className="ad-btn ad-sec" href="/admin/products/new">
 											Cadastrar novo livro
-										</SlButton>
+										</Link>
 									</div>
 								}
 							/>

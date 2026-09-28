@@ -10,7 +10,6 @@ import { VariantPriceFields } from "@/app/admin/products/_components/variant-pri
 import { fieldPatterns } from "@/lib/admin-product-form-schema";
 import { cn } from "@/lib/utils";
 import { Label } from "@/ui/shadcn/label";
-import { SlButton } from "@/ui/sl/sl-button";
 
 const inputStyle = { borderRadius: "var(--sl-radius)" } as const;
 
@@ -478,9 +477,9 @@ export function SubmitButton({ children }: { children: ReactNode }) {
 	const { pending } = useFormStatus();
 
 	return (
-		<SlButton type="submit" variant="primary" disabled={pending}>
+		<button type="submit" className="ad-btn ad-pri" disabled={pending}>
 			{pending ? "Salvando..." : children}
-		</SlButton>
+		</button>
 	);
 }
 

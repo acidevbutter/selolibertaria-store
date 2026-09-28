@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 import { Field } from "@/app/admin/_components/ui/Field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
-import { SlButton } from "@/ui/sl/sl-button";
 
 type FulfillmentStatus = "received" | "producing" | "shipped";
 
@@ -83,9 +82,9 @@ export default function UpdateFulfillment({
 				/>
 			</div>
 			<div className="flex items-center gap-2">
-				<SlButton variant="primary" size="sm" onClick={save} disabled={saving}>
+				<button type="button" className="ad-btn ad-pri" onClick={save} disabled={saving}>
 					{saving ? "Salvando..." : "Salvar expedição"}
-				</SlButton>
+				</button>
 				{ok && <span className="text-xs text-[var(--sl-wine)]">Expedição salva</span>}
 				{error && <span className="text-xs text-[var(--sl-danger)]">{error}</span>}
 			</div>
