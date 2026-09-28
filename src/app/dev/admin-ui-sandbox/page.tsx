@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { AdminSidebar } from "@/app/admin/_components/sidebar.client";
 import { AdminTopbar } from "@/app/admin/_components/topbar.client";
 import { DataTable } from "@/app/admin/_components/ui/DataTable";
@@ -24,6 +25,10 @@ const rows: SandboxRow[] = [
  * authenticated backoffice session, and this page needs to render without one.
  */
 export default function AdminUiSandboxPage() {
+	if (process.env.NODE_ENV === "production") {
+		notFound();
+	}
+
 	return (
 		<div className="min-h-dvh bg-[var(--sl-paper)] p-10 text-[var(--sl-text)]">
 			<h1 className="sl-head mb-8 text-2xl">Admin UI sandbox — fatia 00.2</h1>

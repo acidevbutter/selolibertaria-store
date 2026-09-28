@@ -1,36 +1,35 @@
-import { EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { Skeleton } from "@/ui/shadcn/skeleton";
 
 export default function ProductsLoading() {
 	return (
-		<main>
-			<section className="bg-[color:var(--editorial-paper)]">
-				<EditorialShell className="grid gap-8 py-12 lg:grid-cols-[minmax(0,1.1fr)_320px] lg:items-center lg:py-16">
-					<div className="space-y-4">
-						<Skeleton className="h-4 w-24 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-						<Skeleton className="h-16 w-full max-w-3xl rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-						<Skeleton className="h-24 w-full max-w-2xl rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-					</div>
-					<Skeleton className="aspect-[0.74] w-full rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-				</EditorialShell>
-			</section>
+		<div className="sl-scope" style={{ background: "var(--sl-surface-page)" }}>
+			<div className="mx-auto w-full max-w-[var(--sl-w-narrow)] px-4 py-16 sm:px-8 lg:px-12">
+				<div className="flex flex-col gap-4">
+					<Skeleton className="h-3 w-24 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+					<Skeleton className="h-14 w-full max-w-xl rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+					<Skeleton className="h-6 w-full max-w-2xl rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+				</div>
+			</div>
 
-			<EditorialShell className="space-y-6 py-8">
-				<Skeleton className="h-8 w-48 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+			<div className="mx-auto w-full max-w-[var(--sl-w-narrow)] space-y-6 px-4 pb-16 sm:px-8 lg:px-12">
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{Array.from({ length: 6 }).map((_, index) => (
 						<div
 							key={index}
-							className="space-y-4 border border-[color:var(--editorial-border)] bg-[color:rgba(247,244,239,0.45)] p-4"
+							className="space-y-4 p-4"
+							style={{
+								border: "1px solid var(--sl-line-hairline)",
+								background: "var(--sl-surface-card)",
+								borderRadius: "var(--sl-radius)",
+							}}
 						>
-							<Skeleton className="aspect-[0.84] w-full rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-							<Skeleton className="h-8 w-3/4 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-							<Skeleton className="h-20 w-full rounded-none bg-[color:rgba(11,11,11,0.08)]" />
-							<Skeleton className="h-10 w-32 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+							<Skeleton className="aspect-square w-full rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+							<Skeleton className="h-6 w-3/4 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
+							<Skeleton className="h-4 w-1/2 rounded-none bg-[color:rgba(11,11,11,0.08)]" />
 						</div>
 					))}
 				</div>
-			</EditorialShell>
-		</main>
+			</div>
+		</div>
 	);
 }
