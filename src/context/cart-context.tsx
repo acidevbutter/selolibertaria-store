@@ -46,7 +46,12 @@ function cartReducer(state: Cart | null, action: CartAction): Cart | null {
 						},
 					],
 					total: 0,
-					currency: "USD",
+					// This store only ever charges in BRL (checkout rejects anything
+					// else -- see the Asaas flow) and this is only a placeholder
+					// shown until the real priced cart comes back from the server;
+					// "USD" here previously made a failed/slow add-to-cart flash
+					// wrong-currency zeros (selolibertaria-store#174).
+					currency: "BRL",
 				};
 			}
 
@@ -236,6 +241,7 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 	const closeCart = () => setIsCartOpen(false);
 
 	const optimisticAdd = async (variantId: string, quantity = 1, product?: ProductInfo) => {
+		const previousCart = cart;
 		const optimisticSnapshot = cartReducer(cart, {
 			type: "ADD_ITEM",
 			variantId,
@@ -258,6 +264,13 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 			}
 		} catch (error) {
 			console.error("Failed to add cart:", error);
+			// Don't leave the optimistic placeholder (price 0, no real total)
+			// on screen indefinitely when the server call fails -- roll back
+			// to whatever was actually confirmed before this add
+			// (selolibertaria-store#174).
+			if (isLatestCartOp(opId)) {
+				setCart(previousCart);
+			}
 			throw error;
 		}
 	};
