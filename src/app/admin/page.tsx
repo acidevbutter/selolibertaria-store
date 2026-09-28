@@ -193,7 +193,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 								little fish, big fish ainda não tem data de estreia nem preço de pré-venda definidos.
 							</p>
 						</div>
-						<Link href="/admin/pre-venda" className="sl-btn sl-btn-accent">
+						<Link href="/admin/pre-venda" className="ad-btn ad-pri">
 							Configurar pré-venda
 						</Link>
 					</section>
@@ -212,10 +212,10 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-3">
-								<Link href="/" className="sl-btn sl-btn-secondary">
+								<Link href="/" className="ad-btn ad-sec">
 									Ver loja
 								</Link>
-								<Link href="/admin/editorial" className="sl-btn sl-btn-accent">
+								<Link href="/admin/editorial" className="ad-btn ad-pri">
 									Ir para editorial
 								</Link>
 							</div>
@@ -291,10 +291,10 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
 									))}
 								</div>
 								<div className="mt-6 flex flex-wrap gap-3">
-									<Link href="/admin/orders" className="sl-btn sl-btn-accent">
+									<Link href="/admin/orders" className="ad-btn ad-pri">
 										Ver pedidos
 									</Link>
-									<Link href="/admin/editorial" className="sl-btn sl-btn-secondary">
+									<Link href="/admin/editorial" className="ad-btn ad-sec">
 										Ver editorial
 									</Link>
 								</div>

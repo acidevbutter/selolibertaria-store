@@ -1,20 +1,14 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { setUserBlockedAction, updateUserRoleAction } from "@/app/admin/users/actions";
 import { env } from "@/env.mjs";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { hasCapability, isUserBlocked, normalizeUserRole, type UserRole } from "@/lib/authz";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
 import { Reveal } from "@/ui/motion/reveal";
-import { SlButton } from "@/ui/sl/sl-button";
 import { StatusBadge } from "@/ui/status-badge";
 
 function getRoleLabel(role: UserRole | undefined) {
@@ -89,99 +83,89 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 		: null;
 
 	return (
-		<AdminEditorialPage>
+		<>
 			<Reveal>
-				<AdminEditorialHero
-					eyebrow="Usuário"
-					title={user.name || user.email}
-					description="Revise perfil, acesso e histórico de compras em uma leitura direta."
-					actions={
-						<Link
-							href="/admin/users"
-							className="inline-flex h-11 items-center justify-center border border-[var(--sl-line)] px-5 text-sm font-semibold text-[var(--sl-ink)] transition-colors hover:bg-[var(--sl-paper-pure)]"
-						>
+				<div className="ad-head">
+					<h1>{user.name || user.email}</h1>
+					<span className="ad-meta">Revise perfil, acesso e histórico de compras em uma leitura direta.</span>
+					<div className="ad-acts">
+						<Link className="ad-btn ad-sec" href="/admin/users">
 							Voltar para usuários
 						</Link>
-					}
-				/>
+					</div>
+				</div>
 			</Reveal>
 			<Reveal delay={0.04}>
 				<div className="grid gap-5 lg:grid-cols-4">
-					<AdminEditorialStat label="Papel" value={roleLabel} helper="Permissão atual desta conta." />
-					<AdminEditorialStat
+					<MetricCard label="Papel" value={roleLabel} note="Permissão atual desta conta." />
+					<MetricCard
 						label="Acesso"
 						value={blocked ? "Bloqueado" : "Ativo"}
-						helper="Situação atual desta conta."
+						note="Situação atual desta conta."
+						tone={blocked ? "danger" : "default"}
 					/>
-					<AdminEditorialStat
-						label="Compras"
-						value={purchaseCount}
-						helper="Pedidos associados a este cadastro."
-					/>
-					<AdminEditorialStat
+					<MetricCard label="Compras" value={purchaseCount} note="Pedidos associados a este cadastro." />
+					<MetricCard
 						label="Ações sensíveis"
 						value={canManageStaff ? "Liberadas" : "Somente leitura"}
-						helper="Disponibilidade de ações sensíveis nesta tela."
+						note="Disponibilidade de ações sensíveis nesta tela."
 					/>
 				</div>
 			</Reveal>
 			<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
 				<div className="space-y-6">
 					<Reveal delay={0.08}>
-						<EditorialPanel className="space-y-5">
-							<div className="space-y-1">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-									Perfil
+						<div className="ad-panel">
+							<div style={{ padding: 24 }} className="space-y-5">
+								<h2 className="ad-eb">Dados principais do cadastro</h2>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<div className="space-y-1">
+										<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+											E-mail
+										</div>
+										<div className="break-all text-sm text-[var(--sl-ink)]">{user.email}</div>
+									</div>
+									<div className="space-y-1">
+										<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+											Nome
+										</div>
+										<div className="text-sm text-[var(--sl-ink)]">{user.name || "Nome não informado"}</div>
+									</div>
+									<div className="space-y-1">
+										<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+											Telefone
+										</div>
+										<div className="text-sm text-[var(--sl-ink)]">
+											{user.phone || "Telefone não informado"}
+										</div>
+									</div>
+									<div className="space-y-1">
+										<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+											Estado de acesso
+										</div>
+										<div
+											className={`text-sm font-medium ${blocked ? "text-[var(--sl-danger)]" : "text-[var(--sl-ink)]"}`}
+										>
+											{blocked ? "Bloqueado" : "Ativo"}
+										</div>
+									</div>
+									<div className="space-y-1 sm:col-span-2">
+										<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
+											Endereço
+										</div>
+										<div className="text-sm text-[var(--sl-ink)]">
+											{addressSummary || "Nenhum endereço salvo."}
+										</div>
+									</div>
 								</div>
-								<h2 className="editorial-serif text-2xl font-semibold text-[var(--sl-ink)]">
-									Dados principais do cadastro
-								</h2>
 							</div>
-							<div className="grid gap-4 sm:grid-cols-2">
-								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
-										E-mail
-									</div>
-									<div className="break-all text-sm text-[var(--sl-ink)]">{user.email}</div>
-								</div>
-								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">Nome</div>
-									<div className="text-sm text-[var(--sl-ink)]">{user.name || "Nome não informado"}</div>
-								</div>
-								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
-										Telefone
-									</div>
-									<div className="text-sm text-[var(--sl-ink)]">{user.phone || "Telefone não informado"}</div>
-								</div>
-								<div className="space-y-1">
-									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
-										Estado de acesso
-									</div>
-									<div
-										className={`text-sm font-medium ${blocked ? "text-[var(--sl-danger)]" : "text-[var(--sl-ink)]"}`}
-									>
-										{blocked ? "Bloqueado" : "Ativo"}
-									</div>
-								</div>
-								<div className="space-y-1 sm:col-span-2">
-									<div className="text-xs uppercase tracking-[0.18em] text-[var(--sl-text-muted)]">
-										Endereço
-									</div>
-									<div className="text-sm text-[var(--sl-ink)]">
-										{addressSummary || "Nenhum endereço salvo."}
-									</div>
-								</div>
-							</div>
-						</EditorialPanel>
+						</div>
 					</Reveal>
 
 					<Reveal delay={0.12}>
-						<EditorialPanel className="p-0">
-							<div className="border-b border-[var(--sl-line)] px-6 py-5 sm:px-8">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-									Compras
-								</div>
+						<div className="ad-panel">
+							<div className="border-b border-[var(--ad-line)] px-6 py-5 sm:px-8">
+								<h2 className="ad-eb">Compras</h2>
 							</div>
 							<div className="p-6 sm:p-8">
 								<ul className="divide-y divide-[var(--sl-line)]">
@@ -218,82 +202,82 @@ export default async function AdminUserDetails({ params }: { params: Promise<{ i
 									)}
 								</ul>
 							</div>
-						</EditorialPanel>
+						</div>
 					</Reveal>
 				</div>
 
 				{canManageStaff ? (
 					<Reveal delay={0.1}>
-						<EditorialPanel className="space-y-6">
-							<div className="space-y-2">
-								<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-									Gestão de acesso
-								</div>
-								<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
-									Somente admins podem alterar papel ou bloquear acesso. Toda mudança revoga sessões ativas
-									imediatamente.
-								</p>
-								{blocked && user.access?.blockedReason ? (
-									<p className="text-sm leading-6 text-[var(--sl-danger)]">
-										Motivo atual: {user.access.blockedReason}
+						<div className="ad-panel">
+							<div style={{ padding: 24 }} className="space-y-6">
+								<div className="space-y-2">
+									<h2 className="ad-eb">Gestão de acesso</h2>
+									<p className="text-sm leading-6 text-[var(--sl-text-muted)]">
+										Somente admins podem alterar papel ou bloquear acesso. Toda mudança revoga sessões ativas
+										imediatamente.
 									</p>
-								) : null}
-							</div>
-							<form
-								action={updateUserRoleAction}
-								className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
-							>
-								<input type="hidden" name="userId" value={id} />
-								<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-									<label className="grid gap-2">
-										<span className="text-sm font-medium">Papel</span>
-										<select
-											name="role"
-											defaultValue={role}
-											className="min-w-48 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
-											style={{ borderRadius: "var(--sl-radius)" }}
-										>
-											<option value="customer">Cliente</option>
-											<option value="vendor">Vendedor</option>
-											<option value="admin">Administrador</option>
-										</select>
-									</label>
-									<SlButton type="submit" variant="primary">
-										Atualizar papel
-									</SlButton>
+									{blocked && user.access?.blockedReason ? (
+										<p className="text-sm leading-6 text-[var(--sl-danger)]">
+											Motivo atual: {user.access.blockedReason}
+										</p>
+									) : null}
 								</div>
-							</form>
-							<form
-								action={setUserBlockedAction}
-								className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
-							>
-								<input type="hidden" name="userId" value={id} />
-								<input type="hidden" name="blocked" value={blocked ? "false" : "true"} />
-								<label className="grid gap-2">
-									<span className="text-sm font-medium">
-										{blocked ? "Nota de desbloqueio" : "Motivo do bloqueio"}
-									</span>
-									<textarea
-										name="reason"
-										rows={3}
-										defaultValue={user.access?.blockedReason ?? ""}
-										placeholder={
-											blocked
-												? "Opcionalmente registre a observação do desbloqueio"
-												: "Descreva por que esta conta está sendo bloqueada"
-										}
-										className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
-										style={{ borderRadius: "var(--sl-radius)" }}
-									/>
-								</label>
-								<SlButton type="submit" variant={blocked ? "secondary" : "accent"}>
-									{blocked ? "Desbloquear usuário" : "Bloquear usuário"}
-								</SlButton>
-							</form>
-						</EditorialPanel>
+								<form
+									action={updateUserRoleAction}
+									className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
+								>
+									<input type="hidden" name="userId" value={id} />
+									<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+										<label className="grid gap-2">
+											<span className="text-sm font-medium">Papel</span>
+											<select
+												name="role"
+												defaultValue={role}
+												className="min-w-48 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
+												style={{ borderRadius: "var(--sl-radius)" }}
+											>
+												<option value="customer">Cliente</option>
+												<option value="vendor">Vendedor</option>
+												<option value="admin">Administrador</option>
+											</select>
+										</label>
+										<button type="submit" className="ad-btn ad-pri">
+											Atualizar papel
+										</button>
+									</div>
+								</form>
+								<form
+									action={setUserBlockedAction}
+									className="space-y-3 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] p-4"
+								>
+									<input type="hidden" name="userId" value={id} />
+									<input type="hidden" name="blocked" value={blocked ? "false" : "true"} />
+									<label className="grid gap-2">
+										<span className="text-sm font-medium">
+											{blocked ? "Nota de desbloqueio" : "Motivo do bloqueio"}
+										</span>
+										<textarea
+											name="reason"
+											rows={3}
+											defaultValue={user.access?.blockedReason ?? ""}
+											placeholder={
+												blocked
+													? "Opcionalmente registre a observação do desbloqueio"
+													: "Descreva por que esta conta está sendo bloqueada"
+											}
+											className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-3 py-2 text-sm"
+											style={{ borderRadius: "var(--sl-radius)" }}
+										/>
+									</label>
+									<button type="submit" className={`ad-btn ${blocked ? "ad-sec" : "ad-pri"}`}>
+										{blocked ? "Desbloquear usuário" : "Bloquear usuário"}
+									</button>
+								</form>
+							</div>
+						</div>
 					</Reveal>
 				) : null}
 			</div>
-		</AdminEditorialPage>
+		</>
 	);
 }

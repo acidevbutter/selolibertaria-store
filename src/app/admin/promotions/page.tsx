@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
+import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import {
 	changePromotionStatusAction,
 	createPromotionAction,
@@ -19,12 +21,6 @@ import {
 } from "@/lib/promotions";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
 import { getDecimalFromMinorAmount } from "@/lib/utils";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -70,9 +66,19 @@ function getPromotionStatusLabel(status: PromotionStatus) {
 			return "Rascunho";
 		case "paused":
 			return "Pausada";
+		case "archived":
+			return "Arquivada";
 		default:
 			return status;
 	}
+}
+
+function getPromotionKindLabel(kind: PromotionKind) {
+	return kind === "coupon" ? "Cupom" : "Automática";
+}
+
+function getPromotionScopeLabel(scope: PromotionScope) {
+	return scope === "order" ? "Pedido" : "Item";
 }
 
 function PromotionFormSection(args: {
@@ -575,59 +581,50 @@ export default async function AdminPromotionsPage() {
 	const pendingAlerts = promotions.reduce((total, promotion) => total + promotion.pendingNotifications, 0);
 
 	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Promoções"
-				title="Promoções"
-				description="Gerencie campanhas, cupons e alertas."
-				actions={
+		<>
+			<div className="ad-head">
+				<h1>Promoções</h1>
+				<span className="ad-meta">Gerencie campanhas, cupons e alertas.</span>
+				<div className="ad-acts">
 					<form action={processFavoriteDiscountAlertsAction}>
-						<button
-							type="submit"
-							className="rounded-none border border-[color:var(--editorial-ink)] px-4 py-3 text-sm font-semibold text-[color:var(--editorial-ink)] transition-colors hover:bg-[color:var(--editorial-ink)] hover:text-[color:var(--editorial-paper)]"
-						>
+						<button type="submit" className="ad-btn ad-sec">
 							Processar alertas pendentes
 						</button>
 					</form>
-				}
-			/>
+				</div>
+			</div>
+
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat
+				<MetricCard
 					label="Promoções"
 					value={promotions.length}
-					helper="Campanhas automáticas e cupons cadastrados."
+					note="Campanhas automáticas e cupons cadastrados."
 				/>
-				<AdminEditorialStat
-					label="Ativas"
-					value={activeCount}
-					helper="Regras publicadas e elegíveis para aplicação."
-				/>
-				<AdminEditorialStat
+				<MetricCard label="Ativas" value={activeCount} note="Regras publicadas e elegíveis para aplicação." />
+				<MetricCard
 					label="Alertas pendentes"
 					value={pendingAlerts}
-					helper={`${couponCount} campanha(s) do tipo cupom neste acervo.`}
+					note={`${couponCount} campanha(s) do tipo cupom neste acervo.`}
 				/>
 			</div>
 
-			<EditorialPanel className="p-0">
-				<Card className="border-none bg-transparent shadow-none">
-					<CardHeader>
-						<CardTitle>Nova promoção</CardTitle>
-						<CardDescription>
-							Crie uma campanha automática ou um cupom. Valores monetários devem ser informados em formato
-							decimal, como <code className="ml-1">19,90</code>. Para cupons, você também pode definir
-							validade e limites de uso.
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
+			<div className="ad-panel">
+				<div style={{ padding: 24 }}>
+					<h2 className="ad-eb">Nova promoção</h2>
+					<p className="ad-body" style={{ marginTop: 8 }}>
+						Crie uma campanha automática ou um cupom. Valores monetários devem ser informados em formato
+						decimal, como <code className="ml-1">19,90</code>. Para cupons, você também pode definir validade
+						e limites de uso.
+					</p>
+					<div style={{ marginTop: 20 }}>
 						<PromotionForm
 							action={createPromotionAction}
 							defaults={createDefaults}
 							submitLabel="Criar promoção"
 						/>
-					</CardContent>
-				</Card>
-			</EditorialPanel>
+					</div>
+				</div>
+			</div>
 
 			<div className="grid gap-4">
 				{promotions.length === 0 ? (
@@ -647,26 +644,12 @@ export default async function AdminPromotionsPage() {
 											<CardTitle className="text-xl">{promotion.name}</CardTitle>
 											<CardDescription>{promotion.description || "Sem resumo informado."}</CardDescription>
 										</div>
-										<div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-											<span className="rounded-full border px-3 py-1">
-												{promotion.status === "active"
-													? "ativa"
-													: promotion.status === "scheduled"
-														? "agendada"
-														: promotion.status === "draft"
-															? "rascunho"
-															: promotion.status === "paused"
-																? "pausada"
-																: promotion.status === "archived"
-																	? "arquivada"
-																	: promotion.status}
-											</span>
-											<span className="rounded-full border px-3 py-1">
-												{promotion.kind === "coupon" ? "cupom" : "automática"}
-											</span>
-											<span className="rounded-full border px-3 py-1">
-												{promotion.scope === "order" ? "pedido" : "item"}
-											</span>
+										<div className="flex flex-wrap gap-2">
+											<StatusBadge tone={promotion.status === "active" ? "active" : "neutral"}>
+												{getPromotionStatusLabel(promotion.status)}
+											</StatusBadge>
+											<StatusBadge tone="neutral">{getPromotionKindLabel(promotion.kind)}</StatusBadge>
+											<StatusBadge tone="neutral">{getPromotionScopeLabel(promotion.scope)}</StatusBadge>
 										</div>
 									</div>
 								</CardHeader>
@@ -767,6 +750,6 @@ export default async function AdminPromotionsPage() {
 					})
 				)}
 			</div>
-		</AdminEditorialPage>
+		</>
 	);
 }

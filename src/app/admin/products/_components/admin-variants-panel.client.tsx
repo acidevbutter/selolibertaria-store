@@ -22,12 +22,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/ui/shadcn/dialog";
-import { SlButton } from "@/ui/sl/sl-button";
 
 const fieldClassName =
 	"h-[var(--sl-h-button)] w-full max-w-[10rem] border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 text-sm text-[var(--sl-ink)] outline-none placeholder:text-[color:var(--sl-text-disabled)]";
 const fieldStyle = { borderRadius: "var(--sl-radius)" } as const;
-const triggerButtonStyle = { height: "var(--sl-h-small)", padding: "0 16px", fontSize: "11px" } as const;
 
 export function AdminVariantsPanel({
 	group,
@@ -59,7 +57,7 @@ export function AdminVariantsPanel({
 					</div>
 					<Dialog>
 						<DialogTrigger asChild>
-							<button type="button" className="sl-btn sl-btn-primary gap-2" style={triggerButtonStyle}>
+							<button type="button" className="ad-btn ad-pri">
 								<Plus className="h-4 w-4" />
 								Adicionar variante
 							</button>
@@ -164,11 +162,7 @@ export function AdminVariantsPanel({
 								<div className="flex flex-wrap gap-2">
 									<Dialog>
 										<DialogTrigger asChild>
-											<button
-												type="button"
-												className="sl-btn sl-btn-secondary gap-2"
-												style={triggerButtonStyle}
-											>
+											<button type="button" className="ad-btn ad-sec">
 												<Pencil className="h-4 w-4" />
 												Editar variante
 											</button>
@@ -228,10 +222,10 @@ export function AdminVariantsPanel({
 									<form action={archiveVariantAction}>
 										<input type="hidden" name="productId" value={variant.id} />
 										<input type="hidden" name="currentSlug" value={group.slug} />
-										<SlButton type="submit" variant="secondary" size="sm">
+										<button type="submit" className="ad-btn ad-sec">
 											<Archive className="h-4 w-4" />
 											Arquivar variante
-										</SlButton>
+										</button>
 									</form>
 								</div>
 							</div>
