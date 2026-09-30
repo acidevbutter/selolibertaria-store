@@ -1,6 +1,7 @@
 import { IBM_Plex_Mono } from "next/font/google";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { AdminMaintenanceNotice } from "@/app/admin/_components/admin-maintenance-notice";
 import {
 	AdminRouteBar,
 	AdminRouteProgressProvider,
@@ -43,8 +44,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 	const role = normalizeUserRole(session.user.role);
 	if (!isBackofficeRole(role)) redirect("/forbidden");
 
+	// The panel stays reachable while the storefront is in maintenance (the default state): the
+	// owner has to be able to edit content, and to flip the store on/off from Configurações.
+	// /ativacao (the launch wizard) is an optional flow linked from the banner below, not a gate.
 	const activation = await getSiteActivationForAdmin();
-	if (!activation?.activated) redirect("/ativacao");
 
 	let initialTheme: "light" | "dark" = "light";
 	const settings = await getSettingsDoc();
@@ -106,7 +109,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 									logoutAction={logout}
 								/>
 								<AdminRouteBar />
-								<main className="ad-desk">{children}</main>
+								<main className="ad-desk">
+									{activation?.activated ? null : <AdminMaintenanceNotice activation={activation} />}
+									{children}
+								</main>
 							</div>
 						</div>
 					</AdminSearchPaletteProvider>
