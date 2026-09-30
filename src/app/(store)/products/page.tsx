@@ -8,6 +8,7 @@ import { getRequestPreferredCurrency } from "@/lib/currency-preference";
 import { blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialProductsPage } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { SlCatalog } from "@/ui/products/sl-catalog.client";
 import { SlButton } from "@/ui/sl/sl-button";
 import { SlPageHero } from "@/ui/sl/sl-page-hero";
@@ -86,6 +87,7 @@ export default async function AllProductsPage() {
 					</div>
 				</div>
 			</section>
+			<EditorialExtraBlocks doc={page.contentDoc} />
 		</div>
 	);
 }

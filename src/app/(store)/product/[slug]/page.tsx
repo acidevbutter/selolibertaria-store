@@ -13,6 +13,7 @@ import { getEditorialProductPage } from "@/lib/editorial-content-store";
 import { isFavorite } from "@/lib/favorites";
 import { buildSlProductRows } from "@/lib/sl-catalog";
 import { deslugify, formatMoney, formatProductName, slugify } from "@/lib/utils";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { JsonLd, mappedProductToJsonLd } from "@/ui/json-ld";
 import { Markdown } from "@/ui/markdown";
@@ -332,6 +333,7 @@ export default async function SingleProductPage(props: {
 				) : null}
 			</div>
 
+			<EditorialExtraBlocks doc={pageContent.contentDoc} />
 			<JsonLd jsonLd={mappedProductToJsonLd(product)} />
 		</div>
 	);

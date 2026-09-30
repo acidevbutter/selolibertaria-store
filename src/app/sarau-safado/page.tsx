@@ -3,6 +3,7 @@ import { getTranslations } from "@/i18n/server";
 import { blockButtonLabel, blockList, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialSarauPage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
@@ -235,6 +236,7 @@ export default async function SarauSafadoPage() {
 						))}
 					</div>
 				</SlBand>
+				<EditorialExtraBlocks doc={sarau.contentDoc} />
 			</main>
 			<Footer />
 		</div>
