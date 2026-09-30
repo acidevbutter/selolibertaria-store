@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { env } from "@/env.mjs";
+import { centsToReais } from "@/lib/presale-money";
 import type { PresalePublic, PresaleStatus } from "@/lib/presales";
 
 const PRESALE_READ_TIMEOUT_MS = 1800;
@@ -52,8 +53,9 @@ export const getPublicPresaleByProduct = cache(async (productId: string): Promis
 			productId: body.product_id,
 			variantId: body.variant_id,
 			launchAt: body.launch_at,
-			presalePrice: Number(body.presale_price),
-			fullPrice: Number(body.full_price),
+			// Backend amounts are centavos; the public pages format reais (lib/presale-money.ts).
+			presalePrice: centsToReais(body.presale_price),
+			fullPrice: centsToReais(body.full_price),
 			status: body.status,
 			modalEnabled: body.modal_enabled,
 			modalIntervalHours: body.modal_interval_hours,
