@@ -111,7 +111,11 @@ export function LoginForm({
 										? t("errors.invalidCredentials")
 										: loginError === "unverified"
 											? t("errors.unverified")
-											: t("errors.authentication")}
+											: loginError === "blocked"
+												? t("errors.blocked")
+												: loginError === "maintenance"
+													? t("errors.maintenance")
+													: t("errors.authentication")}
 								</p>
 							) : null}
 

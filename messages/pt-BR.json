@@ -329,6 +329,8 @@
 	"Login.errors.socialLoginFailed": "Falha no login social. Tente novamente ou use e-mail e senha.",
 	"Login.errors.invalidCredentials": "Credenciais inválidas",
 	"Login.errors.unverified": "E-mail não verificado. Enviamos um novo link de confirmação para o seu e-mail.",
+	"Login.errors.blocked": "Esta conta foi bloqueada. Entre em contato com o suporte para entender o motivo e reativar o acesso.",
+	"Login.errors.maintenance": "A loja está em manutenção e o login está liberado apenas para a administração. Volte em breve.",
 	"Login.errors.authentication": "Erro de autenticação",
 	"Login.recovery.enterEmail": "Digite seu e-mail",
 	"Login.recovery.sent": "O e-mail de recuperação foi enviado se o endereço existir",
