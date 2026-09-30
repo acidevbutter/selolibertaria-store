@@ -36,6 +36,8 @@ function editedAt(record: PageRecord) {
 		month: "short",
 		hour: "2-digit",
 		minute: "2-digit",
+		// The server runs in UTC; the owner reads São Paulo time.
+		timeZone: "America/Sao_Paulo",
 	})
 		.format(date)
 		.replace(".", "");
