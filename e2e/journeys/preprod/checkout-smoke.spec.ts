@@ -45,6 +45,16 @@ const PREPROD_SMOKE_BUYER_EMAIL = "preprod-smoke-worker@selolibertaria.com.br";
 test("preprod smoke: guest can buy PREPROD-TEST-PRODUCT and gets redirected to Asaas", async ({ page }) => {
 	test.setTimeout(180_000);
 	await page.goto(`/product/${PRODUCT_SLUG}`);
+	// A live presale shows a notice a few seconds after load that covers the page (and this button) until it is
+	// dismissed -- the smoke must behave like a visitor and dismiss it instead of timing out behind it.
+	const later = page.getByRole("button", { name: "Agora não" });
+	if (
+		await later.waitFor({ state: "visible", timeout: 8_000 }).then(
+			() => true,
+			() => false,
+		)
+	)
+		await later.click();
 	await page.getByRole("button", { name: "Adicionar ao carrinho" }).click();
 	await expect(page.getByText(/Carrinho \(\d+\)/)).toBeVisible();
 

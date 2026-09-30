@@ -57,3 +57,7 @@ documentacao/**
 /playwright-report/
 /test-results/
 e2e/**/.auth/
+
+# Raw Playwright QA screenshots (the report keeps compressed JPEGs)
+docs/qa/**/screenshots/*.png
+docs/qa/**/results*.json
