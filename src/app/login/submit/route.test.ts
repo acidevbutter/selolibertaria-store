@@ -21,7 +21,10 @@ describe("login/submit route", () => {
 	it.each([
 		["Credenciais inválidas", "invalid"],
 		["E-mail não verificado. Enviamos um novo link de confirmação para o seu e-mail.", "unverified"],
-		["Esta conta foi bloqueada", "server"],
+		["Esta conta foi bloqueada", "blocked"],
+		["Esta conta foi bloqueada. Entre em contato com o suporte.", "blocked"],
+		["Login restrito à administração durante a manutenção.", "maintenance"],
+		["Algum erro que a loja não conhece", "server"],
 	])(
 		// Each backend AuthenticationError detail (app/auth/service.py) must land in
 		// its own login_error bucket -- selolibertaria_backend#68 added the

@@ -2,16 +2,11 @@ import "server-only";
 
 import { env } from "@/env.mjs";
 import { normalizeUserRole, type UserRole } from "@/lib/authz";
+import { INVALID_CREDENTIALS_ERROR, MAINTENANCE_LOGIN_RESTRICTED_ERROR } from "@/lib/login-error";
 import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
-const MAINTENANCE_LOGIN_RESTRICTED_ERROR = "Login restrito à administração durante a manutenção.";
-
-// Exact string returned by the backend's AuthService.login (app/auth/service.py)
-// when the account's e-mail hasn't been verified yet. Kept as an exact match
-// (rather than a substring/regex) so routes can map it to a distinct
-// login_error bucket without misclassifying unrelated auth failures.
-export const UNVERIFIED_LOGIN_ERROR =
-	"E-mail não verificado. Enviamos um novo link de confirmação para o seu e-mail.";
+// Kept for existing importers; the error -> bucket mapping lives in src/lib/login-error.ts.
+export { UNVERIFIED_LOGIN_ERROR } from "@/lib/login-error";
 
 export async function authenticateAndCreateSession(input: {
 	email: string;
@@ -34,7 +29,7 @@ export async function authenticateAndCreateSession(input: {
 			detail?: string;
 		} | null;
 		if (!response.ok || !body?.access_token) {
-			return { ok: false, error: body?.detail || "Credenciais inválidas" };
+			return { ok: false, error: body?.detail || INVALID_CREDENTIALS_ERROR };
 		}
 		const role = normalizeUserRole(body.user?.role);
 		if ((await isMaintenanceModeEnabled()) && role !== "admin") {
