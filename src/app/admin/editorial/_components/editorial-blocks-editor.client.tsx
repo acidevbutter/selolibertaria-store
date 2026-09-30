@@ -206,9 +206,29 @@ export function EditorialBlocksEditor({
 	const [shapeBlockId, setShapeBlockId] = useState<string | null>(null);
 	const [heavyImage, setHeavyImage] = useState<string | null>(null);
 	const [uploadingIds, setUploadingIds] = useState<ReadonlySet<string>>(new Set());
+	/** blockId -> local blob: URL of the file the user just dropped. The canvas keeps
+	 *  showing it after the upload lands; `doc` holds the real URL (saved/published),
+	 *  which only shows up on the next page load. */
+	const [localPreviews, setLocalPreviews] = useState<Readonly<Record<string, string>>>({});
+	const localPreviewsRef = useRef(localPreviews);
+	localPreviewsRef.current = localPreviews;
 	const [uploadError, setUploadError] = useState<string | null>(null);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const [previewOpen, setPreviewOpen] = useState(false);
+	useEffect(() => {
+		return () => {
+			for (const previewUrl of Object.values(localPreviewsRef.current)) URL.revokeObjectURL(previewUrl);
+		};
+	}, []);
+
+	function rememberLocalPreview(blockId: string, file: File) {
+		const previewUrl = URL.createObjectURL(file);
+		const previous = localPreviewsRef.current[blockId];
+		if (previous) URL.revokeObjectURL(previous);
+		setLocalPreviews((current) => ({ ...current, [blockId]: previewUrl }));
+		return previewUrl;
+	}
+
 	const pickerInputRef = useRef<HTMLInputElement>(null);
 	const swapInputRef = useRef<HTMLInputElement>(null);
 	const swapBlockIdRef = useRef<string | null>(null);
@@ -217,6 +237,18 @@ export function EditorialBlocksEditor({
 		{ status: "idle" },
 	);
 	const doc = state.doc;
+	/** Display-only copy of `doc`: images keep their local preview until the page reloads.
+	 *  Autosave/publish always use `doc`, which carries the real URL. */
+	const previewDoc = useMemo<EditorialContentDoc>(
+		() =>
+			doc.map(
+				(node): EditorialBlock =>
+					node.type === "image" && localPreviews[node.id]
+						? { ...node, src: localPreviews[node.id] as string }
+						: node,
+			),
+		[doc, localPreviews],
+	);
 	const docRef = useRef(doc);
 	const hasMountedRef = useRef(false);
 	const saveTokenRef = useRef(0);
@@ -361,7 +393,7 @@ export function EditorialBlocksEditor({
 		const block = createEmptyBlock("image") as Extract<EditorialBlock, { type: "image" }>;
 		const created: EditorialBlock = {
 			...block,
-			src: URL.createObjectURL(file),
+			src: rememberLocalPreview(block.id, file),
 			assetId: file.name,
 			layout: "wide",
 			alt: "",
@@ -385,7 +417,7 @@ export function EditorialBlocksEditor({
 		setHeavyImage(null);
 		setDoc(
 			updateBlock(doc, blockId, {
-				src: URL.createObjectURL(file),
+				src: rememberLocalPreview(blockId, file),
 				assetId: file.name,
 			} as Partial<EditorialBlock>),
 		);
@@ -700,6 +732,7 @@ export function EditorialBlocksEditor({
 											index={index}
 											total={doc.length}
 											uploading={uploadingIds.has(block.id)}
+											previewSrc={localPreviews[block.id]}
 											dragging={draggedId === block.id}
 											isDropTarget={dropTargetBlockId === block.id}
 											onFocusBlock={() => setActiveId(block.id)}
@@ -907,7 +940,7 @@ export function EditorialBlocksEditor({
 						</button>
 					</div>
 					<div style={{ padding: "36px 40px", background: "var(--ad-paper)" }}>
-						<EditorialBlocksRenderer doc={doc} />
+						<EditorialBlocksRenderer doc={previewDoc} />
 					</div>
 				</div>
 			</div>
@@ -915,7 +948,9 @@ export function EditorialBlocksEditor({
 			<EditorialCropOverlay
 				open={cropBlockId !== null}
 				imageUrl={
-					(doc.find((item) => item.id === cropBlockId) as { src?: string } | undefined)?.src ?? undefined
+					(cropBlockId ? localPreviews[cropBlockId] : undefined) ??
+					(doc.find((item) => item.id === cropBlockId) as { src?: string } | undefined)?.src ??
+					undefined
 				}
 				fileName={
 					(doc.find((item) => item.id === cropBlockId) as { assetId?: string } | undefined)?.assetId ??
@@ -1260,6 +1295,7 @@ function BlockRow({
 	index,
 	total,
 	uploading,
+	previewSrc,
 	dragging,
 	isDropTarget,
 	onFocusBlock,
@@ -1281,6 +1317,8 @@ function BlockRow({
 	index: number;
 	total: number;
 	uploading: boolean;
+	/** Local blob: URL shown instead of `block.src` until the page is reloaded. */
+	previewSrc?: string;
 	dragging: boolean;
 	isDropTarget: boolean;
 	onFocusBlock: () => void;
@@ -1423,7 +1461,7 @@ function BlockRow({
 							>
 								{/* Local blob and remote URLs both render fine with a plain <img>. */}
 								<img
-									src={block.src}
+									src={previewSrc ?? block.src}
 									alt={block.alt ?? ""}
 									style={
 										cropRect
