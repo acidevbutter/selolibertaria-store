@@ -43,6 +43,13 @@ export function formatLongDate(iso: string): string {
 	return date.toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" });
 }
 
+/** "outubro de 2026" -- the launch window copy on the public landing, from the configured date. */
+export function formatLaunchWindow(iso: string): string {
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return "em breve";
+	return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+}
+
 export function formatShortDate(iso: string): string {
 	const date = new Date(iso);
 	if (Number.isNaN(date.getTime())) return "—";

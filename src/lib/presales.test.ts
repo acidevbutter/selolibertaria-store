@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatBRL, formatShortDate, presaleDiscountPercent } from "@/lib/presales";
+import { formatBRL, formatLaunchWindow, formatShortDate, presaleDiscountPercent } from "@/lib/presales";
 
 describe("presaleDiscountPercent", () => {
 	it("computes the rounded discount percentage", () => {
@@ -32,5 +32,15 @@ describe("formatShortDate", () => {
 
 	it("returns an em dash for an invalid date", () => {
 		expect(formatShortDate("not-a-date")).toBe("—");
+	});
+});
+
+describe("formatLaunchWindow", () => {
+	it("spells month and year from the configured launch date", () => {
+		expect(formatLaunchWindow("2026-10-21T22:00:00Z")).toBe("outubro de 2026");
+	});
+
+	it("falls back instead of printing 'Invalid Date'", () => {
+		expect(formatLaunchWindow("not-a-date")).toBe("em breve");
 	});
 });
