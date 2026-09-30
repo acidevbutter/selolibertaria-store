@@ -10,7 +10,12 @@ import { SlButton } from "@/ui/sl/sl-button";
 
 function formatDateTime(iso: string | null) {
 	if (!iso) return null;
-	return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+	// Fixed zone: the SSR pass runs in UTC and the browser in its own zone, and a mismatch is a hydration error (#418).
+	return new Date(iso).toLocaleString("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+		timeZone: "America/Sao_Paulo",
+	});
 }
 
 export function AdminStoreActivation({ initial }: { initial: ActivationRecord | null }) {
