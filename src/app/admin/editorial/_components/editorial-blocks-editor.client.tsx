@@ -3,6 +3,7 @@
 import type { DragEvent, ReactNode } from "react";
 import { Fragment, useActionState, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { EditorialCropOverlay } from "@/app/admin/editorial/_components/editorial-crop-overlay.client";
+import { EditableText } from "@/app/admin/editorial/_components/editorial-editable-text.client";
 import {
 	type EditorialPageType,
 	type PublishState,
@@ -195,6 +196,7 @@ export function EditorialBlocksEditor({
 	const [activeId, setActiveId] = useState<string | null>(initialDoc[0]?.id ?? null);
 	const [pickerAnchor, setPickerAnchor] = useState<number | "end" | null>(null);
 	const [pickerQuery, setPickerQuery] = useState("");
+	const [pickerIndex, setPickerIndex] = useState(0);
 	const [dropIndex, setDropIndex] = useState<number | null>(null);
 	const [dropTargetBlockId, setDropTargetBlockId] = useState<string | null>(null);
 	const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -298,7 +300,16 @@ export function EditorialBlocksEditor({
 	}, [doc, contentType, slug]);
 
 	useEffect(() => {
-		if (pickerAnchor !== null) pickerInputRef.current?.focus();
+		if (pickerAnchor === null) return;
+		pickerInputRef.current?.focus();
+		function onKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				event.preventDefault();
+				closePicker();
+			}
+		}
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [pickerAnchor]);
 
 	useEffect(() => {
@@ -313,13 +324,18 @@ export function EditorialBlocksEditor({
 		);
 	}, [pickerQuery]);
 
+	function closePicker() {
+		setPickerAnchor(null);
+		setPickerQuery("");
+		setPickerIndex(0);
+	}
+
 	function insertBlock(block: EditorialBlock, atIndex?: number) {
 		const index = atIndex ?? doc.findIndex((item) => item.id === activeId);
 		const anchorId = index >= 0 ? doc[index]?.id : doc[doc.length - 1]?.id;
 		setDoc(insertBlockAfter(doc, anchorId ?? null, block));
 		setActiveId(block.id);
-		setPickerAnchor(null);
-		setPickerQuery("");
+		closePicker();
 	}
 
 	/** The popover's chosen type always lands right after whichever "+" opened
@@ -404,75 +420,117 @@ export function EditorialBlocksEditor({
 	const activeBlock = doc.find((item) => item.id === activeId) ?? null;
 	const levelLabel = activeBlock?.type === "heading" ? `Título H${activeBlock.level}` : "Parágrafo";
 
-	/** One popover definition, mounted at whichever "+" opened it (the bar at
-	 *  the end of the canvas, or a specific block's hover button) -- never both. */
-	const insertPopover = (
-		<div className="ad-popover on">
+	/** The block picker is a modal, centred on the screen and scrollable, opened by whichever
+	 *  "+" was clicked (the bar at the end of the canvas, or a specific block's hover button).
+	 *  Clicking the backdrop, pressing Escape or picking a type closes it -- never left hanging
+	 *  open over the page the way the old anchored popover was. */
+	const insertDialog =
+		pickerAnchor === null ? null : (
 			<div
-				style={{
-					padding: "14px 18px",
-					borderBottom: "1px solid var(--ad-line)",
-					display: "flex",
-					flexDirection: "column",
-					gap: 2,
+				className="ad-scrim on ad-scrim-center"
+				data-testid="insert-dialog-backdrop"
+				onMouseDown={(event) => {
+					if (event.target === event.currentTarget) closePicker();
 				}}
 			>
-				<span className="ad-ml" style={{ color: "rgba(11,11,11,.55)" }}>
-					Inserir bloco
-				</span>
-				<input
-					ref={pickerInputRef}
-					className="ad-mono"
-					value={pickerQuery}
-					onChange={(event) => setPickerQuery(event.target.value)}
-					onKeyDown={(event) => {
-						if (event.key === "Escape") setPickerAnchor(null);
-						if (event.key === "Enter" && pickerResults[0]) {
-							event.preventDefault();
-							pickInsert(pickerResults[0].type);
-						}
-					}}
-					placeholder="digite para filtrar"
-					style={{
-						fontSize: 11,
-						color: "var(--ad-text-faint)",
-						border: 0,
-						outline: "none",
-						background: "none",
-					}}
-				/>
-			</div>
-			{pickerResults.map((entry, index) => (
-				<button
-					key={entry.type}
-					type="button"
-					className="ad-row"
-					style={index === 0 ? { background: "var(--ad-ink)", color: "var(--ad-on-shell)" } : undefined}
-					onClick={() => pickInsert(entry.type)}
+				<div
+					className="ad-popover ad-popover-modal"
+					role="dialog"
+					aria-modal="true"
+					aria-label="Inserir bloco"
 				>
-					<span className="ad-t">{entry.label}</span>
-					<span className="ad-d" style={index === 0 ? { color: "rgba(247,244,239,.55)" } : undefined}>
-						{entry.type}
-					</span>
-				</button>
-			))}
-			<div
-				style={{
-					background: "var(--ad-sand)",
-					padding: "12px 18px",
-					fontSize: 13,
-					lineHeight: 1.6,
-					color: "var(--ad-text-soft)",
-				}}
-			>
-				Onze tipos. O servidor recusa qualquer outro com{" "}
-				<span className="ad-mono" style={{ fontSize: 12 }}>
-					422
-				</span>
-				.
+					<div
+						style={{
+							padding: "14px 18px",
+							borderBottom: "1px solid var(--ad-line)",
+							display: "flex",
+							flexDirection: "column",
+							gap: 2,
+						}}
+					>
+						<span className="ad-ml" style={{ color: "rgba(11,11,11,.55)" }}>
+							Inserir bloco
+						</span>
+						<input
+							ref={pickerInputRef}
+							className="ad-mono"
+							value={pickerQuery}
+							onChange={(event) => {
+								setPickerQuery(event.target.value);
+								setPickerIndex(0);
+							}}
+							onKeyDown={(event) => {
+								if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+									event.preventDefault();
+									const step = event.key === "ArrowDown" ? 1 : -1;
+									const count = pickerResults.length;
+									if (count > 0) setPickerIndex((current) => (current + step + count) % count);
+									return;
+								}
+								if (event.key === "Enter") {
+									event.preventDefault();
+									const chosen = pickerResults[pickerIndex] ?? pickerResults[0];
+									if (chosen) pickInsert(chosen.type);
+								}
+							}}
+							placeholder="digite para filtrar"
+							style={{
+								fontSize: 11,
+								color: "var(--ad-text-faint)",
+								border: 0,
+								outline: "none",
+								background: "none",
+							}}
+						/>
+					</div>
+					<div className="ad-popover-results">
+						{pickerResults.length === 0 ? (
+							<p className="ad-doc-cap" style={{ padding: "14px 18px" }}>
+								Nenhum tipo encontrado.
+							</p>
+						) : null}
+						{pickerResults.map((entry, index) => (
+							<button
+								key={entry.type}
+								type="button"
+								className="ad-row"
+								aria-current={index === pickerIndex ? "true" : undefined}
+								style={
+									index === pickerIndex
+										? { background: "var(--ad-ink)", color: "var(--ad-on-shell)" }
+										: undefined
+								}
+								onMouseEnter={() => setPickerIndex(index)}
+								onClick={() => pickInsert(entry.type)}
+							>
+								<span className="ad-t">{entry.label}</span>
+								<span
+									className="ad-d"
+									style={index === pickerIndex ? { color: "rgba(247,244,239,.55)" } : undefined}
+								>
+									{entry.type}
+								</span>
+							</button>
+						))}
+					</div>
+					<div
+						style={{
+							background: "var(--ad-sand)",
+							padding: "12px 18px",
+							fontSize: 13,
+							lineHeight: 1.6,
+							color: "var(--ad-text-soft)",
+						}}
+					>
+						Onze tipos. O servidor recusa qualquer outro com{" "}
+						<span className="ad-mono" style={{ fontSize: 12 }}>
+							422
+						</span>
+						.
+					</div>
+				</div>
 			</div>
-		</div>
-	);
+		);
 
 	return (
 		<form action={publish} style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -481,6 +539,7 @@ export function EditorialBlocksEditor({
 			<input type="hidden" name="type" value={contentType} />
 			<input type="hidden" name="slug" value={slug} />
 			<input type="hidden" name="publishedAt" value={publishedAtSeen} />
+			{insertDialog}
 
 			<div className="ad-editor" style={{ flex: "1 1 520px", minWidth: "min(520px, 100%)" }}>
 				{/* Fourteen controls, four groups, in this exact order (§4). */}
@@ -680,7 +739,6 @@ export function EditorialBlocksEditor({
 												) : null
 											}
 											onToggleInsert={() => setPickerAnchor((current) => (current === index ? null : index))}
-											insertPopover={pickerAnchor === index ? insertPopover : null}
 										/>
 									</div>
 								);
@@ -748,8 +806,6 @@ export function EditorialBlocksEditor({
 							<span className="ad-p">+</span>
 							<span className="ad-l">Clique para inserir um bloco aqui</span>
 						</button>
-
-						{pickerAnchor === "end" ? insertPopover : null}
 					</div>
 				</div>
 
@@ -1220,7 +1276,6 @@ function BlockRow({
 	onSwap,
 	shapePicker,
 	onToggleInsert,
-	insertPopover,
 }: {
 	block: EditorialBlock;
 	index: number;
@@ -1242,7 +1297,6 @@ function BlockRow({
 	onSwap: () => void;
 	shapePicker: ReactNode;
 	onToggleInsert: () => void;
-	insertPopover: ReactNode;
 }) {
 	const captionId = `caption-${block.id}`;
 	const creditId = `credit-${block.id}`;
@@ -1277,25 +1331,14 @@ function BlockRow({
 	}
 
 	const editable = (className: string, value: string, placeholder: string, id?: string) => (
-		<div
+		<EditableText
 			id={id}
 			className={className}
-			contentEditable
-			suppressContentEditableWarning
-			role="textbox"
-			tabIndex={0}
-			aria-label={placeholder}
-			data-placeholder={placeholder}
+			value={value}
+			placeholder={placeholder}
 			onFocus={onFocusBlock}
-			onInput={(event) => handleText(event.currentTarget.textContent ?? "")}
-			onPaste={(event) => {
-				event.preventDefault();
-				const text = event.clipboardData.getData("text/plain");
-				document.execCommand("insertText", false, text);
-			}}
-		>
-			{value}
-		</div>
+			onValueChange={handleText}
+		/>
 	);
 
 	const isEmptyImage = block.type === "image" && !block.src;
@@ -1340,21 +1383,17 @@ function BlockRow({
 				<ul className="ad-doc-ul">
 					{block.items.map((item, itemIndex) => (
 						<li key={itemIndex}>
-							<span
-								contentEditable
-								suppressContentEditableWarning
-								role="textbox"
-								tabIndex={0}
+							<EditableText
+								as="span"
 								aria-label={`Item ${itemIndex + 1}`}
+								value={item}
 								onFocus={onFocusBlock}
-								onInput={(event) => {
+								onValueChange={(text) => {
 									const items = [...block.items];
-									items[itemIndex] = event.currentTarget.textContent ?? "";
+									items[itemIndex] = text;
 									onChange({ items } as Partial<EditorialBlock>);
 								}}
-							>
-								{item}
-							</span>
+							/>
 						</li>
 					))}
 				</ul>
@@ -1444,50 +1483,26 @@ function BlockRow({
 								</span>
 							</button>
 						)}
-						<div
+						<EditableText
 							id={captionId}
 							className="ad-doc-cap"
-							contentEditable
-							suppressContentEditableWarning
-							role="textbox"
-							tabIndex={0}
 							aria-label="Legenda"
-							data-placeholder="Legenda"
+							placeholder="Legenda"
+							value={block.caption ?? ""}
 							onFocus={onFocusBlock}
-							onInput={(event) =>
-								onChange({ caption: event.currentTarget.textContent ?? "" } as Partial<EditorialBlock>)
-							}
-							onPaste={(event) => {
-								event.preventDefault();
-								const text = event.clipboardData.getData("text/plain");
-								document.execCommand("insertText", false, text);
-							}}
-						>
-							{block.caption ?? ""}
-						</div>
+							onValueChange={(caption) => onChange({ caption } as Partial<EditorialBlock>)}
+						/>
 						{block.type === "image" ? (
-							<div
+							<EditableText
 								id={creditId}
 								className="ad-doc-cap"
 								style={{ opacity: 0.7 }}
-								contentEditable
-								suppressContentEditableWarning
-								role="textbox"
-								tabIndex={0}
 								aria-label="Crédito"
-								data-placeholder="Crédito (ex: Foto de Fulano)"
+								placeholder="Crédito (ex: Foto de Fulano)"
+								value={block.credit ?? ""}
 								onFocus={onFocusBlock}
-								onInput={(event) =>
-									onChange({ credit: event.currentTarget.textContent ?? "" } as Partial<EditorialBlock>)
-								}
-								onPaste={(event) => {
-									event.preventDefault();
-									const text = event.clipboardData.getData("text/plain");
-									document.execCommand("insertText", false, text);
-								}}
-							>
-								{block.credit ?? ""}
-							</div>
+								onValueChange={(credit) => onChange({ credit } as Partial<EditorialBlock>)}
+							/>
 						) : null}
 						{shapePicker}
 					</div>
@@ -1518,7 +1533,6 @@ function BlockRow({
 			<button type="button" className="ad-blk-add" aria-label="Inserir bloco abaixo" onClick={onToggleInsert}>
 				+
 			</button>
-			{insertPopover}
 		</div>
 	);
 }

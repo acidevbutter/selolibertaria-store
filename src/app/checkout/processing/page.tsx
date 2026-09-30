@@ -2,10 +2,20 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { finalizeAsaasCheckout } from "@/actions/checkout-actions";
+import { toast } from "sonner";
+import { finalizeAsaasCheckout, saveCheckoutCard } from "@/actions/checkout-actions";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { useTranslations } from "@/i18n/client";
 import { isResolvedCheckoutStatus, isWarningCheckoutStatus } from "@/lib/payment-status";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/ui/shadcn/dialog";
 import { SlPaymentState } from "@/ui/sl/sl-payment-state";
 
 const PROCESSING_POLL_INTERVAL_MS = 1500;
@@ -34,6 +44,13 @@ function safelyRefreshCart(refreshCart: ReturnType<typeof useCart>["refreshCart"
 	}
 }
 
+function buildSuccessPath(orderId: string | null, setupPasswordRequired = false) {
+	const params = new URLSearchParams({ section: "purchases" });
+	if (orderId?.startsWith("ord_")) params.set("order", orderId);
+	if (setupPasswordRequired) params.set("setupPassword", "1");
+	return `/user?${params.toString()}`;
+}
+
 export default function ProcessingPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -42,8 +59,36 @@ export default function ProcessingPage() {
 	const [phase, setPhase] = useState<ProcessingPhase>("processing");
 	const [accountEmailSent, setAccountEmailSent] = useState(false);
 	const [warningReason, setWarningReason] = useState<WarningReason>("timeout");
+	const [cardSavePrompt, setCardSavePrompt] = useState<{ brand: string | null; last4: string | null } | null>(
+		null,
+	);
+	const [savingCard, setSavingCard] = useState(false);
+	const [pendingSetupPassword, setPendingSetupPassword] = useState(false);
 	const { refreshCart, closeCart } = useCart();
 	const t = useTranslations("Checkout.processing");
+	const saveCardT = useTranslations("Checkout.saveCard");
+
+	async function handleSaveCard() {
+		if (!orderId) {
+			setCardSavePrompt(null);
+			return;
+		}
+		setSavingCard(true);
+		const result = await saveCheckoutCard({ orderId });
+		setSavingCard(false);
+		if ("error" in result) {
+			toast.error(saveCardT("toast.error"));
+		} else {
+			toast.success(saveCardT("toast.success"));
+		}
+		setCardSavePrompt(null);
+		if (!isGuest) replaceLocation(router, buildSuccessPath(orderId, pendingSetupPassword));
+	}
+
+	function handleSkipSaveCard() {
+		setCardSavePrompt(null);
+		if (!isGuest) replaceLocation(router, buildSuccessPath(orderId, pendingSetupPassword));
+	}
 
 	useEffect(() => {
 		let redirectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -53,10 +98,7 @@ export default function ProcessingPage() {
 		const startedAt = Date.now();
 
 		function getSuccessPath(setupPasswordRequired = false) {
-			const params = new URLSearchParams({ section: "purchases" });
-			if (orderId?.startsWith("ord_")) params.set("order", orderId);
-			if (setupPasswordRequired) params.set("setupPassword", "1");
-			return `/user?${params.toString()}`;
+			return buildSuccessPath(orderId, setupPasswordRequired);
 		}
 
 		function clearTimers() {
@@ -106,6 +148,11 @@ export default function ProcessingPage() {
 			setPhase("finalized");
 			setAccountEmailSent(result.accountEmailSent);
 			if (hardTimeoutTimer) clearTimeout(hardTimeoutTimer);
+			if (result.cardSaveAvailable) {
+				setPendingSetupPassword(result.setupPasswordRequired);
+				setCardSavePrompt({ brand: result.creditCardBrand, last4: result.creditCardLast4 });
+				return "resolved" as const;
+			}
 			if (!isGuest) scheduleRedirect(SUCCESS_REDIRECT_DELAY_MS, getSuccessPath(result.setupPasswordRequired));
 			return "resolved" as const;
 		}
@@ -182,6 +229,32 @@ export default function ProcessingPage() {
 					}
 				/>
 			</div>
+			<Dialog
+				open={cardSavePrompt !== null}
+				onOpenChange={(open) => {
+					if (!open) handleSkipSaveCard();
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{saveCardT("title")}</DialogTitle>
+						<DialogDescription>
+							{saveCardT("description", {
+								brand: (cardSavePrompt?.brand || saveCardT("unknownBrand")).toUpperCase(),
+								last4: cardSavePrompt?.last4 ?? "----",
+							})}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={handleSkipSaveCard} disabled={savingCard}>
+							{saveCardT("actions.skip")}
+						</Button>
+						<Button onClick={handleSaveCard} disabled={savingCard}>
+							{savingCard ? saveCardT("actions.saving") : saveCardT("actions.save")}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</main>
 	);
 }

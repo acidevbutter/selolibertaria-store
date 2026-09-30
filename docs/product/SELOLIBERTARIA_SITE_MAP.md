@@ -1,5 +1,10 @@
 # Mapeamento do Selo Libertária
 
+> Revisado em 2026-09-24 contra `selolibertaria-store/src/app/` e `src/lib/public-navigation.ts`
+> atuais. O menu principal e as rotas de conteúdo abaixo continuam batendo com o código; a
+> principal mudança desde a versão anterior é a chegada de rotas comerciais fora do menu
+> principal (pré-venda) — ver seção "Rotas comerciais e funcionais fora do menu".
+
 ## Objetivo
 
 Consolidar o mapa editorial e comercial do Selo Libertária sem misturar a navegação do Wix antigo, as rotas técnicas do fork e o menu final do produto atual.
@@ -31,10 +36,10 @@ Regras:
 
 ## Mapeamento entre conceito, rota e função
 
-| Item visual | Rota provável atual | Função |
+| Item visual | Rota atual | Função |
 | --- | --- | --- |
-| Loja | catálogo/produtos existente | Comprar e explorar livros e demais produtos |
-| Projetos | `/projects` | Portfólio cultural e ações editoriais |
+| Loja | `/products` (+ `/category/[slug]`, `/product/[slug]`) | Comprar e explorar livros e demais produtos |
+| Projetos | `/projects` (+ `/projects/[slug]`) | Portfólio cultural e ações editoriais |
 | Sarau Safado | `/sarau-safado` | Página dedicada ao sarau, agenda/memória/contexto |
 | Sobre | `/about` | Manifesto, autoria, selo, linha editorial |
 | Contato | `/contact` | Formulário, email, redes e assuntos de contato |
@@ -43,7 +48,22 @@ Regras:
 | Termos | `/terms` | Legal/footer |
 | Privacidade | `/privacy` | Legal/footer |
 
-Não renomear rotas para português sem tarefa explícita de redirects/canonical/SEO.
+Rotas conferidas em `src/lib/public-navigation.ts` (fonte única do menu principal no código) —
+não renomear rotas para português sem tarefa explícita de redirects/canonical/SEO.
+
+## Rotas comerciais e funcionais fora do menu
+
+Não fazem parte do menu principal (mesmo padrão de "Eventos": conteúdo/rota secundária), mas
+existem e são navegáveis hoje:
+
+| Rota | Função |
+| --- | --- |
+| `/pre-venda/little-fish-big-fish` | Página pública de pré-venda de um produto específico (sistema de pré-venda "little fish, big fish") |
+| `/checkout`, `/checkout/prepare`, `/checkout/processing`, `/checkout/return` | Fluxo de checkout |
+| `/login`, `/reset-password`, `/account/access` | Autenticação e recuperação de conta |
+| `/orders`, `/user/*` | Área logada: pedidos e perfil do usuário |
+| `/search` | Busca de catálogo |
+| `/maintenance` | Página exibida quando a loja está desativada (ver `site_activation` no backend) |
 
 ## Conteúdo herdado do site Wix
 

@@ -14,6 +14,7 @@ import {
 } from "@/app/admin/editorial/page-content-actions";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { probeEditorialBackend } from "@/lib/editorial-admin-api";
 
 export const dynamic = "force-dynamic";
 
@@ -44,18 +45,29 @@ export default async function AdminEditorialIndexPage() {
 	const session = await auth();
 	if (!session || !hasCapability(session.user.role, "editorial.write")) return null;
 
-	const [home, eventsPage, projectsPage, productsPage, productPage, globalPage, about, contact, sarau] =
-		await Promise.all([
-			getEditorialHomeCopyRecord(),
-			getEditorialEventsPageCopyRecord(),
-			getEditorialProjectsPageCopyRecord(),
-			getEditorialProductsPageCopyRecord(),
-			getEditorialProductPageCopyRecord(),
-			getEditorialSiteGlobalCopyRecord(),
-			getEditorialAboutRecord(),
-			getEditorialContactRecord(),
-			getEditorialSarauRecord(),
-		]);
+	const [
+		probe,
+		home,
+		eventsPage,
+		projectsPage,
+		productsPage,
+		productPage,
+		globalPage,
+		about,
+		contact,
+		sarau,
+	] = await Promise.all([
+		probeEditorialBackend(),
+		getEditorialHomeCopyRecord(),
+		getEditorialEventsPageCopyRecord(),
+		getEditorialProjectsPageCopyRecord(),
+		getEditorialProductsPageCopyRecord(),
+		getEditorialProductPageCopyRecord(),
+		getEditorialSiteGlobalCopyRecord(),
+		getEditorialAboutRecord(),
+		getEditorialContactRecord(),
+		getEditorialSarauRecord(),
+	]);
 
 	const rows: PageRow[] = [
 		{ title: "Home", href: "/admin/editorial/blocos/home", record: home },
@@ -84,6 +96,24 @@ export default async function AdminEditorialIndexPage() {
 					</Link>
 				</div>
 			</div>
+
+			{probe.ok ? null : (
+				<div
+					role="alert"
+					className="ad-panel"
+					style={{
+						padding: 16,
+						marginBottom: 16,
+						borderColor: "var(--ad-wine-line)",
+						color: "var(--ad-wine)",
+					}}
+				>
+					<b>O servidor do conteúdo não respondeu como esperado.</b>
+					<p style={{ margin: "6px 0 0", lineHeight: 1.6 }}>
+						{probe.message} Enquanto isso, o status abaixo pode estar incorreto.
+					</p>
+				</div>
+			)}
 
 			<div className="ad-panel">
 				<div className="ad-filters">

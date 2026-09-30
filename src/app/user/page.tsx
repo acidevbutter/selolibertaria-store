@@ -8,11 +8,13 @@ import { getLocale, getTranslations } from "@/i18n/server";
 import { auth, logout } from "@/lib/auth";
 import { getDefaultCurrencyForLocale } from "@/lib/currency";
 import { getFavoriteViewModels } from "@/lib/favorites";
+import { listSavedCardsForUser } from "@/lib/saved-cards";
 import { getDefaultCountrySetting } from "@/lib/settings-store";
 import { formatMoney } from "@/lib/utils";
 import { FavoriteToggle } from "@/ui/favorites/favorite-toggle.client";
 import { ProfileEditor } from "@/ui/profile-editor.client";
 import { PurchasesGrid } from "@/ui/purchases-grid.client";
+import { SavedCardsList } from "@/ui/saved-cards-list.client";
 
 export const dynamic = "force-dynamic"; // ensures cookie revalidation
 
@@ -33,7 +35,8 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		| "overview"
 		| "profile"
 		| "favorites"
-		| "purchases";
+		| "purchases"
+		| "paymentMethods";
 	const defaultCountry = section === "profile" ? await getDefaultCountrySetting(locale) : "BR";
 	const defaultCurrency = getDefaultCurrencyForLocale(locale);
 
@@ -183,6 +186,15 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 			favorites = await getFavoriteViewModels(user.id);
 		} catch (error) {
 			console.error("[user/page] load favorites error", error);
+		}
+	}
+
+	let savedCards: Awaited<ReturnType<typeof listSavedCardsForUser>> | null = null;
+	if (section === "paymentMethods") {
+		try {
+			savedCards = await listSavedCardsForUser();
+		} catch (error) {
+			console.error("[user/page] load saved cards error", error);
 		}
 	}
 
@@ -336,6 +348,17 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 					</div>
 				);
 			}
+			case "paymentMethods": {
+				return (
+					<div className="space-y-6">
+						<div className="space-y-2">
+							<h2 className="text-2xl font-semibold tracking-tight">{t("paymentMethods.title")}</h2>
+							<p className="text-sm text-muted-foreground">{t("paymentMethods.description")}</p>
+						</div>
+						<SavedCardsList cards={savedCards ?? []} />
+					</div>
+				);
+			}
 			case "overview":
 			default:
 				return (
@@ -352,6 +375,7 @@ export default async function UserPage({ searchParams }: { searchParams?: Promis
 		{ key: "profile", label: t("nav.profile") },
 		{ key: "favorites", label: t("nav.favorites") },
 		{ key: "purchases", label: t("nav.purchases") },
+		{ key: "paymentMethods", label: t("nav.paymentMethods") },
 	];
 
 	return (

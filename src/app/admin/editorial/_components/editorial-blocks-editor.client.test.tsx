@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EditorialContentDoc } from "@/lib/editorial-blocks";
 import { EditorialBlocksEditor } from "./editorial-blocks-editor.client";
@@ -29,6 +29,7 @@ function fakeDataTransfer() {
 
 describe("EditorialBlocksEditor", () => {
 	afterEach(() => {
+		cleanup();
 		vi.unstubAllGlobals();
 		vi.restoreAllMocks();
 	});
@@ -48,12 +49,80 @@ describe("EditorialBlocksEditor", () => {
 		const addButtons = screen.getAllByRole("button", { name: "Inserir bloco abaixo" });
 		fireEvent.click(addButtons[0]); // opens the picker anchored to the first block, not the end
 
-		const popover = container.querySelector(".ad-blk .ad-popover") as HTMLElement;
-		const row = within(popover).getByText("Separador").closest("button") as HTMLButtonElement;
+		const dialog = screen.getByRole("dialog", { name: "Inserir bloco" });
+		const row = within(dialog).getByText("Separador").closest("button") as HTMLButtonElement;
 		fireEvent.click(row);
 
 		const next = hiddenValue(container, "content");
 		expect(next.map((block) => block.type)).toEqual(["paragraph", "divider", "paragraph"]);
+		expect(screen.queryByRole("dialog", { name: "Inserir bloco" })).toBeNull();
+	});
+
+	describe("block picker modal", () => {
+		function openPicker() {
+			render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+			fireEvent.click(screen.getAllByRole("button", { name: "Inserir bloco abaixo" })[0]);
+			return screen.getByRole("dialog", { name: "Inserir bloco" });
+		}
+
+		it("closes when the backdrop outside it is clicked", () => {
+			openPicker();
+			fireEvent.mouseDown(screen.getByTestId("insert-dialog-backdrop"));
+			expect(screen.queryByRole("dialog", { name: "Inserir bloco" })).toBeNull();
+		});
+
+		it("stays open when the click lands inside the dialog", () => {
+			const dialog = openPicker();
+			fireEvent.mouseDown(dialog);
+			expect(screen.getByRole("dialog", { name: "Inserir bloco" })).toBeTruthy();
+		});
+
+		it("closes on Escape, wherever the focus is", () => {
+			openPicker();
+			fireEvent.keyDown(window, { key: "Escape" });
+			expect(screen.queryByRole("dialog", { name: "Inserir bloco" })).toBeNull();
+		});
+
+		it("is a centred overlay whose option list scrolls on its own", () => {
+			const dialog = openPicker();
+			expect(screen.getByTestId("insert-dialog-backdrop").className).toContain("ad-scrim-center");
+			expect(dialog.className).toContain("ad-popover-modal");
+			expect(dialog.querySelector(".ad-popover-results")).not.toBeNull();
+		});
+
+		it("filters by typing and inserts the highlighted type on Enter, then closes", () => {
+			const { container } = render(<EditorialBlocksEditor name="content" initialDoc={doc()} />);
+			fireEvent.click(screen.getAllByRole("button", { name: "Inserir bloco abaixo" })[0]);
+			const input = screen.getByPlaceholderText("digite para filtrar");
+			fireEvent.change(input, { target: { value: "separ" } });
+			fireEvent.keyDown(input, { key: "Enter" });
+
+			expect(hiddenValue(container, "content").map((block) => block.type)).toEqual([
+				"paragraph",
+				"divider",
+				"paragraph",
+			]);
+			expect(screen.queryByRole("dialog", { name: "Inserir bloco" })).toBeNull();
+		});
+
+		it("moves the highlight with the arrow keys", () => {
+			openPicker();
+			const input = screen.getByPlaceholderText("digite para filtrar");
+			fireEvent.keyDown(input, { key: "ArrowDown" });
+			const current = screen
+				.getAllByRole("button")
+				.filter((el) => el.getAttribute("aria-current") === "true");
+			expect(current).toHaveLength(1);
+			expect(screen.getAllByRole("button").filter((el) => el.className.includes("ad-row"))[1]).toBe(
+				current[0],
+			);
+		});
+
+		it("says so when nothing matches", () => {
+			openPicker();
+			fireEvent.change(screen.getByPlaceholderText("digite para filtrar"), { target: { value: "zzzz" } });
+			expect(screen.getByText("Nenhum tipo encontrado.")).toBeTruthy();
+		});
 	});
 
 	it("duplicates and removes a block via its hover controls", () => {

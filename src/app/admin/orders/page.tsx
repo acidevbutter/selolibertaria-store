@@ -13,7 +13,6 @@ import {
 	AdminEditorialStat,
 	EditorialPanel,
 } from "@/ui/editorial/editorial-primitives";
-import { SlButton } from "@/ui/sl/sl-button";
 import { StatusBadge } from "@/ui/status-badge";
 import { AdminFilters } from "../admin-filters.client";
 export const dynamic = "force-dynamic";
@@ -179,12 +178,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
 								</p>
 							</div>
 							<div className="flex flex-wrap gap-2">
-								<SlButton href="/" variant="secondary" size="sm">
+								<Link className="ad-btn ad-sec" href="/">
 									Ver loja
-								</SlButton>
-								<SlButton href="/admin/products" variant="primary" size="sm">
+								</Link>
+								<Link className="ad-btn ad-pri" href="/admin/products">
 									Ver produtos
-								</SlButton>
+								</Link>
 							</div>
 						</div>
 					) : null}

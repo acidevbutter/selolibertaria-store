@@ -13,7 +13,7 @@ type MetricCardProps = {
 	className?: string;
 };
 
-/** The panel's number. Value is ALWAYS DCC Ash — never Fertigo. */
+/** The panel's number. Value is ALWAYS mono — never editorial serif. */
 export function MetricCard({
 	label,
 	value,
@@ -28,37 +28,32 @@ export function MetricCard({
 	const content = (
 		<>
 			<span className="flex items-center justify-between gap-3">
-				<span className="text-[var(--sl-size-label)] font-black tracking-[var(--sl-track-label-tight)] text-[var(--sl-accent)] uppercase">
-					{label}
-				</span>
-				{clickable ? (
-					<span className="text-[var(--sl-size-label)] font-black tracking-[var(--sl-track-label-tight)] text-[var(--sl-text-label)] uppercase">
-						{action || "Ver"} →
-					</span>
-				) : null}
+				<span className="ad-eb">{label}</span>
+				{clickable ? <span className="ad-ml">{action || "Ver"} →</span> : null}
 			</span>
 			<span
-				className={cn(
-					"mt-4 block font-[family-name:var(--sl-font-display)] text-[30px] tracking-[var(--sl-track-card)]",
-					tone === "danger" ? "text-[var(--sl-danger)]" : "text-[var(--sl-text)]",
-				)}
+				className={cn("ad-num mt-4 block text-[30px]")}
+				style={{ color: tone === "danger" ? "var(--ad-wine)" : "var(--ad-text)" }}
 			>
 				{value}
 			</span>
-			{note ? <span className="mt-1 block text-[11px] text-[var(--sl-text-soft)]">{note}</span> : null}
+			{note ? (
+				<span className="mt-1 block text-[11px]" style={{ color: "var(--ad-text-soft)" }}>
+					{note}
+				</span>
+			) : null}
 		</>
 	);
 
 	const classes = cn(
-		"block w-full bg-[var(--sl-surface-card)] p-[var(--sl-pad-metric)] text-left text-[var(--sl-text)] no-underline transition-[var(--sl-transition)]",
-		clickable ? "border border-[var(--sl-line)] cursor-pointer" : "border border-[var(--sl-line-hairline)]",
+		"ad-panel block w-full p-[var(--ad-pad-sheet)] text-left no-underline transition-[var(--ad-transition)]",
+		clickable && "cursor-pointer",
 		className,
 	);
-	const style = { borderRadius: "var(--sl-radius)" };
 
 	if (href) {
 		return (
-			<YnsLink href={href} className={classes} style={style}>
+			<YnsLink href={href} className={classes}>
 				{content}
 			</YnsLink>
 		);
@@ -66,15 +61,11 @@ export function MetricCard({
 
 	if (onClick) {
 		return (
-			<button type="button" onClick={onClick} className={classes} style={style}>
+			<button type="button" onClick={onClick} className={classes}>
 				{content}
 			</button>
 		);
 	}
 
-	return (
-		<div className={classes} style={style}>
-			{content}
-		</div>
-	);
+	return <div className={classes}>{content}</div>;
 }

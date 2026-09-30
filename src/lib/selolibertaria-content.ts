@@ -2,9 +2,9 @@ export const seloSiteMeta = {
 	name: "Selo Libertária",
 	title: "Selo Libertária",
 	description:
-		"Site editorial autoral de livros, performances, oficinas e projetos culturais do universo Selo Libertária.",
-	tagline: "Livros, performances e literatura erótica com direção cultural.",
-	email: "natalianolli@selolibertaria.page",
+		"Selo Libertária: livraria-editora independente de literatura erótica, performances e o Sarau Safado, com curadoria de Natália Nolli Sasso.",
+	tagline: "livros, performances e literatura erótica com direção autoral.",
+	email: "contato@selolibertaria.com.br",
 	instagram: "https://www.instagram.com/selolibertaria",
 	youtube: "https://www.youtube.com/@selolibertaria",
 	facebook: "https://www.facebook.com/selolibertaria",

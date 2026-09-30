@@ -3,6 +3,7 @@ import { publicUrl } from "@/env.mjs";
 import { authenticateAndCreateSession } from "@/lib/auth-login";
 import { isBackofficeRole } from "@/lib/authz";
 import { CURRENCY_COOKIE_NAME, resolveSupportedCurrency } from "@/lib/currency";
+import { loginErrorQuery } from "@/lib/login-error";
 
 function buildLoginRedirect(query = "") {
 	return NextResponse.redirect(new URL(`/login${query}`, publicUrl), 303);
@@ -24,8 +25,7 @@ export async function POST(req: Request) {
 	});
 
 	if (!result.ok) {
-		const query = result.error === "Credenciais inválidas" ? "?login_error=invalid" : "?login_error=server";
-		return buildLoginRedirect(query);
+		return buildLoginRedirect(loginErrorQuery(result.error));
 	}
 
 	const response = NextResponse.redirect(

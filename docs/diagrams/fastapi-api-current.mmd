@@ -1,104 +1,124 @@
 %% Selo Libertária — FastAPI API atual
-%% Fonte: backend/app/main.py, routers, services, repositories e models.
-%% Escopo: contrato de referência do backend; não representa as rotas Next.js/Mongo ainda ativas.
+%% Fonte: backend/app/main.py, routers, services, repositories, models e integrações externas.
+%% Revisado em 2026-09-24. Escopo: contrato de referência do backend + integrações externas +
+%% BFF fino no Next.js. Domínios internos sem router HTTP (payments, notifications) aparecem
+%% como serviços de apoio, não como rotas.
 flowchart LR
-    client["Clientes / Next.js proxy<br/>contratos de referência"]
+    client["selolibertaria-store (Next.js)<br/>loja pública + /admin<br/>FASTAPI_API_URL + X-Internal-Api-Key"]
 
-    subgraph api["FastAPI — Selo Libertária Backend"]
+    subgraph api["FastAPI — Selo Libertária Backend (app.main:app)"]
         middleware["RequestContextMiddleware<br/>request-id · duração · logs"]
         exceptions["Exception handlers"]
-        health["Meta:<br/>GET /health<br/>GET /openapi.json · /docs · /redoc"]
+        health["Meta: GET /health · /health/readiness"]
 
-        subgraph auth["Auth — /auth"]
-            auth_routes["POST /register · /login · /logout<br/>GET /me<br/>POST /verify · /password-reset<br/>POST /password-reset/confirm"]
-            auth_service["AuthService"]
-            auth_repo["AuthRepository"]
+        subgraph identity["Identidade — /auth · /users · /users/me/saved-cards"]
+            auth_routes["auth: register/login/logout · me<br/>oauth start/callback/complete<br/>verify · password-reset · internal/*"]
+            users_routes["users: CRUD · role · block"]
+            saved_cards["payment_methods: GET/DELETE<br/>saved-cards (sem consumidor no Next hoje)"]
         end
 
-        subgraph users["Users — /users"]
-            users_routes["POST /<br/>GET /<br/>GET /{user_id}<br/>PATCH /{user_id}<br/>PATCH /{user_id}/role<br/>PATCH /{user_id}/block"]
-            users_service["UserService"]
-            users_repo["UserRepository"]
+        subgraph commerce["Comércio — /catalog · /carts · /favorites · /promotions · /presales"]
+            catalog_routes["catalog: produtos/variantes/categorias<br/>público + admin, seed"]
+            carts_routes["carts: guest + me, merge, cupom"]
+            favorites_routes["favorites: me, toggle"]
+            promotions_routes["promotions: price-cart, cupom,<br/>+ espelho /internal/admin"]
+            presales_routes["presales: CRUD, publish/skip/close,<br/>reservas, leitura pública"]
         end
 
-        subgraph orders["Orders — /orders"]
-            orders_routes["POST /<br/>GET /<br/>GET /{order_id}<br/>PATCH /{order_id}/fulfillment"]
-            orders_service["OrderService"]
-            orders_repo["OrderRepository"]
+        subgraph checkout_g["Checkout & Pedidos — /checkout · /orders (chave interna)"]
+            checkout_routes["checkout: intents, finalize,<br/>save-card, reconcile"]
+            orders_routes["orders: CRUD, dashboard, fulfillment,<br/>payment-operation, auditoria"]
         end
 
-        subgraph catalog["Catalog — /catalog"]
-            catalog_routes["POST /<br/>GET /<br/>GET /management/<br/>GET /{slug}<br/>PATCH /{slug}<br/>POST /{slug}/variants<br/>PATCH /{slug}/variants/{variant_id}"]
-            catalog_service["CatalogService"]
-            catalog_repo["CatalogRepository"]
+        subgraph asaas_g["Pagamentos — /payments/asaas"]
+            asaas_routes["POST /customers · /charges<br/>GET /charges/{id}<br/>POST /webhook"]
+            asaas_client["AsaasClient<br/>proxy (mTLS, padrão) | direct (ADR-0002 stopgap)"]
         end
 
-        subgraph carts["Carts — /carts"]
-            carts_routes["POST /guest<br/>GET/POST/PUT/DELETE /guest/{cart_id}<br/>GET/POST/PUT/DELETE /me<br/>POST /me/merge"]
-            carts_service["CartService"]
-            carts_repo["CartRepository"]
+        subgraph content["Conteúdo — /editorial · /media · /communications · /settings · /site-activation"]
+            editorial_routes["editorial: contentDoc (11 node types)<br/>público + draft/publish/revert admin"]
+            media_routes["media: upload/delete/crops/usage<br/>proxy butter_blob"]
+            communications_routes["communications: newsletter, send,<br/>retry, listagem"]
+            settings_routes["settings: público + admin"]
+            site_activation_routes["site-activation: público + activate/deactivate"]
         end
 
-        payments_route["Payments — /payments/mercado-pago<br/>POST /webhook"]
-
-        subgraph migrations["Migration — /admin/migrations"]
-            migration_route["POST /mongo-to-postgres"]
-            migration_service["MigrationService<br/>execução única"]
-            migration_repo["MigrationRunRepository"]
+        subgraph shipping_g["Frete & Endereço — /shipping · /address"]
+            shipping_routes["shipping: POST /quote"]
+            address_routes["address: GET /postal-lookup"]
         end
 
-        di["Dependency injection<br/>DbSession · MongoDb<br/>Pagination · SessionFactory"]
+        subgraph ops["Ops — /webhooks · /admin/migrations"]
+            webhooks_routes["webhooks: GET (eventos recebidos)"]
+            migrations_routes["migrations: POST /mongo-to-postgres<br/>(atrás de MIGRATIONS_ENABLED)"]
+        end
+
+        di["Dependency injection<br/>DbSession · CurrentUser · require_internal_api_key<br/>require_*_operator/require_admin"]
+    end
+
+    subgraph external["Integrações externas"]
+        asaas_payment[("asaas_payment<br/>proxy mTLS (cert.pem/ca.crt)")]
+        butter_blob[("butter_blob<br/>storage de mídia, Bearer API key")]
+        butter_relay[("butter_relay<br/>Celery/Redis, e-mails transacionais")]
+        melhor_envio[("Melhor Envio<br/>cotação de frete")]
+        cep[("ViaCEP + BrasilAPI<br/>fallback de CEP")]
+        oauth_providers[("Provedores OAuth<br/>Google/Facebook/outros")]
     end
 
     subgraph postgres["PostgreSQL / SQLAlchemy async"]
-        users_db[("users<br/>identities · sessions<br/>access tokens")]
-        orders_db[("orders<br/>items · events · drafts<br/>audit · reconciliation")]
-        catalog_db[("catalog_products<br/>catalog_variants<br/>product_audit_logs")]
-        carts_db[("shopping_carts<br/>shopping_cart_items")]
-        migration_db[("migration_runs")]
+        core_db[("users · sessions · orders · payment<br/>catalog_products · catalog_variants<br/>shopping_carts · promotions · presales<br/>editorial_content · media_assets<br/>store_settings · site_activation · webhook_events")]
+        legacy_mp_db[("mercado_pago_reconciliation<br/>mercado_pago_payment_attempts<br/>(só usadas pelo importador de migração,<br/>não pelo checkout Asaas atual)")]
     end
 
-    mongo[("MongoDB legado<br/>users · orderDrafts<br/>mercadoPagoReconciliation<br/>catalogProducts · productAuditLogs")]
+    mongo[("MongoDB legado<br/>fonte única da migração pontual<br/>Mongo→PostgreSQL")]
 
-    client --> middleware
+    client -->|HTTP| middleware
     middleware --> health
-    middleware --> auth_routes
-    middleware --> users_routes
-    middleware --> orders_routes
-    middleware --> catalog_routes
-    middleware --> carts_routes
-    middleware --> payments_route
-    middleware --> migration_route
+    middleware --> identity
+    middleware --> commerce
+    middleware --> checkout_g
+    middleware --> asaas_g
+    middleware --> content
+    middleware --> shipping_g
+    middleware --> ops
     middleware -."erros".-> exceptions
 
-    users_routes --> users_service --> users_repo --> users_db
-    auth_routes --> auth_service --> auth_repo --> users_db
-    orders_routes --> orders_service --> orders_repo --> orders_db
-    catalog_routes --> catalog_service --> catalog_repo --> catalog_db
-    carts_routes --> carts_service --> carts_repo --> carts_db
-    carts_service -."consulta catálogo".-> catalog_db
+    checkout_routes -."cria charge".-> asaas_routes
+    asaas_routes --> asaas_client
+    asaas_client -->|mTLS, padrão| asaas_payment
+    asaas_client -.->|direct, stopgap ADR-0002| asaas_payment
+    asaas_routes -."webhook assíncrono".-> orders_routes
 
-    migration_route --> migration_service
-    migration_service --> migration_repo --> migration_db
-    migration_service -."leitura de origem".-> mongo
-    migration_service --> users_db
-    migration_service --> orders_db
-    migration_service --> catalog_db
-    migration_service --> carts_db
+    media_routes --> butter_blob
+    communications_routes --> butter_relay
+    shipping_routes --> melhor_envio
+    address_routes --> cep
+    auth_routes --> oauth_providers
 
-    di -."injeta dependências".-> users_service
-    di -."injeta dependências".-> auth_service
-    di -."injeta dependências".-> orders_service
-    di -."injeta dependências".-> catalog_service
-    di -."injeta dependências".-> carts_service
-    di -."injeta dependências".-> migration_service
+    identity --> core_db
+    commerce --> core_db
+    checkout_g --> core_db
+    asaas_g --> core_db
+    content --> core_db
+    ops --> core_db
+    migrations_routes -."leitura de origem".-> mongo
+    migrations_routes --> core_db
+    migrations_routes -."popula ao migrar".-> legacy_mp_db
+
+    di -."injeta dependências".-> identity
+    di -."injeta dependências".-> commerce
+    di -."injeta dependências".-> checkout_g
+    di -."injeta dependências".-> asaas_g
+    di -."injeta dependências".-> content
+    di -."injeta dependências".-> shipping_g
+    di -."injeta dependências".-> ops
 
     classDef route fill:#7A1E22,color:#fff,stroke:#0B0B0B,stroke-width:1px;
     classDef service fill:#D8D0C4,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
     classDef store fill:#F7F4EF,color:#0B0B0B,stroke:#7A1E22,stroke-width:1px;
-    class users_routes,auth_routes,orders_routes,catalog_routes,carts_routes,payments_route,migration_route,health route;
-    class users_service,auth_service,orders_service,catalog_service,carts_service,migration_service,di,middleware,exceptions service;
-    class users_db,orders_db,catalog_db,carts_db,migration_db,mongo store;
+    class auth_routes,users_routes,saved_cards,catalog_routes,carts_routes,favorites_routes,promotions_routes,presales_routes,checkout_routes,orders_routes,asaas_routes,editorial_routes,media_routes,communications_routes,settings_routes,site_activation_routes,shipping_routes,address_routes,webhooks_routes,migrations_routes,health route;
+    class asaas_client,di,middleware,exceptions service;
+    class core_db,legacy_mp_db,mongo,asaas_payment,butter_blob,butter_relay,melhor_envio,cep,oauth_providers store;
 
-    note["Limites atuais:<br/>• Next.js ainda não consome auth/carts do FastAPI<br/>• autenticação de admin ainda não está conectada<br/>• Mercado Pago, promoções e editorial continuam no Next.js/Mongo"]
+    note["Estado atual (2026-09-24):<br/>• Provedor de pagamento é Asaas (não Mercado Pago) via proxy mTLS, modo direct é stopgap temporário<br/>• Next.js consome auth/carts/checkout/orders/promotions/editorial/media/presales/site-activation via FastAPI<br/>• payment_methods (cartões salvos) tem contrato pronto no backend mas sem consumidor no Next<br/>• Envio de e-mail delega para butter_relay (Celery/Redis), não SQS<br/>• MongoDB só é tocado pela migração pontual /admin/migrations/mongo-to-postgres"]
     api -.-> note

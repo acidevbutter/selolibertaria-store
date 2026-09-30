@@ -33,11 +33,12 @@ function createDeferred<T>() {
 }
 
 function CartHarness() {
-	const { itemCount, optimisticAdd } = useCart();
+	const { cart, itemCount, optimisticAdd } = useCart();
 
 	return (
 		<div>
 			<span data-testid="item-count">{itemCount}</span>
+			<span data-testid="cart-currency">{cart?.currency ?? ""}</span>
 			<button
 				type="button"
 				onClick={() =>
@@ -46,7 +47,7 @@ function CartHarness() {
 						name: "Produto",
 						images: ["/capa.png"],
 						summary: "Resumo",
-					})
+					}).catch(() => {})
 				}
 			>
 				Adicionar
@@ -163,6 +164,59 @@ describe("CartProvider", () => {
 
 		await waitFor(() => {
 			expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+		});
+	});
+
+	it("usa BRL (nunca USD) no placeholder otimista de um carrinho vazio (selolibertaria-store#174)", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ cart: null }), {
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const addToCartRequest = createDeferred<Cart | null>();
+		addToCartAction.mockReturnValue(addToCartRequest.promise);
+
+		render(
+			<CartProvider>
+				<CartHarness />
+			</CartProvider>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
+
+		await waitFor(() => {
+			expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+		});
+		expect(screen.getByTestId("cart-currency")).toHaveTextContent("BRL");
+
+		addToCartRequest.resolve(null);
+	});
+
+	it("reverte para o estado anterior (não fica preso no placeholder zerado) quando o add-to-cart falha no servidor", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ cart: null }), {
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+		addToCartAction.mockRejectedValue(new Error("Falha ao adicionar"));
+
+		render(
+			<CartProvider>
+				<CartHarness />
+			</CartProvider>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
+
+		await waitFor(() => {
+			expect(screen.getByTestId("item-count")).toHaveTextContent("1");
+		});
+
+		await waitFor(() => {
+			expect(screen.getByTestId("item-count")).toHaveTextContent("0");
 		});
 	});
 });

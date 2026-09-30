@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [react()],
@@ -16,5 +16,9 @@ export default defineConfig({
 	test: {
 		environment: "jsdom",
 		setupFiles: ["./src/setup-tests.ts"],
+		// Playwright e2e specs (e2e/journeys/**/*.spec.ts) live outside src and
+		// import "@playwright/test", not vitest — exclude them so `yarn test`
+		// doesn't try to collect them alongside unit tests.
+		exclude: [...configDefaults.exclude, "e2e/**"],
 	},
 });

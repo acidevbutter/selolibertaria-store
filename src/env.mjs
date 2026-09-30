@@ -15,7 +15,11 @@ export const env = createEnv({
 		NEXT_PUBLIC_ASAAS_ENV: z.enum(["sandbox", "production"]).optional().default("sandbox"),
 		NEXT_PUBLIC_URL: z.string().url().optional(),
 
-		NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().optional(),
+		// A malformed value here (e.g. a stray URL pasted into this field --
+		// see store#180) must not boot-loop the whole app just to disable
+		// analytics: fall back to undefined instead of throwing, which skips
+		// rendering the beacon script entirely (see src/app/layout.tsx).
+		NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().uuid().optional().catch(undefined),
 
 		NEXT_PUBLIC_LANGUAGE: z.string().optional().default("pt-BR"),
 	},
@@ -34,10 +38,15 @@ export const env = createEnv({
 	},
 });
 
-const publicUrl = process.env.NEXT_PUBLIC_URL;
+const vercelHost =
+	process.env.VERCEL_ENV === "production"
+		? (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)
+		: process.env.VERCEL_URL;
+const vercelUrl = vercelHost ? `https://${vercelHost}` : undefined;
+const publicUrl = process.env.NEXT_PUBLIC_URL || vercelUrl;
 
 if (!publicUrl) {
-	throw new Error("Missing NEXT_PUBLIC_URL variable!");
+	throw new Error("Missing NEXT_PUBLIC_URL or NEXT_PUBLIC_VERCEL_URL variables!");
 }
 
 const _publicUrl = publicUrl;

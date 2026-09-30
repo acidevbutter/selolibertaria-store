@@ -12,7 +12,11 @@ export default function ResetPasswordPage() {
 	const t = useTranslations("ResetPassword");
 	const search = useSearchParams();
 	const token = search.get("token") || "";
-	const next = search.get("next") || "/user?section=purchases";
+	// No caller passes `next` today (the emailed reset link only ever carries
+	// `token`), and a person resetting a forgotten password has no session yet
+	// — bouncing them to an auth-gated page as the default drops them back on
+	// /login with no confirmation that anything happened.
+	const next = search.get("next") || "/login?reset=1";
 	const [status, setStatus] = useState<string | null>(null);
 	const [passwordValue, setPasswordValue] = useState("");
 	const [confirmValue, setConfirmValue] = useState("");

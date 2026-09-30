@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MetricCard } from "@/app/admin/_components/ui/MetricCard";
 import { StatusBadge } from "@/app/admin/_components/ui/StatusBadge";
 import { AdminVariantsPanel } from "@/app/admin/products/_components/admin-variants-panel.client";
 import {
@@ -22,12 +23,6 @@ import { hasCapability } from "@/lib/authz";
 import { listProductAuditEntries } from "@/lib/product-audit";
 import { listSystemCategories } from "@/lib/product-categories";
 import { getDefaultLocaleSetting } from "@/lib/settings-store";
-import {
-	AdminEditorialHero,
-	AdminEditorialPage,
-	AdminEditorialStat,
-	EditorialPanel,
-} from "@/ui/editorial/editorial-primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -83,76 +78,58 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 	const activeVariants = group.variants.filter((variant) => variant.active).length;
 
 	return (
-		<AdminEditorialPage>
-			<AdminEditorialHero
-				eyebrow="Produto"
-				title={group.name}
-				description="Edite os dados principais do produto, acompanhe variantes e revise o histórico sem sair do catálogo."
-				actions={
-					<div className="flex flex-wrap items-center gap-3">
-						<Link
-							href="/admin/products"
-							className="inline-flex items-center gap-2 border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3 text-sm text-[var(--sl-text-muted)] transition-colors hover:text-[var(--sl-ink)]"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Voltar para produtos
-						</Link>
-						<div className="border border-[var(--sl-line)] bg-[var(--sl-paper-pure)] px-4 py-3">
-							<div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sl-accent)]">
-								Slug
-							</div>
-							<div className="mt-2 font-mono text-xs text-[var(--sl-text-muted)]">{group.slug}</div>
-						</div>
-						<StatusBadge tone={group.active ? "active" : "neutral"}>
-							{group.active ? "Ativo" : "Inativo"}
-						</StatusBadge>
-					</div>
-				}
-			/>
+		<>
+			<div className="ad-head">
+				<h1>{group.name}</h1>
+				<span className="ad-meta">Slug: {group.slug}</span>
+				<div className="ad-acts">
+					<Link className="ad-btn ad-sec" href="/admin/products">
+						<ArrowLeft className="h-4 w-4" />
+						Voltar para produtos
+					</Link>
+					<StatusBadge tone={group.active ? "active" : "neutral"}>
+						{group.active ? "Ativo" : "Inativo"}
+					</StatusBadge>
+				</div>
+			</div>
 
 			<div className="grid gap-5 lg:grid-cols-3">
-				<AdminEditorialStat
-					label="Variantes"
-					value={group.variants.length}
-					helper="Itens cadastrados neste produto."
-				/>
-				<AdminEditorialStat
-					label="Ativas"
-					value={activeVariants}
-					helper="Variantes disponíveis no catálogo."
-				/>
-				<AdminEditorialStat
+				<MetricCard label="Variantes" value={group.variants.length} note="Itens cadastrados neste produto." />
+				<MetricCard label="Ativas" value={activeVariants} note="Variantes disponíveis no catálogo." />
+				<MetricCard
 					label="Categoria"
 					value={group.category || "Categoria não informada"}
-					helper="Classificação principal do produto."
+					note="Classificação principal do produto."
 				/>
 			</div>
 
-			<EditorialPanel>
-				<h2 className="editorial-serif mb-6 text-xl font-semibold text-[var(--sl-ink)]">Dados do produto</h2>
-				<form action={updateProductGroupAction} className="space-y-6">
-					<input type="hidden" name="currentSlug" value={group.slug} />
-					<FormSection title="Informações principais">
-						<ProductCoreFields
-							name={group.name}
-							slug={group.slug}
-							category={group.category}
-							description={group.description}
-							images={group.images}
-							stock={group.stock}
-							order={group.order}
-							productType={group.productType}
-							format={group.format}
-							categories={categories}
-							orderOptions={orderOptions}
-							autoSubmitImages
-							autoFormatSlug
-						/>
-					</FormSection>
-					<ActiveCheckbox defaultChecked={group.active} />
-					<SubmitButton>Salvar produto</SubmitButton>
-				</form>
-			</EditorialPanel>
+			<div className="ad-panel">
+				<div style={{ padding: 24 }}>
+					<h2 className="ad-eb">Dados do produto</h2>
+					<form action={updateProductGroupAction} className="mt-6 space-y-6">
+						<input type="hidden" name="currentSlug" value={group.slug} />
+						<FormSection title="Informações principais">
+							<ProductCoreFields
+								name={group.name}
+								slug={group.slug}
+								category={group.category}
+								description={group.description}
+								images={group.images}
+								stock={group.stock}
+								order={group.order}
+								productType={group.productType}
+								format={group.format}
+								categories={categories}
+								orderOptions={orderOptions}
+								autoSubmitImages
+								autoFormatSlug
+							/>
+						</FormSection>
+						<ActiveCheckbox defaultChecked={group.active} />
+						<SubmitButton>Salvar produto</SubmitButton>
+					</form>
+				</div>
+			</div>
 
 			<AdminVariantsPanel
 				group={group}
@@ -163,37 +140,34 @@ export default async function AdminProductDetailsPage({ params }: { params: Prom
 				archiveVariantAction={archiveVariantAction}
 			/>
 
-			<EditorialPanel>
-				<h2 className="editorial-serif mb-4 text-xl font-semibold text-[var(--sl-ink)]">
-					Histórico do produto
-				</h2>
-				<ul className="divide-y divide-[var(--sl-line)]">
-					{history.map((entry) => (
-						<li key={String(entry._id)} className="space-y-1 py-3">
-							<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-								<div className="font-medium">{getAuditActionLabel(entry.action)}</div>
-								<div className="text-xs text-[var(--sl-text-muted)]">
-									{new Date(entry.createdAt).toLocaleString(displayLocale)}
+			<div className="ad-panel">
+				<div style={{ padding: 24 }}>
+					<h2 className="ad-eb">Histórico do produto</h2>
+					<ul className="mt-4 divide-y divide-[var(--ad-line-quiet)]">
+						{history.map((entry) => (
+							<li key={String(entry._id)} className="space-y-1 py-3">
+								<div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+									<div className="font-medium">{getAuditActionLabel(entry.action)}</div>
+									<div className="ad-mono text-xs text-[var(--ad-text-soft)]">
+										{new Date(entry.createdAt).toLocaleString(displayLocale)}
+									</div>
 								</div>
-							</div>
-							<div className="text-sm text-[var(--sl-text-muted)]">
-								{entry.actorEmail || entry.actorId} · {getActorRoleLabel(entry.actorRole)}
-							</div>
-							{entry.details ? (
-								<pre
-									className="overflow-x-auto border bg-[var(--sl-surface-quiet)] p-3 text-xs text-[var(--sl-text-muted)]"
-									style={{ borderRadius: "var(--sl-radius)" }}
-								>
-									{JSON.stringify(entry.details, null, 2)}
-								</pre>
-							) : null}
-						</li>
-					))}
-					{history.length === 0 ? (
-						<li className="py-6 text-[var(--sl-text-muted)]">Nenhum registro recente neste produto.</li>
-					) : null}
-				</ul>
-			</EditorialPanel>
-		</AdminEditorialPage>
+								<div className="text-sm text-[var(--ad-text-soft)]">
+									{entry.actorEmail || entry.actorId} · {getActorRoleLabel(entry.actorRole)}
+								</div>
+								{entry.details ? (
+									<pre className="ad-mono overflow-x-auto border border-[var(--ad-line)] bg-[var(--ad-sand)] p-3 text-xs text-[var(--ad-text-soft)]">
+										{JSON.stringify(entry.details, null, 2)}
+									</pre>
+								) : null}
+							</li>
+						))}
+						{history.length === 0 ? (
+							<li className="py-6 text-[var(--ad-text-soft)]">Nenhum registro recente neste produto.</li>
+						) : null}
+					</ul>
+				</div>
+			</div>
+		</>
 	);
 }

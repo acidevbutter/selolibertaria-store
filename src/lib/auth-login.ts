@@ -2,9 +2,11 @@ import "server-only";
 
 import { env } from "@/env.mjs";
 import { normalizeUserRole, type UserRole } from "@/lib/authz";
+import { INVALID_CREDENTIALS_ERROR, MAINTENANCE_LOGIN_RESTRICTED_ERROR } from "@/lib/login-error";
 import { isMaintenanceModeEnabled } from "@/lib/maintenance-mode";
 
-const MAINTENANCE_LOGIN_RESTRICTED_ERROR = "Login restrito à administração durante a manutenção.";
+// Kept for existing importers; the error -> bucket mapping lives in src/lib/login-error.ts.
+export { UNVERIFIED_LOGIN_ERROR } from "@/lib/login-error";
 
 export async function authenticateAndCreateSession(input: {
 	email: string;
@@ -27,7 +29,7 @@ export async function authenticateAndCreateSession(input: {
 			detail?: string;
 		} | null;
 		if (!response.ok || !body?.access_token) {
-			return { ok: false, error: body?.detail || "Credenciais inválidas" };
+			return { ok: false, error: body?.detail || INVALID_CREDENTIALS_ERROR };
 		}
 		const role = normalizeUserRole(body.user?.role);
 		if ((await isMaintenanceModeEnabled()) && role !== "admin") {
