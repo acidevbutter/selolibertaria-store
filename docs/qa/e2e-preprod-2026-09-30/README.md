@@ -316,12 +316,12 @@ yarn playwright test e2e/journeys/preprod-qa   # 01 faz o login que 02–08 reap
 1. **Chave do Asaas válida** — [backend#98](https://github.com/acidevbutter/selolibertaria_backend/issues/98). As chaves atuais são rejeitadas (`invalid_access_token`); sem isso nenhum checkout cria cobrança (preprod e produção). Recomendado: chave de **sandbox** + `https://sandbox.asaas.com/api/v3` no preprod.
 2. **Token de produção do Melhor Envio** — [backend#95](https://github.com/acidevbutter/selolibertaria_backend/issues/95). O token é de sandbox; em produção a cotação de frete dá 401.
 3. **Chave AWS válida do blob de produção** — [backend#89](https://github.com/acidevbutter/selolibertaria_backend/issues/89). `InvalidAccessKeyId`: sem ela não há upload de imagens em produção (inclui o editor).
-4. **Catálogo de produção** ainda não semeado (preços do seed: R$ 49, 78 e 58 — confirmar antes).
-5. Decidir se o preprod terá teto de preço (`store_settings.priceCapCents`): hoje **não tem**, e o livro custa R$ 49,90 de verdade no Asaas real.
+4. ~~Catálogo de produção sem seed~~ — **feito** (3 livros publicados: R$ 49, 78 e 58; `little-fish-big-fish` só como pré-venda; loja segue em manutenção).
+5. ~~Teto de preço no preprod~~ — **ativado** (`store_settings.priceCapCents = 500`): o catálogo do preprod mostra no máximo R$ 5,00 e `amount_total` é limitado a R$ 5,00 na criação da cobrança (frete incluído), então nenhum teste cobra mais que o mínimo do Asaas. Para desligar: remover a chave do `store_settings` do preprod.
 
 ## Avisos para quem for testar amanhã
 
-- **Checkout/pré-venda no preprod**: usa o Asaas **real** (com a chave correta, cobra de verdade). O produto `preprod-test-product` custa R$ 5,00 (mínimo do Asaas); o frete vem do sandbox do Melhor Envio (≈ R$ 12–35 a mais no total). Os testes automatizados **nunca pagam**.
+- **Checkout/pré-venda no preprod**: usa o Asaas **real** (com a chave correta, cobra de verdade). O produto `preprod-test-product` custa R$ 5,00 (mínimo do Asaas); o frete vem do sandbox do Melhor Envio (≈ R$ 12–35 a mais no total). Os testes automatizados **nunca pagam**. Com o teto de R$ 5,00 ativo, a cobrança criada no preprod nunca passa de R$ 5,00.
 - A **pré-venda está publicada** no preprod (R$ 39,90, estreia em ~21 dias) e o aviso aparece alguns segundos depois de abrir qualquer página — comportamento esperado; "Agora não" dispensa.
 - Os testes mexem em conteúdo e depois restauram (rascunho → "Voltar ao publicado"; parágrafo de teste publicado e removido em Sarau Safado). O teste de upload deixa 1 imagem de 1×1 px na biblioteca de mídia.
 - O teste de logout (08) invalida a sessão do admin: para rodar 02–08 isolados, rode antes o login (`-g "admin logs in"` do 01).
