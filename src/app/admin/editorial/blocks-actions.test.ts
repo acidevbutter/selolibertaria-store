@@ -20,7 +20,7 @@ vi.mock("@/env.mjs", () => ({
 	env: { FASTAPI_API_URL: "http://localhost:8000", FASTAPI_INTERNAL_API_KEY: "test-internal-key" },
 }));
 
-const { publishEditorialDraftAction, getEditorialBlocksRecord } = await import(
+const { publishEditorialDraftAction, loadEditorialBlocksRecord, saveEditorialDraftAction } = await import(
 	"@/app/admin/editorial/blocks-actions"
 );
 
@@ -165,7 +165,7 @@ describe("publishEditorialDraftAction", () => {
 	});
 });
 
-describe("getEditorialBlocksRecord", () => {
+describe("loadEditorialBlocksRecord", () => {
 	let fetchMock: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
@@ -199,25 +199,78 @@ describe("getEditorialBlocksRecord", () => {
 			]),
 		);
 
-		const record = await getEditorialBlocksRecord("page_sarau", "sarau-safado");
+		const load = await loadEditorialBlocksRecord("page_sarau", "sarau-safado");
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			"http://localhost:8000/editorial/internal/admin/page_sarau",
 			expect.objectContaining({ headers: { "X-Internal-API-Key": "test-internal-key" } }),
 		);
-		expect(record).toMatchObject({
-			title: "Sarau Safado",
-			draftDoc: [paragraph],
-			publishedDoc: null,
-			publishedAt: null,
+		expect(load).toMatchObject({
+			status: "ok",
+			record: {
+				title: "Sarau Safado",
+				draftDoc: [paragraph],
+				publishedDoc: null,
+				publishedAt: null,
+			},
 		});
 	});
 
-	it("returns null when the slug isn't found or the backend fails", async () => {
+	it("reports a page without a row as missing -- not as an error", async () => {
 		fetchMock.mockResolvedValueOnce(jsonResponse(200, []));
-		expect(await getEditorialBlocksRecord("page_sarau", "missing")).toBeNull();
+		expect(await loadEditorialBlocksRecord("page_sarau", "missing")).toEqual({ status: "missing" });
+	});
 
+	it("reports a 401 from the backend as an error naming the internal key -- never as an empty page", async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(401, { detail: "Chave interna inválida" }));
+
+		const load = await loadEditorialBlocksRecord("page_sarau", "sarau-safado");
+
+		expect(load.status).toBe("error");
+		if (load.status !== "error") return;
+		expect(load.httpStatus).toBe(401);
+		expect(load.message).toContain("chave interna");
+		expect(load.message).toContain("FASTAPI_INTERNAL_API_KEY");
+	});
+
+	it("reports a network failure as an error", async () => {
 		fetchMock.mockRejectedValueOnce(new Error("network down"));
-		expect(await getEditorialBlocksRecord("page_sarau", "sarau-safado")).toBeNull();
+		vi.spyOn(console, "error").mockImplementation(() => {});
+
+		const load = await loadEditorialBlocksRecord("page_sarau", "sarau-safado");
+
+		expect(load).toMatchObject({ status: "error", httpStatus: null });
+	});
+});
+
+describe("saveEditorialDraftAction", () => {
+	let fetchMock: ReturnType<typeof vi.fn>;
+
+	beforeEach(() => {
+		fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("saves the draft for the page", async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(200, {}));
+
+		const state = await saveEditorialDraftAction("page_sarau", "sarau-safado", [paragraph] as never);
+
+		expect(state.status).toBe("saved");
+	});
+
+	it("explains a 401 (internal key) instead of only printing the status code", async () => {
+		fetchMock.mockResolvedValueOnce(jsonResponse(401, { detail: "Chave interna inválida" }));
+
+		const state = await saveEditorialDraftAction("page_sarau", "sarau-safado", [paragraph] as never);
+
+		expect(state.status).toBe("failed");
+		if (state.status !== "failed") return;
+		expect(state.message).toContain("(401)");
+		expect(state.message).toContain("chave interna");
 	});
 });

@@ -3,6 +3,7 @@
 import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability } from "@/lib/authz";
+import { describeBackendStatus } from "@/lib/editorial-backend-errors";
 import { type EditorialContentDoc, editorialContentDocSchema } from "@/lib/editorial-blocks";
 
 /** The nine editorial page identities the block editor can load/save (§1). */
@@ -35,34 +36,66 @@ type FastApiEditorialFull = {
 };
 
 /**
+ * What loading a page for the block editor can come back with. A refusal or an outage is NOT the
+ * same as "nothing saved yet": collapsing both into `null` made the editor open an empty page
+ * whenever the backend answered 401, so the owner believed their content had vanished.
+ */
+export type EditorialBlocksLoad =
+	| { status: "ok"; record: EditorialBlocksRecord }
+	/** The backend answered fine but this page has no row yet (never edited/seeded). */
+	| { status: "missing" }
+	| { status: "error"; httpStatus: number | null; message: string };
+
+/**
  * Reads the record behind a page's block editor, including `draft_doc`/
  * `published_doc` — fields `editorial-content-store.ts`'s `mapEditorial()`
  * discards, since that module only serves the legacy per-field forms.
  * There is no admin GET-by-slug endpoint, so this lists the content type and
  * filters (same pattern as `getEditorialProjectRecordBySlug` in actions.ts).
  */
-export async function getEditorialBlocksRecord(
+export async function loadEditorialBlocksRecord(
 	type: EditorialPageType,
 	slug: string,
-): Promise<EditorialBlocksRecord | null> {
+): Promise<EditorialBlocksLoad> {
+	// Exported from a "use server" module, so this is reachable as an action: it must not hand
+	// out draft documents on the strength of the page having checked the session first.
+	const session = await auth();
+	if (!session || !hasCapability(session.user.role, "editorial.write")) {
+		return { status: "error", httpStatus: 403, message: describeBackendStatus(403, "esta página") };
+	}
+
 	try {
 		const response = await fetch(`${env.FASTAPI_API_URL}/editorial/internal/admin/${type}`, {
 			headers: { "X-Internal-API-Key": env.FASTAPI_INTERNAL_API_KEY },
 			cache: "no-store",
 		});
-		if (!response.ok) return null;
+		if (!response.ok) {
+			return {
+				status: "error",
+				httpStatus: response.status,
+				message: describeBackendStatus(response.status, "esta página"),
+			};
+		}
 		const items = (await response.json()) as FastApiEditorialFull[];
 		const item = items.find((entry) => entry.slug === slug);
-		if (!item) return null;
+		if (!item) return { status: "missing" };
 		return {
-			title: item.title,
-			content: item.content ?? {},
-			draftDoc: item.draft_doc,
-			publishedDoc: item.published_doc,
-			publishedAt: item.published_at,
+			status: "ok",
+			record: {
+				title: item.title,
+				content: item.content ?? {},
+				draftDoc: item.draft_doc,
+				publishedDoc: item.published_doc,
+				publishedAt: item.published_at,
+			},
 		};
-	} catch {
-		return null;
+	} catch (error) {
+		console.error("[loadEditorialBlocksRecord]", error);
+		return {
+			status: "error",
+			httpStatus: null,
+			message: "Não foi possível falar com o servidor. Tente de novo em instantes.",
+		};
 	}
 }
 
@@ -112,7 +145,7 @@ export async function saveEditorialDraftAction(
 	try {
 		const response = await putDraftDoc(type, slug, session.user.id, result.data);
 		if (!response.ok) {
-			return { status: "failed", message: `Não foi possível salvar o rascunho (${response.status}).` };
+			return { status: "failed", message: describeBackendStatus(response.status, "o rascunho", "salvar") };
 		}
 		return { status: "saved", savedAt: timeLabel(new Date()) };
 	} catch (error) {
@@ -210,7 +243,7 @@ export async function publishEditorialDraftAction(
 		if (!draftResponse.ok) {
 			return {
 				status: "failed",
-				message: `Não foi possível salvar o rascunho no servidor (${draftResponse.status}). O rascunho local está salvo às ${savedAt}.`,
+				message: `${describeBackendStatus(draftResponse.status, "o rascunho no servidor", "salvar")} O rascunho local está salvo às ${savedAt}.`,
 			};
 		}
 
@@ -247,7 +280,7 @@ export async function publishEditorialDraftAction(
 		if (!publishResponse.ok) {
 			return {
 				status: "failed",
-				message: `Não foi possível publicar (${publishResponse.status}). O rascunho está salvo às ${savedAt}.`,
+				message: `${describeBackendStatus(publishResponse.status, "a página", "publicar")} O rascunho está salvo às ${savedAt}.`,
 			};
 		}
 
