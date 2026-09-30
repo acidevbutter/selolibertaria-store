@@ -4,6 +4,7 @@ import { CartProvider, useCart } from "@/context/cart-context";
 import type { Cart } from "@/lib/commerce-types";
 
 const searchParamsGet = vi.fn();
+let currentPathname = "/";
 const addToCartAction = vi.fn();
 const removeFromCartAction = vi.fn();
 const updateCartItemAction = vi.fn();
@@ -12,6 +13,7 @@ vi.mock("next/navigation", () => ({
 	useSearchParams: () => ({
 		get: searchParamsGet,
 	}),
+	usePathname: () => currentPathname,
 }));
 
 vi.mock("@/actions/cart-actions", () => ({
@@ -91,8 +93,24 @@ describe("CartProvider", () => {
 		removeFromCartAction.mockReset();
 		updateCartItemAction.mockReset();
 		searchParamsGet.mockReturnValue(null);
+		currentPathname = "/";
 		vi.restoreAllMocks();
 		vi.unstubAllGlobals();
+	});
+
+	it("não busca o carrinho na página de manutenção (o gate responde 503 a toda /api) -- selolibertaria-store#209", async () => {
+		currentPathname = "/maintenance";
+		const fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+
+		render(
+			<CartProvider>
+				<CartHarness />
+			</CartProvider>,
+		);
+
+		await waitFor(() => expect(screen.getByTestId("item-count").textContent).toBe("0"));
+		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
 	it("mantém o contador do carrinho após add-to-cart mesmo com refresh inicial atrasado", async () => {
