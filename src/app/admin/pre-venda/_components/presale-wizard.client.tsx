@@ -185,6 +185,27 @@ export function PresaleWizard({
 	async function handlePublish() {
 		setPublishing(true);
 		setPublishError(null);
+		// Publishing promotes what is STORED, and autosave is debounced: clicking "Publicar" right after an edit
+		// used to publish the previous values (selolibertaria-store#216). Save the current draft first, wait
+		// for the answer, and drop any pending autosave result (its data is what we just saved).
+		saveTokenRef.current += 1;
+		const current = draftRef.current;
+		const saved = await savePresaleDraftAction(presale.id, {
+			launchAt: draftLaunchAtIso(current, presale.launchAt),
+			presalePrice: current.presalePrice,
+			modalTitle: current.modalTitle,
+			modalBody: current.modalBody,
+			modalIntervalHours: current.modalIntervalHours,
+		});
+		if (saved.status === "failed") {
+			setSaving(false);
+			setSaveError(saved.message);
+			setPublishing(false);
+			setPublishError(`Não publicamos: ${saved.message}`);
+			return;
+		}
+		setSaving(false);
+		setSavedAt(`${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`);
 		const result = await publishPresaleAction(presale.id, { status: "idle" });
 		setPublishing(false);
 		if (result.status === "failed") {

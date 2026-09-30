@@ -4,6 +4,7 @@ import { getEditorialContactPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
 import { getSupportEmailSetting } from "@/lib/settings-store";
 import { ContactForm } from "@/ui/contact/contact-form.client";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 import { SlBand, SlProse } from "@/ui/sl/sl-band";
@@ -215,6 +216,7 @@ export default async function ContactPage() {
 						))}
 					</div>
 				</SlBand>
+				<EditorialExtraBlocks doc={contact.contentDoc} />
 			</main>
 			<Footer />
 		</div>

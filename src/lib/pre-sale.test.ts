@@ -14,8 +14,8 @@ function presalePublicResponse(overrides: Record<string, unknown> = {}) {
 		product_id: "product_little-fish-big-fish",
 		variant_id: "variant_little-fish-big-fish_impresso",
 		launch_at: "2026-10-14T19:00:00Z",
-		presale_price: "57.60",
-		full_price: "72.00",
+		presale_price: "5760",
+		full_price: "7200",
 		status: "no_ar",
 		modal_enabled: true,
 		modal_interval_hours: 2,
@@ -55,6 +55,8 @@ describe("modo de pré-venda (backend real)", () => {
 		expect(campaign?.slug).toBe("little-fish-big-fish");
 		expect(campaign?.price).toBe("R$ 57,60");
 		expect(campaign?.launchAt).toBe("2026-10-14T19:00:00Z");
+		// Copy follows the configured date, not the "agosto de 2026" placeholder in the definition.
+		expect(campaign?.launchWindow).toBe("outubro de 2026");
 		expect(campaign?.title).toBe(LFBF_CAMPAIGN.title);
 	});
 

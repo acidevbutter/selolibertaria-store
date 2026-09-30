@@ -9,6 +9,7 @@ import { blockButtonLabel, blockImageSrc, blockList, blockText } from "@/lib/edi
 import { getEditorialHomePage, listEditorialEvents } from "@/lib/editorial-content-store";
 import { buildSlProductRows, deriveSlCategories } from "@/lib/sl-catalog";
 import { formatMoney } from "@/lib/utils";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { SlHomeCategoryBand } from "@/ui/home/sl/sl-home-category-band";
 import { SlHomeFeatured } from "@/ui/home/sl/sl-home-featured";
 import { SlHomeHero } from "@/ui/home/sl/sl-home-hero";
@@ -140,6 +141,7 @@ export default async function Home() {
 					ctaHref: featuredEvent ? "/events" : "/sarau-safado",
 				}}
 			/>
+			<EditorialExtraBlocks doc={homeContent.contentDoc} />
 		</div>
 	);
 }

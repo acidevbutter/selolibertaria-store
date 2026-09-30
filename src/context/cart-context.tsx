@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { addToCartAction, removeFromCartAction, updateCartItemAction } from "@/actions/cart-actions";
 import type { Cart, ProductInfo } from "@/lib/commerce-types";
@@ -143,6 +143,12 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 	const [cartReady, setCartReady] = useState(false);
 	const latestCartOpRef = useRef(0);
 	const searchParams = useSearchParams();
+	const pathname = usePathname();
+	// While the store is in maintenance the gate answers every /api call with 503 MAINTENANCE_MODE, and
+	// the only pages an anonymous visitor can reach are these two: they must not try to hydrate a cart
+	// (selolibertaria-store#209). Once someone signs in the login handler does a full navigation, so the
+	// provider remounts and fetches normally.
+	const cartFetchDisabled = pathname === "/maintenance" || pathname === "/login";
 
 	const itemCount = cart?.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) || 0;
 
@@ -197,6 +203,10 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 	};
 
 	useEffect(() => {
+		if (cartFetchDisabled) {
+			setCartReady(true);
+			return;
+		}
 		let active = true;
 		const opId = beginCartOp();
 
