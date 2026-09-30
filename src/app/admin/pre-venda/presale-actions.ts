@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { env } from "@/env.mjs";
 import { auth } from "@/lib/auth";
 import { hasCapability, normalizeUserRole } from "@/lib/authz";
+import { centsToReais, reaisToCents } from "@/lib/presale-money";
 import {
 	LITTLE_FISH_BIG_FISH_PRODUCT_ID,
 	LITTLE_FISH_BIG_FISH_SLUG,
@@ -83,8 +84,9 @@ function mapRecord(payload: FastApiPresaleRead): PresaleRecord {
 		productId: payload.product_id,
 		variantId: payload.variant_id,
 		launchAt: payload.launch_at,
-		presalePrice: payload.presale_price,
-		fullPrice: payload.full_price,
+		// Backend amounts are centavos; everything the store shows or edits is reais (see lib/presale-money.ts).
+		presalePrice: centsToReais(payload.presale_price),
+		fullPrice: centsToReais(payload.full_price),
 		published: payload.published,
 		status: payload.status,
 		modalEnabled: payload.modal_enabled,
@@ -92,7 +94,7 @@ function mapRecord(payload: FastApiPresaleRead): PresaleRecord {
 		modalTitle: payload.modal_title,
 		modalBody: payload.modal_body,
 		reservationsCount: payload.reservations_count,
-		amountToCharge: payload.amount_to_charge,
+		amountToCharge: centsToReais(payload.amount_to_charge),
 	};
 }
 
@@ -117,7 +119,7 @@ export async function listPresaleReservationsAction(presaleId: string): Promise<
 		const items = (await response.json()) as FastApiReservationRead[];
 		return items.map((item) => ({
 			id: item.id,
-			amount: item.amount,
+			amount: centsToReais(item.amount),
 			chargeStatus: item.charge_status,
 			createdAt: item.created_at,
 		}));
@@ -196,8 +198,8 @@ export async function savePresaleDraftAction(
 			method: "PATCH",
 			body: JSON.stringify({
 				launch_at: patch.launchAt,
-				presale_price: patch.presalePrice,
-				full_price: patch.fullPrice,
+				presale_price: patch.presalePrice === undefined ? undefined : reaisToCents(patch.presalePrice),
+				full_price: patch.fullPrice === undefined ? undefined : reaisToCents(patch.fullPrice),
 				modal_title: patch.modalTitle,
 				modal_body: patch.modalBody,
 				modal_interval_hours: patch.modalIntervalHours,
