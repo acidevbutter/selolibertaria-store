@@ -98,20 +98,23 @@ describe("CartProvider", () => {
 		vi.unstubAllGlobals();
 	});
 
-	it("não busca o carrinho na página de manutenção (o gate responde 503 a toda /api) -- selolibertaria-store#209", async () => {
-		currentPathname = "/maintenance";
-		const fetchMock = vi.fn();
-		vi.stubGlobal("fetch", fetchMock);
+	it.each(["/maintenance", "/login"])(
+		"não busca o carrinho em %s (durante a manutenção o gate responde 503 a toda /api) -- selolibertaria-store#209",
+		async (pathname) => {
+			currentPathname = pathname;
+			const fetchMock = vi.fn();
+			vi.stubGlobal("fetch", fetchMock);
 
-		render(
-			<CartProvider>
-				<CartHarness />
-			</CartProvider>,
-		);
+			render(
+				<CartProvider>
+					<CartHarness />
+				</CartProvider>,
+			);
 
-		await waitFor(() => expect(screen.getByTestId("item-count").textContent).toBe("0"));
-		expect(fetchMock).not.toHaveBeenCalled();
-	});
+			await waitFor(() => expect(screen.getByTestId("item-count").textContent).toBe("0"));
+			expect(fetchMock).not.toHaveBeenCalled();
+		},
+	);
 
 	it("mantém o contador do carrinho após add-to-cart mesmo com refresh inicial atrasado", async () => {
 		const guestCart = createGuestCart();

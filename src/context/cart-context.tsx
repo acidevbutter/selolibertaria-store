@@ -144,9 +144,11 @@ export function CartProvider({ children, initialCart = null }: CartProviderProps
 	const latestCartOpRef = useRef(0);
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
-	// The maintenance gate answers every /api call with 503 MAINTENANCE_MODE, so the page it redirects
-	// visitors to must not try to hydrate a cart (selolibertaria-store#209).
-	const cartFetchDisabled = pathname === "/maintenance";
+	// While the store is in maintenance the gate answers every /api call with 503 MAINTENANCE_MODE, and
+	// the only pages an anonymous visitor can reach are these two: they must not try to hydrate a cart
+	// (selolibertaria-store#209). Once someone signs in the login handler does a full navigation, so the
+	// provider remounts and fetches normally.
+	const cartFetchDisabled = pathname === "/maintenance" || pathname === "/login";
 
 	const itemCount = cart?.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) || 0;
 
