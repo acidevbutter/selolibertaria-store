@@ -8,6 +8,7 @@ import {
 	listEditorialProjects,
 } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { EditorialEyebrow, EditorialShell } from "@/ui/editorial/editorial-primitives";
 import { EditorialRichText } from "@/ui/editorial/editorial-rich-text";
 import { Footer } from "@/ui/footer/footer";
@@ -367,6 +368,7 @@ export default async function EventsPage() {
 						</div>
 					</section>
 				</EditorialShell>
+				<EditorialExtraBlocks doc={page.contentDoc} />
 			</main>
 			<Footer />
 		</div>

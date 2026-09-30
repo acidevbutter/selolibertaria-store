@@ -3,6 +3,7 @@ import Image from "next/image";
 import { blockButtonLabel, blockList, blockQuote, blockText } from "@/lib/editorial-blocks-slots";
 import { getEditorialAboutPage } from "@/lib/editorial-content-store";
 import { seloSiteMeta } from "@/lib/selolibertaria-content";
+import { EditorialExtraBlocks } from "@/ui/editorial/editorial-extra-blocks";
 import { Footer } from "@/ui/footer/footer";
 import { Nav } from "@/ui/nav/nav";
 import { SlBand, SlProse } from "@/ui/sl/sl-band";
@@ -209,6 +210,7 @@ export default async function AboutPage() {
 						</p>
 					</div>
 				</SlBand>
+				<EditorialExtraBlocks doc={about.contentDoc} />
 			</main>
 			<Footer />
 		</div>
