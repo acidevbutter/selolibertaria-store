@@ -213,50 +213,6 @@ export function PreSaleLanding({ campaign }: { campaign: PreSaleCampaign }) {
 					{campaign.closing.cta.label}
 				</BuyButton>
 			</div>
-
-			{/* Blocos estruturais reutilizáveis (mesma linguagem visual da home) */}
-			<div className="flex flex-col gap-4 bg-[#F7F4EF] px-6 pb-10 pt-24 text-[color:#0B0B0B] sm:px-16">
-				<p className="m-0 text-[11px] font-black uppercase tracking-[0.32em] text-[color:rgba(11,11,11,0.5)]">
-					Componentes
-				</p>
-				<h2 className="editorial-serif m-0 text-[40px] font-black uppercase tracking-[-0.03em]">
-					Blocos estruturais para anúncio
-				</h2>
-				<p className="m-0 max-w-[640px] text-[15px] leading-[1.7] text-[color:rgba(11,11,11,0.6)]">
-					Componentes prontos para replicar o lançamento em outras áreas do site — mesmo sistema visual da
-					home.
-				</p>
-			</div>
-
-			<div className="flex flex-col gap-5 bg-[#F7F4EF] px-6 pb-18 pt-6 text-[color:#0B0B0B] sm:px-16">
-				<div className="flex items-center gap-3">
-					<span className="inline-flex h-6 items-center bg-[#0B0B0B] px-[10px] text-[10px] font-black uppercase tracking-[0.22em] text-[color:#F7F4EF]">
-						A
-					</span>
-					<span className="text-xs font-black uppercase tracking-[0.18em] text-[color:rgba(11,11,11,0.7)]">
-						Banner hero do site
-					</span>
-					<span className="text-[11px] tracking-[0.08em] text-[color:rgba(11,11,11,0.4)]">
-						— topo de Home / categoria, full-bleed
-					</span>
-				</div>
-				<PreSaleHeroBanner campaign={campaign} />
-			</div>
-
-			<div className="flex flex-col gap-5 bg-[#F7F4EF] px-6 pb-24 text-[color:#0B0B0B] sm:px-16">
-				<div className="flex items-center gap-3">
-					<span className="inline-flex h-6 items-center bg-[#0B0B0B] px-[10px] text-[10px] font-black uppercase tracking-[0.22em] text-[color:#F7F4EF]">
-						B
-					</span>
-					<span className="text-xs font-black uppercase tracking-[0.18em] text-[color:rgba(11,11,11,0.7)]">
-						Card de destaque dentro do site
-					</span>
-					<span className="text-[11px] tracking-[0.08em] text-[color:rgba(11,11,11,0.4)]">
-						— grade de Home / catálogo
-					</span>
-				</div>
-				<PreSaleHighlightCard campaign={campaign} />
-			</div>
 		</div>
 	);
 }

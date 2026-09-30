@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getPreSaleCampaignDefinition, type PreSaleCampaign } from "@/lib/pre-sale";
-import { formatBRL, LITTLE_FISH_BIG_FISH_PRODUCT_ID } from "@/lib/presales";
+import { formatBRL, formatLaunchWindow, LITTLE_FISH_BIG_FISH_PRODUCT_ID } from "@/lib/presales";
 import { getPublicPresaleByProduct } from "@/lib/presales.server";
 
 /**
@@ -29,6 +29,8 @@ export async function getPreSaleCampaign(slug: string): Promise<PreSaleCampaign 
 	return {
 		...campaign,
 		price: formatBRL(presale.presalePrice),
+		// From the date configured in the admin, never the placeholder in the campaign definition.
+		launchWindow: formatLaunchWindow(presale.launchAt),
 		launchAt: presale.launchAt,
 		variantId: presale.variantId,
 		productId: presale.productId,

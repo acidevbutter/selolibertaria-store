@@ -55,6 +55,8 @@ describe("modo de pré-venda (backend real)", () => {
 		expect(campaign?.slug).toBe("little-fish-big-fish");
 		expect(campaign?.price).toBe("R$ 57,60");
 		expect(campaign?.launchAt).toBe("2026-10-14T19:00:00Z");
+		// Copy follows the configured date, not the "agosto de 2026" placeholder in the definition.
+		expect(campaign?.launchWindow).toBe("outubro de 2026");
 		expect(campaign?.title).toBe(LFBF_CAMPAIGN.title);
 	});
 
