@@ -1126,6 +1126,26 @@
 .ad-root .ad-popover.on {
 	display: flex;
 }
+/* Block picker as a modal: centred in the viewport, scrolls inside instead of
+   growing past the screen. The scrim behind it closes it (see the editor). */
+.ad-root .ad-scrim.ad-scrim-center {
+	align-items: center;
+	padding: 24px;
+}
+.ad-root .ad-popover.ad-popover-modal {
+	position: static;
+	display: flex;
+	width: min(var(--ad-w-picker), 100%);
+	max-height: min(80vh, 640px);
+	overflow: hidden;
+	box-shadow: 0 24px 60px rgba(11, 11, 11, 0.35);
+}
+.ad-root .ad-popover-modal .ad-popover-results {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
 .ad-root .ad-screen {
 	display: none;
 	flex-direction: column;
