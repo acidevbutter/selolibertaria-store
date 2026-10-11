@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:56px;padding:72px 72px 110px;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:22px">
+    <span style="flex:none;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Fase 1</span>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:62rem">
+      <h1 style="margin:0;font-size:70px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase">Imagem: subir, recortar, reusar</h1>
+      <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(11,11,11,.72)">Primeira fase porque nada mais importa se publicar uma foto exige sair do admin. Hoje o campo de imagem aceita <strong>só URL colada</strong> — sem upload, sem recorte, sem descrição, sem reuso. Esta fase entrega arquivo → recorte → biblioteca, e libera a Fase 2 (o editor de blocos depende de poder inserir imagem no meio do texto).</p>
+      <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.5)">Telas <a href="#f1-telas">1.1–1.3</a> · Backend <a href="#f1-back">requisitos</a> · Aceite <a href="#f1-aceite">critérios</a> · <a href="guidelines/admin-design-system.md">Design system</a></p>
+    </div>
+  </div>
+
+  <div id="f1-telas" style="display:flex;flex-direction:column;gap:24px">
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">1.1</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Soltar o arquivo · estados do mesmo campo</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.5)">Vazio</p>
+        <div style="border:2px dashed rgba(11,11,11,.3);background:#F7F4EF;padding:26px 20px;display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span style="font-family:'DCCAsh',serif;font-size:30px;color:#7A1E22">+</span>
+          <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Arraste a foto aqui</p>
+          <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.6);text-align:center">ou <span style="color:#7A1E22;font-weight:700">escolha do computador</span><br>JPG, PNG ou WebP até 8 MB</p>
+          <p style="margin:4px 0 0;font-size:12px;color:rgba(11,11,11,.45)">Usar da biblioteca · Colar link</p>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Arrastando por cima</p>
+        <div style="border:2px solid #7A1E22;background:rgba(122,30,34,.08);padding:26px 20px;display:flex;flex-direction:column;align-items:center;gap:8px">
+          <span style="font-family:'DCCAsh',serif;font-size:30px;color:#7A1E22">↓</span>
+          <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#7A1E22">Solte para enviar</p>
+          <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.6);text-align:center">sarau-14-publico.jpg · 2,1 MB</p>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.5)">Enviando</p>
+        <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:20px;display:flex;gap:14px;align-items:center">
+          <div style="flex:none;width:56px;height:74px;background:#0B0B0B"></div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+            <p style="margin:0;font-size:13px;font-weight:700;color:#0B0B0B">sarau-14-publico.jpg</p>
+            <div style="height:6px;background:rgba(11,11,11,.15)"><div style="width:64%;height:6px;background:#7A1E22"></div></div>
+            <p style="margin:0;font-size:12px;color:rgba(11,11,11,.6)">64% · comprimindo para WebP</p>
+          </div>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:12px">
+          <p style="margin:0;font-size:12px;line-height:1.6;color:#7A1E22"><strong>Erro possível:</strong> "Essa imagem tem 12 MB. O limite é 8 MB." — com botão "Tentar outra", nunca um toast que desaparece.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">1.2</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Editar a imagem · recorte por proporção de uso, não por pixel</span>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF">
+      <div style="padding:14px 22px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span style="font-size:15px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Editar imagem</span>
+        <span style="font-size:12px;color:rgba(247,244,239,.7)">sarau-14-publico.jpg · 3024 × 4032</span>
+      </div>
+      <div style="padding:26px;display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:none;position:relative;width:330px;height:420px;background:#0B0B0B">
+          <span style="position:absolute;left:0;right:0;top:0;height:52px;background:rgba(11,11,11,.55)"></span>
+          <span style="position:absolute;left:0;right:0;bottom:0;height:52px;background:rgba(11,11,11,.55)"></span>
+          <span style="position:absolute;inset:52px 0;border:2px solid #F7F4EF"></span>
+          <span style="position:absolute;top:44px;left:-8px;width:16px;height:16px;background:#F7F4EF"></span>
+          <span style="position:absolute;top:44px;right:-8px;width:16px;height:16px;background:#F7F4EF"></span>
+          <span style="position:absolute;bottom:44px;left:-8px;width:16px;height:16px;background:#F7F4EF"></span>
+          <span style="position:absolute;bottom:44px;right:-8px;width:16px;height:16px;background:#F7F4EF"></span>
+          <span style="position:absolute;bottom:60px;left:10px;background:#7A1E22;color:#F7F4EF;font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:4px 8px">16:9 · faixa do hero</span>
+        </div>
+        <div style="flex:1;min-width:320px;display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.6)">Recortar para</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;background:#0B0B0B;color:#F7F4EF;font-size:12px;font-weight:700">Faixa do hero · 16:9</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Capa · 3:4</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Quadrada · 1:1</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Livre</span>
+            </div>
+            <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.55)">A proporção tem o nome do lugar onde a imagem vai — ela não precisa saber o que é 16:9.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.6)">Ajustes</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">↻ Girar 90°</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">⇄ Espelhar</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Zoom −  +</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Preto e branco</span>
+            </div>
+            <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.55)">Sem brilho, contraste, saturação ou filtro: o tratamento de imagem é decisão de marca, não de campo.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.6)">Descreva a imagem · obrigatório</p>
+            <div style="height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:13px;color:#0B0B0B">Público no Sarau Safado, lotado, mão erguida com livro</div>
+            <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.55)">Leitor de tela e Google. Sem isso o botão "Usar esta" fica desligado.</p>
+          </div>
+          <div style="background:#D8D0C4;padding:14px">
+            <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.8)"><strong>O original nunca é alterado.</strong> O recorte é salvo como coordenadas: dá para voltar e recortar de outro jeito depois, e a mesma foto serve de capa 3:4 num lugar e faixa 16:9 em outro.</p>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid rgba(11,11,11,.2);background:#D8D0C4;display:flex;justify-content:space-between;align-items:center;gap:14px">
+        <span style="font-size:13px;color:rgba(11,11,11,.7)">240 KB depois da compressão · WebP com JPG de reserva</span>
+        <div style="display:flex;gap:10px">
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 18px;border:1px solid rgba(11,11,11,.35);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Cancelar</span>
+          <span style="display:inline-flex;align-items:center;height:42px;padding:0 20px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Usar esta</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">1.3</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Biblioteca de mídia · a foto do sarau serve a evento, home e produto</span>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px;height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:13px;color:rgba(11,11,11,.45)">Buscar por nome ou descrição…</div>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Usadas em: tudo</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Mais recentes</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 16px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Enviar imagem</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px">
+        <div style="border:2px solid #7A1E22;display:flex;flex-direction:column"><div style="height:150px;background:#0B0B0B"></div><div style="padding:10px;background:#F7F4EF"><p style="margin:0;font-size:12px;font-weight:700;color:#0B0B0B">sarau-14-publico</p><p style="margin:4px 0 0;font-size:11px;color:rgba(11,11,11,.55)">Usada em 3 lugares</p></div></div>
+        <div style="border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column"><div style="height:150px;background:#D8D0C4"></div><div style="padding:10px;background:#F7F4EF"><p style="margin:0;font-size:12px;font-weight:700;color:#0B0B0B">capa-ninfas</p><p style="margin:4px 0 0;font-size:11px;color:rgba(11,11,11,.55)">Usada em 1 lugar</p></div></div>
+        <div style="border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column"><div style="height:150px;background:#0B0B0B"></div><div style="padding:10px;background:#F7F4EF"><p style="margin:0;font-size:12px;font-weight:700;color:#0B0B0B">oficina-zine-01</p><p style="margin:4px 0 0;font-size:11px;color:#B3282E">Sem descrição</p></div></div>
+        <div style="border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column"><div style="height:150px;background:#D8D0C4"></div><div style="padding:10px;background:#F7F4EF"><p style="margin:0;font-size:12px;font-weight:700;color:#0B0B0B">retrato-autora</p><p style="margin:4px 0 0;font-size:11px;color:rgba(11,11,11,.55)">Usada em 2 lugares</p></div></div>
+        <div style="border:1px dashed rgba(11,11,11,.3);display:flex;align-items:center;justify-content:center;min-height:150px;background:#F7F4EF"><p style="margin:0;font-size:13px;color:rgba(11,11,11,.5);text-align:center;padding:12px">Arraste várias<br>de uma vez</p></div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px;border:1px solid rgba(11,11,11,.3);background:#D8D0C4;padding:14px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.8)"><strong>"Usada em 3 lugares"</strong> é o que impede o erro clássico: apagar uma imagem e quebrar três páginas sem saber. Antes de excluir, o admin lista onde ela aparece.</p></div>
+        <div style="flex:1;min-width:280px;border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:14px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.8)">A biblioteca é a mesma em editorial, evento e produto. Um único seletor de imagem no admin inteiro — hoje são dois componentes diferentes.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="f1-back" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Backend</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">O que precisa existir para a Fase 1 rodar</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">1 · Armazenamento de arquivo</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Onde a foto vive</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Hoje não há upload: o banco guarda uma string de URL externa. Precisa de um bucket (S3/R2/Supabase Storage) e URL assinada para envio direto do navegador — o arquivo não deve passar pelo servidor Next.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Rotas: <code>POST /api/admin/media/sign</code> (devolve URL de envio) · <code>POST /api/admin/media</code> (registra o arquivo enviado).</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2 · Tabela nova</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">MediaAsset</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Campos: <code>id</code>, <code>storageKey</code>, <code>filename</code>, <code>mimeType</code>, <code>bytes</code>, <code>width</code>, <code>height</code>, <code>alt</code>, <code>uploadedById</code>, <code>createdAt</code>. É o registro único que a biblioteca lista.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Migração + índice em <code>createdAt</code> e busca por <code>filename</code>/<code>alt</code>.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">3 · Recorte como dado</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">MediaCrop</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">O recorte não pode ser destrutivo. Guardar por uso: <code>assetId</code>, <code>aspect</code> ("16:9"), <code>x</code>, <code>y</code>, <code>w</code>, <code>h</code>, <code>rotate</code>, <code>flip</code>, <code>grayscale</code>. A mesma foto tem recortes diferentes em lugares diferentes.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Os campos de conteúdo passam a apontar <code>assetId + cropId</code>, não uma URL solta.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">4 · Derivadas</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Compressão e tamanhos</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Gerar WebP com fallback JPG em 3 larguras (400 / 900 / 1600) aplicando o recorte. Sob demanda com cache no CDN é suficiente — não precisa de fila.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Se usar <code>next/image</code> com <code>remotePatterns</code>, o domínio do bucket precisa ser liberado na config.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">5 · Uso reverso</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">"Usada em 3 lugares"</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Tabela de vínculo <code>MediaUsage</code> (<code>assetId</code>, <code>entityType</code>, <code>entityId</code>, <code>field</code>) escrita junto do salvamento do conteúdo. É o que permite bloquear exclusão com aviso em vez de quebrar páginas.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Rota: <code>DELETE /api/admin/media/[id]</code> devolve 409 com a lista de usos.</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">6 · Compatibilidade</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">As URLs que já existem</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">O conteúdo atual aponta para links externos. O leitor precisa aceitar as duas formas durante a transição, e vale um script que baixa as imagens externas e cria <code>MediaAsset</code> para cada uma — senão a biblioteca nasce vazia e as páginas antigas seguem dependendo de link de terceiro.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Permissão: reaproveitar <code>editorial.write</code> e <code>catalog.write</code>; não criar capability nova.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="f1-aceite" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Aceite</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">A fase está pronta quando</span>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— A dona do site publica a capa de um evento <strong>sem abrir nenhum outro programa</strong>, arrastando o arquivo.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— A mesma foto aparece recortada em 16:9 no hero e em 3:4 no card, <strong>sem subir duas vezes</strong>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Não existe mais campo que exija colar URL para uso normal (colar link continua possível, como atalho).</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Tentar excluir uma imagem em uso mostra <strong>onde ela está</strong> e não deixa quebrar a página.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Toda imagem nova tem descrição preenchida: o botão de confirmar depende dela.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

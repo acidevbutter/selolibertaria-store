@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#EFEAE2;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B;text-wrap:pretty}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:72px;padding:80px 80px 160px;background:#EFEAE2;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:24px">
+    <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:28px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase">Turno 4</span>
+    <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:28px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.65)">Oficina v2</span>
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:62rem">
+      <h1 style="margin:0;font-size:56px;line-height:.92;font-weight:900;letter-spacing:-.045em;text-transform:uppercase">O admin vira oficina</h1>
+      <p style="margin:0;font-size:16px;line-height:1.75;color:rgba(11,11,11,.74)">Sistema novo, só para o painel: <strong>casca escura</strong> onde você navega, <strong>mesa de papel</strong> onde você trabalha. Todo dado em mono, DCC Ash fora, linha de 48px, alturas de controle próprias. Em cima dele, o turno 4 inteiro: os <strong>11 blocos</strong> um por um, a foto arrastada para o meio do texto em três tempos, o recorte sem sair da tela, o limite do que ela pode mexer — e a viabilidade de editar <strong>sobre a própria página</strong>, como no WordPress.</p>
+      <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.5)">Sistema <a href="#4a">4a</a> · Casca <a href="#4b">4b</a> · Editor <a href="#4c">4c</a> · Arraste <a href="#4d">4d</a> · Formas <a href="#4e">4e</a> · Recorte <a href="#4f">4f</a> · Blocos <a href="#4g">4g</a> · Limite <a href="#4h">4h</a> · Estados <a href="#4i">4i</a> · Contrato <a href="#4j">4j</a> · Na própria página <a href="#4k">4k</a></p>
+    </div>
+  </div>
+
+  <sc-if value="{{ specSistema }}" hint-placeholder-val="{{ true }}">
+  <div id="4a" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4a</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Oficina v2 · duas metades, dois materiais</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:stretch">
+
+      <div style="background:#0B0B0B;color:#F7F4EF;padding:26px;display:flex;flex-direction:column;gap:20px">
+        <div>
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Metade 1</p>
+          <h2 style="margin:8px 0 0;font-size:28px;line-height:.95;font-weight:900;letter-spacing:-.04em;text-transform:uppercase">A casca</h2>
+          <p style="margin:10px 0 0;font-size:15px;line-height:1.7;color:rgba(247,244,239,.72)">Rail, topbar e overlay. Escuro fixo, nunca branco. É a ferramenta: some da atenção e fica onde está.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#0B0B0B;border:1px solid rgba(247,244,239,.14);padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(247,244,239,.8)">#0B0B0B</span><span style="font-size:13px;color:rgba(247,244,239,.6)">casca</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#1F1A16;border:1px solid rgba(247,244,239,.14);padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(247,244,239,.8)">#1F1A16</span><span style="font-size:13px;color:rgba(247,244,239,.6)">superfície elevada</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#F7F4EF;padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#0B0B0B">#F7F4EF</span><span style="font-size:13px;color:rgba(11,11,11,.65)">texto e logo</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#7A1E22;padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#F7F4EF">#7A1E22</span><span style="font-size:13px;color:rgba(247,244,239,.85)">item selecionado — bloco sólido</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#B3282E;padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#F7F4EF">#B3282E</span><span style="font-size:13px;color:rgba(247,244,239,.85)">sinal — marcador e progresso, nunca texto</span></div>
+        </div>
+        <p style="margin:0;padding-top:16px;border-top:1px solid rgba(247,244,239,.14);font-size:14px;line-height:1.7;color:rgba(247,244,239,.66)">Vermelho só existe aqui. Na mesa, a voz é o vinho.</p>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:26px;display:flex;flex-direction:column;gap:20px">
+        <div>
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Metade 2</p>
+          <h2 style="margin:8px 0 0;font-size:28px;line-height:.95;font-weight:900;letter-spacing:-.04em;text-transform:uppercase">A mesa</h2>
+          <p style="margin:10px 0 0;font-size:15px;line-height:1.7;color:rgba(11,11,11,.72)">Fundo de mesa, folha branca, barra bege. Três superfícies por tela — casca, mesa, folha. Nada de quarta.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#EFEAE2;border:1px solid rgba(11,11,11,.12);padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">#EFEAE2</span><span style="font-size:13px;color:rgba(11,11,11,.6)">mesa — novo</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">#FFFFFF</span><span style="font-size:13px;color:rgba(11,11,11,.6)">folha</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#D8D0C4;padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">#D8D0C4</span><span style="font-size:13px;color:rgba(11,11,11,.65)">barra de ferramentas · rodapé</span></div>
+          <div style="display:flex;align-items:center;gap:12px;height:40px;background:#7A1E22;padding:0 12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#F7F4EF">#7A1E22</span><span style="font-size:13px;color:rgba(247,244,239,.85)">ação, link, seleção, linha-guia</span></div>
+        </div>
+        <p style="margin:0;padding-top:16px;border-top:1px solid rgba(11,11,11,.2);font-size:14px;line-height:1.7;color:rgba(11,11,11,.66)">Prévia de conteúdo público dentro do editor usa <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">#F7F4EF</span>: o papel da loja, para "ver como fica" não mentir.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);gap:20px;align-items:start">
+
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:24px;display:flex;flex-direction:column;gap:18px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Tipografia · duas famílias</p>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;gap:16px"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">36 / tela</span><span style="font-size:36px;font-weight:900;line-height:.92;letter-spacing:-.04em;text-transform:uppercase">Sarau Safado</span></div>
+          <div style="display:flex;align-items:baseline;gap:16px"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">24 / seção</span><span style="font-size:24px;font-weight:900;line-height:1;letter-spacing:-.03em;text-transform:uppercase">Blocos da página</span></div>
+          <div style="display:flex;align-items:baseline;gap:16px"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">15 / corpo</span><span style="font-size:15px;line-height:1.7;color:rgba(11,11,11,.8)">Rascunho salvo, só vai ao ar quando você publicar.</span></div>
+          <div style="display:flex;align-items:baseline;gap:16px"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">11 / micro</span><span style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">Onde esta imagem aparece</span></div>
+          <div style="display:flex;align-items:baseline;gap:16px"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">mono 13 / dado</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-variant-numeric:tabular-nums">#8f21 · 12 set 14:32 · R$ 213,90 · 240 KB</span></div>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:14px">
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.8)"><strong>DCC Ash sai do admin.</strong> Display de fantasia em coluna de valor atrasa leitura. Fica na loja; aqui todo id, data, hora, valor, contagem, dimensão e nome de arquivo é <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">IBM Plex Mono</span> com numeral tabular.</p>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:24px;display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Alturas · densidade média</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">56</span><span style="flex:1;height:56px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;padding:0 14px;font-size:13px">Topbar</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">48</span><span style="flex:1;height:48px;border:1px solid rgba(11,11,11,.2);display:flex;align-items:center;padding:0 14px;font-size:14px">Linha de lista</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">44</span><span style="flex:1;height:44px;background:#7A1E22;color:#F7F4EF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Publicar</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">44</span><span style="flex:1;height:44px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;padding:0 14px;font-size:15px">Item da sidebar</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">36</span><span style="flex:1;height:36px;background:#D8D0C4;display:flex;align-items:center;padding:0 12px;font-size:13px">Botão de barra de ferramentas</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">28</span><span style="flex:1;height:28px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px">Barrinha do bloco</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;width:58px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">24</span><span style="flex:none;height:24px;background:#D8D0C4;color:#7A1E22;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Publicado</span></div>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:24px;display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Estados de badge</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="height:24px;background:#D8D0C4;color:#7A1E22;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Publicado</span>
+          <span style="height:24px;border:1px solid rgba(11,11,11,.3);color:rgba(11,11,11,.7);display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Rascunho</span>
+          <span style="height:24px;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Publicando</span>
+          <span style="height:24px;background:rgba(122,30,34,.12);border:1px solid rgba(122,30,34,.4);color:#7A1E22;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Falhou</span>
+        </div>
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22;padding-top:8px">Foco · o único halo do sistema</p>
+        <div style="height:44px;background:#FFFFFF;border:1px solid #0B0B0B;box-shadow:0 0 0 2px rgba(122,30,34,.2);display:flex;align-items:center;padding:0 14px;font-size:15px;color:rgba(11,11,11,.8)">Título do evento</div>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.66)">Raio zero, sem sombra decorativa, transição de 120ms. Herdado do v1 e não se discute.</p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div id="4b" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4b</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">A casca · três grupos, breadcrumb e nada de overlay preto</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:stretch;flex-wrap:wrap">
+      <div style="flex:1;min-width:900px;display:flex;border:1px solid rgba(11,11,11,.2);background:#EFEAE2">
+
+        <div style="flex:none;width:264px;background:#0B0B0B;color:#F7F4EF;display:flex;flex-direction:column;padding:24px 0">
+          <div style="padding:0 28px 6px;display:flex;gap:14px;align-items:center">
+            <div style="flex:none;width:44px;height:44px;background:#F7F4EF;padding:6px;box-sizing:border-box"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+            <div><div style="font-size:13px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Libertária</div><div style="margin-top:4px;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Painel editorial</div></div>
+          </div>
+          <div style="padding:12px 28px 6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(247,244,239,.55)">Conteúdo</div>
+          <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(247,244,239,.06);font-size:15px">Páginas<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.5)">9</span></div>
+          <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#7A1E22;color:#F7F4EF;font-size:15px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Eventos<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:400;letter-spacing:0;color:rgba(247,244,239,.65)">14</span></div>
+          <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Projetos<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.5)">6</span></div>
+          <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Imagens<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.5)">212</span></div>
+          <div style="padding:18px 28px 6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(247,244,239,.55)">Operação</div>
+          <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Pedidos<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.5)">31</span></div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Produtos</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Promoções</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Clientes</div>
+          <div style="padding:18px 28px 6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(247,244,239,.55)">Sistema</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">E-mails enviados</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Modelos de e-mail</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Pagamentos recebidos</div>
+          <div style="height:44px;display:flex;align-items:center;padding:0 28px;font-size:15px;color:rgba(247,244,239,.72)">Configurações</div>
+          <div style="margin-top:auto;padding:18px 28px 0;border-top:1px solid rgba(247,244,239,.14);display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:13px;color:rgba(247,244,239,.85)">Marina · editora</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.55)">editorial.write</span>
+          </div>
+        </div>
+
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <div style="height:56px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid rgba(247,244,239,.14)">
+            <div style="flex:1;max-width:380px;height:34px;background:#1F1A16;border:1px solid rgba(247,244,239,.14);display:flex;align-items:center;gap:8px;padding:0 12px;color:rgba(247,244,239,.5);font-size:13px">⌕ <span>Buscar em todo o painel</span><span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.6)">⌘K</span></div>
+            <span style="margin-left:auto;font-size:13px;color:rgba(247,244,239,.6)">Ver o site ↗</span>
+            <span style="width:28px;height:28px;background:#F7F4EF;color:#0B0B0B;display:inline-flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px">MA</span>
+          </div>
+
+          <div style="height:2px;background:rgba(11,11,11,.08);position:relative"><span style="position:absolute;inset:0 62% 0 0;background:#B3282E"></span></div>
+
+          <div style="padding:24px 28px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:#7A1E22">Páginas</span><span style="color:rgba(11,11,11,.4)">›</span>
+              <span style="color:#7A1E22">Eventos</span><span style="color:rgba(11,11,11,.4)">›</span>
+              <span style="color:#0B0B0B;font-weight:900">Sarau Safado #14</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+              <h2 style="margin:0;font-size:36px;line-height:.92;font-weight:900;letter-spacing:-.045em;text-transform:uppercase">Sarau Safado #14</h2>
+              <span style="height:24px;border:1px solid rgba(11,11,11,.3);color:rgba(11,11,11,.7);display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Rascunho</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.55)">editado 12 set 14:32 · por Marina</span>
+              <div style="margin-left:auto;display:flex;gap:10px">
+                <span style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Ver como fica</span>
+                <span style="height:44px;display:inline-flex;align-items:center;padding:0 18px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Publicar</span>
+              </div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px 20px;display:flex;flex-direction:column;gap:2px">
+              <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.5)">Conteúdo da página</p>
+              <p style="margin:10px 0 0;font-size:15px;line-height:1.7;color:rgba(11,11,11,.7)">O editor abre aqui, na mesa. A casca não se mexe: rail e topbar continuam no lugar enquanto a página carrega.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:none;width:320px;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">O que mudou na navegação</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">11 itens planos viram três grupos. <strong>Conteúdo primeiro</strong> — é o uso diário. Eventos e Projetos saem do terceiro nível e viram item próprio; Editorial vira <strong>Páginas</strong>, Usuários vira <strong>Clientes</strong>, Recebimento vira <strong>Pagamentos recebidos</strong>.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Subrota marca o item certo</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Em <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">/admin/eventos/14</span> quem acende é <strong>Eventos</strong>, não o grupo. O pai da rota fica em hover fraco — dá para ver de onde você veio.</p>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Fim do overlay preto</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Hoje todo clique na sidebar cobre a tela com spinner. Aqui: barra de 2px em vermelho no topo do conteúdo e o item clicado em hover. A tela anterior fica legível até a nova chegar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4c" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4c</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Editor de blocos · 14 controles, barrinha de bloco e rodapé de salvar</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:780px;border:1px solid rgba(11,11,11,.2);background:#EFEAE2;display:flex;flex-direction:column">
+
+        <div style="background:#D8D0C4;border-bottom:1px solid rgba(11,11,11,.2);padding:8px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Parágrafo ▾</span>
+          <span style="width:1px;height:24px;background:rgba(11,11,11,.25);margin:0 4px"></span>
+          <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#0B0B0B;color:#F7F4EF;font-size:15px;font-weight:900">B</span>
+          <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:15px;font-style:italic">I</span>
+          <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:15px;text-decoration:underline">U</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Link</span>
+          <span style="width:1px;height:24px;background:rgba(11,11,11,.25);margin:0 4px"></span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">• Lista</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">1. Numerada</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Citação</span>
+          <span style="width:1px;height:24px;background:rgba(11,11,11,.25);margin:0 4px"></span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase">Destaque do selo</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Imagem</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Botão</span>
+          <span style="height:36px;display:inline-flex;align-items:center;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:13px">Separador</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
+            <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:14px">↩</span>
+            <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid rgba(11,11,11,.25);font-size:14px;color:rgba(11,11,11,.35)">↪</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">10 passos</span>
+          </span>
+        </div>
+
+        <div style="padding:28px;display:flex;justify-content:center">
+          <div style="width:100%;max-width:780px;background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:36px 40px;display:flex;flex-direction:column;gap:20px">
+
+            <div style="position:relative;border:1px solid rgba(122,30,34,.45);padding:8px 10px;margin:-8px -10px">
+              <span style="position:absolute;top:-14px;right:-1px;height:28px;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;gap:10px;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px">Mover ⇅<span style="color:rgba(247,244,239,.3)">|</span>Duplicar<span style="color:rgba(247,244,239,.3)">|</span>Remover</span>
+              <h3 style="margin:0;font-size:40px;line-height:.98;font-weight:900;letter-spacing:-.04em;text-transform:uppercase;color:#0B0B0B">Sarau Safado #14</h3>
+            </div>
+
+            <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">Uma noite de <strong>leitura aberta</strong> no Centro, com microfone livre depois da meia-noite. Chega cedo: as vinte cadeiras somem em quinze minutos e o resto é chão, parede e escada.</p>
+
+            <div style="position:relative;display:flex;gap:20px;align-items:flex-start;border:1px solid rgba(122,30,34,.45);padding:10px;margin:0 -10px">
+              <span style="position:absolute;top:-14px;right:-1px;height:28px;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;gap:10px;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px">Recortar<span style="color:rgba(247,244,239,.3)">|</span>Trocar<span style="color:rgba(247,244,239,.3)">|</span>Legenda<span style="color:rgba(247,244,239,.3)">|</span>Mover ⇅<span style="color:rgba(247,244,239,.3)">|</span>Remover</span>
+              <div style="flex:none;width:260px;display:flex;flex-direction:column;gap:8px">
+                <div style="width:260px;height:195px;background:repeating-linear-gradient(135deg,#D8D0C4 0 8px,#E4DED4 8px 16px);display:flex;align-items:flex-end;padding:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.6);background:#F7F4EF;padding:3px 6px">sarau-14-publico.jpg · 4:3</span></div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)">Público na escada, edição #13</p>
+              </div>
+              <p style="margin:0;flex:1;min-width:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">A edição passada lotou antes das nove. Desta vez abrimos a lista de leitura às 19h, no balcão — dez nomes, três minutos cada, sem fila de espera pelo Instagram.</p>
+            </div>
+
+            <div style="border-left:4px solid #7A1E22;padding:4px 0 4px 20px">
+              <p style="margin:0;font-size:21px;line-height:1.5;color:#0B0B0B">"A margem não pede licença para falar: ela edita."</p>
+            </div>
+
+            <div style="background:#D8D0C4;padding:20px;display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Destaque do selo</p>
+              <p style="margin:0;font-size:16px;line-height:1.7;color:rgba(11,11,11,.85)">Bloco pronto, com a cor e a tipografia da marca. Ela escolhe no menu — não escolhe cor, nem fonte, nem tamanho.</p>
+            </div>
+
+            <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.7;color:rgba(11,11,11,.85)">
+              <li>14 set · 20h · R. Aurora, 235</li>
+              <li>Entrada por contribuição: R$ 20 na porta</li>
+              <li>Lista de leitura aberta às 19h</li>
+            </ul>
+
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed rgba(11,11,11,.25)">
+              <span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(11,11,11,.3);font-size:16px;color:rgba(11,11,11,.55)">+</span>
+              <span style="font-size:14px;color:rgba(11,11,11,.5)">Clique para inserir um bloco aqui</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#D8D0C4;border-top:1px solid rgba(11,11,11,.2);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.7)">Rascunho salvo às 14:32</span>
+          <span style="font-size:14px;color:rgba(11,11,11,.6)">só vai ao ar quando você publicar</span>
+          <span style="margin-left:auto;display:flex;gap:10px">
+            <span style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Voltar ao publicado</span>
+            <span style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Ver como fica</span>
+            <span style="height:44px;display:inline-flex;align-items:center;padding:0 18px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Publicar</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="flex:none;width:320px;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Hoje no código</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Cinco botões: negrito, itálico, H2, H3 e link. Sem lista, citação, imagem no meio do texto, botão, separador, desfazer ou prévia. Toda mudança de estrutura volta para o desenvolvedor.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Barrinha do bloco</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Aparece no hover, colada no canto superior direito do bloco: <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">Recortar · Trocar · Legenda · Mover ⇅ · Remover</span>. Bloco de texto mostra só Mover, Duplicar e Remover.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Reaproveitar, não reescrever</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">A prévia ao vivo e a barra de salvar do editorial <strong>já funcionam</strong>. O trabalho do turno é trocar a barra de ferramentas e o campo de imagem — o módulo fica.</p>
+        </div>
+        <div style="background:#0B0B0B;color:#F7F4EF;padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Medida de texto</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.75)">A folha tem <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">780px</span> e fica centrada na mesa. É a largura da coluna da página publicada: o que ela vê quebrando é o que vai quebrar no site.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4d" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4d</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Arrastar a foto para dentro do texto · o pedido original</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:20px;align-items:start">
+      <div style="background:#EFEAE2;border:1px solid rgba(11,11,11,.2);padding:28px;display:flex;justify-content:center">
+        <div style="width:100%;max-width:700px;background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:32px 36px;display:flex;flex-direction:column;gap:16px;position:relative">
+          <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">A edição passada lotou antes das nove. Desta vez abrimos a lista de leitura às 19h, no balcão — dez nomes, três minutos cada.</p>
+
+          <div style="position:relative;height:2px;background:#7A1E22;margin:10px 0">
+            <span style="position:absolute;left:0;top:-11px;height:20px;background:#7A1E22;color:#F7F4EF;display:inline-flex;align-items:center;padding:0 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Solta aqui</span>
+          </div>
+
+          <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">Entrada por contribuição na porta. Quem chega antes das oito paga vinte; depois, o que puder.</p>
+
+          <div style="position:absolute;right:-28px;top:120px;width:210px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);padding:8px;display:flex;flex-direction:column;gap:8px;transform:rotate(-2deg)">
+            <div style="height:120px;background:repeating-linear-gradient(135deg,#D8D0C4 0 8px,#E4DED4 8px 16px)"></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.6)">sarau-14-escada.jpg · 2,1 MB</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px;display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Três tempos</p>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="flex:none;width:22px;height:22px;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px">1</span><p style="margin:0;font-size:14px;line-height:1.6;color:rgba(11,11,11,.78)">Pega a foto no Finder, na biblioteca de Imagens ou na área de transferência.</p></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="flex:none;width:22px;height:22px;background:#7A1E22;color:#F7F4EF;display:inline-flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px">2</span><p style="margin:0;font-size:14px;line-height:1.6;color:rgba(11,11,11,.78)">A linha-guia acende <strong>entre</strong> os blocos mais próximos — nunca no meio de uma frase.</p></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="flex:none;width:22px;height:22px;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px">3</span><p style="margin:0;font-size:14px;line-height:1.6;color:rgba(11,11,11,.78)">Solta: sobe, comprime e abre o seletor de forma já no bloco recém-criado.</p></div>
+          <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.6)">Escolha a forma</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:12px">Faixa larga</span>
+              <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid rgba(11,11,11,.25);font-size:12px">Ao lado</span>
+              <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid rgba(11,11,11,.25);font-size:12px">Centralizada</span>
+              <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid rgba(11,11,11,.25);font-size:12px">Galeria</span>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.5)">enter confirma · esc mantém faixa larga</span>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">A linha-guia</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">2px vinho na largura da coluna, com etiqueta <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">solta aqui</span>. Só aparece entre blocos — nunca no meio de uma frase. É o único elemento animado do editor: 120ms para entrar e sair.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">De onde vem a foto</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Do computador (arrasta do Finder), da biblioteca de Imagens ou — ainda — colando um link. O caminho velho continua existindo; ele só deixa de ser o único.</p>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Ao soltar</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">A foto sobe para o servidor do selo, é comprimida e entra como bloco <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">image</span> em "faixa larga". A forma se troca depois, em um clique. O link não cai mais.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4e" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4e</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Quatro formas nomeadas · nunca largura em pixel</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:110px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:10px;display:flex;flex-direction:column;gap:6px"><div style="height:56px;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:82%;background:rgba(11,11,11,.22)"></div></div>
+        <div><p style="margin:0;font-size:18px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase">Faixa larga</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Ocupa a coluna inteira. Padrão de quem arrasta e não mexe em mais nada.</p></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">layout: "wide"</span>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:110px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:10px;display:flex;gap:8px"><div style="width:44%;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px"><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:92%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:76%;background:rgba(11,11,11,.22)"></div></div></div>
+        <div><p style="margin:0;font-size:18px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase">Ao lado do texto</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Esquerda ou direita, com um botão de virar. No celular, empilha sozinha.</p></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">layout: "side"</span>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:110px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px"><div style="height:58px;width:58%;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="height:5px;width:40%;background:rgba(11,11,11,.22)"></div></div>
+        <div><p style="margin:0;font-size:18px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase">Centralizada menor</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Para retrato, capa e documento. Legenda embaixo, centrada.</p></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">layout: "center"</span>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:110px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:10px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:6px"><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div></div>
+        <div><p style="margin:0;font-size:18px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase">Galeria</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Três a seis fotos. Abaixo de três, vira centralizada; acima de seis, recusa.</p></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">layout: "gallery"</span>
+      </div>
+    </div>
+
+    <div style="background:#0B0B0B;color:#F7F4EF;padding:20px 24px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Por que nomeada e não arrastável:</strong> canto livre e largura em pixel produzem uma página que quebra no celular e muda de ritmo a cada seção. Quatro formas cobrem tudo que o selo publica e nenhuma delas consegue estragar a grade.</p>
+    </div>
+  </div>
+
+  <div id="4f" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4f</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Recortar sem sair do editor · overlay sobre a casca</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:20px;align-items:start">
+      <div style="background:rgba(11,11,11,.9);padding:36px;display:flex;justify-content:center">
+        <div style="width:100%;max-width:760px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column">
+          <div style="height:56px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;gap:12px;padding:0 18px">
+            <span style="font-size:15px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Recortar imagem</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.5)">sarau-14-publico.jpg · 3024×4032</span>
+            <span style="margin-left:auto;font-size:18px;color:rgba(247,244,239,.7)">✕</span>
+          </div>
+          <div style="padding:22px;display:flex;gap:20px;align-items:flex-start">
+            <div style="flex:none;width:220px;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative;width:220px;height:280px;background:repeating-linear-gradient(135deg,#2A2522 0 10px,#1F1A16 10px 20px)">
+                <span style="position:absolute;inset:26px 14px;border:2px solid #F7F4EF"></span>
+                <span style="position:absolute;bottom:8px;left:8px;background:#7A1E22;color:#F7F4EF;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px">Área visível</span>
+              </div>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">Arraste a moldura para escolher o que aparece.</p>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.6)">Onde esta imagem vai aparecer</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <span style="height:28px;display:inline-flex;align-items:center;padding:0 12px;background:#0B0B0B;color:#F7F4EF;font-size:12px">Capa do evento · 3:4</span>
+                  <span style="height:28px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid rgba(11,11,11,.25);font-size:12px">Faixa larga · 16:9</span>
+                  <span style="height:28px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid rgba(11,11,11,.25);font-size:12px">Quadrada · 1:1</span>
+                </div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)">O recorte vale <strong>só neste bloco</strong>. A mesma foto em outra página mantém o recorte dela.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.6)">Descreva a imagem</p>
+                <div style="height:44px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 14px;font-size:15px;color:rgba(11,11,11,.85)">Público na escada, mão erguida com livro</div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)">Serve para leitor de tela e para o Google achar a página.</p>
+              </div>
+              <div style="background:#D8D0C4;padding:12px 14px">
+                <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;color:rgba(11,11,11,.78)">2,1 MB → 240 KB · webp + jpg · usada em 3 lugares</p>
+              </div>
+            </div>
+          </div>
+          <div style="background:#D8D0C4;border-top:1px solid rgba(11,11,11,.2);padding:12px 18px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:13px;color:rgba(11,11,11,.65)">O rascunho não recarrega: você volta com o cursor no mesmo ponto.</span>
+            <span style="margin-left:auto;display:flex;gap:10px">
+              <span style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Cancelar</span>
+              <span style="height:44px;display:inline-flex;align-items:center;padding:0 18px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Usar este recorte</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Por cima, não por fora</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">É o painel da fatia 01 chamado de dentro do editor. Escurece a casca em <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">rgba(11,11,11,.82)</span> e mantém a folha branca no centro — você não perdeu a página, só cobriu.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">O que o overlay grava</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Um <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">cropId</span> no nó do bloco. O arquivo original fica intacto na biblioteca; o recorte é uma referência, não um segundo upload.</p>
+        </div>
+        <div style="background:#0B0B0B;color:#F7F4EF;padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Aceite</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.75)">Arrastar uma foto para o meio de um parágrafo, escolher a forma, recortar e publicar — sem colar link e sem perder o rascunho.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4g" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4g</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Os 11 blocos · lista fechada, um por um</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:none;width:360px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column">
+        <div style="padding:14px 18px;border-bottom:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.55)">Inserir bloco</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">digite para filtrar</span>
+        </div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0B0B0B;color:#F7F4EF"><span style="font-size:15px">Título</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.55)">heading</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Parágrafo</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">paragraph</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Lista</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">list</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Citação</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">quote</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Destaque do selo</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">highlight</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Imagem</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">image</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Galeria</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">gallery</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Botão</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">button</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Separador</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">divider</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-size:15px">Vitrine de produtos</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">productShelf</span></div>
+        <div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px"><span style="font-size:15px">Agenda</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.45)">agenda</span></div>
+        <div style="background:#D8D0C4;padding:12px 18px"><p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.7)">Onze tipos. O servidor recusa qualquer outro com <span style="font-family:'IBM Plex Mono',monospace;font-size:12px">422</span>.</p></div>
+      </div>
+
+      <div style="flex:1;min-width:420px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;justify-content:center;gap:6px"><div style="height:10px;width:72%;background:#0B0B0B"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:86%;background:rgba(11,11,11,.22)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Título</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">H2 e H3. O H1 é o nome da página e não se mexe.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">heading</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;justify-content:center;gap:5px"><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:96%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:64%;background:rgba(11,11,11,.22)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Parágrafo</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Negrito, itálico, sublinhado e link dentro do texto.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">paragraph</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;justify-content:center;gap:6px"><div style="display:flex;gap:6px;align-items:center"><div style="width:5px;height:5px;background:#0B0B0B"></div><div style="height:5px;width:80%;background:rgba(11,11,11,.22)"></div></div><div style="display:flex;gap:6px;align-items:center"><div style="width:5px;height:5px;background:#0B0B0B"></div><div style="height:5px;width:66%;background:rgba(11,11,11,.22)"></div></div><div style="display:flex;gap:6px;align-items:center"><div style="width:5px;height:5px;background:#0B0B0B"></div><div style="height:5px;width:74%;background:rgba(11,11,11,.22)"></div></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Lista</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Com marcador ou numerada — troca em um clique.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">list</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;align-items:center;border-left:4px solid #7A1E22;padding-left:12px"><div style="display:flex;flex-direction:column;gap:6px;width:100%"><div style="height:5px;width:88%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:56%;background:rgba(11,11,11,.22)"></div></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Citação</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Fio vinho à esquerda, corpo maior. Sai pronta.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">quote</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:#D8D0C4;margin:-9px;padding:14px"><div style="height:5px;width:34%;background:#7A1E22"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.22)"></div><div style="height:5px;width:78%;background:rgba(11,11,11,.22)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Destaque do selo</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Bloco bege com a cor e a tipografia da marca.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">highlight</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;gap:6px"><div style="height:44px;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="height:5px;width:70%;background:rgba(11,11,11,.22)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Imagem</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Quatro formas nomeadas, recorte e legenda.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">image</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;gap:5px"><div style="flex:1;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="flex:1;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div><div style="flex:1;background:repeating-linear-gradient(135deg,#D8D0C4 0 6px,#E4DED4 6px 12px)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Galeria</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Três a seis fotos. Fora disso, o editor recusa.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">gallery</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;align-items:center;justify-content:center"><div style="height:26px;width:58%;background:#7A1E22"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Botão</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Aponta para produto, evento ou link externo.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">button</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;align-items:center"><div style="height:1px;width:100%;background:rgba(11,11,11,.35)"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Separador</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Respiro entre assuntos. Não tem variação.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">divider</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;gap:5px"><div style="flex:1;background:#D8D0C4"></div><div style="flex:1;background:#D8D0C4"></div><div style="flex:1;background:#D8D0C4"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Vitrine de produtos</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Escolhe os títulos por busca; preço e estoque vêm do catálogo.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">productShelf</span>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);padding:9px;display:flex;flex-direction:column;gap:5px"><div style="height:15px;background:#D8D0C4"></div><div style="height:15px;background:#D8D0C4"></div><div style="height:15px;background:#D8D0C4"></div></div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Agenda</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)">Puxa os eventos publicados; passou a data, some sozinho.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.42)">agenda</span>
+          </div>
+          <div style="background:#0B0B0B;color:#F7F4EF;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="height:78px;border:1px dashed rgba(247,244,239,.35);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(247,244,239,.6)">arrastar ⇅</div>
+            <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em">Reordenar</p><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:rgba(247,244,239,.7)">Todo bloco sobe, desce, duplica e apaga. Desfazer em 10 passos.</p></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.55)">nenhum tipo novo</span>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);padding:20px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Um renderer só</p>
+          <p style="margin:10px 0 0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.78)">O mesmo componente percorre o documento na prévia do admin e na página pública. É o que faz "ver como fica" ser verdade em vez de aproximação — e é por isso que nenhum nó carrega estilo próprio. Nada de <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">dangerouslySetInnerHTML</span> no caminho.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4h" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4h</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">O limite · editável como no Wix, sem virar o Wix</span>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px">
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:24px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Ela pode</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.7;color:rgba(11,11,11,.8)">
+          <p style="margin:0">Escrever, colar e formatar texto com os 14 controles da barra.</p>
+          <p style="margin:0">Inserir, reordenar, duplicar e apagar qualquer um dos 11 blocos.</p>
+          <p style="margin:0">Subir foto, escolher entre as quatro formas, recortar e escrever a descrição.</p>
+          <p style="margin:0">Ver como fica, publicar e voltar ao publicado.</p>
+        </div>
+      </div>
+      <div style="background:#0B0B0B;color:#F7F4EF;padding:24px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Ela não pode</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.7;color:rgba(247,244,239,.78)">
+          <p style="margin:0">Trocar fonte, cor, tamanho de texto ou espaçamento.</p>
+          <p style="margin:0">Definir largura de imagem em pixel ou arrastar canto livre.</p>
+          <p style="margin:0">Colar HTML com estilo embutido — o schema recusa o nó.</p>
+          <p style="margin:0">Publicar sem passar pelo renderer do design system.</p>
+        </div>
+        <p style="margin:8px 0 0;padding-top:14px;border-top:1px solid rgba(247,244,239,.14);font-size:14px;line-height:1.7;color:rgba(247,244,239,.62)">Liberdade de estrutura, não de estilo. É o que separa "mais editável" de "vira outro site em um mês".</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="4i" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4i</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Estados · o que a tela diz quando algo acontece</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column">
+        <div style="background:#D8D0C4;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.7)">Salvando…</span><span style="margin-left:auto;height:2px;width:80px;background:rgba(11,11,11,.15)"><span style="display:block;height:2px;width:48px;background:#7A1E22"></span></span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Autosave.</strong> Grava só o rascunho, com debounce. O site não muda. Nenhum spinner cobre o texto — o estado mora no rodapé.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column">
+        <div style="background:#0B0B0B;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="height:24px;background:#F7F4EF;color:#0B0B0B;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Publicando</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(247,244,239,.6)">14 blocos · 3 imagens</span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Publicação.</strong> Reescreve o vínculo das imagens daquela página — sem isso o "usada em N lugares" da biblioteca mente.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(122,30,34,.4);display:flex;flex-direction:column">
+        <div style="background:rgba(122,30,34,.12);padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="height:24px;background:rgba(122,30,34,.12);border:1px solid rgba(122,30,34,.4);color:#7A1E22;display:inline-flex;align-items:center;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Falhou</span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Não publicou.</strong> "A imagem 2 não terminou de subir. O rascunho está salvo às 14:32 — tente publicar de novo." Erro diz o que fazer e o que não se perdeu.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column">
+        <div style="background:#EFEAE2;padding:12px 16px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.6)">Página vazia</span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Vazio com saída.</strong> "Esta página ainda não tem blocos. Comece por um Título." — com o botão do "+" já aberto no primeiro clique.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column">
+        <div style="background:#EFEAE2;padding:12px 16px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.6)">Imagem pesada</span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Acima de 8 MB.</strong> "Esta foto tem 14 MB. Podemos reduzir para 2 MB sem perda visível — ou escolha outra." A recusa vem com a alternativa.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column">
+        <div style="background:#EFEAE2;padding:12px 16px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.6)">Rascunho mais novo no ar</span></div>
+        <p style="margin:0;padding:16px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><strong>Conflito.</strong> "Alguém publicou esta página às 14:10. Veja o que mudou antes de publicar por cima." Comparação lado a lado, sem sobrescrever no escuro.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="4j" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4j</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Contrato de dados e aceite</span>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px;align-items:start">
+      <div style="background:#0B0B0B;color:#F7F4EF;padding:24px;display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Backend</p>
+        <div style="display:flex;flex-direction:column;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7;color:rgba(247,244,239,.85)">
+          <p style="margin:0">contentDoc: jsonb — documento de nós, não HTML livre</p>
+          <p style="margin:0">tipos: heading | paragraph | list | quote | highlight | image | gallery | button | divider | productShelf | agenda</p>
+          <p style="margin:0">image: { assetId, cropId, layout, caption, href?, alt }</p>
+          <p style="margin:0">draftDoc · publishedDoc · publishedAt · updatedBy</p>
+          <p style="margin:0">PUT …/draft (debounce) · POST …/publish · POST …/revert</p>
+          <p style="margin:0">permissão: editorial.write</p>
+        </div>
+        <p style="margin:0;padding-top:14px;border-top:1px solid rgba(247,244,239,.14);font-size:14px;line-height:1.7;color:rgba(247,244,239,.68)">Validação com Zod; tipo fora da lista devolve 422. A coluna antiga continua viva: o site lê <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">contentDoc</span> quando existe. Migração roda uma vez por página e, se falhar, a página segue servindo o texto antigo.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:24px;display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Aceite do turno</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.7;color:rgba(11,11,11,.8)">
+          <p style="margin:0">Arrastar foto para o meio do texto e escolher entre as quatro formas, sem colar link.</p>
+          <p style="margin:0">Recortar imagem inserida sem perder o rascunho nem a posição do cursor.</p>
+          <p style="margin:0">Reordenar, duplicar e apagar blocos sem código; desfazer em 10 passos.</p>
+          <p style="margin:0">"Ver como fica" idêntico à página publicada — mesmo renderer.</p>
+          <p style="margin:0">Impossível mudar fonte, cor, tamanho ou espaçamento.</p>
+          <p style="margin:0">Nenhuma tela a mais de dois cliques do menu; toda subrota com caminho de volta.</p>
+          <p style="margin:0">Os 11 tipos inseríveis pelo menu do "+" e por atalho de texto, sem nenhum outro aceito pelo servidor.</p>
+          <p style="margin:0">Etapa 2: editar na própria página em <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">?edit=1</span>, com cabeçalho, rodapé e preço travados.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4k" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase">4k</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.55)">Editar sobre a própria página · viabilidade</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:960px;border:1px solid rgba(11,11,11,.2);background:#EFEAE2;display:flex;flex-direction:column">
+        <div style="height:56px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;gap:14px;padding:0 18px">
+          <span style="flex:none;white-space:nowrap;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Editando a página</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.6)">/eventos/sarau-safado-14 · edit=1</span>
+          <span style="margin-left:auto;display:flex;gap:8px">
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;background:#F7F4EF;color:#0B0B0B;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Editar</span>
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.75);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Ver</span>
+          </span>
+        </div>
+
+        <div style="padding:20px;display:flex;gap:16px;align-items:flex-start">
+          <div style="flex:1;min-width:560px;background:#F7F4EF;border:1px solid rgba(11,11,11,.2)">
+            <div style="height:44px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;gap:14px;padding:0 16px;overflow:hidden">
+              <span style="flex:none;white-space:nowrap;font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Selo Libertária</span>
+              <span style="flex:none;white-space:nowrap;font-size:12px;color:rgba(247,244,239,.6)">Loja · Projetos · Sarau · Sobre</span>
+              <span style="flex:none;white-space:nowrap;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.6)">área travada</span>
+            </div>
+            <div style="padding:26px 28px;display:flex;flex-direction:column;gap:16px">
+              <div style="position:relative;border:1px dashed rgba(122,30,34,.5);padding:8px">
+                <h3 style="margin:0;font-size:36px;line-height:.95;font-weight:900;letter-spacing:-.045em;text-transform:uppercase">Sarau Safado #14</h3>
+              </div>
+              <div style="position:relative;border:1px solid #7A1E22;padding:10px">
+                <span style="position:absolute;top:-14px;right:-1px;height:28px;white-space:nowrap;background:#0B0B0B;color:#F7F4EF;display:inline-flex;align-items:center;gap:10px;padding:0 10px;font-family:'IBM Plex Mono',monospace;font-size:11px">paragraph<span style="color:rgba(247,244,239,.3)">|</span>Mover ⇅<span style="color:rgba(247,244,239,.3)">|</span>Duplicar<span style="color:rgba(247,244,239,.3)">|</span>Remover</span>
+                <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">Uma noite de leitura aberta no Centro, com microfone livre depois da meia-noite. O texto é editado <strong>aqui mesmo</strong>, no lugar onde ele vai aparecer.</p>
+              </div>
+              <div style="position:relative;height:2px;background:#7A1E22"><span style="position:absolute;left:0;top:-11px;height:20px;background:#7A1E22;color:#F7F4EF;display:inline-flex;align-items:center;padding:0 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Solta aqui</span></div>
+              <div style="border:1px dashed rgba(11,11,11,.3);padding:14px;display:flex;gap:12px;align-items:center">
+                <div style="flex:none;width:96px;height:72px;background:repeating-linear-gradient(135deg,#D8D0C4 0 8px,#E4DED4 8px 16px)"></div>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(11,11,11,.6)">Bloco <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">image</span> — clique abre recortar, trocar, legenda.</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:6px;border-top:1px dashed rgba(11,11,11,.25)">
+                <span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(11,11,11,.3);font-size:16px;color:rgba(11,11,11,.55)">+</span>
+                <span style="font-size:14px;color:rgba(11,11,11,.5)">Inserir bloco</span>
+              </div>
+              <div style="margin-top:8px;background:#0B0B0B;color:rgba(247,244,239,.6);padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Rodapé · área travada</div>
+            </div>
+          </div>
+
+          <div style="flex:none;width:230px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);display:flex;flex-direction:column">
+            <div style="padding:12px 14px;border-bottom:1px solid rgba(11,11,11,.2);font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.6)">Blocos da página</div>
+            <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.4)">01</span><span style="font-size:14px">Título</span></div>
+            <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#7A1E22;color:#F7F4EF"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(247,244,239,.65)">02</span><span style="font-size:14px">Parágrafo</span></div>
+            <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.4)">03</span><span style="font-size:14px">Imagem</span></div>
+            <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(11,11,11,.08)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.4)">04</span><span style="font-size:14px">Destaque do selo</span></div>
+            <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(11,11,11,.4)">05</span><span style="font-size:14px">Agenda</span></div>
+            <div style="margin-top:auto;padding:12px 14px;background:#D8D0C4"><p style="margin:0;font-size:12px;line-height:1.6;color:rgba(11,11,11,.7)">Arraste na lista para reordenar sem rolar a página.</p></div>
+          </div>
+        </div>
+
+        <div style="background:#D8D0C4;border-top:1px solid rgba(11,11,11,.2);padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(11,11,11,.7)">Rascunho salvo às 14:32</span>
+          <span style="margin-left:auto;display:flex;gap:10px">
+            <span style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Ver sem edição</span>
+            <span style="height:44px;display:inline-flex;align-items:center;padding:0 18px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase">Publicar</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="flex:none;width:320px;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#0B0B0B;color:#F7F4EF;padding:20px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Veredito</p>
+          <p style="margin:10px 0 0;font-size:20px;line-height:1.3;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Viável — com duas condições</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.78)">Não é um segundo editor: é a <strong style="color:#F7F4EF">mesma</strong> árvore do renderer único (02.2) com uma camada de edição por cima. O formato do documento não muda.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Condição 1 · renderer puro</p>
+          <p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Nenhum bloco pode mexer no DOM por conta própria. Tudo vem de props, sem <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">dangerouslySetInnerHTML</span> — que já é regra da fatia 02.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Condição 2 · id por nó</p>
+          <p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Cada nó emite <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">data-node-id</span> no modo edição, para casar clique na tela com nó do <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">contentDoc</span>.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Como roda</p>
+          <p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">A página real em <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">?edit=1</span>, mesma origem, dentro da mesa. Links e botões ficam inertes; cabeçalho, rodapé e preço são <strong>área travada</strong>. Vitrine e agenda entram em modo amostra.</p>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.4);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Custo e recomendação</p>
+          <p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">Cerca de uma semana a mais que o editor em coluna, e só depois que o renderer único existir. <strong>Entregar em duas etapas:</strong> primeiro a coluna de 780px (que já é a medida da página publicada), depois a edição na página inteira — sem migração, porque o documento é o mesmo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ anotacoes }}" hint-placeholder-val="{{ true }}">
+  <div style="background:#FFFFFF;border:1px solid rgba(11,11,11,.2);padding:24px;max-width:72rem;display:flex;flex-direction:column;gap:10px">
+    <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Em aberto</p>
+    <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.78)">Decisões abertas: se a edição na própria página (<a href="#4k">4k</a>) entra já neste turno ou como etapa 2 — a recomendação é etapa 2 · se a busca global <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">⌘K</span> entra agora ou fica para a fatia 04 · se o conflito de publicação abre comparação lado a lado ou só avisa.</p>
+    <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.78)">Spec escrita em <a href="guidelines/admin-design-system-v2.md">guidelines/admin-design-system-v2.md</a>. O v1 continua valendo na loja inteira.</p>
+  </div>
+  </sc-if>
+
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1880,&quot;height&quot;:1100},&quot;anotacoes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;},&quot;specSistema&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Canvas&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      anotacoes: this.props.anotacoes ?? true,
+      specSistema: this.props.specSistema ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

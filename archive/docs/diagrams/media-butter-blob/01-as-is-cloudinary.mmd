@@ -1,0 +1,51 @@
+%% AS-IS - upload de imagens do Selo Libertaria (codigo real)
+%% Preview local so aceita flowchart / graph / stateDiagram-v2
+flowchart LR
+    Admin["Admin browser"]
+    UI["AdminImageUrlList<br/>valida MIME e 5 MB"]
+
+    subgraph instant["Produtos - uploadMode instant"]
+        NextAPI["Next POST /api/admin/media/upload<br/>requireCapability admin.access"]
+        SaveP["Salvar produto<br/>Server Action catalog"]
+    end
+
+    subgraph onsubmit["Editorial - uploadMode on-submit"]
+        Preview["Previa local<br/>sem upload"]
+        SaveE["Salvar formulario<br/>File no FormData"]
+    end
+
+    Lib["media-upload.ts<br/>uploadImageFileToFastAPI"]
+    FastAPI["FastAPI POST /media/internal/admin/upload<br/>X-Internal-API-Key"]
+    Media["MediaService"]
+    Cloud["Cloudinary image/upload<br/>pasta products"]
+    PG[("PostgreSQL<br/>products.images JSON<br/>editorial src URL")]
+    Store["Storefront next/image<br/>hostname res.cloudinary.com"]
+
+    subgraph del["Exclusao"]
+        NextDel["Next POST /api/admin/media/delete"]
+        FastDel["FastAPI POST /media/internal/admin/delete"]
+        Destroy["Cloudinary image/destroy<br/>public_id da URL"]
+    end
+
+    Admin --> UI
+    UI -->|"instant"| NextAPI
+    NextAPI --> Lib
+    UI -->|"on-submit"| Preview
+    Preview --> SaveE
+    SaveE --> Lib
+    Lib --> FastAPI
+    FastAPI --> Media
+    Media --> Cloud
+    Cloud -->|"secure_url + public_id"| UI
+    UI --> SaveP
+    SaveP --> PG
+    SaveE --> PG
+    PG --> Store
+
+    UI -->|"excluir"| NextDel
+    NextDel --> FastDel
+    FastDel --> Destroy
+    Destroy -.->|"nao apaga URL no banco"| PG
+
+    Static["/public/images estaticos<br/>fora deste fluxo"]
+    Static -.-> UI

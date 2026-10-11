@@ -1,0 +1,67 @@
+%% Corte de implementação — o que muda / o que permanece
+%% Alinha com selolibertaria-store/docs/diagrams/next-fastapi-api-flows.mmd
+%% e butter_blob/docs/spec.md (auth trees).
+flowchart TB
+    subgraph unchanged["Permanece"]
+        AdminUI["AdminImageUrlList<br/>instant | on-submit"]
+        NextBFF["Next BFF<br/>/api/admin/media/upload|delete<br/>requireCapability admin.access"]
+        Lib["media-upload.ts<br/>uploadImageFileToFastAPI"]
+        Validate["admin-image-upload.ts<br/>image/* · 5 MB"]
+        Domain["catalog.images / editorial.src<br/>JSON de URLs string"]
+        Static["/public/images/*<br/>marca, ícones, pre-venda"]
+    end
+
+    subgraph swap["Troca isolada no FastAPI"]
+        Router["POST /media/internal/admin/upload<br/>POST /media/internal/admin/delete<br/>X-Internal-API-Key"]
+        Service["MediaService"]
+        Client["ButterBlobClient (novo)<br/>base_url · service_api_key · namespace"]
+    end
+
+    subgraph blob["butter_blob — file manager"]
+        Internal["/internal/v1/blobs<br/>X-Service-Api-Key + X-Blob-Namespace"]
+        Public["/v1/public/{ns}/{slug}"]
+        Limits["namespace selolibertaria<br/>quota · MIME · compressão"]
+        StoreS3["S3 / MinIO"]
+        Meta[("blob DB<br/>blobs · blob_events")]
+    end
+
+    subgraph retire["Retirar depois do cutover"]
+        Cloud["Cloudinary<br/>cloud_name / api_key / api_secret<br/>folder=products"]
+        NextHost["next.config remotePatterns<br/>res.cloudinary.com"]
+    end
+
+    subgraph add["Adicionar no cutover"]
+        Env["BUTTER_BLOB_BASE_URL<br/>BUTTER_BLOB_SERVICE_API_KEY<br/>BUTTER_BLOB_NAMESPACE=selolibertaria"]
+        NextCdn["remotePatterns do host público<br/>blob-api / CDN"]
+        Tests["test_media.py + contrato Next<br/>mock BlobRead em vez de Cloudinary"]
+    end
+
+    AdminUI --> Validate
+    AdminUI --> NextBFF
+    AdminUI -->|"editorial File no save"| Lib
+    NextBFF --> Lib
+    Lib --> Router
+    Router --> Service
+    Service --> Client
+    Client --> Internal
+    Internal --> Limits
+    Internal --> StoreS3
+    Internal --> Meta
+    Public --> StoreS3
+    Domain -.->|"grava public_url"| Service
+    Static -.->|"fora do file manager"| AdminUI
+
+    Service -.->|"hoje"| Cloud
+    NextBFF -.->|"hoje"| NextHost
+
+    classDef keep fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef swapN fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef blobN fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef drop fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef addN fill:#fef3c7,stroke:#d97706,color:#78350f
+
+    class AdminUI,NextBFF,Lib,Validate,Domain,Static keep
+    class Router,Service,Client swapN
+    class Internal,Public,Limits,StoreS3,Meta blobN
+    class Cloud,NextHost drop
+    class Env,NextCdn,Tests addN

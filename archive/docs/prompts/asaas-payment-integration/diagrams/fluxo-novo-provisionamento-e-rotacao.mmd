@@ -1,0 +1,57 @@
+sequenceDiagram
+%% Fluxo NOVO (TO-BE) - Provisionamento + rota especifica + rotacao/invalidacao (fluxo inverso)
+%% Complementa fluxo-existente.mmd. Ver ADR-0001 (01-adr-integracao-asaas.md) para as decisoes por tras destas setas.
+    participant Cliente
+    participant DBB as devbutter_backend
+    participant Proxy as asaas_payment (mTLS)
+    participant Asaas as Asaas API
+    participant Selo as selolibertaria/backend
+
+    rect rgb(230,245,255)
+    Note over Cliente,Selo: 1) PROVISIONAMENTO (forward: DevButter => Selolibertaria)
+    Cliente->>DBB: Cadastro no DevButter
+    DBB->>DBB: Confirmacao da abertura da conta
+    DBB->>Proxy: POST /subaccounts
+    Proxy->>Asaas: POST /v3/accounts
+    Asaas-->>Proxy: apiKey (1x) + walletId + id
+    Proxy-->>DBB: resposta sem apiKey (id, walletId)
+    DBB->>Proxy: POST /subaccounts/{id}/access-tokens
+    Proxy->>Asaas: POST /v3/accounts/{id}/accessTokens
+    Asaas-->>Proxy: access token em claro (1x)
+    Proxy-->>DBB: token_id (referencia, nao o valor)
+    Note right of DBB: DBB precisa do VALOR do token aqui (nao so a referencia)<br/>para poder repassar ao Selolibertaria - decisao ADR-0001 Opcao B
+    DBB->>Selo: POST /integrations/devbutter/subaccounts<br/>{event_id, asaas_account_id, wallet_id, access_token_ref, api_key, issued_at}<br/>assinado HMAC + TLS
+    Selo->>Selo: valida assinatura + idempotencia (asaas_relay_event.event_id)
+    Selo->>Selo: cifra e grava em asaas_subaccount_credential (status=active, key_version=1)
+    Selo-->>DBB: 202 Accepted (ack de recebimento)
+    end
+
+    rect rgb(255,245,225)
+    Note over DBB,Selo: 2a) ROTACAO PROATIVA (push) - agendada
+    loop job periodico no devbutter_backend
+        DBB->>DBB: verifica AccessToken.expiration_date proximo do vencimento<br/>ou evento ACCOUNT_STATUS_COMMERCIAL_INFO_EXPIRING_SOON
+        DBB->>Proxy: PUT/POST .../access-tokens (rotaciona)
+        Note right of Proxy: exige janela manual de 2h habilitada na Asaas<br/>(gerenciamento de token de subconta) - ver item D.1 do levantamento
+        Proxy->>Asaas: gera/atualiza access token
+        Asaas-->>Proxy: novo token em claro (1x)
+        DBB->>Selo: POST /integrations/devbutter/subaccounts/{id}/key-updated<br/>{event_id, api_key, key_version, reason=proactive}
+        Selo->>Selo: grava nova chave, key_version+1, status=active
+        Selo-->>DBB: 200 ack (confirmacao de aplicacao)
+    end
+    end
+
+    rect rgb(255,230,230)
+    Note over Selo,DBB: 2b) ROTACAO REATIVA (pull) - fluxo inverso disparado pelo consumidor
+    Selo->>Asaas: chamada de checkout com api_key ativa
+    Asaas-->>Selo: 401 Unauthorized (chave invalida/revogada)
+    Selo->>Selo: marca credencial status=pending_rotation
+    Selo->>DBB: POST /integrations/selolibertaria/subaccounts/{id}/rotate-key<br/>{reason=unauthorized, last_verified_at}
+    DBB->>Proxy: rotaciona token (mesma janela/limitacao de 2a)
+    Proxy->>Asaas: gera novo access token
+    Asaas-->>Proxy: novo token em claro (1x)
+    DBB->>Selo: POST .../key-updated {api_key, key_version, reason=reactive}
+    Selo->>Selo: aplica nova chave, status=active
+    Selo-->>DBB: 200 ack
+    end
+
+    Note over DBB,Selo: Toda entrega e idempotente por event_id, sem ack em N tentativas credencial fica pending_rotation e gera alerta - nao falha silenciosa.

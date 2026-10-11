@@ -1,0 +1,64 @@
+flowchart TB
+    subgraph LOJA["selolibertaria/backend (API de vendas)"]
+        direction TB
+        L1["checkout/router.py\nPOST /checkout/intents"]
+        L2["CheckoutService\n(OrderDraft, carrinho, regras de venda)"]
+        L3["AsaasProxyClient\n(httpx.AsyncClient mTLS)\ncert=sales-api.crt/key\nverify=ca.crt"]
+        L4[("order_drafts / orders /\npayment (local, negócio)")]
+        L5["asaas/webhook_router.py\nrecebe PAYMENT_* direto do Asaas\n(Opção B do plano — mantém)"]
+
+        L1 --> L2 --> L3
+        L2 <--> L4
+        L5 --> L2
+
+        subgraph DEPRECATED["❌ aposentar"]
+            direction TB
+            D1["AsaasCredentialStore\n(Fernet, guarda apiKey em texto\ndecriptado localmente)"]
+            D2["AsaasRotationService\n.handle_unauthorized()"]
+            D3["relay HMAC devbutter_backend\n→ entrega apiKey em claro"]
+            D3 -.-> D1 -.-> D2
+        end
+    end
+
+    subgraph PROXY["asaas_payment (cofre + proxy mTLS, instância dedicada da loja)"]
+        direction TB
+        P0["nginx :8443\nTLS mútuo, valida cert cliente (CN)"]
+        P1["core/security.py\nidentity = ClientIdentity(cn)"]
+        P2["proxy/router.py\nANY /{path} passthrough"]
+        P3["subaccounts/router.py\nPOST /subaccounts\n(cria conta branca no Asaas)"]
+        P4["ProxyService.forward()\ninjeta ASAAS_API_KEY real\n(mestre ou da subconta)"]
+        P5["audit/service.py\nAuditService\n(loga toda chamada, mascara CPF/cartão)"]
+        P6[("subaccounts / access_tokens /\nsplit_rules / audit_logs")]
+
+        P0 --> P1 --> P2
+        P1 --> P3
+        P2 --> P4
+        P3 --> P4
+        P4 --> P5 --> P6
+        P3 --> P6
+    end
+
+    subgraph ASAAS["Asaas API"]
+        A1["POST /v3/accounts\n(subconta do lojista)"]
+        A2["POST /v3/customers"]
+        A3["POST /v3/payments\n(PIX / Boleto / Cartão)"]
+        A4["Webhook PAYMENT_CONFIRMED /\nPAYMENT_RECEIVED / ..."]
+    end
+
+    L3 -->|"mTLS: POST /subaccounts"| P0
+    L3 -->|"mTLS: POST /customers"| P0
+    L3 -->|"mTLS: POST /payments"| P0
+
+    P4 -->|"Authorization: chave real,\nnunca vista pela loja"| A1
+    P4 --> A2
+    P4 --> A3
+
+    A4 -.->|"webhook direto,\nsem passar pelo proxy"| L5
+
+    style DEPRECATED fill:#7a1f2b,stroke:#3b0d13,color:#ffffff
+    style D1 fill:#7a1f2b,stroke:#3b0d13,color:#ffffff
+    style D2 fill:#7a1f2b,stroke:#3b0d13,color:#ffffff
+    style D3 fill:#7a1f2b,stroke:#3b0d13,color:#ffffff
+    style L4 fill:#2f6b3a,stroke:#183a1e,color:#ffffff
+    style P6 fill:#2f6b3a,stroke:#183a1e,color:#ffffff
+    style P4 fill:#8a6d1a,stroke:#4d3c0e,color:#ffffff

@@ -1,0 +1,705 @@
+<!-- @dsCard group="Oficina" viewport="1440x900" name="Oficina · painel editorial" subtitle="Casca nova aplicada a todo o admin: busca ⌘K, menu em três grupos, listas, editor de blocos, biblioteca e pedidos" -->
+<!-- @startingPoint section="Oficina" subtitle="Painel editorial completo — casca escura, mesa de papel, editor de blocos" viewport="1440x900" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Oficina — painel editorial da Selo Libertária</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0;height:100%}
+  *{box-sizing:border-box}
+  body{background:var(--ad-desk);color:var(--ad-text);font-family:var(--ad-font-body);-webkit-font-smoothing:antialiased}
+  img{display:block}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input{font:inherit}
+  .mono{font-family:var(--ad-font-mono)}
+  .num{font-family:var(--ad-font-mono);font-variant-numeric:tabular-nums}
+
+  /* ---------- estrutura ---------- */
+  .app{display:flex;min-height:100vh}
+  .col{flex:1;min-width:0;display:flex;flex-direction:column}
+  .desk{flex:1;padding:24px 28px 40px;display:flex;flex-direction:column;gap:20px;overflow:auto}
+
+  /* ---------- casca: rail ---------- */
+  .rail{flex:none;width:var(--ad-w-rail);background:var(--ad-shell);color:var(--ad-on-shell);padding:24px 0;display:flex;flex-direction:column;position:sticky;top:0;min-height:100vh;overflow:auto}
+  .rail>*{flex:none}
+  .lockup{padding:0 28px 6px;display:flex;gap:14px;align-items:center}
+  .lockup .mark{flex:none;width:44px;height:44px;background:var(--ad-paper);padding:6px}
+  .lockup .mark img{width:100%;height:100%;object-fit:contain}
+  .lockup b{display:block;font-size:13px;font-weight:900;letter-spacing:.24em;text-transform:uppercase}
+  .lockup i{display:block;margin-top:4px;font-size:10px;font-style:normal;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--ad-on-shell-label)}
+  .grp{padding:18px 28px 6px;font-family:var(--ad-font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ad-on-shell-label)}
+  .grp:first-of-type{padding-top:12px}
+  .nav{width:100%;height:var(--ad-h-control);min-height:var(--ad-h-control);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 28px;font-size:15px;text-align:left;color:var(--ad-on-shell-soft);transition:var(--ad-transition)}
+  .nav .ct{font-family:var(--ad-font-mono);font-size:11px;color:var(--ad-on-shell-quiet)}
+  .nav:hover{background:var(--ad-shell-hover);color:var(--ad-on-shell)}
+  .nav[data-parent]{background:var(--ad-shell-hover);color:var(--ad-on-shell)}
+  .nav[aria-current="page"]{background:var(--ad-selected);color:var(--ad-on-shell);font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+  .nav[aria-current="page"] .ct{font-weight:400;letter-spacing:0;color:rgba(247,244,239,.65)}
+  .who{margin-top:auto;padding:18px 28px 0;border-top:1px solid var(--ad-shell-line)}
+  .who b{display:block;font-size:13px;font-weight:400;color:rgba(247,244,239,.85)}
+  .who span{display:block;margin-top:4px;font-family:var(--ad-font-mono);font-size:11px;color:var(--ad-on-shell-label)}
+
+  /* ---------- casca: topbar ---------- */
+  .topbar{height:var(--ad-h-topbar);flex:none;background:var(--ad-shell);color:var(--ad-on-shell);display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--ad-shell-line);position:sticky;top:0;z-index:6}
+  .search{flex:1;max-width:var(--ad-w-search);height:var(--ad-h-search);background:var(--ad-shell-2);border:1px solid var(--ad-shell-line);display:flex;align-items:center;gap:8px;padding:0 12px;cursor:text;transition:var(--ad-transition)}
+  .search:hover{border-color:var(--ad-shell-line-mid)}
+  .search span.g{font-size:15px;color:var(--ad-on-shell-label)}
+  .search input{flex:1;min-width:0;height:100%;border:0;outline:none;background:none;font-size:13px;color:var(--ad-on-shell)}
+  .search input::placeholder{color:var(--ad-on-shell-label)}
+  .search .kbd{font-family:var(--ad-font-mono);font-size:11px;color:rgba(247,244,239,.6)}
+  .site{margin-left:auto;font-size:13px;color:rgba(247,244,239,.6);text-decoration:none}
+  .site:hover{color:var(--ad-on-shell)}
+  .me{width:28px;height:28px;flex:none;background:var(--ad-paper);color:var(--ad-ink);display:inline-flex;align-items:center;justify-content:center;font-family:var(--ad-font-mono);font-size:12px}
+  .load{flex:none;height:var(--ad-h-loading);background:rgba(11,11,11,.08);position:relative}
+  .load i{position:absolute;inset:0 100% 0 0;background:var(--ad-signal);transition:right 320ms linear}
+  .load.on i{right:18%}
+
+  /* ---------- mesa ---------- */
+  .crumb{display:flex;align-items:center;gap:10px;font-size:13px;flex-wrap:wrap}
+  .crumb a{color:var(--ad-wine);text-decoration:none}
+  .crumb a:hover{color:var(--ad-ink)}
+  .crumb span.sep{color:rgba(11,11,11,.4)}
+  .crumb b{font-weight:900}
+  .head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .head h1{margin:0;font-family:var(--ad-font-head);font-size:var(--ad-size-screen);line-height:var(--ad-leading-head);font-weight:900;letter-spacing:var(--ad-track-screen);text-transform:uppercase}
+  .head .meta{font-family:var(--ad-font-mono);font-size:12px;color:rgba(11,11,11,.55)}
+  .head .acts{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+  .sheet{background:var(--ad-sheet);border:1px solid var(--ad-line-sheet)}
+  .panel{background:var(--ad-sheet);border:1px solid var(--ad-line)}
+  .eb{margin:0;font-family:var(--ad-font-mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ad-wine)}
+  .ml{font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:var(--ad-text-label)}
+  .body{font-size:15px;line-height:1.7;color:var(--ad-text-muted)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--ad-h-control);padding:0 16px;font-size:12px;font-weight:900;letter-spacing:var(--ad-track-button);text-transform:uppercase;transition:var(--ad-transition);white-space:nowrap}
+  .btn.pri{background:var(--ad-wine);color:var(--ad-on-shell);padding:0 18px}
+  .btn.pri:hover{background:#6a1a1e}
+  .btn.sec{background:var(--ad-sheet);border:1px solid var(--ad-line-strong)}
+  .btn.sec:hover{background:var(--ad-sand)}
+  .btn.ink{background:var(--ad-ink);color:var(--ad-on-shell);padding:0 18px}
+  .btn.ink:hover{background:#241f1c}
+  .tool{height:var(--ad-h-tool);padding:0 12px;font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;background:var(--ad-sheet);border:1px solid var(--ad-line-tool);display:inline-flex;align-items:center;transition:var(--ad-transition)}
+  .tool:hover{background:var(--ad-paper)}
+  .tool.on{background:var(--ad-ink);color:var(--ad-on-shell);border-color:var(--ad-ink);font-weight:900}
+  .tool.sq{width:var(--ad-h-tool);padding:0;justify-content:center;font-size:15px}
+  .tool.accent{background:var(--ad-wine);color:var(--ad-on-shell);border-color:var(--ad-wine);font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+  .tool[disabled]{opacity:.4;cursor:default}
+  .sep{width:1px;height:24px;background:var(--ad-line-tool);margin:0 4px}
+
+  .badge{height:var(--ad-h-badge);display:inline-flex;align-items:center;padding:0 10px;font-family:var(--ad-font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+  .b-pub{background:var(--ad-sand);color:var(--ad-wine)}
+  .b-dra{border:1px solid var(--ad-line-strong);color:var(--ad-text-soft)}
+  .b-run{background:var(--ad-ink);color:var(--ad-on-shell)}
+  .b-err{background:var(--ad-wine-wash-solid);border:1px solid var(--ad-wine-line);color:var(--ad-wine)}
+
+  .filters{background:var(--ad-sand);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chip{height:var(--ad-h-chip);display:inline-flex;align-items:center;padding:0 10px;font-size:12px;border:1px solid var(--ad-line-tool);background:transparent;transition:var(--ad-transition)}
+  .chip:hover{background:rgba(255,255,255,.5)}
+  .chip.on{background:var(--ad-ink);color:var(--ad-on-shell);border-color:var(--ad-ink)}
+  .field{height:var(--ad-h-control);background:var(--ad-sheet);border:1px solid var(--ad-line-strong);display:flex;align-items:center;padding:0 14px;font-size:15px;gap:8px}
+  .field input{border:0;outline:none;background:none;width:100%}
+  .field:focus-within{border-color:var(--ad-ink);box-shadow:var(--ad-focus)}
+
+  .row{width:100%;height:var(--ad-h-row);display:flex;align-items:center;gap:14px;padding:var(--ad-pad-row);border-bottom:1px solid var(--ad-line-quiet);text-align:left;transition:var(--ad-transition)}
+  .row:last-child{border-bottom:0}
+  .row:hover{background:var(--ad-row-hover);border-bottom-color:var(--ad-line)}
+  .row .t{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .d{margin-left:auto;font-family:var(--ad-font-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--ad-text-quiet)}
+  .thead{background:var(--ad-sand);display:grid;gap:16px;padding:10px 18px;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--ad-text-label)}
+  .trow{display:grid;gap:16px;align-items:center;padding:0 18px;height:var(--ad-h-row);border-bottom:1px solid var(--ad-line-quiet);transition:var(--ad-transition)}
+  .trow:hover{background:var(--ad-row-hover);border-bottom-color:var(--ad-line)}
+  .empty{background:var(--ad-sand);padding:20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+  .grid{display:grid;gap:var(--ad-gap-grid)}
+  .hatch{background:repeating-linear-gradient(135deg,#D8D0C4 0 8px,#E4DED4 8px 16px)}
+
+  /* ---------- editor ---------- */
+  .editor{border:1px solid var(--ad-line);background:var(--ad-desk);display:flex;flex-direction:column;min-width:0}
+  .etools{background:var(--ad-sand);border-bottom:1px solid var(--ad-line);padding:8px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .stage{padding:28px;display:flex;justify-content:center}
+  .paper{width:100%;max-width:var(--ad-w-sheet);background:var(--ad-sheet);border:1px solid var(--ad-line-sheet);padding:var(--ad-pad-sheet-wide);display:flex;flex-direction:column;gap:20px;position:relative}
+  .blk{position:relative;border:1px solid transparent;padding:8px 10px;margin:-8px -10px;transition:var(--ad-transition)}
+  .blk:hover{border-color:var(--ad-block-line)}
+  .bbar{position:absolute;top:-14px;right:-1px;height:var(--ad-h-chip);background:var(--ad-ink);color:var(--ad-on-shell);display:none;align-items:center;gap:10px;padding:0 10px;font-family:var(--ad-font-mono);font-size:11px;white-space:nowrap;z-index:3}
+  .bbar i{color:rgba(247,244,239,.3);font-style:normal}
+  .bbar button{font-family:inherit;font-size:11px}
+  .bbar button:hover{text-decoration:underline}
+  .blk:hover .bbar{display:inline-flex}
+  .guide{position:relative;height:2px;background:var(--ad-wine)}
+  .guide span{position:absolute;left:0;top:-11px;height:20px;background:var(--ad-wine);color:var(--ad-on-shell);display:inline-flex;align-items:center;padding:0 8px;font-family:var(--ad-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .insert{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed rgba(11,11,11,.25);width:100%;text-align:left}
+  .insert span.p{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ad-line-strong);font-size:16px;color:rgba(11,11,11,.55)}
+  .insert span.l{font-size:14px;color:var(--ad-text-quiet)}
+  .insert:hover span.p{background:var(--ad-ink);color:var(--ad-on-shell);border-color:var(--ad-ink)}
+  .foot{background:var(--ad-sand);border-top:1px solid var(--ad-line);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .outline{flex:none;width:var(--ad-w-outline);background:var(--ad-sheet);border:1px solid var(--ad-line);display:flex;flex-direction:column;align-self:flex-start}
+  .orow{width:100%;height:var(--ad-h-outline);display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ad-line-quiet);text-align:left;transition:var(--ad-transition)}
+  .orow .i{font-family:var(--ad-font-mono);font-size:11px;color:var(--ad-text-faint)}
+  .orow.on{background:var(--ad-wine);color:var(--ad-on-shell)}
+  .orow.on .i{color:rgba(247,244,239,.65)}
+  .orow:hover:not(.on){background:var(--ad-row-hover)}
+
+  /* conteúdo publicado (renderer único) */
+  .doc-h2{margin:0;font-family:var(--sl-font-head);font-size:40px;line-height:.98;font-weight:900;letter-spacing:-.04em;text-transform:uppercase}
+  .doc-p{margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85);max-width:60ch;text-wrap:pretty}
+  .doc-q{margin:0;border-left:4px solid var(--sl-wine);padding:4px 0 4px 20px}
+  .doc-q p{margin:0;font-size:21px;line-height:1.5}
+  .doc-hl{background:var(--ad-sand);padding:20px;display:flex;flex-direction:column;gap:8px}
+  .doc-ul{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.7;color:rgba(11,11,11,.85)}
+  .doc-cap{margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)}
+
+  /* ---------- overlays ---------- */
+  .scrim{position:fixed;inset:0;background:var(--ad-scrim);display:none;z-index:20;padding:36px;justify-content:center;align-items:flex-start;overflow:auto}
+  .scrim.on{display:flex}
+  .pal{width:100%;max-width:640px;background:var(--ad-shell-2);border:1px solid var(--ad-shell-line);color:var(--ad-on-shell);margin-top:60px}
+  .pal .q{height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--ad-shell-line)}
+  .pal .q input{flex:1;border:0;outline:none;background:none;font-size:17px;color:var(--ad-on-shell)}
+  .pal .q input::placeholder{color:var(--ad-on-shell-label)}
+  .pal .g{padding:12px 16px 4px;font-family:var(--ad-font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ad-on-shell-label)}
+  .pal button.r{width:100%;height:var(--ad-h-control);display:flex;align-items:center;gap:12px;padding:0 16px;text-align:left;font-size:15px;color:var(--ad-on-shell-soft);transition:var(--ad-transition)}
+  .pal button.r:hover,.pal button.r.on{background:var(--ad-selected);color:var(--ad-on-shell)}
+  .pal button.r .k{margin-left:auto;font-family:var(--ad-font-mono);font-size:11px;color:rgba(247,244,239,.55)}
+  .pal .hint{border-top:1px solid var(--ad-shell-line);padding:10px 16px;font-family:var(--ad-font-mono);font-size:11px;color:var(--ad-on-shell-label);display:flex;gap:16px}
+  .modal{width:100%;max-width:760px;background:var(--ad-sheet);border:1px solid var(--ad-line);margin-top:40px}
+  .modal .mh{height:var(--ad-h-topbar);background:var(--ad-shell);color:var(--ad-on-shell);display:flex;align-items:center;gap:12px;padding:0 18px}
+  .modal .mh b{font-size:15px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase}
+  .modal .mh .f{font-family:var(--ad-font-mono);font-size:11px;color:rgba(247,244,239,.5)}
+  .modal .mb{padding:22px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+  .crop{position:relative;width:260px;background:repeating-linear-gradient(135deg,#2A2522 0 10px,#1F1A16 10px 20px);overflow:hidden;user-select:none;transition:aspect-ratio var(--ad-transition)}
+  .crop .dark{position:absolute;inset:0;background:rgba(11,11,11,.58)}
+  .crop .fr{position:absolute;border:2px solid var(--ad-paper);cursor:move;background:repeating-linear-gradient(135deg,rgba(216,208,196,.5) 0 10px,rgba(228,222,212,.5) 10px 20px)}
+  .crop .h{position:absolute;width:14px;height:14px;background:var(--ad-paper);border:1px solid var(--ad-ink)}
+  .crop .h.nw{left:-8px;top:-8px;cursor:nwse-resize}
+  .crop .h.ne{right:-8px;top:-8px;cursor:nesw-resize}
+  .crop .h.sw{left:-8px;bottom:-8px;cursor:nesw-resize}
+  .crop .h.se{right:-8px;bottom:-8px;cursor:nwse-resize}
+  .crop .tag{position:absolute;bottom:6px;left:6px;background:var(--ad-wine);color:var(--ad-on-shell);font-family:var(--ad-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;white-space:nowrap}
+  .drop{border:2px dashed var(--ad-line-strong);background:var(--ad-paper);padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:var(--ad-transition)}
+  .drop.over{border-color:var(--ad-wine);background:var(--ad-wine-wash)}
+  .drop b{font-size:17px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase}
+  .area{background:var(--ad-sheet);border:1px solid var(--ad-line-strong);padding:12px 14px;font-size:15px;line-height:1.6;min-height:112px;width:100%;resize:vertical;outline:none;font-family:var(--ad-font-body)}
+  .area:focus{border-color:var(--ad-ink);box-shadow:var(--ad-focus)}
+  .popover{position:absolute;left:40px;bottom:48px;width:var(--ad-w-picker);background:var(--ad-sheet);border:1px solid var(--ad-line);display:none;flex-direction:column;z-index:8}
+  .popover.on{display:flex}
+  .screen{display:none;flex-direction:column;gap:20px}
+  .screen.on{display:flex}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ CASCA · RAIL ============ -->
+  <nav class="rail">
+    <div class="lockup">
+      <div class="mark"><img src="../../assets/img/selolibertaria.png" alt=""></div>
+      <div><b>Libertária</b><i>Painel editorial</i></div>
+    </div>
+
+    <div class="grp">Conteúdo</div>
+    <button class="nav" data-go="paginas">Páginas<span class="ct">9</span></button>
+    <button class="nav" data-go="eventos">Eventos<span class="ct">14</span></button>
+    <button class="nav" data-go="projetos">Projetos<span class="ct">6</span></button>
+    <button class="nav" data-go="imagens">Imagens<span class="ct">212</span></button>
+
+    <div class="grp">Operação</div>
+    <button class="nav" data-go="pedidos">Pedidos<span class="ct">31</span></button>
+    <button class="nav" data-go="produtos">Produtos<span class="ct">24</span></button>
+    <button class="nav" data-go="promocoes">Promoções<span class="ct">3</span></button>
+    <button class="nav" data-go="clientes">Clientes<span class="ct">418</span></button>
+
+    <div class="grp">Sistema</div>
+    <button class="nav" data-go="emails">E-mails enviados</button>
+    <button class="nav" data-go="modelos">Modelos de e-mail</button>
+    <button class="nav" data-go="pagamentos">Pagamentos recebidos</button>
+    <button class="nav" data-go="config">Configurações</button>
+
+    <div class="who"><b>Marina · editora</b><span>editorial.write</span></div>
+  </nav>
+
+  <div class="col">
+    <!-- ============ CASCA · TOPBAR ============ -->
+    <header class="topbar">
+      <div class="search" id="search">
+        <span class="g" aria-hidden="true">⌕</span>
+        <input placeholder="Buscar em todo o painel" readonly>
+        <span class="kbd">⌘K</span>
+      </div>
+      <a class="site" href="#" target="_self">Ver o site ↗</a>
+      <span class="me">MA</span>
+    </header>
+    <div class="load" id="load"><i></i></div>
+
+    <div class="desk">
+
+      <!-- ============ PÁGINAS ============ -->
+      <section class="screen on" id="s-paginas">
+        <div class="head">
+          <h1>Páginas</h1>
+          <span class="meta">9 páginas · 3 rascunhos</span>
+          <div class="acts">
+            <button class="btn sec">Ver o site</button>
+            <button class="btn pri">Nova página</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="filters">
+            <button class="chip on">Todas</button>
+            <button class="chip">Publicadas</button>
+            <button class="chip">Rascunhos</button>
+            <span class="mono" style="margin-left:auto;font-size:12px;color:var(--ad-text-soft)">ordenado por última edição</span>
+          </div>
+          <button class="row" data-go="editor"><span class="t">Sarau Safado #14</span><span class="badge b-dra">Rascunho</span><span class="d">12 set 14:32</span></button>
+          <button class="row"><span class="t">little fish, big fish · pré-venda</span><span class="badge b-pub">Publicado</span><span class="d">11 set 18:04</span></button>
+          <button class="row"><span class="t">Home</span><span class="badge b-pub">Publicado</span><span class="d">09 set 10:12</span></button>
+          <button class="row"><span class="t">Loja</span><span class="badge b-pub">Publicado</span><span class="d">08 set 16:40</span></button>
+          <button class="row"><span class="t">Projetos</span><span class="badge b-dra">Rascunho</span><span class="d">05 set 09:58</span></button>
+          <button class="row"><span class="t">Sobre</span><span class="badge b-pub">Publicado</span><span class="d">28 ago 11:20</span></button>
+          <button class="row"><span class="t">Contato</span><span class="badge b-pub">Publicado</span><span class="d">26 ago 15:02</span></button>
+          <button class="row"><span class="t">FAQ · trocas e envio</span><span class="badge b-err">Falhou</span><span class="d">24 ago 13:47</span></button>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div class="sheet" style="padding:20px;display:flex;flex-direction:column;gap:10px">
+            <p class="eb">Rascunho mais antigo</p>
+            <p class="mono" style="margin:0;font-size:24px">28 ago</p>
+            <p class="body" style="font-size:14px">Projetos está em rascunho há 17 dias. Publique ou volte ao publicado.</p>
+          </div>
+          <div class="sheet" style="padding:20px;display:flex;flex-direction:column;gap:10px">
+            <p class="eb">Blocos em uso</p>
+            <p class="mono" style="margin:0;font-size:24px">7 de 11</p>
+            <p class="body" style="font-size:14px">Galeria, vitrine, botão e separador ainda não aparecem em nenhuma página.</p>
+          </div>
+          <div style="background:var(--ad-ink);color:var(--ad-on-shell);padding:20px;display:flex;flex-direction:column;gap:10px">
+            <p class="eb" style="color:var(--ad-on-shell-label)">Publicação com falha</p>
+            <p class="mono" style="margin:0;font-size:24px">FAQ · 24 ago</p>
+            <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.78)">A imagem 2 não terminou de subir. O rascunho está salvo — tente publicar de novo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ EVENTOS ============ -->
+      <section class="screen" id="s-eventos">
+        <div class="head">
+          <h1>Eventos</h1>
+          <span class="meta">14 eventos · 2 rascunhos</span>
+          <div class="acts"><button class="btn sec">Exportar lista</button><button class="btn pri">Novo evento</button></div>
+        </div>
+        <div class="panel">
+          <div class="filters">
+            <button class="chip on">Próximos</button>
+            <button class="chip">Passados</button>
+            <button class="chip">Rascunhos</button>
+            <div class="field" style="margin-left:auto;height:36px;width:240px;font-size:13px"><span aria-hidden="true">⌕</span><input placeholder="Filtrar por título"></div>
+          </div>
+          <button class="row" data-go="editor"><span class="t">Sarau Safado #14</span><span class="badge b-dra">Rascunho</span><span class="d">14 set · 20h</span></button>
+          <button class="row"><span class="t">Laboratório de escrita · turma 3</span><span class="badge b-pub">Publicado</span><span class="d">02 out · 19h</span></button>
+          <button class="row"><span class="t">Lançamento little fish, big fish</span><span class="badge b-run">Publicando</span><span class="d">11 out · 19h30</span></button>
+          <button class="row"><span class="t">Sarau Safado #13</span><span class="badge b-pub">Publicado</span><span class="d">17 ago · 20h</span></button>
+          <button class="row"><span class="t">Leitura na Casa do Povo</span><span class="badge b-pub">Publicado</span><span class="d">03 ago · 18h</span></button>
+        </div>
+        <div class="empty">
+          <span class="mono" style="font-size:12px;color:var(--ad-text-soft)">Nenhum evento em outubro depois do dia 11</span>
+          <p class="body" style="margin:0;max-width:52ch">A agenda pública fica vazia a partir de 12 out. Crie o próximo sarau ou publique o rascunho do laboratório.</p>
+          <button class="btn ink">Novo evento</button>
+        </div>
+      </section>
+
+      <!-- ============ EDITOR ============ -->
+      <section class="screen" id="s-editor">
+        <nav class="crumb">
+          <a href="#" data-go="paginas">Páginas</a><span class="sep">›</span>
+          <a href="#" data-go="eventos">Eventos</a><span class="sep">›</span>
+          <b>Sarau Safado #14</b>
+        </nav>
+        <div class="head">
+          <h1>Sarau Safado #14</h1>
+          <span class="badge b-dra">Rascunho</span>
+          <span class="meta">editado 12 set 14:32 · por Marina</span>
+          <div class="acts"><button class="btn sec">Ver como fica</button><button class="btn pri">Publicar</button></div>
+        </div>
+
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+          <div class="editor" style="flex:1 1 520px;min-width:min(520px,100%)">
+            <div class="etools">
+              <button class="tool">Parágrafo ▾</button>
+              <span class="sep"></span>
+              <button class="tool sq on" style="font-weight:900">B</button>
+              <button class="tool sq" style="font-style:italic">I</button>
+              <button class="tool sq" style="text-decoration:underline">U</button>
+              <button class="tool">Link</button>
+              <span class="sep"></span>
+              <button class="tool">• Lista</button>
+              <button class="tool">1. Numerada</button>
+              <button class="tool">Citação</button>
+              <span class="sep"></span>
+              <button class="tool accent">Destaque do selo</button>
+              <button class="tool" data-crop="1">Imagem</button>
+              <button class="tool">Botão</button>
+              <button class="tool">Separador</button>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                <button class="tool sq">↩</button>
+                <button class="tool sq" disabled>↪</button>
+                <span class="mono" style="font-size:11px;color:var(--ad-text-quiet)">10 passos</span>
+              </span>
+            </div>
+
+            <div class="stage">
+              <div class="paper">
+                <div class="blk">
+                  <span class="bbar"><span>heading</span><i>|</i><button>Mover ⇅</button><i>|</i><button>Duplicar</button><i>|</i><button>Remover</button></span>
+                  <h2 class="doc-h2">Sarau Safado #14</h2>
+                </div>
+
+                <div class="blk">
+                  <span class="bbar"><span>paragraph</span><i>|</i><button>Mover ⇅</button><i>|</i><button>Duplicar</button><i>|</i><button>Remover</button></span>
+                  <p class="doc-p">Uma noite de <strong>leitura aberta</strong> no Centro, com microfone livre depois da meia-noite. Chega cedo: as vinte cadeiras somem em quinze minutos e o resto é chão, parede e escada.</p>
+                </div>
+
+                <div class="guide" id="guide" style="display:none"><span>Solta aqui</span></div>
+
+                <div class="blk">
+                  <span class="bbar"><span>image</span><i>|</i><button data-crop="1">Recortar</button><i>|</i><button>Trocar</button><i>|</i><button>Legenda</button><i>|</i><button>Mover ⇅</button><i>|</i><button>Remover</button></span>
+                  <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+                    <div style="flex:none;width:260px;display:flex;flex-direction:column;gap:8px">
+                      <div class="hatch" style="width:100%;aspect-ratio:4/3;display:flex;align-items:flex-end;padding:10px"><span class="mono" style="font-size:11px;background:var(--ad-paper);padding:3px 6px;color:rgba(11,11,11,.6)">sarau-14-publico.jpg · 4:3</span></div>
+                      <p class="doc-cap">Público na escada, edição #13</p>
+                    </div>
+                    <p class="doc-p" style="flex:1;min-width:240px">A edição passada lotou antes das nove. Desta vez abrimos a lista de leitura às 19h, no balcão — dez nomes, três minutos cada, sem fila de espera pelo Instagram.</p>
+                  </div>
+                </div>
+
+                <div class="blk">
+                  <span class="bbar"><span>quote</span><i>|</i><button>Mover ⇅</button><i>|</i><button>Duplicar</button><i>|</i><button>Remover</button></span>
+                  <blockquote class="doc-q"><p>"A margem não pede licença para falar: ela edita."</p></blockquote>
+                </div>
+
+                <div class="blk">
+                  <span class="bbar"><span>highlight</span><i>|</i><button>Mover ⇅</button><i>|</i><button>Duplicar</button><i>|</i><button>Remover</button></span>
+                  <div class="doc-hl">
+                    <p class="eb">Destaque do selo</p>
+                    <p style="margin:0;font-size:16px;line-height:1.7;color:rgba(11,11,11,.85)">Lista de leitura aberta às 19h, no balcão. Dez nomes, três minutos cada.</p>
+                  </div>
+                </div>
+
+                <div class="blk">
+                  <span class="bbar"><span>list</span><i>|</i><button>Mover ⇅</button><i>|</i><button>Duplicar</button><i>|</i><button>Remover</button></span>
+                  <ul class="doc-ul">
+                    <li>14 set · 20h · R. Aurora, 235</li>
+                    <li>Entrada por contribuição: R$ 20 na porta</li>
+                    <li>Lista de leitura aberta às 19h</li>
+                  </ul>
+                </div>
+
+                <button class="insert" id="insert"><span class="p">+</span><span class="l">Clique para inserir um bloco aqui</span></button>
+
+                <!-- menu de inserir bloco -->
+                <div class="popover" id="picker">
+                  <div style="padding:14px 18px;border-bottom:1px solid var(--ad-line);display:flex;flex-direction:column;gap:2px">
+                    <span class="ml" style="color:rgba(11,11,11,.55)">Inserir bloco</span>
+                    <span class="mono" style="font-size:11px;color:var(--ad-text-faint)">digite para filtrar</span>
+                  </div>
+                  <div class="row" style="background:var(--ad-ink);color:var(--ad-on-shell)"><span class="t">Título</span><span class="d" style="color:rgba(247,244,239,.55)">heading</span></div>
+                  <div class="row"><span class="t">Parágrafo</span><span class="d">paragraph</span></div>
+                  <div class="row"><span class="t">Lista</span><span class="d">list</span></div>
+                  <div class="row"><span class="t">Citação</span><span class="d">quote</span></div>
+                  <div class="row"><span class="t">Destaque do selo</span><span class="d">highlight</span></div>
+                  <div class="row"><span class="t">Imagem</span><span class="d">image</span></div>
+                  <div class="row"><span class="t">Galeria</span><span class="d">gallery</span></div>
+                  <div class="row"><span class="t">Botão</span><span class="d">button</span></div>
+                  <div class="row"><span class="t">Separador</span><span class="d">divider</span></div>
+                  <div class="row"><span class="t">Vitrine de produtos</span><span class="d">productShelf</span></div>
+                  <div class="row"><span class="t">Agenda</span><span class="d">agenda</span></div>
+                  <div style="background:var(--ad-sand);padding:12px 18px;font-size:13px;line-height:1.6;color:var(--ad-text-soft)">Onze tipos. O servidor recusa qualquer outro com <span class="mono" style="font-size:12px">422</span>.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="foot">
+              <span class="mono" style="font-size:12px;color:var(--ad-text-soft)">Rascunho salvo às 14:32</span>
+              <span style="font-size:14px;color:rgba(11,11,11,.6)">só vai ao ar quando você publicar</span>
+              <span style="margin-left:auto;display:flex;gap:10px">
+                <button class="btn sec">Voltar ao publicado</button>
+                <button class="btn sec">Ver como fica</button>
+                <button class="btn pri">Publicar</button>
+              </span>
+            </div>
+          </div>
+
+          <div class="outline">
+            <div class="ml" style="padding:12px 14px;border-bottom:1px solid var(--ad-line)">Blocos da página</div>
+            <button class="orow"><span class="i">01</span><span style="font-size:14px">Título</span></button>
+            <button class="orow on"><span class="i">02</span><span style="font-size:14px">Parágrafo</span></button>
+            <button class="orow"><span class="i">03</span><span style="font-size:14px">Imagem</span></button>
+            <button class="orow"><span class="i">04</span><span style="font-size:14px">Citação</span></button>
+            <button class="orow"><span class="i">05</span><span style="font-size:14px">Destaque do selo</span></button>
+            <button class="orow"><span class="i">06</span><span style="font-size:14px">Lista</span></button>
+            <div style="margin-top:auto;padding:12px 14px;background:var(--ad-sand);font-size:12px;line-height:1.6;color:var(--ad-text-soft)">Arraste na lista para reordenar sem rolar a página.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ IMAGENS ============ -->
+      <section class="screen" id="s-imagens">
+        <div class="head">
+          <h1>Imagens</h1>
+          <span class="meta">212 imagens · 2,4 GB · 18 sem uso</span>
+          <div class="acts"><button class="btn sec">Ver sem uso</button><button class="btn pri">Subir imagem</button></div>
+        </div>
+        <div class="panel">
+          <div class="filters">
+            <button class="chip on">Todas</button>
+            <button class="chip">Capas</button>
+            <button class="chip">Eventos</button>
+            <button class="chip">Sem uso</button>
+            <span class="mono" style="margin-left:auto;font-size:12px;color:var(--ad-text-soft)">clique para recortar</span>
+          </div>
+          <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));padding:18px">
+            <button style="display:flex;flex-direction:column;gap:8px;text-align:left" data-crop="1"><span class="hatch" style="aspect-ratio:1/1"></span><span class="mono" style="font-size:11px;color:var(--ad-text-soft)">sarau-14-publico.jpg</span><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">240 KB · usada em 3</span></button>
+            <button style="display:flex;flex-direction:column;gap:8px;text-align:left" data-crop="1"><span class="hatch" style="aspect-ratio:1/1"></span><span class="mono" style="font-size:11px;color:var(--ad-text-soft)">sarau-14-escada.jpg</span><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">2,1 MB · usada em 1</span></button>
+            <button style="display:flex;flex-direction:column;gap:8px;text-align:left" data-crop="1"><span class="hatch" style="aspect-ratio:1/1"></span><span class="mono" style="font-size:11px;color:var(--ad-text-soft)">capa-lfbf.jpg</span><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">180 KB · usada em 5</span></button>
+            <button style="display:flex;flex-direction:column;gap:8px;text-align:left" data-crop="1"><span class="hatch" style="aspect-ratio:1/1"></span><span class="mono" style="font-size:11px;color:var(--ad-text-soft)">atelie-mesa.jpg</span><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">320 KB · sem uso</span></button>
+          </div>
+        </div>
+        <div class="sheet" style="padding:20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+          <div style="flex:1;min-width:280px"><p class="eb">Limite de arquivo</p><p class="body" style="margin:8px 0 0">Acima de 8 MB o painel recusa com alternativa: "Esta foto tem 14 MB. Podemos reduzir para 2 MB sem perda visível — ou escolha outra."</p></div>
+          <span class="mono" style="background:var(--ad-sand);padding:12px 14px;font-size:12px;color:var(--ad-text-muted)">2,1 MB → 240 KB · webp + jpg</span>
+        </div>
+      </section>
+
+      <!-- ============ PEDIDOS ============ -->
+      <section class="screen" id="s-pedidos">
+        <div class="head">
+          <h1>Pedidos</h1>
+          <span class="meta">31 pedidos · R$ 4.320,00 em set</span>
+          <div class="acts"><button class="btn sec">Exportar CSV</button><button class="btn pri">Marcar como enviado</button></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+          <div class="sheet" style="padding:20px"><p class="eb">Receita paga</p><p class="mono" style="margin:14px 0 0;font-size:24px;font-variant-numeric:tabular-nums">R$ 4.320,00</p></div>
+          <div class="sheet" style="padding:20px"><p class="eb">A enviar</p><p class="mono" style="margin:14px 0 0;font-size:24px">7</p></div>
+          <div class="sheet" style="padding:20px"><p class="eb">Ingressos</p><p class="mono" style="margin:14px 0 0;font-size:24px">42</p></div>
+          <div class="sheet" style="padding:20px;border-color:var(--ad-wine-line);background:var(--ad-wine-wash)"><p class="eb">Pagamento falhou</p><p class="mono" style="margin:14px 0 0;font-size:24px;color:var(--ad-wine)">4</p></div>
+        </div>
+        <div class="panel">
+          <div class="thead" style="grid-template-columns:110px minmax(0,1fr) 140px 150px 130px"><span>Pedido</span><span>Cliente e itens</span><span>Total</span><span>Status</span><span>Criado</span></div>
+          <div class="trow" style="grid-template-columns:110px minmax(0,1fr) 140px 150px 130px"><span class="num" style="font-size:13px">#1042</span><span style="font-size:15px">Ana Prado · 2 itens</span><span class="num" style="font-size:13px;text-align:right">R$ 129,90</span><span><span class="badge b-pub">Pago</span></span><span class="num" style="font-size:13px;color:var(--ad-text-quiet)">12 set 14:02</span></div>
+          <div class="trow" style="grid-template-columns:110px minmax(0,1fr) 140px 150px 130px"><span class="num" style="font-size:13px">#1041</span><span style="font-size:15px">Caio Meneses · ingresso 14 set</span><span class="num" style="font-size:13px;text-align:right">R$ 60,00</span><span><span class="badge b-err">Falhou</span></span><span class="num" style="font-size:13px;color:var(--ad-text-quiet)">12 set 11:38</span></div>
+          <div class="trow" style="grid-template-columns:110px minmax(0,1fr) 140px 150px 130px"><span class="num" style="font-size:13px">#1040</span><span style="font-size:15px">Rita Alencar · 3 itens</span><span class="num" style="font-size:13px;text-align:right">R$ 213,90</span><span><span class="badge b-run">Enviado</span></span><span class="num" style="font-size:13px;color:var(--ad-text-quiet)">11 set 19:10</span></div>
+          <div class="trow" style="grid-template-columns:110px minmax(0,1fr) 140px 150px 130px;border-bottom:0"><span class="num" style="font-size:13px">#1039</span><span style="font-size:15px">Jonas Vidal · zine + objeto</span><span class="num" style="font-size:13px;text-align:right">R$ 88,00</span><span><span class="badge b-dra">Aguardando Pix</span></span><span class="num" style="font-size:13px;color:var(--ad-text-quiet)">11 set 16:24</span></div>
+        </div>
+      </section>
+
+      <!-- ============ TELAS AINDA NÃO MIGRADAS ============ -->
+      <section class="screen" id="s-generico">
+        <nav class="crumb"><a href="#" data-go="paginas">Painel</a><span class="sep">›</span><b id="gen-name">Tela</b></nav>
+        <div class="head">
+          <h1 id="gen-title">Tela</h1>
+          <span class="badge b-dra">Em migração</span>
+          <span class="meta">v1 → Oficina v2</span>
+        </div>
+        <div class="empty" style="max-width:72ch">
+          <span class="mono" style="font-size:12px;color:var(--ad-text-soft)">Esta tela ainda roda no sistema v1</span>
+          <p class="body" style="margin:0">A casca já é a nova — rail em três grupos, topbar com busca e barra de carregamento de 2px. O conteúdo migra quando a fatia correspondente for executada; nada aqui depende de migração de dados.</p>
+          <button class="btn ink" data-go="paginas">Voltar para Páginas</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ BUSCA GLOBAL (⌘K) ============ -->
+<div class="scrim" id="palette-scrim">
+  <div class="pal" role="dialog" aria-label="Buscar em todo o painel">
+    <div class="q"><span aria-hidden="true" style="font-size:18px;color:var(--ad-on-shell-label)">⌕</span><input id="pal-input" placeholder="Buscar página, evento, pedido ou imagem"><span class="mono" style="font-size:11px;color:var(--ad-on-shell-label)">esc fecha</span></div>
+    <div class="g">Páginas e eventos</div>
+    <button class="r on" data-go="editor">Sarau Safado #14<span class="k">rascunho · 12 set</span></button>
+    <button class="r" data-go="paginas">little fish, big fish · pré-venda<span class="k">publicado</span></button>
+    <div class="g">Operação</div>
+    <button class="r" data-go="pedidos">Pedido #1041 · Caio Meneses<span class="k">falhou · R$ 60,00</span></button>
+    <button class="r" data-go="imagens">sarau-14-publico.jpg<span class="k">240 KB · usada em 3</span></button>
+    <div class="g">Ações</div>
+    <button class="r" data-go="eventos">Novo evento<span class="k">⌘E</span></button>
+    <div class="hint"><span>↑↓ navega</span><span>enter abre</span><span>⌘K fecha</span></div>
+  </div>
+</div>
+
+<!-- ============ RECORTE ============ -->
+<div class="scrim" id="crop-scrim">
+  <div class="modal" role="dialog" aria-label="Recortar imagem">
+    <div class="mh"><b>Recortar imagem</b><span class="f">sarau-14-publico.jpg · 3024×4032</span><button style="margin-left:auto;font-size:18px;color:rgba(247,244,239,.7)" data-close="crop">✕</button></div>
+    <div style="padding:18px 22px 0;display:none" id="crop-drop-wrap">
+      <div class="drop over" id="crop-drop"><span style="font-size:28px;line-height:1;color:var(--ad-wine)">+</span><b>Solta para subir</b><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">solta aqui para trocar a foto deste bloco — o recorte atual é mantido</span></div>
+    </div>
+    <div class="mb">
+      <div style="flex:none;width:260px;display:flex;flex-direction:column;gap:8px">
+        <div class="crop" id="crop" style="aspect-ratio:3/4">
+          <span class="dark"></span>
+          <div class="fr" id="crop-fr" style="left:8%;top:12%;width:84%;height:62%">
+            <span class="h nw" data-h="nw"></span><span class="h ne" data-h="ne"></span>
+            <span class="h sw" data-h="sw"></span><span class="h se" data-h="se"></span>
+            <span class="tag">Área visível</span>
+          </div>
+        </div>
+        <p class="doc-cap">Arraste o meio para mover e os cantos para mudar o tamanho. O que escurece fica fora.</p>
+        <p class="mono" style="margin:0;font-size:11px;color:var(--ad-text-faint)" id="crop-size">84% × 62% da foto</p>
+      </div>
+      <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span class="ml">Onde esta imagem vai aparecer</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="chip on" data-ratio="3/4">Capa do evento · 3:4</button>
+            <button class="chip" data-ratio="16/9">Faixa larga · 16:9</button>
+            <button class="chip" data-ratio="1/1">Quadrada · 1:1</button>
+          </div>
+          <p class="doc-cap">A moldura muda de proporção junto: o recorte vale <strong>só neste bloco</strong>. A mesma foto em outra página mantém o recorte dela.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span class="ml">Descreva a imagem</span>
+          <textarea class="area" rows="3">Público na escada do Sarau Safado #13, mão erguida com livro aberto</textarea>
+          <p class="doc-cap">Duas linhas bastam: quem aparece, o que acontece, onde. Serve para leitor de tela e para o Google achar a página.</p>
+        </div>
+        <div style="background:var(--ad-sand);padding:12px 14px"><p class="mono" style="margin:0;font-size:12px;line-height:1.6;color:var(--ad-text-muted)">2,1 MB → 240 KB · webp + jpg · usada em 3 lugares</p></div>
+      </div>
+    </div>
+    <div class="foot" style="border-top:1px solid var(--ad-line)">
+      <span style="font-size:13px;color:rgba(11,11,11,.65)">O rascunho não recarrega: você volta com o cursor no mesmo ponto.</span>
+      <span style="margin-left:auto;display:flex;gap:10px"><button class="btn sec" data-close="crop">Cancelar</button><button class="btn pri" data-close="crop">Usar este recorte</button></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var LABELS = {
+    paginas: 'Páginas', eventos: 'Eventos', projetos: 'Projetos', imagens: 'Imagens',
+    pedidos: 'Pedidos', produtos: 'Produtos', promocoes: 'Promoções', clientes: 'Clientes',
+    emails: 'E-mails enviados', modelos: 'Modelos de e-mail', pagamentos: 'Pagamentos recebidos',
+    config: 'Configurações', editor: 'Sarau Safado #14'
+  };
+  var SCREENS = { paginas: 1, eventos: 1, editor: 1, imagens: 1, pedidos: 1 };
+  var load = document.getElementById('load');
+
+  function show(key) {
+    var target = SCREENS[key] ? key : 'generico';
+    if (target === 'generico') {
+      document.getElementById('gen-title').textContent = LABELS[key] || 'Tela';
+      document.getElementById('gen-name').textContent = LABELS[key] || 'Tela';
+    }
+    load.classList.add('on');
+    setTimeout(function () { load.classList.remove('on'); }, 420);
+
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) screens[i].classList.remove('on');
+    document.getElementById('s-' + target).classList.add('on');
+
+    var navs = document.querySelectorAll('.rail .nav');
+    for (var j = 0; j < navs.length; j++) {
+      var n = navs[j];
+      n.removeAttribute('aria-current');
+      n.removeAttribute('data-parent');
+      if (n.dataset.go === key) n.setAttribute('aria-current', 'page');
+    }
+    if (key === 'editor') {
+      var ev = document.querySelector('.rail .nav[data-go="eventos"]');
+      ev.setAttribute('aria-current', 'page');
+      document.querySelector('.rail .nav[data-go="paginas"]').setAttribute('data-parent', '1');
+    }
+    document.querySelector('.desk').scrollTop = 0;
+    close('palette');
+  }
+
+  function open(which) { document.getElementById(which + '-scrim').classList.add('on'); }
+  function close(which) { document.getElementById(which + '-scrim').classList.remove('on'); }
+
+  document.addEventListener('click', function (e) {
+    var go = e.target.closest('[data-go]');
+    if (go) { e.preventDefault(); show(go.dataset.go); return; }
+    if (e.target.closest('[data-crop]')) { open('crop'); return; }
+    var cl = e.target.closest('[data-close]');
+    if (cl) { close(cl.dataset.close); return; }
+    if (e.target.closest('#search')) { open('palette'); document.getElementById('pal-input').focus(); return; }
+    if (e.target.closest('#insert')) { document.getElementById('picker').classList.toggle('on'); return; }
+    if (!e.target.closest('#picker')) document.getElementById('picker').classList.remove('on');
+    if (e.target.id === 'palette-scrim') close('palette');
+    if (e.target.id === 'crop-scrim') close('crop');
+    var orow = e.target.closest('.orow');
+    if (orow) {
+      var all = document.querySelectorAll('.orow');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
+      orow.classList.add('on');
+    }
+    var chip = e.target.closest('.chip');
+    if (chip && chip.parentElement) {
+      var sib = chip.parentElement.querySelectorAll('.chip');
+      for (var k = 0; k < sib.length; k++) sib[k].classList.remove('on');
+      chip.classList.add('on');
+      if (chip.dataset.ratio) document.getElementById('crop').style.aspectRatio = chip.dataset.ratio;
+    }
+  });
+
+  /* ---------- seleção de recorte arrastável ---------- */
+  var frame = document.getElementById('crop-fr');
+  var stage = document.getElementById('crop');
+  var sizeOut = document.getElementById('crop-size');
+  var sel = { x: 8, y: 12, w: 84, h: 62 };
+  var drag = null;
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function paint() {
+    frame.style.left = sel.x + '%'; frame.style.top = sel.y + '%';
+    frame.style.width = sel.w + '%'; frame.style.height = sel.h + '%';
+    sizeOut.textContent = Math.round(sel.w) + '% × ' + Math.round(sel.h) + '% da foto';
+  }
+  frame.addEventListener('mousedown', function (e) {
+    var h = e.target.closest('[data-h]');
+    drag = { corner: h ? h.dataset.h : null, r: stage.getBoundingClientRect(), sx: e.clientX, sy: e.clientY, s: { x: sel.x, y: sel.y, w: sel.w, h: sel.h } };
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (!drag) return;
+    var dx = ((e.clientX - drag.sx) / drag.r.width) * 100;
+    var dy = ((e.clientY - drag.sy) / drag.r.height) * 100;
+    var s = drag.s;
+    if (!drag.corner) {
+      sel.x = clamp(s.x + dx, 0, 100 - s.w);
+      sel.y = clamp(s.y + dy, 0, 100 - s.h);
+    } else {
+      var east = drag.corner.indexOf('e') > -1, south = drag.corner.indexOf('s') > -1;
+      var x = s.x, y = s.y, w = s.w, h = s.h;
+      if (east) { w = clamp(w + dx, 15, 100 - x); }
+      else { var nx = clamp(x + dx, 0, x + w - 15); w = w + (x - nx); x = nx; }
+      if (south) { h = clamp(h + dy, 15, 100 - y); }
+      else { var ny = clamp(y + dy, 0, y + h - 15); h = h + (y - ny); y = ny; }
+      sel = { x: x, y: y, w: w, h: h };
+    }
+    paint();
+  });
+  window.addEventListener('mouseup', function () { drag = null; });
+  paint();
+
+  /* ---------- arquivo arrastado para dentro da janela ---------- */
+  var dropWrap = document.getElementById('crop-drop-wrap');
+  var depth = 0;
+  window.addEventListener('dragenter', function (e) {
+    e.preventDefault();
+    depth++;
+    if (document.getElementById('crop-scrim').classList.contains('on')) dropWrap.style.display = 'block';
+  });
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('dragleave', function () { depth = Math.max(0, depth - 1); if (!depth) dropWrap.style.display = 'none'; });
+  window.addEventListener('drop', function (e) { e.preventDefault(); depth = 0; dropWrap.style.display = 'none'; });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      var p = document.getElementById('palette-scrim');
+      if (p.classList.contains('on')) close('palette');
+      else { open('palette'); document.getElementById('pal-input').focus(); }
+    }
+    if (e.key === 'Escape') { close('palette'); close('crop'); document.getElementById('picker').classList.remove('on'); }
+  });
+
+  show('paginas');
+})();
+</script>
+</body>
+</html>

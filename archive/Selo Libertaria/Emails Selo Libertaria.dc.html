@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:#141210; }
+  a { color:#F7F4EF; }
+  a:hover { color:#B3282E; }
+</style>
+</helmet>
+<section style="padding:56px 48px 80px 48px;font-family:'Iowan Old Style',Georgia,serif;color:#F7F4EF;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.60);">Selo Libertária · butter_relay</div>
+  <h1 style="margin:14px 0 0 0;font-size:60px;line-height:.98;font-weight:700;letter-spacing:-.05em;text-transform:uppercase;max-width:20ch;">Templates<br>de email</h1>
+  <p style="margin:22px 0 0 0;font-size:17px;line-height:1.7;color:rgba(247,244,239,.82);max-width:60ch;">Sete templates de fundo escuro, tabelas de 600px, tudo inline e canto reto. Variáveis em <code style="color:#F7F4EF;">{variavel}</code> para <code style="color:#F7F4EF;">str.format</code>. Abaixo, cada um renderizado com dados de exemplo — os arquivos do relay estão em <code style="color:#F7F4EF;">emails/</code>.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;margin-top:52px;">
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">01 · pedido-confirmado.html</div>
+      <iframe src="emails/preview/pedido-confirmado.html" title="Pedido confirmado" style="width:620px;height:1320px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">02 · pagamento-aprovado.html</div>
+      <iframe src="emails/preview/pagamento-aprovado.html" title="Pagamento aprovado" style="width:620px;height:1180px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">03 · pedido-enviado.html</div>
+      <iframe src="emails/preview/pedido-enviado.html" title="Pedido enviado" style="width:620px;height:1240px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">04 · pagamento-recusado.html</div>
+      <iframe src="emails/preview/pagamento-recusado.html" title="Pagamento recusado" style="width:620px;height:900px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">05 · ingresso-confirmado.html</div>
+      <iframe src="emails/preview/ingresso-confirmado.html" title="Ingresso confirmado" style="width:620px;height:1180px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">06 · newsletter-lancamento.html</div>
+      <iframe src="emails/preview/newsletter-lancamento.html" title="Newsletter" style="width:620px;height:1560px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+    <div style="width:620px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.60);padding-bottom:12px;border-bottom:1px solid rgba(247,244,239,.28);margin-bottom:16px;">07 · base-shell.html</div>
+      <iframe src="emails/preview/base-shell.html" title="Base shell" style="width:620px;height:1120px;border:0;background:#141210;display:block;"></iframe>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount() {
+    const fit = (f) => {
+      try {
+        const h = f.contentDocument.body.scrollHeight;
+        if (h > 40) f.style.height = (h + 24) + 'px';
+      } catch (e) {}
+    };
+    document.querySelectorAll('iframe').forEach(f => {
+      fit(f);
+      f.addEventListener('load', () => fit(f));
+      setTimeout(() => fit(f), 400);
+      setTimeout(() => fit(f), 1600);
+    });
+  }
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

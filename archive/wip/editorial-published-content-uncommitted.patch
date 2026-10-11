@@ -1,0 +1,108 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index d83d48b..2aa1eb0 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,7 @@
+ ## [Unreleased]
+ 
++- Editorial: o editor administrativo reaproveita o conteúdo publicado quando o rascunho está vazio.
++
+ <<<<<<< HEAD
+ - Infraestrutura: removido o acoplamento de deploy, telemetria e release à Vercel; o build agora usa diretamente `next build --webpack` e exige `NEXT_PUBLIC_URL`.
+ =======
+diff --git a/src/app/admin/editorial/blocks-actions.test.ts b/src/app/admin/editorial/blocks-actions.test.ts
+index e5de6fa..cab2639 100644
+--- a/src/app/admin/editorial/blocks-actions.test.ts
++++ b/src/app/admin/editorial/blocks-actions.test.ts
+@@ -20,9 +20,8 @@ vi.mock("@/env.mjs", () => ({
+ 	env: { FASTAPI_API_URL: "http://localhost:8000", FASTAPI_INTERNAL_API_KEY: "test-internal-key" },
+ }));
+ 
+-const { publishEditorialDraftAction, getEditorialBlocksRecord } = await import(
+-	"@/app/admin/editorial/blocks-actions"
+-);
++const { publishEditorialDraftAction, getEditorialBlocksRecord, selectInitialEditorialDocument } =
++	await import("@/app/admin/editorial/blocks-actions");
+ 
+ function form(fields: Record<string, string>) {
+ 	const data = new FormData();
+@@ -37,6 +36,33 @@ function jsonResponse(status: number, body: unknown) {
+ const paragraph = { id: "b1", type: "paragraph", text: "Uma noite de leitura aberta." };
+ const identity = { type: "page_sarau", slug: "sarau-safado" };
+ 
++describe("selectInitialEditorialDocument", () => {
++	it("uses the published document when the saved draft is empty", () => {
++		expect(
++			selectInitialEditorialDocument({
++				title: "Sarau Safado",
++				content: {},
++				draftDoc: [],
++				publishedDoc: [paragraph],
++				publishedAt: "2026-09-30T12:00:00.000Z",
++			}),
++		).toEqual([paragraph]);
++	});
++
++	it("keeps a non-empty draft editable", () => {
++		const draft = [{ ...paragraph, text: "Rascunho ainda não publicado." }];
++		expect(
++			selectInitialEditorialDocument({
++				title: "Sarau Safado",
++				content: {},
++				draftDoc: draft,
++				publishedDoc: [paragraph],
++				publishedAt: "2026-09-30T12:00:00.000Z",
++			}),
++		).toEqual(draft);
++	});
++});
++
+ describe("publishEditorialDraftAction", () => {
+ 	let fetchMock: ReturnType<typeof vi.fn>;
+ 
+diff --git a/src/app/admin/editorial/blocks-actions.ts b/src/app/admin/editorial/blocks-actions.ts
+index f1ad66d..14a6915 100644
+--- a/src/app/admin/editorial/blocks-actions.ts
++++ b/src/app/admin/editorial/blocks-actions.ts
+@@ -25,6 +25,15 @@ export type EditorialBlocksRecord = {
+ 	publishedAt: string | null;
+ };
+ 
++/**
++ * A draft may legitimately be an empty document. In that case, opening the
++ * editor must not hide the version that is currently published.
++ */
++export function selectInitialEditorialDocument(record: EditorialBlocksRecord | null) {
++	if (record?.draftDoc && record.draftDoc.length > 0) return record.draftDoc;
++	return record?.publishedDoc ?? record?.draftDoc ?? null;
++}
++
+ type FastApiEditorialFull = {
+ 	slug: string;
+ 	title: string;
+diff --git a/src/app/admin/editorial/blocos/[slug]/page.tsx b/src/app/admin/editorial/blocos/[slug]/page.tsx
+index bc048c8..c6620f7 100644
+--- a/src/app/admin/editorial/blocos/[slug]/page.tsx
++++ b/src/app/admin/editorial/blocos/[slug]/page.tsx
+@@ -1,7 +1,11 @@
+ import Link from "next/link";
+ import { redirect } from "next/navigation";
+ import { EditorialBlocksEditor } from "@/app/admin/editorial/_components/editorial-blocks-editor.client";
+-import { type EditorialPageType, getEditorialBlocksRecord } from "@/app/admin/editorial/blocks-actions";
++import {
++	type EditorialPageType,
++	getEditorialBlocksRecord,
++	selectInitialEditorialDocument,
++} from "@/app/admin/editorial/blocks-actions";
+ import { auth } from "@/lib/auth";
+ import { hasCapability } from "@/lib/authz";
+ import { convertLegacyEditorialContentToBlocks } from "@/lib/editorial-blocks-migrate";
+@@ -38,7 +42,7 @@ export default async function AdminEditorialBlocksPage({ params }: { params: Pro
+ 
+ 	const record = await getEditorialBlocksRecord(page.type, slug);
+ 	const initialDoc =
+-		record?.draftDoc ?? record?.publishedDoc ?? convertLegacyEditorialContentToBlocks(record?.content);
++		selectInitialEditorialDocument(record) ?? convertLegacyEditorialContentToBlocks(record?.content);
+ 	const published = Boolean(record?.publishedDoc);
+ 
+ 	return (

@@ -1,0 +1,53 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Pagamento · métodos, parcelas e estados" subtitle="Pix, cartão, boleto e os quatro estados de cobrança" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body);padding:20px}
+  .lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-text-label)}
+  .col{display:flex;flex-direction:column;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.24em;text-transform:uppercase}
+
+</style></head><body>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+  <div class="col" style="gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div style="border:1px solid var(--sl-ink);background:var(--sl-paper);padding:12px;display:flex;flex-direction:column;gap:5px"><span style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pix</span><span style="font-size:12px;color:var(--sl-text-muted)">Aprovação imediata</span></div><div style="border:1px solid rgba(11,11,11,.28);padding:12px;display:flex;flex-direction:column;gap:5px"><span style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Cartão</span><span style="font-size:12px;color:var(--sl-text-muted)">Até 6x sem juros</span></div><div style="border:1px solid rgba(11,11,11,.28);padding:12px;display:flex;flex-direction:column;gap:5px"><span style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Boleto</span><span style="font-size:12px;color:var(--sl-text-muted)">Vence em 3 dias</span></div>
+    </div>
+    <div class="col" style="gap:6px">
+      <span class="lbl">Bandeira</span>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+        <span style="height:44px;background:var(--sl-ink);display:flex;align-items:center;justify-content:center"><img src="../../assets/img/icons/visa.svg" alt="Visa" style="height:16px;filter:invert(1) brightness(2)"></span>
+        <span style="height:44px;border:1px solid rgba(11,11,11,.28);display:flex;align-items:center;justify-content:center"><img src="../../assets/img/icons/mastercard.svg" alt="Mastercard" style="height:20px"></span>
+        <span style="height:44px;border:1px solid rgba(11,11,11,.28);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;letter-spacing:.1em;color:rgba(11,11,11,.75)">ELO</span><span style="height:44px;border:1px solid rgba(11,11,11,.28);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;letter-spacing:.1em;color:rgba(11,11,11,.75)">AMEX</span><span style="height:44px;border:1px solid rgba(11,11,11,.28);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;letter-spacing:.1em;color:rgba(11,11,11,.75)">HIPER</span>
+      </div>
+    </div>
+    <div class="col" style="gap:0">
+      <div style="height:52px;border:1px solid var(--sl-ink);background:var(--sl-surface-card);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:16px"><span><strong>6x</strong> de R$ 35,65</span><span style="font-size:13px;color:var(--sl-accent)">sem juros</span></div>
+      <div style="height:48px;border:1px solid rgba(11,11,11,.2);border-top:none;background:var(--sl-surface-card);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:15px;color:var(--sl-text-muted)"><span>1x de R$ 213,90</span><span style="font-size:13px;color:var(--sl-accent)">à vista</span></div>
+    </div>
+  </div>
+  <div class="col" style="gap:12px">
+    <div style="border:1px solid var(--sl-ink);background:var(--sl-ink);color:var(--sl-text-on-ink);padding:14px;display:flex;flex-direction:column;gap:6px">
+      <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:var(--sl-text-on-ink-label)">Processando</p>
+      <p style="margin:0;font-size:14px">Autorizando com o banco emissor… não feche a página.</p>
+      <div style="height:6px;background:rgba(247,244,239,.2)"><div style="width:60%;height:6px;background:var(--sl-buy)"></div></div>
+    </div>
+    <div style="border:1px solid var(--sl-ink);background:var(--sl-surface-card);padding:14px;display:flex;gap:10px;align-items:flex-start">
+      <span style="color:var(--sl-accent);font-weight:900">✓</span>
+      <div><p style="margin:0;font-size:14px;font-weight:700">Pagamento aprovado · pedido #1043</p><p style="margin:4px 0 0;font-size:12px;color:var(--sl-text-muted)">Comprovante enviado. Rastreio em até 24h.</p></div>
+    </div>
+    <div style="border:1px solid var(--sl-wine);background:var(--sl-danger-wash);padding:14px;display:flex;flex-direction:column;gap:8px">
+      <p style="margin:0;font-size:14px;font-weight:700;color:var(--sl-accent)">Cartão recusado pelo emissor</p>
+      <p style="margin:0;font-size:12px;color:var(--sl-accent)">Nada foi cobrado. Tente outro cartão ou pague por Pix.</p>
+      <div style="display:flex;gap:8px"><span class="btn" style="height:44px;padding:0 12px;background:var(--sl-wine);color:var(--sl-text-on-ink);font-size:10px;letter-spacing:.2em">Pagar com Pix</span><span class="btn" style="height:44px;padding:0 12px;border:1px solid var(--sl-wine);color:var(--sl-accent);font-size:10px;letter-spacing:.2em">Outro cartão</span></div>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.28);background:var(--sl-sand);padding:14px;display:flex;flex-direction:column;gap:5px">
+      <p style="margin:0;font-size:14px;font-weight:700">Aguardando Pix</p>
+      <p style="margin:0;font-size:12px;color:var(--sl-text-muted)">Reservamos os itens por 30 minutos.</p>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",Georgia,serif;color:#0B0B0B;-webkit-font-smoothing:antialiased}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div data-screen-label="Projetos" style="display:flex;flex-direction:column;min-height:100vh;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="background:#0B0B0B;color:rgba(247,244,239,.72);border-bottom:1px dashed rgba(247,244,239,.35)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:14px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid rgba(247,244,239,.35);font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF">Nota</span>
+      <span style="font-size:13px;line-height:1.5">Navbar omitida nesta tela — é a mesma barra de navegação global usada em todo o sistema (componente <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px">SiteHeader</span>).</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}">
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:56px 16px;box-sizing:border-box;display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:end">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:52ch">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:rgba(247,244,239,.6)">Projetos</p>
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(38px,6vw,60px);line-height:.95;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Uma atuação que atravessa livro, palco e formação</h1>
+        <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.75;color:rgba(247,244,239,.82)">Portfólio cultural do selo em diálogo com cidade, erotismo e escrita — com imagem, status, contexto e saída clara em cada item.</p>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.28)">
+        <div style="aspect-ratio:4/3;overflow:hidden;background:#141210"><img src="assets/img/illustration-statue-rider.png" alt="Registro de performance" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:64px 16px 40px;box-sizing:border-box;display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#7A1E22">Portfólio cultural</p>
+      <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px">
+        <h2 style="margin:0;max-width:22ch;font-family:'Fertigo',serif;font-size:clamp(28px,4vw,56px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Projetos como atuação cultural do selo</h2>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <p style="margin:0;font-size:16px;line-height:1.7;color:rgba(11,11,11,.72)">Esta página apresenta portfólio cultural sem virar uma lista homogênea de cards. Cada item tem imagem, período, local, status e uma saída específica.</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.65)">Os projetos seguem vindo dos registros publicados do acervo editorial do admin.</p>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:0 16px 64px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+    <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+      <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(28px,4vw,56px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Projetos publicados</h2>
+      <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid rgba(11,11,11,.3);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">6 registros</span>
+    </div>
+    <ul style="list-style:none;margin:0;padding:0;display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/illustration-night-figure.png" alt="Residência noturna" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2026 · São Paulo</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Residência Noturno</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Seis semanas de escrita e leitura pública com sete autoras convidadas.</p>
+          <button type="button" onClick="{{ openA }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/illustration-mermaid-circle.png" alt="Oficina" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2025 · Santos</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Oficina Sereia Suja</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Formação em escrita erótica para 24 participantes, com antologia impressa ao final.</p>
+          <button type="button" onClick="{{ openB }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/illustration-saturn.png" alt="Edição sonora" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2025 · Digital</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Órbita — edições sonoras</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Série de leituras gravadas com trilha original, distribuída pelo selo.</p>
+          <button type="button" onClick="{{ openC }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/illustration-heart-stockings.png" alt="Mostra" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2024 · Rio de Janeiro</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Mostra Meia de Seda</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Exposição de pôsteres e impressos do acervo, com programa de leituras.</p>
+          <button type="button" onClick="{{ openD }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/illustration-reader-phone.png" alt="Laboratório" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2024 · Online</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Laboratório de leitura</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Encontros mensais de leitura crítica com convidadas do catálogo.</p>
+          <button type="button" onClick="{{ openE }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+      <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+        <div style="aspect-ratio:1/1;background:#D8D0C4;overflow:hidden"><img src="assets/img/ninfas-example.png" alt="Publicação" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2023 · São Paulo</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Ninfas — antologia</h3>
+          <p style="margin:0;flex:1;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">Primeira antologia coletiva do selo, com 14 autoras e tiragem esgotada.</p>
+          <button type="button" onClick="{{ openF }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section style="background:#D8D0C4">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:center">
+      <h2 style="margin:0;max-width:26ch;font-family:'Fertigo',serif;font-size:clamp(26px,3.4vw,44px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Projetos conectam criação, formação e comunidade</h2>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;max-width:44ch;font-size:16px;line-height:1.7;color:rgba(11,11,11,.72)">Para propostas de curadoria, residência, oficina ou coedição, fale direto com o selo.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Falar sobre projeto</span>
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Ver Sarau Safado</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
+  <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:32px 16px 56px;box-sizing:border-box;display:flex;flex-direction:column;gap:36px">
+      <button type="button" onClick="{{ back }}" style="align-self:flex-start;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 20px;border:1px solid #F7F4EF;background:#F7F4EF;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#B3282E;border-color:#B3282E;color:#F7F4EF">← Voltar para projetos</button>
+      <div style="display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:end">
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:52ch">
+          <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:rgba(247,244,239,.6)">{{ p.meta }}</p>
+          <h1 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(38px,6vw,60px);line-height:.95;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">{{ p.title }}</h1>
+          <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.75;color:rgba(247,244,239,.82)">{{ p.lead }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+            <sc-for list="{{ p.tags }}" as="tag" hint-placeholder-count="3">
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid rgba(247,244,239,.28);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.8)">{{ tag }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="border:1px solid rgba(247,244,239,.28)">
+          <div style="aspect-ratio:4/3;overflow:hidden;background:#141210"><img src="{{ p.img }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:56px 16px 0;box-sizing:border-box;display:grid;gap:48px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#7A1E22">O projeto</p>
+      <sc-for list="{{ p.body }}" as="par" hint-placeholder-count="3">
+        <p style="margin:0;max-width:62ch;font-size:17px;line-height:1.8;color:rgba(11,11,11,.78)">{{ par }}</p>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0;border-top:1px solid rgba(11,11,11,.14)">
+      <sc-for list="{{ p.facts }}" as="fact" hint-placeholder-count="4">
+        <div style="display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid rgba(11,11,11,.14)">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">{{ fact.label }}</span>
+          <span style="font-size:15px;line-height:1.4;text-align:right;max-width:24ch">{{ fact.value }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:56px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+    <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px">
+      <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(24px,3vw,40px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Programa e registros</h2>
+    </div>
+    <ol style="list-style:none;margin:0;padding:0;display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <sc-for list="{{ p.program }}" as="mod" hint-placeholder-count="3">
+        <li style="display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid rgba(11,11,11,.14);padding:20px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">{{ mod.tag }}</span>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:20px;line-height:1.1;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">{{ mod.title }}</h3>
+          <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.72)">{{ mod.text }}</p>
+        </li>
+      </sc-for>
+    </ol>
+  </section>
+
+  <section style="background:#D8D0C4">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:center">
+      <h2 style="margin:0;max-width:26ch;font-family:'Fertigo',serif;font-size:clamp(26px,3.4vw,44px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">{{ p.ctaTitle }}</h2>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;max-width:44ch;font-size:16px;line-height:1.7;color:rgba(11,11,11,.72)">{{ p.ctaText }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a href="Contato v2.dc.html" style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Falar com o selo</a>
+          <button type="button" onClick="{{ back }}" style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Outros projetos</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:56px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+    <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px">
+      <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(22px,2.6vw,32px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Outros projetos do selo</h2>
+    </div>
+    <ul style="list-style:none;margin:0;padding:0;display:grid;gap:20px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+      <sc-for list="{{ others }}" as="o" hint-placeholder-count="3">
+        <li style="display:flex;flex-direction:column;background:#fff;border:1px solid rgba(11,11,11,.14)">
+          <div style="aspect-ratio:16/10;background:#D8D0C4;overflow:hidden"><img src="{{ o.img }}" alt="{{ o.title }}" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:10px;flex:1">
+            <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">{{ o.meta }}</p>
+            <h3 style="margin:0;flex:1;font-family:'Fertigo',serif;font-size:18px;line-height:1.1;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">{{ o.title }}</h3>
+            <button type="button" onClick="{{ o.open }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid #0B0B0B;background:transparent;color:#0B0B0B;font-family:inherit;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer" style-hover="background:#0B0B0B;color:#F7F4EF">Ver projeto</button>
+          </div>
+        </li>
+      </sc-for>
+    </ul>
+  </section>
+  </sc-if>
+
+  <footer style="margin-top:auto;background:#F7F4EF;border-top:1px solid rgba(11,11,11,.14)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px">
+      <div style="max-width:34ch;display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo Libertária</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Literatura erótica, urbana e dissidente. Livros, edições sonoras, zines, objetos e encontros.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Navegar</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Loja</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sarau Safado</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Projetos</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sobre</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Contato</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Perguntas frequentes</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:260px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Newsletter</p>
+        <div style="display:flex;gap:8px">
+          <span style="flex:1;display:inline-flex;align-items:center;height:52px;padding:0 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:14px;color:rgba(11,11,11,.5)">seu@email.com</span>
+          <span style="display:inline-flex;align-items:center;height:52px;padding:0 18px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Assinar</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:20px 16px;box-sizing:border-box;border-top:1px solid rgba(11,11,11,.14);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(11,11,11,.65)">
+      <span>© 2026 Selo Libertária</span>
+      <span>Conteúdo para maiores de 18 anos</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PROJECTS = [
+  {
+    id: "residencia-noturno",
+    title: "Residência Noturno",
+    meta: "2026 · São Paulo · Em curso",
+    img: "assets/img/illustration-night-figure.png",
+    lead: "Seis semanas de escrita e leitura pública com sete autoras convidadas, num apartamento da Bela Vista aberto ao público três noites por mês.",
+    tags: ["Residência", "Escrita", "Leitura pública"],
+    body: [
+      "A Residência Noturno nasceu de uma pergunta simples: o que a cidade escreve depois da meia-noite? Sete autoras ocupam por seis semanas um apartamento no centro de São Paulo, com bolsa, acompanhamento editorial e acesso ao acervo do selo.",
+      "O trabalho acontece em duplas de leitura crítica, com uma editora do selo por semana. Ao fim de cada quinzena, o apartamento abre para leitura pública — sem cobrança, com lista limitada a trinta pessoas por noite.",
+      "O material produzido é editado pelo selo e sai em plaquete impressa e em edição sonora. Os direitos permanecem com as autoras; a tiragem é dividida entre elas e o acervo."
+    ],
+    facts: [
+      { label: "Período", value: "Março a abril de 2026" },
+      { label: "Local", value: "Bela Vista, São Paulo" },
+      { label: "Autoras", value: "7 residentes" },
+      { label: "Status", value: "Inscrições encerradas" },
+      { label: "Saída", value: "Plaquete + edição sonora" },
+      { label: "Apoio", value: "Recursos próprios do selo" }
+    ],
+    program: [
+      { tag: "Semanas 1–2", title: "Deriva e caderno", text: "Escrita de campo em percursos noturnos pelo centro, com caderno comum entregue ao acervo." },
+      { tag: "Semanas 3–4", title: "Leitura crítica", text: "Duplas rotativas e mesa de edição semanal com a equipe do selo." },
+      { tag: "Semanas 5–6", title: "Fechamento", text: "Corte final, gravação das faixas e leitura pública de encerramento." }
+    ],
+    ctaTitle: "Quer propor uma residência ou ceder espaço?",
+    ctaText: "O selo aceita propostas de parceria para as próximas edições — espaço, bolsa, impressão ou curadoria."
+  },
+  {
+    id: "oficina-sereia-suja",
+    title: "Oficina Sereia Suja",
+    meta: "2025 · Santos · Concluído",
+    img: "assets/img/illustration-mermaid-circle.png",
+    lead: "Formação em escrita erótica para 24 participantes, com antologia impressa ao final e leitura no porto.",
+    tags: ["Formação", "Erotismo", "Antologia"],
+    body: [
+      "Doze encontros na zona portuária de Santos, pensados para quem escreve sexo e não quer escrever pornografia por acidente. A oficina trabalhou vocabulário, ponto de vista e ritmo.",
+      "As 24 participantes chegaram por chamada aberta, sem exigência de publicação anterior. Metade das vagas foi reservada para moradoras da Baixada Santista.",
+      "A antologia final saiu com tiragem de 300 exemplares, vendida no acervo do selo e nas livrarias da cidade."
+    ],
+    facts: [
+      { label: "Período", value: "Agosto a novembro de 2025" },
+      { label: "Local", value: "Zona portuária, Santos" },
+      { label: "Participantes", value: "24 vagas" },
+      { label: "Status", value: "Concluído" },
+      { label: "Saída", value: "Antologia, 300 exemplares" },
+      { label: "Encontros", value: "12 sessões" }
+    ],
+    program: [
+      { tag: "Módulo 1", title: "Vocabulário", text: "O que a palavra faz com o corpo: exercícios de nomeação e recusa do clichê." },
+      { tag: "Módulo 2", title: "Ponto de vista", text: "Quem olha, quem é olhada, quem paga a conta da cena." },
+      { tag: "Módulo 3", title: "Ritmo", text: "Corte, respiração e duração — a edição como parte do desejo." }
+    ],
+    ctaTitle: "A oficina volta em 2026, em outra cidade",
+    ctaText: "Entre na lista para saber da próxima chamada aberta ou proponha uma sede."
+  },
+  {
+    id: "orbita",
+    title: "Órbita — edições sonoras",
+    meta: "2025 · Digital · Em curso",
+    img: "assets/img/illustration-saturn.png",
+    lead: "Série de leituras gravadas com trilha original, distribuída pelo selo em faixas mensais.",
+    tags: ["Áudio", "Série", "Trilha original"],
+    body: [
+      "Órbita transforma textos do catálogo em faixas de dez a vinte minutos, lidas pelas próprias autoras, com trilha composta para cada peça.",
+      "A série é gravada em estúdio pequeno, sem correção de respiração nem limpeza excessiva — a voz entra com a hesitação inteira.",
+      "As faixas ficam abertas por trinta dias e depois vão para a assinatura do selo. A masterização e a arte de cada episódio são feitas internamente."
+    ],
+    facts: [
+      { label: "Início", value: "Fevereiro de 2025" },
+      { label: "Formato", value: "Faixas de 10–20 min" },
+      { label: "Frequência", value: "Mensal" },
+      { label: "Status", value: "Em curso" },
+      { label: "Episódios", value: "14 publicados" },
+      { label: "Trilha", value: "Composição original" }
+    ],
+    program: [
+      { tag: "Etapa 1", title: "Seleção", text: "Curadoria de textos do catálogo com potencial de voz." },
+      { tag: "Etapa 2", title: "Gravação", text: "Sessão única com a autora, sem teleprompter." },
+      { tag: "Etapa 3", title: "Trilha e mix", text: "Composição feita depois da leitura, respeitando a respiração." }
+    ],
+    ctaTitle: "Tem um texto que pede voz?",
+    ctaText: "Autoras do catálogo e de fora podem propor faixas para as próximas temporadas."
+  },
+  {
+    id: "meia-de-seda",
+    title: "Mostra Meia de Seda",
+    meta: "2024 · Rio de Janeiro · Concluído",
+    img: "assets/img/illustration-heart-stockings.png",
+    lead: "Exposição de pôsteres e impressos do acervo, com programa de leituras em três fins de semana.",
+    tags: ["Exposição", "Impressos", "Acervo"],
+    body: [
+      "A mostra reuniu 62 peças gráficas do acervo do selo — pôsteres de sarau, capas descartadas, provas de cor e zines fora de catálogo.",
+      "Ocupou uma sobreloja no centro do Rio por 21 dias, com entrada gratuita e programa de leituras nos sábados.",
+      "Todo o material expositivo voltou para o acervo; a curadoria e as legendas ficaram disponíveis como caderno impresso."
+    ],
+    facts: [
+      { label: "Período", value: "Outubro de 2024, 21 dias" },
+      { label: "Local", value: "Centro, Rio de Janeiro" },
+      { label: "Peças", value: "62 impressos" },
+      { label: "Status", value: "Concluído" },
+      { label: "Público", value: "Entrada gratuita" },
+      { label: "Saída", value: "Caderno de curadoria" }
+    ],
+    program: [
+      { tag: "Sábado 1", title: "Cartaz e rua", text: "Leitura sobre o pôster de sarau como convite político." },
+      { tag: "Sábado 2", title: "Capas recusadas", text: "Conversa aberta sobre o que não virou livro." },
+      { tag: "Sábado 3", title: "Zine ao vivo", text: "Montagem coletiva de um zine com sobras da mostra." }
+    ],
+    ctaTitle: "A mostra pode viajar",
+    ctaText: "Espaços interessados em receber Meia de Seda podem falar com a produção do selo."
+  },
+  {
+    id: "laboratorio-de-leitura",
+    title: "Laboratório de leitura",
+    meta: "2024 · Online · Em curso",
+    img: "assets/img/illustration-reader-phone.png",
+    lead: "Encontros mensais de leitura crítica com convidadas do catálogo, abertos a quem assina o selo.",
+    tags: ["Leitura", "Online", "Mensal"],
+    body: [
+      "Um encontro por mês, duas horas, um único texto lido por todas antes. Sem apresentação de slides e sem palestra: só leitura em voz e discussão.",
+      "Cada sessão tem uma convidada do catálogo que responde por escrito às perguntas enviadas antes, para o tempo do encontro ficar com a leitura.",
+      "As notas coletivas ficam num caderno público, editado pelo selo a cada semestre."
+    ],
+    facts: [
+      { label: "Início", value: "Maio de 2024" },
+      { label: "Formato", value: "Online, 2 horas" },
+      { label: "Frequência", value: "Mensal" },
+      { label: "Status", value: "Em curso" },
+      { label: "Acesso", value: "Assinantes do selo" },
+      { label: "Saída", value: "Caderno semestral" }
+    ],
+    program: [
+      { tag: "Antes", title: "Leitura prévia", text: "Texto enviado com duas semanas de antecedência." },
+      { tag: "Durante", title: "Leitura em voz", text: "Trechos lidos por quem quiser, sem ordem definida." },
+      { tag: "Depois", title: "Caderno", text: "Notas compiladas e editadas para o caderno público." }
+    ],
+    ctaTitle: "Quer participar do próximo encontro?",
+    ctaText: "As sessões são abertas a assinantes; convidadas do catálogo entram por indicação editorial."
+  },
+  {
+    id: "ninfas",
+    title: "Ninfas — antologia",
+    meta: "2023 · São Paulo · Esgotado",
+    img: "assets/img/ninfas-example.png",
+    lead: "Primeira antologia coletiva do selo, com 14 autoras e tiragem esgotada em quatro meses.",
+    tags: ["Antologia", "Estreia", "Esgotado"],
+    body: [
+      "Ninfas foi o primeiro livro do selo: 14 autoras, nenhuma delas com livro solo publicado na época, reunidas por chamada aberta.",
+      "A tiragem inicial de 500 exemplares esgotou em quatro meses, vendida em feiras, saraus e pelo site. Não houve reimpressão por decisão editorial.",
+      "O livro continua disponível em edição sonora pela série Órbita, e três das autoras publicaram títulos solo pelo selo depois."
+    ],
+    facts: [
+      { label: "Publicação", value: "Novembro de 2023" },
+      { label: "Autoras", value: "14 vozes" },
+      { label: "Tiragem", value: "500 exemplares" },
+      { label: "Status", value: "Esgotado, sem reimpressão" },
+      { label: "Disponível", value: "Edição sonora (Órbita)" },
+      { label: "Desdobramento", value: "3 títulos solo" }
+    ],
+    program: [
+      { tag: "Etapa 1", title: "Chamada aberta", text: "312 inscrições em seis semanas, leitura cega pela equipe editorial." },
+      { tag: "Etapa 2", title: "Edição", text: "Três rodadas de edição individual com cada autora." },
+      { tag: "Etapa 3", title: "Lançamento", text: "Noite única em sarau, com leitura das 14 autoras." }
+    ],
+    ctaTitle: "Ninfas não volta ao prelo, mas segue viva",
+    ctaText: "Ouça a antologia na série Órbita ou acompanhe os títulos solo das autoras no acervo."
+  }
+];
+
+class Component extends DCLogic {
+  state = { openId: null };
+
+  open(id) {
+    this.setState({ openId: id });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }
+
+  renderVals() {
+    const openId = this.state.openId;
+    const p = PROJECTS.find(x => x.id === openId) || null;
+    const vals = {
+      showList: !p,
+      showDetail: !!p,
+      p: p || {},
+      back: () => this.open(null),
+      others: PROJECTS.filter(x => !p || x.id !== p.id).slice(0, 3).map(o => ({
+        id: o.id, title: o.title, meta: o.meta, img: o.img, open: () => this.open(o.id)
+      }))
+    };
+    ["openA", "openB", "openC", "openD", "openE", "openF"].forEach((k, i) => {
+      const id = PROJECTS[i].id;
+      vals[k] = () => this.open(id);
+    });
+    return vals;
+  }
+}
+</script>
+</body>
+</html>

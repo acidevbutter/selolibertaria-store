@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="width:1180px;min-height:820px;box-sizing:border-box;background:#F7F4EF;padding:36px 40px;display:flex;flex-direction:column;gap:28px">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">Painel</p>
+      <h1 style="margin:0;font-size:52px;line-height:.9;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">O que você vai criar hoje</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(11,11,11,.62)">Três coisas que você faz toda semana. O resto do admin fica na barra lateral.</p>
+    </div>
+    <span style="flex:none;display:inline-flex;align-items:center;height:48px;padding:0 18px;border:1px solid rgba(11,11,11,.35);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Ver a loja ↗</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+    <div style="background:#0B0B0B;color:#F7F4EF;padding:26px;min-height:176px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:'DCCAsh',serif;font-size:34px;color:#7A1E22">01</span>
+      <div><p style="margin:0;font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;line-height:1.02">Novo<br>evento</p><p style="margin:10px 0 0;font-size:13px;line-height:1.55;color:rgba(247,244,239,.66)">Sarau, lançamento ou oficina — entra na agenda pública.</p></div>
+    </div>
+    <div style="background:#7A1E22;color:#F7F4EF;padding:26px;min-height:176px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:'DCCAsh',serif;font-size:34px;color:rgba(247,244,239,.55)">02</span>
+      <div><p style="margin:0;font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;line-height:1.02">Nova<br>promoção</p><p style="margin:10px 0 0;font-size:13px;line-height:1.55;color:rgba(247,244,239,.8)">Assistente de 5 passos com prévia do preço final.</p></div>
+    </div>
+    <div style="background:#D8D0C4;padding:26px;min-height:176px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font-family:'DCCAsh',serif;font-size:34px;color:#7A1E22">03</span>
+      <div><p style="margin:0;font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;line-height:1.02">Editar<br>página</p><p style="margin:10px 0 0;font-size:13px;line-height:1.55;color:rgba(11,11,11,.66)">Inicial, Sobre, Contato, Sarau — com prévia ao vivo.</p></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.18);display:flex;align-items:baseline;justify-content:space-between">
+        <span style="font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Próximos eventos</span>
+        <span style="font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#7A1E22">Ver agenda</span>
+      </div>
+      <div style="display:flex;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.1)">
+        <div style="flex:none;text-align:center"><div style="font-family:'DCCAsh',serif;font-size:26px;line-height:1">27</div><div style="font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.55)">Set</div></div>
+        <div><div style="font-size:16px;font-weight:700">Sarau Safado #14</div><div style="font-size:13px;color:rgba(11,11,11,.6)">Casa da Matriz · publicado</div></div>
+      </div>
+      <div style="display:flex;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.1)">
+        <div style="flex:none;text-align:center"><div style="font-family:'DCCAsh',serif;font-size:26px;line-height:1">04</div><div style="font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.55)">Out</div></div>
+        <div><div style="font-size:16px;font-weight:700">Lançamento — Ninfas do Tietê</div><div style="font-size:13px;color:#B3282E">rascunho · sem imagem de capa</div></div>
+      </div>
+      <div style="display:flex;gap:16px;padding:16px 20px">
+        <div style="flex:none;text-align:center"><div style="font-family:'DCCAsh',serif;font-size:26px;line-height:1">19</div><div style="font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.55)">Out</div></div>
+        <div><div style="font-size:16px;font-weight:700">Oficina de zine</div><div style="font-size:13px;color:rgba(11,11,11,.6)">publicado</div></div>
+      </div>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.18);display:flex;align-items:baseline;justify-content:space-between">
+        <span style="font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Promoções ativas</span>
+        <span style="font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#7A1E22">Ver todas</span>
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.1);display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div><div style="font-size:16px;font-weight:700">RATO10 · −10%</div><div style="font-size:13px;color:rgba(11,11,11,.6)">2 produtos · 38 usos</div></div>
+        <span style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 10px;background:#D8D0C4;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Vence em 3 dias</span>
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(11,11,11,.1);display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div><div style="font-size:16px;font-weight:700">Pré-venda little fish</div><div style="font-size:13px;color:rgba(11,11,11,.6)">preço especial R$ 64,80</div></div>
+        <span style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Até 30/out</span>
+      </div>
+      <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div><div style="font-size:16px;font-weight:700">Leve 3 — 20% off</div><div style="font-size:13px;color:#B3282E">rascunho · sem produtos marcados</div></div>
+        <span style="flex:none;display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid rgba(122,30,34,.5);color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Retomar</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:860}}"></script>
+</body>
+</html>

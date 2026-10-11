@@ -1,0 +1,50 @@
+flowchart TB
+%% Resultado do merge de feat/asaas-proxy-client-mtls em homol/storefront-asaas
+%% (backend/, commit f3860b9, 2026-09-09). Mostra o que sobrevive apos a
+%% resolucao de conflitos em app/asaas/client.py e app/settings/config.py.
+
+    subgraph SELO["selolibertaria/backend"]
+        direction TB
+        CS["checkout_service.py\nAsaasCheckoutService\n(reconciliacao em Payment,\n401 -> reactive rotation)"]
+        CLI["client.py\nAsaasClient\n(delegação pura -- sem HTTP proprio)"]
+        PROXY["proxy_client.py\nAsaasProxyClient\nmTLS para asaas_payment"]
+        MTLS["mtls.py\nmtls_options()\n(cert/key/ca compartilhado)"]
+        MIRROR["mirror_client.py\nAsaasMirrorClient\n(double-write, condicionado a\nASAAS_PAYMENT_BASE_URL)"]
+        WEBHOOK["webhook_jobs.py\n(gate por asaas_payment_base_url)"]
+        CRED["credential_store.py\nAsaasCredentialStore\n(mantido -- so bookkeeping local:\nmark_verified / mark_pending_rotation)"]
+        ROT["rotation_service.py\nAsaasRotationService\n(401 -> pede rotacao ao devbutter_backend)"]
+
+        CS --> CLI --> PROXY --> MTLS
+        CS -.-> CRED
+        CS --> ROT --> CRED
+        MIRROR --> MTLS
+        WEBHOOK -.->|"so roda com proxy configurado"| MIRROR
+    end
+
+    PROXY -->|"mTLS cert=sales-api.crt\nverify=ca.crt"| ASAASPAY["asaas_payment\n(cofre + proxy, fora deste repo)"]
+    ASAASPAY --> ASAAS["Asaas API"]
+
+    subgraph REMOVIDO["❌ removido nesta fusao"]
+        direction TB
+        VAULT["vault_client.py\nAsaasPaymentVaultClient\n(buscava ciphertext Fernet e\ndecriptava em memoria)"]
+        MOCK["client.py: modo mock\n(_mock_digest, _MOCK_INITIAL_STATUS)"]
+        FLAGS["config.py:\nasaas_encrypted_vault_enabled\nasaas_client_mode\nasaas_base_url\nasaas_request_timeout_seconds"]
+        TESTV["tests/test_asaas_vault_and_mirror.py"]
+    end
+
+    CLI -.->|"ate este merge, _resolve_api_key()\nchamava isto quando\nASAAS_ENCRYPTED_VAULT_ENABLED=true"| VAULT
+
+    subgraph FIX["bug corrigido durante a fusao"]
+        direction TB
+        GAP["proxy_client.py so tinha\ncreate_customer/create_charge/get_charge\n+ invoices -- faltavam\nfind_charge/cancel_charge/refund_charge"]
+        IMPACT["app/orders/service.py chama\ncancel_charge e refund_charge;\nsem eles, cancelamento/estorno\nquebrava silenciosamente"]
+        ADDED["find_charge, cancel_charge e\nrefund_charge adicionados a\nAsaasProxyClient nesta fusao"]
+        GAP --> IMPACT --> ADDED
+    end
+
+    PROXY --- FIX
+
+    classDef removed fill:#3a1a1a,stroke:#c0392b,color:#e8b4b4,stroke-dasharray: 4 3;
+    classDef fixed fill:#1a2e1a,stroke:#2e8b57,color:#b4e8c0;
+    class VAULT,MOCK,FLAGS,TESTV removed;
+    class GAP,IMPACT,ADDED fixed;

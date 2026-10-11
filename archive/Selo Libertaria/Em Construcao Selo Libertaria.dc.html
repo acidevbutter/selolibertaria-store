@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+html,body{margin:0;min-height:100%;background:#F7F4EF;font-family:"Fertigo",Georgia,serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#F7F4EF;box-sizing:border-box" data-screen-label="Em construção — Selo Libertária">
+
+  <header style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px clamp(16px,4vw,48px);background:#0B0B0B;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0">
+      <div style="width:34px;height:34px;overflow:hidden;flex:none;border:1px solid rgba(247,244,239,.2)"><img src="assets/img/selolibertaria.png" alt="Selo Libertária" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div style="min-width:0">
+        <div style="font-size:10px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:rgba(247,244,239,.55)">Selo</div>
+        <div style="font-size:13px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#F7F4EF">Libertária</div>
+      </div>
+    </div>
+    <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF;background:#B3282E;padding:6px 10px;white-space:nowrap">Em construção</span>
+  </header>
+
+  <main style="flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:stretch">
+
+    <section style="min-width:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,2.4vh,28px);padding:clamp(28px,5vw,72px) clamp(16px,4vw,48px);box-sizing:border-box">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#7A1E22">{{ kicker }}</p>
+      <h1 style="margin:0;font-weight:900;font-size:clamp(40px,6vw,76px);line-height:.9;letter-spacing:-.05em;text-transform:uppercase;color:#0B0B0B;text-wrap:balance">{{ title }}</h1>
+      <p style="margin:0;max-width:52ch;font-size:clamp(15px,1.2vw,17px);line-height:1.75;color:rgba(11,11,11,.72);text-wrap:pretty">{{ message }}</p>
+
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:440px">
+        <label for="sl-wip-mail" style="font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(11,11,11,.55)">Receba o aviso de abertura</label>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <input id="sl-wip-mail" type="email" placeholder="seu@email.com" style="flex:1 1 190px;min-width:0;height:52px;padding:0 14px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);border-radius:0;color:#0B0B0B;font-family:'Fertigo',Georgia,serif;font-size:16px;box-sizing:border-box">
+          <button type="button" style="flex:none;height:52px;padding:0 22px;background:#B3282E;border:none;border-radius:0;color:#F7F4EF;font-family:'Fertigo',Georgia,serif;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer;transition:background 120ms linear" style-hover="background:#8F1F24">Quero saber</button>
+        </div>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.55)">Um e-mail quando a página entrar no ar. Nada além disso.</p>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:clamp(14px,3vw,32px);padding-top:clamp(6px,1.5vh,14px);border-top:1px solid rgba(11,11,11,.14)">
+        <a href="https://instagram.com/selolibertaria" style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">Instagram →</a>
+        <a href="#" style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">Catálogo →</a>
+        <a href="mailto:contato@selolibertaria.com" style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">contato@selolibertaria.com</a>
+      </div>
+    </section>
+
+    <section style="min-width:0;display:flex;flex-direction:column;gap:0;background:#D8D0C4;border-left:1px solid rgba(11,11,11,.14)">
+      <div style="flex:1;min-height:260px;display:flex;align-items:center;justify-content:center;padding:clamp(20px,4vw,56px);box-sizing:border-box">
+        <img src="{{ illustrationSrc }}" alt="Ilustração do selo" style="max-width:100%;max-height:46vh;width:auto;height:auto;object-fit:contain;display:block">
+      </div>
+      <div style="flex:none;display:flex;flex-wrap:wrap;gap:clamp(16px,3vw,28px);padding:clamp(16px,2.4vw,28px) clamp(20px,4vw,56px);background:#0B0B0B;box-sizing:border-box">
+        <div style="min-width:0">
+          <div style="font-family:'DCCAsh','Fertigo',serif;font-size:clamp(22px,2.4vw,30px);line-height:1;color:#F7F4EF">{{ statusLabel }}</div>
+          <div style="margin-top:6px;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Estado da página</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer style="flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(16px,4vw,48px);border-top:1px solid rgba(11,11,11,.14);box-sizing:border-box">
+    <span style="font-size:13px;color:rgba(11,11,11,.55)">Selo Libertária · São Paulo · literatura, som e encontro</span>
+    <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.4)">O resto do site segue no ar</span>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;kicker&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Esta página está sendo escrita&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conteúdo&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ainda não está pronta&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conteúdo&quot;},&quot;message&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Estamos montando esta parte do site com o mesmo cuidado que damos a um livro: sem pressa, sem provisório. Assim que abrir, avisamos por e-mail e no Instagram.&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conteúdo&quot;},&quot;statusLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Em montagem&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Estado&quot;},&quot;etaLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;out 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Estado&quot;},&quot;illustration&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Sereia&quot;,&quot;Estátua&quot;,&quot;Figura noturna&quot;,&quot;Saturno&quot;,&quot;Leitora&quot;,&quot;Coração&quot;],&quot;default&quot;:&quot;Sereia&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Imagem&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const map = {
+      "Sereia": "assets/img/illustration-mermaid-circle.png",
+      "Estátua": "assets/img/illustration-statue-rider.png",
+      "Figura noturna": "assets/img/illustration-night-figure.png",
+      "Saturno": "assets/img/illustration-saturn.png",
+      "Leitora": "assets/img/illustration-reader-phone.png",
+      "Coração": "assets/img/illustration-heart-stockings.png"
+    };
+    return {
+      kicker: p.kicker ?? "Esta página está sendo escrita",
+      title: p.title ?? "Ainda não está pronta",
+      message: p.message ?? "Estamos montando esta parte do site com o mesmo cuidado que damos a um livro: sem pressa, sem provisório. Assim que abrir, avisamos por e-mail e no Instagram.",
+      statusLabel: p.statusLabel ?? "Em montagem",
+      etaLabel: p.etaLabel ?? "out 2026",
+      illustrationSrc: map[p.illustration] ?? map["Sereia"]
+    };
+  }
+}
+</script>
+</body>
+</html>

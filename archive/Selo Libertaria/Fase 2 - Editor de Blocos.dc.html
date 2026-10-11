@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:56px;padding:72px 72px 110px;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:22px">
+    <span style="flex:none;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Fase 2</span>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:62rem">
+      <h1 style="margin:0;font-size:70px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase">Texto rico com imagem dentro</h1>
+      <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(11,11,11,.72)">Aqui a resposta à sua pergunta: <strong>sim</strong> — arrastar a imagem para dentro do texto, escolher se ela é faixa larga, coluna ou lado a lado com o parágrafo, recortar sem sair do editor e reordenar. Depende da Fase 1: é a biblioteca de mídia que alimenta este editor.</p>
+      <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.5)">Telas <a href="#f2-telas">2.1–2.3</a> · Backend <a href="#f2-back">requisitos</a> · Aceite <a href="#f2-aceite">critérios</a> · <a href="guidelines/admin-design-system.md">Design system</a></p>
+    </div>
+  </div>
+
+  <div id="f2-telas" style="display:flex;flex-direction:column;gap:24px">
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2.1</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Arrastar a foto para dentro do texto</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;background:#D8D0C4;border-bottom:1px solid rgba(11,11,11,.2)">
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Parágrafo ▾</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#0B0B0B;color:#F7F4EF;font-size:14px;font-weight:900">B</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:14px;font-style:italic;color:#0B0B0B">I</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:13px;color:#0B0B0B">🔗</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px;color:#0B0B0B">• Lista</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px;color:#0B0B0B">❝ Citação</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 11px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Imagem</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 11px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px;color:#0B0B0B">Botão</span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 10px;font-size:12px;color:rgba(11,11,11,.55)">↩ ↪</span>
+        </div>
+        <div style="padding:26px 30px;display:flex;flex-direction:column;gap:16px;min-height:520px">
+          <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.45)">Sarau Safado › Memória</p>
+          <h2 style="margin:0;font-size:36px;line-height:1;font-weight:900;letter-spacing:-.04em;text-transform:uppercase;color:#0B0B0B">A noite em que a fila dobrou a esquina</h2>
+          <p style="margin:0;font-size:16px;line-height:1.75;color:rgba(11,11,11,.82)">O décimo quarto sarau começou às nove e não acabou. Quem não conseguiu entrar ficou na calçada, e a leitura seguiu na porta — com microfone virado para a rua.</p>
+
+          <div style="border:2px solid #7A1E22;background:rgba(122,30,34,.06);padding:14px;display:flex;align-items:center;gap:14px">
+            <div style="flex:none;width:64px;height:48px;background:#0B0B0B;opacity:.55"></div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Soltar aqui · entre estes dois parágrafos</p>
+              <p style="margin:5px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">sarau-14-publico.jpg · a linha vermelha mostra onde a imagem vai cair</p>
+            </div>
+          </div>
+
+          <p style="margin:0;font-size:16px;line-height:1.75;color:rgba(11,11,11,.82)">Foram dezoito vozes. Três nunca tinham lido em público. Uma vendeu todos os zines que trouxe na mochila antes do intervalo.</p>
+
+          <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:14px;display:flex;gap:16px;align-items:flex-start">
+            <div style="flex:none;width:150px;height:100px;background:#0B0B0B;position:relative">
+              <span style="position:absolute;top:6px;left:6px;background:#F7F4EF;color:#0B0B0B;font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:3px 6px">16:9</span>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+              <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.62)"><strong style="color:#0B0B0B">Bloco de imagem já inserido.</strong> A barrinha aparece ao passar o mouse.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:700">Recortar</span>
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid rgba(11,11,11,.3);font-size:11px;color:#0B0B0B">Trocar</span>
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid rgba(11,11,11,.3);font-size:11px;color:#0B0B0B">Legenda</span>
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid rgba(11,11,11,.3);font-size:11px;color:#0B0B0B">⇅ Mover</span>
+                <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid rgba(122,30,34,.45);font-size:11px;color:#7A1E22">Remover</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px dashed rgba(11,11,11,.25)">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid rgba(11,11,11,.3);font-size:16px;color:rgba(11,11,11,.5)">+</span>
+            <span style="font-size:14px;color:rgba(11,11,11,.5)">Inserir bloco</span>
+          </div>
+        </div>
+        <div style="padding:14px 20px;border-top:1px solid rgba(11,11,11,.2);background:#D8D0C4;display:flex;align-items:center;justify-content:space-between;gap:14px">
+          <span style="font-size:13px;color:rgba(11,11,11,.7)">Rascunho salvo às 14:32</span>
+          <div style="display:flex;gap:10px">
+            <span style="display:inline-flex;align-items:center;height:48px;padding:0 16px;border:1px solid rgba(11,11,11,.35);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Ver como fica</span>
+            <span style="display:inline-flex;align-items:center;height:48px;padding:0 18px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Publicar</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2.2 · Como a imagem se comporta no texto</p>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:center;border:2px solid #0B0B0B;padding:10px">
+              <div style="flex:none;width:84px;height:44px;background:#0B0B0B"></div>
+              <div><p style="margin:0;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;color:#0B0B0B">Faixa larga</p><p style="margin:3px 0 0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">Atravessa a coluna inteira.</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;border:1px solid rgba(11,11,11,.2);padding:10px">
+              <div style="flex:none;width:84px;display:flex;gap:4px"><div style="width:44px;height:44px;background:#0B0B0B"></div><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:4px;background:rgba(11,11,11,.3)"></div><div style="height:4px;background:rgba(11,11,11,.3)"></div><div style="height:4px;width:70%;background:rgba(11,11,11,.3)"></div></div></div>
+              <div><p style="margin:0;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;color:#0B0B0B">Ao lado do texto</p><p style="margin:3px 0 0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">Esquerda ou direita, texto contorna.</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;border:1px solid rgba(11,11,11,.2);padding:10px">
+              <div style="flex:none;width:84px;display:flex;justify-content:center"><div style="width:44px;height:44px;background:#0B0B0B"></div></div>
+              <div><p style="margin:0;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;color:#0B0B0B">Centralizada menor</p><p style="margin:3px 0 0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">Retrato, capa, detalhe.</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;border:1px solid rgba(11,11,11,.2);padding:10px">
+              <div style="flex:none;width:84px;display:grid;grid-template-columns:repeat(3,1fr);gap:3px"><div style="height:44px;background:#0B0B0B"></div><div style="height:44px;background:#0B0B0B"></div><div style="height:44px;background:#0B0B0B"></div></div>
+              <div><p style="margin:0;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:-.01em;color:#0B0B0B">Galeria</p><p style="margin:3px 0 0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">3 a 6 fotos, grade automática.</p></div>
+            </div>
+          </div>
+          <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(11,11,11,.55)">Quatro opções nomeadas — não largura em pixel, não arrastar canto livremente. É o que mantém o site parecido com o site.</p>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Hoje no código</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">O editorial guarda <strong>texto simples com marcação limitada</strong> e a imagem é um campo separado, fora do texto. Não existe imagem no meio do parágrafo — nem como HTML, nem como bloco.</p>
+        </div>
+        <div style="border:1px solid rgba(11,11,11,.3);background:#D8D0C4;padding:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Reaproveita</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">A prévia ao vivo e a barra de salvar do editorial continuam as mesmas. A troca é do campo de texto para um editor de blocos e do campo de imagem para o seletor da Fase 1.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2.3</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Recortar sem sair do editor · o painel abre por cima</span>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:24px;display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:none;position:relative;width:300px;height:200px;background:#0B0B0B">
+        <span style="position:absolute;inset:0;border:2px solid #F7F4EF;margin:18px 26px"></span>
+        <span style="position:absolute;bottom:6px;left:8px;background:#7A1E22;color:#F7F4EF;font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:4px 8px">Faixa larga · 16:9</span>
+      </div>
+      <div style="flex:1;min-width:320px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:22px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;color:#0B0B0B">Mesmo recorte da Fase 1, chamado de dentro do texto</p>
+        <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(11,11,11,.75)">Clicar em "Recortar" no bloco abre o painel da Fase 1 sobre o editor. Ao confirmar, ele fecha e o texto continua onde estava — o cursor não se perde, o rascunho não recarrega.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Legenda: "Sarau #14, setembro"</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Descrição para leitor de tela</span>
+          <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Link ao clicar · opcional</span>
+        </div>
+        <div style="background:#D8D0C4;padding:14px">
+          <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.8)">O recorte feito aqui vale <strong>só neste bloco</strong>. A mesma foto em outra página mantém o recorte dela — é para isso que o recorte é dado, não arquivo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="f2-back" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Backend</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">O que precisa existir para a Fase 2 rodar</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+      <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">1 · A decisão estrutural</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Conteúdo deixa de ser string</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Hoje cada campo editorial é texto. Com imagem, citação e botão no meio, o campo precisa virar <strong>documento estruturado</strong> (JSON de nós) — não HTML livre, que abre brecha de injeção e impede validar o que ela inseriu.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Coluna nova <code>contentDoc</code> (jsonb) convivendo com a antiga; o site lê <code>contentDoc</code> quando existe.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2 · Esquema dos blocos</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Lista fechada de tipos</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Validar no servidor com Zod: <code>heading</code>, <code>paragraph</code>, <code>list</code>, <code>quote</code>, <code>highlight</code>, <code>image</code>, <code>gallery</code>, <code>button</code>, <code>divider</code>, <code>productShelf</code>, <code>agenda</code>. Tipo fora da lista = 422. Nada de estilo arbitrário no nó.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">O nó <code>image</code> guarda <code>assetId</code>, <code>cropId</code>, <code>layout</code> ("wide"|"side"|"center"|"gallery"), <code>caption</code>, <code>href?</code>.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">3 · Renderização</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Um renderer só</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Componente que percorre o documento e mapeia cada tipo para o componente do design system. A prévia do admin e a página pública usam <strong>o mesmo</strong> renderer — é o que garante que "ver como fica" seja verdade.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Nenhum <code>dangerouslySetInnerHTML</code> no caminho.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">4 · Rascunho e publicação</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Duas versões por página</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Guardar <code>draftDoc</code> e <code>publishedDoc</code> separados, com <code>publishedAt</code> e <code>updatedBy</code>. Salvar automático grava só o rascunho; o site lê só o publicado.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Rotas: <code>PUT …/draft</code> (autosave, debounce) · <code>POST …/publish</code> · <code>POST …/revert</code>.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">5 · Vínculo com mídia</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">MediaUsage no salvamento</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Ao publicar, varrer os nós <code>image</code>/<code>gallery</code> e reescrever os vínculos daquela página. Sem isso, o "usada em 3 lugares" da Fase 1 mente assim que a imagem passa a viver dentro do texto.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">6 · Migração do que existe</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Texto atual → blocos</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Script que quebra o texto de cada campo em nós <code>paragraph</code>/<code>heading</code> e cria <code>publishedDoc</code>. Roda uma vez por página; se falhar, a página continua servindo o texto antigo.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Permissão: <code>editorial.write</code>, sem capability nova.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="f2-aceite" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Aceite</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">A fase está pronta quando</span>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Ela arrasta uma foto para o meio de um texto e escolhe entre as quatro formas, <strong>sem colar link e sem pedir ajuda</strong>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Recorta a imagem inserida sem sair do editor e <strong>sem perder o rascunho</strong>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Reordena blocos arrastando; duplica e apaga sem tocar em código.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— "Ver como fica" é idêntico à página publicada, porque o renderer é o mesmo.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Ela <strong>não consegue</strong> mudar fonte, cor, tamanho nem espaçamento: liberdade de estrutura, não de estilo.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

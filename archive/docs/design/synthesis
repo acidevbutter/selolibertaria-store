@@ -1,0 +1,56 @@
+# Research Synthesis: Canvas Admin Selo Libertária — auditoria de sistema + pesquisa de campo pendente
+
+**Método:** Auditoria heurística de código/tokens (crítica + handoff) — não é pesquisa de usuário; plano de pesquisa de campo produzido mas não executado
+**Participantes:** 0 (pesquisa de campo ainda não rodou)
+**Data:** 11 set 2026
+
+## Executive Summary
+
+Oito achados vêm de comparar o código do canvas admin contra os tokens do sistema de design — fato verificável, pronto para virar backlog de implementação. Quatro hipóteses de produto (raio da sidebar, consolidação `/user`+`/orders`, login social, card de falhas clicável) dependem de pesquisa de campo que ainda não foi conduzida — nenhuma entrevista existe ainda.
+
+## Key Themes (confiança alta — verificado em código, não hipótese)
+
+### Tema 1: Dois sistemas de tipografia coexistindo
+Valores numéricos do dashboard sem `font-family: DCC Ash`, herdando Fertigo — viola a regra que o próprio sistema chama de "erro mais fácil de cometer". Título "Operação da loja" em 64px/34px, fora da escala oficial (60/36).
+
+### Tema 2: Componentes shadcn genéricos vazando paleta e forma proibidas
+Badges "Pago"/"Falhou" em verde/vermelho Tailwind — verde não existe na paleta de 7 cores. Filete de tabela `#e4e4e7` — cinza de biblioteca proibido. Raio 12px/rounded-xl contra `--sl-radius: 0`.
+
+### Tema 3: Login sem tratamento de marca, acessibilidade ou erro
+Campo/botão 40px, abaixo do mínimo de 44px do sistema. Ícone `instagram.svg` no botão "Continuar com Google". Nenhum frame de erro desenhado, apesar da regra "erro sem ação é bug".
+
+## Insights → Opportunities
+
+| Insight | Oportunidade | Impacto | Esforço |
+|---|---|---|---|
+| Números sem DCC Ash | Aplicar `--sl-font-display` | Alto | Baixo |
+| Verde/cinza de biblioteca | Badges via `Chip` + tokens do sistema | Alto | Baixo |
+| Ícone do Google trocado | Corrigir ou usar wordmark reta | Alto | Baixo |
+| Controles de login abaixo do alvo mínimo | Subir para `--sl-h-field`/`--sl-h-button` | Médio-Alto | Baixo |
+| Raio da sidebar — percepção da equipe desconhecida | Rodar pergunta 1 do plano antes de zerar por padrão | Médio | Médio (campo) |
+| Consolidação `/user`+`/orders` — impacto desconhecido | Rodar teste de usabilidade (pergunta 2) antes de redesenhar IA | Médio-Alto | Médio (campo) |
+| Login social — uso/desconforto desconhecido | Checar analytics antes de pesquisa nova (pergunta 3) | Médio | Baixo |
+| Card de falhas clicável — necessidade real desconhecida | Confirmar com equipe interna (pergunta 4) | Baixo-Médio | Baixo |
+
+## User Segments Identified
+
+| Segmento | Necessidades (inferidas, não confirmadas em campo) |
+|---|---|
+| Equipe interna Selo Libertária | Painel rápido de ler, status de pagamento sem ambiguidade, atalhos para falhas |
+| Clientes da loja | Ver status de pedido, atualizar dados, decidir se confiam login social nesse tipo de compra |
+
+## Recommendations
+
+1. Implementar os 8 achados de confiança alta via o handoff já produzido — sem necessidade de esperar pesquisa de campo.
+2. Rodar entrevistas internas (perguntas 1 e 4) antes de decidir raio da sidebar e card de falhas.
+3. Checar analytics existente antes de investir pesquisa nova em login social (pergunta 3).
+4. Não redesenhar a IA de `/user`+`/orders` até o teste de usabilidade (pergunta 2) rodar — é a única mudança estrutural das quatro.
+
+## Questions for Further Research
+
+- As quatro hipóteses do plano de pesquisa — nenhuma tem dado de campo ainda.
+- Se equipe interna e clientes finais realmente enxergam o painel como "dois produtos diferentes" — premissa implícita do plano, não validada.
+
+## Methodology Notes
+
+Este documento não contém pesquisa de usuário real — é consolidação de auditoria técnica (crítica + handoff, baseados em leitura direta de código contra tokens) mais um plano de pesquisa não executado. Nenhuma citação de participante é real; qualquer uma seria fabricada e por isso foi omitida. O que está pronto é auditoria de sistema; o que falta é campo.

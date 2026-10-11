@@ -1,0 +1,55 @@
+:root {
+  /* --- Base ---------------------------------------------------------- */
+  --sl-ink:        #0B0B0B;  /* preto do selo — fundos escuros, tipo, bordas fortes */
+  --sl-charcoal:   #141210;  /* carvão — mesa de trabalho, atrás das telas */
+  --sl-paper:      #F7F4EF;  /* papel — fundo público padrão */
+  --sl-paper-pure: #FFFFFF;  /* papel branco — só cartões e campos sobre papel */
+  --sl-sand:       #D8D0C4;  /* bege — faixas de apoio, barras de filtro, molduras de imagem */
+  --sl-wine:       #7A1E22;  /* vinho — ênfase, links, erro, estados de estoque */
+  --sl-red:        #B3282E;  /* vermelho — exclusivo de compra e "agora" */
+
+  /* --- Tinta sobre papel ---------------------------------------------- */
+  --sl-text:            var(--sl-ink);
+  --sl-text-muted:      rgba(11, 11, 11, .72);
+  --sl-text-soft:       rgba(11, 11, 11, .65);
+  --sl-text-label:      rgba(11, 11, 11, .60);
+  --sl-text-quiet:      rgba(11, 11, 11, .55);
+  --sl-text-disabled:   rgba(11, 11, 11, .50);
+
+  /* --- Tinta sobre preto ---------------------------------------------- */
+  --sl-text-on-ink:        #F7F4EF;
+  --sl-text-on-ink-muted:  rgba(247, 244, 239, .82);
+  --sl-text-on-ink-soft:   rgba(247, 244, 239, .72);
+  --sl-text-on-ink-label:  rgba(247, 244, 239, .60);
+  --sl-text-on-ink-quiet:  rgba(247, 244, 239, .45);
+
+  /* --- Bordas (nunca cinza de biblioteca; sempre tinta transparente) --- */
+  --sl-line-hairline:    rgba(11, 11, 11, .14);  /* divisórias internas */
+  --sl-line:             rgba(11, 11, 11, .20);  /* moldura de cartão */
+  --sl-line-strong:      rgba(11, 11, 11, .30);  /* campo em repouso, botão terciário */
+  --sl-line-solid:       var(--sl-ink);          /* selecionado / foco */
+  --sl-line-on-ink:      rgba(247, 244, 239, .28);
+  --sl-line-on-ink-mid:  rgba(247, 244, 239, .45);
+  --sl-line-on-ink-hi:   rgba(247, 244, 239, .50);
+
+  /* --- Superfícies ----------------------------------------------------- */
+  --sl-surface-page:    var(--sl-paper);
+  --sl-surface-card:    var(--sl-paper-pure);
+  --sl-surface-band:    var(--sl-sand);   /* faixas de filtro, progresso, resumo */
+  --sl-surface-invert:  var(--sl-ink);    /* hero, header, painel de compra */
+  --sl-surface-desk:    var(--sl-charcoal);
+
+  /* --- Semânticos ------------------------------------------------------ */
+  --sl-accent:         var(--sl-wine);   /* links, estoque, ✓, destaque de texto */
+  --sl-buy:            var(--sl-red);    /* só botão de compra e badge "agora" */
+  --sl-danger:         var(--sl-wine);   /* erro = vinho. nunca vermelho de sistema */
+  --sl-danger-wash:    rgba(122, 30, 34, .06);
+  --sl-focus-ring:     0 0 0 2px rgba(122, 30, 34, .20);
+  --sl-danger-line:    rgba(122, 30, 34, .30);  /* filete do chip e do campo em erro */
+
+  /* --- Área logada ----------------------------------------------------- */
+  --sl-surface-row-hover:  rgba(11, 11, 11, .04);   /* linha de tabela em hover e faixa zebrada */
+  --sl-surface-quiet:      rgba(11, 11, 11, .06);   /* chip neutro; substitui todo cinza de biblioteca */
+  --sl-nav-hover-on-ink:   rgba(247, 244, 239, .06);
+  --sl-nav-selected:       var(--sl-wine);          /* nav ativa sobre preto: bloco sólido vinho */
+}

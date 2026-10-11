@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#0B0B0B;font-family:"DCCAsh","Segoe UI",serif}
+a{color:#E2461A;text-decoration:none}
+a:hover{color:#F2891E}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;background:#0B0B0B" data-screen-label="Pré-venda — página completa">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 64px;background:#0B0B0B;border-bottom:1px solid rgba(247,244,239,.12)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border:1px solid rgba(247,244,239,.3);overflow:hidden;flex-shrink:0"><img src="assets/img/selolibertaria.png" alt="Selo Libertária" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div>
+        <div style="font-size:10px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#F7F4EF">Selo</div>
+        <div style="font-size:14px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#F7F4EF">Libertária</div>
+      </div>
+    </div>
+    <a href="#" style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">Voltar para a loja</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);gap:56px;align-items:center;padding:88px 64px 72px;background:#0B0B0B">
+    <div style="display:flex;flex-direction:column;gap:24px;max-width:640px">
+      <p style="margin:0;font-size:12px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#F2891E">Pré-venda · Selo Libertária</p>
+      <h1 style="margin:0;font-family:'Fertigo',serif;font-weight:900;font-size:clamp(52px,6.4vw,96px);line-height:.86;letter-spacing:-.04em;color:#F2891E">little fish,<br>big fish</h1>
+      <p style="margin:0;font-size:18px;letter-spacing:.03em;color:rgba(247,244,239,.72)">poesia de Natália Nolli Sasso</p>
+      <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(247,244,239,.78)">Tanto a poeta quanto as poesias deste livro parecem nadar por rotas eróticas — ora se afogam, ora trafegam por fluxos estranhos. Aliás, tudo que é estranho parece interessar para a autora.</p>
+
+      <div style="display:flex;flex-direction:column;gap:18px;padding:28px;border:1px solid rgba(247,244,239,.2);margin-top:8px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Pré-venda</p>
+        <p style="margin:0;font-family:'Fertigo',serif;font-size:40px;font-weight:900;color:#F7F4EF">{{ price }}</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(247,244,239,.6)">Lançamento: {{ launchWindow }} · edição de pré-venda com condições especiais em breve.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a href="{{ buyLink }}" style="display:inline-flex;align-items:center;height:48px;padding:0 26px;background:#F2891E;color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Comprar agora</a>
+          <a href="#sobre-o-livro" style="display:inline-flex;align-items:center;height:48px;padding:0 26px;border:1px solid rgba(247,244,239,.3);color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Ver detalhes do livro</a>
+        </div>
+        <p style="margin:0;font-size:11px;letter-spacing:.08em;color:rgba(247,244,239,.4)">Pagamento via Mercado Pago · Pix ou cartão.</p>
+      </div>
+    </div>
+
+    <div style="border:1px solid rgba(247,244,239,.14);background:#111;padding:16px">
+      <img src="assets/img/lfbf-fish-badge.png" alt="Detalhe da capa de little fish, big fish" style="width:100%;height:auto;display:block">
+    </div>
+  </div>
+
+  <div style="width:100%;height:190px;overflow:hidden;background:#0B0B0B">
+    <img src="assets/img/lfbf-fish-band.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+  </div>
+
+  <div id="sobre-o-livro" style="display:grid;grid-template-columns:minmax(0,.95fr) minmax(320px,1.05fr);gap:64px;align-items:start;padding:96px 64px;background:#F7F4EF">
+    <div style="display:flex;flex-direction:column;gap:18px;position:sticky;top:24px">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:rgba(11,11,11,.5)">Sobre o livro</p>
+      <p style="margin:0;font-family:'Fertigo',serif;font-size:38px;line-height:1.15;font-weight:900;letter-spacing:-.02em;color:#0B0B0B">Estranhamente little fish, big fish mergulha onde sons e luzes chegam dispersos, onde corpos se confundem com o meio ambiente.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;max-width:640px">
+      <p style="margin:0;font-size:16px;line-height:1.9;color:rgba(11,11,11,.72)">Terceiro livro de poesia de Natália Nolli Sasso, little fish, big fish dá continuidade a uma obra que já atravessou Ninfas do Tietê e Vírus do Beijo — sempre com peixes, corpos e cidade se confundindo em imagens híbridas entre o humano e o animal.</p>
+      <p style="margin:0;font-size:16px;line-height:1.9;color:rgba(11,11,11,.72)">A imagem de peixes presente no livro evoca zonas imaginárias, abissais, combinatórias para o erotismo fora de áreas convencionais. Tanto a poeta quanto as poesias do livro parecem nadar por rotas eróticas, e ora se afogam, ora trafegam por fluxos estranhos.</p>
+      <p style="margin:0;font-size:14px;font-style:italic;color:rgba(11,11,11,.5)">São Paulo, Selo Libertária, {{ launchWindow }}.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:64px;padding:80px 64px;background:#0B0B0B">
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:760px">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:rgba(247,244,239,.5)">Autora</p>
+      <h2 style="margin:0;font-family:'Fertigo',serif;font-size:48px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;color:#F7F4EF">Natália Nolli Sasso</h2>
+      <p style="margin:0;font-size:16px;line-height:1.85;color:rgba(247,244,239,.68)">Desde o primeiro livro, Ninfas do Tietê, peixes reaparecem entre mesas, calçadas e ruídos de uma São Paulo noturna, ao lado de sereias, dragões, libélulas e ninfas. Em Vírus do Beijo, um peixe anônimo atravessa as páginas de forma quase imperceptível. little fish, big fish é o terceiro capítulo dessa obra.</p>
+      <a href="#" style="font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#F2891E">Conhecer os outros livros da autora →</a>
+    </div>
+  </div>
+
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:24px;padding:112px 64px;background:#0B0B0B;overflow:hidden;text-align:center">
+    <div style="position:absolute;width:520px;height:520px;border-radius:50%;background:#F2891E;opacity:.14;filter:blur(20px);top:-160px;left:-120px"></div>
+    <div style="position:absolute;width:420px;height:420px;border-radius:50%;background:#E2461A;opacity:.14;filter:blur(20px);bottom:-140px;right:-100px"></div>
+    <p style="position:relative;margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#F2891E">Pré-venda aberta</p>
+    <h2 style="position:relative;margin:0;font-family:'Fertigo',serif;font-size:clamp(34px,4.4vw,58px);font-weight:900;letter-spacing:-.03em;max-width:16ch;line-height:1.05;color:#F7F4EF">Garanta seu exemplar antes do lançamento</h2>
+    <a href="{{ buyLink }}" style="position:relative;display:inline-flex;align-items:center;height:52px;padding:0 32px;background:#F2891E;color:#0B0B0B;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;margin-top:8px">Comprar na pré-venda</a>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;padding:96px 64px 40px;background:#F7F4EF" data-screen-label="Blocos estruturais para anúncio">
+    <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:rgba(11,11,11,.5)">Componentes</p>
+    <h2 style="margin:0;font-family:'Fertigo',serif;font-size:40px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;color:#0B0B0B">Blocos estruturais para anúncio</h2>
+    <p style="margin:0;max-width:640px;font-size:15px;line-height:1.7;color:rgba(11,11,11,.6)">Componentes prontos para replicar o lançamento em outras áreas do site — mesmo sistema visual da home.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:20px;padding:24px 64px 72px;background:#F7F4EF">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">A</span>
+      <span style="font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.7)">Banner hero do site</span>
+      <span style="font-size:11px;letter-spacing:.08em;color:rgba(11,11,11,.4)">— topo de Home / categoria, full-bleed</span>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.6fr);gap:0;align-items:center;background:#0B0B0B;min-height:280px;overflow:hidden">
+      <div style="display:flex;flex-direction:column;gap:16px;padding:48px 56px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#F2891E">Pré-venda</p>
+        <h3 style="margin:0;font-family:'Fertigo',serif;font-size:44px;font-weight:900;letter-spacing:-.03em;color:#F2891E;line-height:.95">little fish,<br>big fish</h3>
+        <a href="{{ buyLink }}" style="align-self:flex-start;display:inline-flex;align-items:center;height:44px;padding:0 22px;background:#F7F4EF;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;margin-top:6px">Comprar agora</a>
+      </div>
+      <div style="height:280px;overflow:hidden"><img src="assets/img/lfbf-fish-band.png" alt="" style="width:100%;height:100%;object-fit:cover;object-position:70% center;display:block"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:20px;padding:0 64px 96px;background:#F7F4EF">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">B</span>
+      <span style="font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.7)">Card de destaque dentro do site</span>
+      <span style="font-size:11px;letter-spacing:.08em;color:rgba(11,11,11,.4)">— grade de Home / catálogo</span>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;background:#0B0B0B">
+      <div style="aspect-ratio:1.35;overflow:hidden"><img src="assets/img/lfbf-fish-circle-tight.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding:24px">
+        <span style="align-self:flex-start;border:1px solid rgba(247,244,239,.26);padding:3px 10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.75)">Pré-venda</span>
+        <h4 style="margin:0;font-family:'Fertigo',serif;font-size:26px;font-weight:900;letter-spacing:-.02em;color:#F7F4EF;text-transform:lowercase">little fish, big fish</h4>
+        <p style="margin:0;font-size:12px;color:rgba(247,244,239,.55)">Natália Nolli Sasso</p>
+        <p style="margin:4px 0 0;font-family:'Fertigo',serif;font-size:24px;font-weight:900;color:#F2891E">{{ price }}</p>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <a href="{{ buyLink }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;height:42px;background:#F7F4EF;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Comprar</a>
+          <a href="#sobre-o-livro" style="flex:1;display:inline-flex;align-items:center;justify-content:center;height:42px;border:1px solid rgba(247,244,239,.24);color:rgba(247,244,239,.8);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Ver mais</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ popupOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(11,11,11,.72);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px" data-screen-label="Pop-up — Contagem regressiva">
+      <div style="position:relative;width:420px;max-width:100%;background:#0B0B0B;border:1px solid rgba(242,137,30,.4);padding:36px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center">
+        <button onClick="{{ closePopup }}" style="position:absolute;top:14px;right:14px;width:28px;height:28px;background:transparent;border:1px solid rgba(247,244,239,.3);color:#F7F4EF;font-size:14px;line-height:1;cursor:pointer">✕</button>
+        <div style="width:110px;overflow:hidden"><img src="assets/img/lfbf-fish-circle-tight.png" alt="" style="width:100%;height:auto;display:block"></div>
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#F2891E">Contagem regressiva</p>
+        <p style="margin:0;font-family:'Fertigo',serif;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.2;color:#F7F4EF">little fish, big fish chega em:</p>
+        <div style="display:flex;gap:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px">
+            <span style="font-family:'Fertigo',serif;font-size:30px;font-weight:900;color:#F7F4EF">{{ cdDays }}</span>
+            <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.5)">dias</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px">
+            <span style="font-family:'Fertigo',serif;font-size:30px;font-weight:900;color:#F7F4EF">{{ cdHours }}</span>
+            <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.5)">horas</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px">
+            <span style="font-family:'Fertigo',serif;font-size:30px;font-weight:900;color:#F7F4EF">{{ cdMin }}</span>
+            <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.5)">min</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px">
+            <span style="font-family:'Fertigo',serif;font-size:30px;font-weight:900;color:#F7F4EF">{{ cdSec }}</span>
+            <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.5)">seg</span>
+          </div>
+        </div>
+        <a href="{{ buyLink }}" style="width:100%;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:48px;background:#F2891E;color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;margin-top:6px">Garantir na pré-venda</a>
+        <button onClick="{{ closePopup }}" style="background:transparent;border:none;color:rgba(247,244,239,.5);font-size:12px;letter-spacing:.05em;cursor:pointer;text-decoration:underline">Continuar navegando</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <button onClick="{{ openPopup }}" style="position:fixed;bottom:20px;right:20px;z-index:150;display:inline-flex;align-items:center;height:36px;padding:0 16px;background:#0B0B0B;border:1px dashed rgba(247,244,239,.4);color:rgba(247,244,239,.75);font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;cursor:pointer">[demo] reabrir pop-up</button>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;price&quot;: {&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;a definir&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pré-venda&quot;},
+  &quot;launchWindow&quot;: {&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;agosto de 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pré-venda&quot;},
+  &quot;buyLink&quot;: {&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;#&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pré-venda&quot;},
+  &quot;countdownDays&quot;: {&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:45,&quot;min&quot;:1,&quot;max&quot;:365,&quot;unit&quot;:&quot;dias&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Pop-up&quot;}
+}">
+class Component extends DCLogic {
+  state = { popupOpen: false, now: Date.now() };
+
+  componentDidMount() {
+    const days = this.props.countdownDays ?? 45;
+    this._target = Date.now() + days * 86400000;
+    this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
+    this._openTimer = setTimeout(() => this.setState({ popupOpen: true }), 1400);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._tick);
+    clearTimeout(this._openTimer);
+  }
+
+  renderVals() {
+    const pad = n => String(Math.max(0, n)).padStart(2, "0");
+    let diff = Math.max(0, (this._target || Date.now()) - this.state.now);
+    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+    const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+    const m = Math.floor(diff / 60000); diff -= m * 60000;
+    const s = Math.floor(diff / 1000);
+
+    return {
+      popupOpen: this.state.popupOpen,
+      openPopup: () => this.setState({ popupOpen: true }),
+      closePopup: () => this.setState({ popupOpen: false }),
+      cdDays: pad(d), cdHours: pad(h), cdMin: pad(m), cdSec: pad(s),
+      price: this.props.price || "a definir",
+      launchWindow: this.props.launchWindow || "agosto de 2026",
+      buyLink: this.props.buyLink || "#"
+    };
+  }
+}
+</script>
+</body>
+</html>

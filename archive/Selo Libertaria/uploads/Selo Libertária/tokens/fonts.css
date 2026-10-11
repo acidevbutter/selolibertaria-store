@@ -1,0 +1,17 @@
+/* Selo Libertária — webfonts.
+   DCC Ash: display de fantasia, usado em preços, números e títulos curtos.
+   Fertigo Pro: serifa editorial, usada em manchetes caixa-alta com peso 900 sintético. */
+
+@font-face {
+  font-family: "DCCAsh";
+  src: url("../assets/fonts/DCC-Ash.otf") format("opentype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fertigo";
+  src: url("../assets/fonts/FertigoPro-Regular.otf") format("opentype");
+  font-weight: 400 900;
+  font-display: swap;
+}

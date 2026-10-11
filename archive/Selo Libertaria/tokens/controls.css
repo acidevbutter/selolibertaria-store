@@ -1,0 +1,36 @@
+:root {
+  /* Canto reto em TODO o produto — público e área logada. Decisão de 2026: a sidebar do
+     admin perde o raio 12 herdado do fork; não existe token de exceção. Citar, não trocar. */
+  --sl-radius: 0;
+
+  /* Alturas de controle — três botões, um campo */
+  --sl-h-buy: 56px;      /* comprar / pagar / finalizar */
+  --sl-h-field: 52px;    /* todo campo editorial */
+  --sl-h-button: 48px;   /* ação padrão e secundária */
+  --sl-h-small: 44px;    /* nav, quantidade, desabilitado, alvo mínimo mobile */
+  --sl-h-chip: 26px;     /* badge de categoria e bandeira */
+  --sl-h-badge: 24px;    /* badge sobre imagem */
+  --sl-h-tab: 56px;      /* aba de categoria na barra bege */
+  --sl-h-header: 72px;   /* header desktop */
+  --sl-h-header-mobile: 56px;
+
+  --sl-pad-button: 0 20px;
+  --sl-pad-buy: 0 32px;
+  --sl-pad-field: 0 14px;
+  --sl-pad-chip: 0 10px;
+  --sl-pad-card: 20px;
+
+  --sl-border-width: 1px;
+  --sl-image-ratio: 1 / 1;      /* produto: serve capa, objeto e ingresso */
+  --sl-image-ratio-pdp: 4 / 3;  /* imagem principal da página de produto */
+
+  --sl-transition: 120ms linear;  /* sem easing dramático, sem bounce */
+
+  /* --- Área logada (/admin, /user) ------------------------------------ */
+  --sl-w-sidebar: 264px;        /* barra de navegação do painel, largura fixa */
+  --sl-h-nav-item: 44px;        /* item de nav do painel = alvo mínimo */
+  --sl-pad-nav-item: 0 28px;    /* item sangra até a borda da barra; sem raio, sem recuo */
+  --sl-pad-table-cell: 14px 20px;
+  --sl-pad-table-head: 10px 20px;
+  --sl-pad-metric: 20px;
+}

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Components" viewport="700x270" name="Ações · Button, Chip" subtitle="Três alturas de botão e a família de etiquetas" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body);padding:20px}
+  .lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-text-label)}
+  .col{display:flex;flex-direction:column;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.24em;text-transform:uppercase}
+
+</style></head><body>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div class="col" style="gap:12px">
+    <span class="lbl">Button</span>
+    <span class="btn" style="height:56px;padding:0 32px;background:var(--sl-buy);color:var(--sl-text-on-ink);font-size:13px">56 · compra</span>
+    <span class="btn" style="height:48px;padding:0 20px;background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:11px">48 · padrão</span>
+    <span class="btn" style="height:48px;padding:0 20px;border:1px solid var(--sl-ink);font-size:11px">48 · secundário</span>
+    <span class="btn" style="height:44px;padding:0 20px;border:1px solid var(--sl-line-strong);color:var(--sl-text-disabled);font-size:11px">44 · desabilitado</span>
+  </div>
+  <div class="col" style="gap:12px">
+    <span class="lbl">Chip</span>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <span class="btn" style="height:26px;padding:0 10px;background:var(--sl-wine);color:var(--sl-text-on-ink);font-size:10px;letter-spacing:.2em">Livros</span>
+      <span class="btn" style="height:26px;padding:0 10px;background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:10px;letter-spacing:.2em">Livro</span>
+      <span class="btn" style="height:26px;padding:0 10px;background:var(--sl-buy);color:var(--sl-text-on-ink);font-size:10px;letter-spacing:.2em">Pré-venda</span>
+      <span class="btn" style="height:26px;padding:0 10px;background:var(--sl-paper);border:1px solid var(--sl-ink);font-size:10px;letter-spacing:.2em">Esgotado</span>
+      <span class="btn" style="height:26px;padding:0 10px;border:1px solid var(--sl-line-strong);color:var(--sl-text-muted);font-size:10px;letter-spacing:.2em">Objetos</span>
+      <span class="btn" style="height:26px;padding:0 10px;background:var(--sl-sand);font-size:10px;letter-spacing:.2em">Desktop 1440</span>
+    </div>
+    <div style="background:var(--sl-ink);padding:14px;display:flex;gap:8px;margin-top:8px">
+      <span class="btn" style="height:48px;padding:0 20px;background:var(--sl-paper);color:var(--sl-ink);font-size:11px">on ink · primary</span>
+      <span class="btn" style="height:48px;padding:0 20px;border:1px solid var(--sl-line-on-ink-hi);color:var(--sl-text-on-ink);font-size:11px">secundário</span>
+    </div>
+  </div>
+</div>
+</body></html>

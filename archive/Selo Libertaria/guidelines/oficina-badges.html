@@ -1,0 +1,27 @@
+<!-- @dsCard group="Oficina" viewport="700x140" name="Estados de badge" subtitle="Bege/vinho, filete 30%, tinta sólida, lavagem vinho — fim do verde e do âmbar" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--ad-desk);color:var(--ad-text);font-family:var(--ad-font-body);padding:18px}
+  .mono{font-family:var(--ad-font-mono)}
+  .ml{font-size:var(--ad-size-micro);font-weight:900;letter-spacing:var(--ad-track-label);text-transform:uppercase;color:var(--ad-text-label)}
+  .eb{margin:0;font-family:var(--ad-font-mono);font-size:var(--ad-size-mono-label);letter-spacing:var(--ad-track-mono);text-transform:uppercase;color:var(--ad-wine)}
+  .sw{display:flex;flex-direction:column;justify-content:flex-end;height:74px;padding:8px;gap:2px}
+  .sw b{font-family:var(--ad-font-mono);font-size:11px;font-weight:400}
+  .sw i{font-size:11px;font-style:normal;opacity:.72}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+  .badge{height:var(--ad-h-badge);display:inline-flex;align-items:center;padding:0 10px;font-family:var(--ad-font-mono);font-size:var(--ad-size-micro);letter-spacing:var(--ad-track-badge);text-transform:uppercase}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:var(--ad-track-button);text-transform:uppercase;font-size:12px}
+</style></head><body>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+  <span class="badge" style="background:var(--ad-sand);color:var(--ad-wine)">Publicado</span>
+  <span class="badge" style="border:1px solid var(--ad-line-strong);color:var(--ad-text-soft)">Rascunho</span>
+  <span class="badge" style="background:var(--ad-ink);color:var(--ad-on-shell)">Publicando</span>
+  <span class="badge" style="background:var(--ad-wine-wash-solid);border:1px solid var(--ad-wine-line);color:var(--ad-wine)">Falhou</span>
+  <span style="flex:none;width:1px;height:24px;background:var(--ad-line)"></span>
+  <span style="background:var(--ad-shell);padding:8px 10px;display:inline-flex;gap:8px"><span class="badge" style="background:var(--ad-paper);color:var(--ad-ink)">Publicando</span><span class="mono" style="font-size:11px;color:rgba(247,244,239,.6);align-self:center">sobre a casca</span></span>
+</div>
+</body></html>

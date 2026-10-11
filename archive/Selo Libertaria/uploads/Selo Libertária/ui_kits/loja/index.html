@@ -1,0 +1,517 @@
+<!-- @dsCard group="Loja" viewport="1440x900" name="Loja Selo Libertária" subtitle="Home, catálogo, produto, carrinho e checkout — click-through" -->
+<!-- @startingPoint section="Loja" subtitle="Vitrine multicategoria com checkout de três etapas" viewport="1440x900" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Loja Selo Libertária — UI kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}
+  *{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body)}
+  img{display:block}
+  .u{font-weight:900;text-transform:uppercase}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.24em;text-transform:uppercase;cursor:pointer;border:0;background:none;font-family:inherit;color:inherit;transition:var(--sl-transition)}
+  .btn-buy{height:var(--sl-h-buy);padding:var(--sl-pad-buy);background:var(--sl-buy);color:var(--sl-text-on-ink);font-size:13px}
+  .btn-buy:hover{background:#9d2228}
+  .btn-primary{height:var(--sl-h-button);padding:var(--sl-pad-button);background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:11px}
+  .btn-primary:hover{background:#2a2422}
+  .btn-secondary{height:var(--sl-h-button);padding:var(--sl-pad-button);border:1px solid var(--sl-ink);font-size:11px}
+  .btn-secondary:hover{background:var(--sl-sand)}
+  .btn-ink{border-color:var(--sl-line-on-ink-hi);color:var(--sl-text-on-ink)}
+  .btn-ink:hover{background:rgba(247,244,239,.1)}
+  .lbl{font-size:var(--sl-size-label-sm);font-weight:900;letter-spacing:var(--sl-track-label);text-transform:uppercase;color:var(--sl-text-label)}
+  .eyebrow{margin:0;font-size:var(--sl-size-label);font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:var(--sl-text-on-ink-label)}
+  .h-sec{margin:0;font-family:var(--sl-font-head);font-size:var(--sl-size-section);font-weight:900;letter-spacing:var(--sl-track-head);text-transform:uppercase}
+  .price{font-family:var(--sl-font-display)}
+  .screen{display:none}
+  .screen.on{display:block}
+  .card{display:flex;flex-direction:column;background:var(--sl-surface-card);border:1px solid var(--sl-line-hairline);cursor:pointer}
+  .card:hover{border-color:var(--sl-ink)}
+  .card .shot{aspect-ratio:1/1;background:var(--sl-sand);overflow:hidden;position:relative}
+  .card .shot img{width:100%;height:100%;object-fit:cover}
+  .card .body{padding:var(--sl-pad-card);display:flex;flex-direction:column;gap:10px;flex:1}
+  .card h3{margin:0;font-family:var(--sl-font-display);font-size:var(--sl-size-card-title);letter-spacing:-.02em}
+  .card p{margin:0;flex:1;font-size:var(--sl-size-meta-sm);line-height:1.65;color:var(--sl-text-muted)}
+  .badge{position:absolute;top:0;left:0;height:var(--sl-h-badge);padding:0 9px;display:inline-flex;align-items:center;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+  .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sl-grid-gap)}
+  .field{height:var(--sl-h-field);border:1px solid var(--sl-line-strong);background:var(--sl-surface-card);display:flex;align-items:center;justify-content:space-between;padding:var(--sl-pad-field);font-size:var(--sl-size-body)}
+  .tab{display:inline-flex;align-items:center;height:var(--sl-h-tab);padding:0 20px;font-size:var(--sl-size-label);font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--sl-text-muted);cursor:pointer}
+  .tab.on{background:var(--sl-ink);color:var(--sl-text-on-ink)}
+  a{color:var(--sl-accent);text-decoration:none}
+  a:hover{color:var(--sl-buy)}
+</style>
+</head>
+<body>
+
+<header id="hdr" style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:0 var(--sl-gutter-desktop);height:var(--sl-h-header);display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:14px;cursor:pointer" data-go="home">
+    <div style="width:40px;height:40px;overflow:hidden;flex:none"><img src="../../assets/img/selolibertaria.png" alt="Selo Libertária" style="width:100%;height:100%;object-fit:cover"></div>
+    <div style="display:flex;flex-direction:column">
+      <span class="u" style="font-size:10px;letter-spacing:.34em;color:var(--sl-text-on-ink-label)">Selo</span>
+      <span class="u" style="font-size:15px;letter-spacing:.28em">Libertária</span>
+    </div>
+  </div>
+  <nav id="nav" style="display:flex;align-items:center;gap:28px;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase">
+    <span data-nav="Loja" data-go="loja" style="display:inline-flex;align-items:center;height:44px;cursor:pointer">Loja</span>
+    <span data-nav="Sarau Safado" style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Sarau Safado</span>
+    <span data-nav="Projetos" style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Projetos</span>
+    <span data-nav="Sobre" style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Sobre</span>
+    <span data-nav="Contato" style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Contato</span>
+  </nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="display:inline-flex;align-items:center;height:44px;padding:0 14px;border:1px solid var(--sl-line-on-ink);font-size:13px;color:var(--sl-text-on-ink-soft);min-width:200px">Buscar na loja</span>
+    <span class="btn" data-cart="open" style="height:44px;padding:0 14px;background:var(--sl-wine);color:var(--sl-text-on-ink);font-size:11px;letter-spacing:.22em;gap:8px">Carrinho
+      <span id="cartCount" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:var(--sl-paper);color:var(--sl-wine);font-size:11px;letter-spacing:0;font-weight:400">2</span></span>
+  </div>
+</header>
+
+<!-- ============ HOME ============ -->
+<main class="screen on" id="s-home">
+  <section style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:56px var(--sl-gutter-desktop) 64px;display:grid;grid-template-columns:1fr 520px;gap:64px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;gap:8px">
+        <span class="u" style="display:inline-flex;align-items:center;height:26px;padding:0 10px;background:var(--sl-buy);font-size:10px;letter-spacing:.22em">Lançamento</span>
+        <span class="u" style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid var(--sl-line-on-ink-mid);font-size:10px;letter-spacing:.22em;color:var(--sl-text-on-ink-muted)">Livro impresso</span>
+      </div>
+      <h1 style="margin:0;font-family:var(--sl-font-head);font-size:96px;line-height:.9;font-weight:900;letter-spacing:-.055em;text-transform:uppercase;max-width:14ch">little fish, big fish</h1>
+      <p style="margin:0;max-width:44ch;font-size:17px;line-height:1.75;color:var(--sl-text-on-ink-muted)">Natália Nolli Sasso mergulha onde sons e luzes chegam dispersos, onde corpos se confundem com o meio ambiente.</p>
+      <div style="display:flex;align-items:baseline;gap:16px">
+        <span class="price" style="font-size:44px;letter-spacing:-.03em">R$ 72,00</span>
+        <span style="font-size:14px;color:var(--sl-text-on-ink-soft)">ou 6x de R$ 12,00 sem juros</span>
+      </div>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-buy" data-go="produto">Comprar agora</button>
+        <button class="btn btn-secondary btn-ink" data-go="produto">Ler trecho</button>
+      </div>
+      <div style="display:flex;gap:24px;font-size:13px;color:var(--sl-text-on-ink-soft)">
+        <span>Pré-venda · envio em 12 set</span><span>Pix, cartão ou boleto</span><span>Frete calculado no carrinho</span>
+      </div>
+    </div>
+    <div style="aspect-ratio:1/1;background:var(--sl-charcoal);overflow:hidden"><img src="../../assets/img/lfbf-cover-full.png" alt="little fish, big fish" style="width:100%;height:100%;object-fit:cover"></div>
+  </section>
+
+  <div style="background:var(--sl-sand);padding:20px var(--sl-gutter-desktop);display:flex;align-items:center;justify-content:space-between">
+    <p class="u" style="margin:0;font-size:11px;letter-spacing:.26em;color:rgba(11,11,11,.62)">A loja do selo</p>
+    <div style="display:flex;gap:8px">
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:11px;letter-spacing:.2em;cursor:pointer">Tudo · 28</span>
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid var(--sl-line-strong);font-size:11px;letter-spacing:.2em;cursor:pointer">Livros</span>
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid var(--sl-line-strong);font-size:11px;letter-spacing:.2em;cursor:pointer">Edições sonoras</span>
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid var(--sl-line-strong);font-size:11px;letter-spacing:.2em;cursor:pointer">Zines</span>
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid var(--sl-line-strong);font-size:11px;letter-spacing:.2em;cursor:pointer">Objetos</span>
+      <span class="u" data-go="loja" style="display:inline-flex;align-items:center;height:44px;padding:0 16px;border:1px solid var(--sl-line-strong);font-size:11px;letter-spacing:.2em;cursor:pointer">Ingressos</span>
+    </div>
+  </div>
+
+  <section style="background:var(--sl-paper);padding:56px var(--sl-gutter-desktop);display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--sl-line-hairline);padding-bottom:20px">
+      <h2 class="h-sec">Em destaque</h2>
+      <button class="btn btn-secondary" data-go="loja">Ver a loja completa</button>
+    </div>
+    <div class="grid4" id="homeGrid"></div>
+  </section>
+
+  <section style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:56px var(--sl-gutter-desktop);display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <p class="eyebrow">Manifesto</p>
+      <h2 style="margin:0;font-family:var(--sl-font-head);font-size:56px;line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase;max-width:18ch">Literatura que acende presença</h2>
+      <p style="margin:0;max-width:48ch;font-size:16px;line-height:1.8;color:var(--sl-text-on-ink-muted)">Editora e produtora cultural dedicada à literatura erótica, à performance e aos encontros. Publicamos livros, edições sonoras, zines e objetos — e produzimos saraus e laboratórios.</p>
+      <button class="btn btn-secondary btn-ink" style="align-self:flex-start">Conhecer o selo</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;border-left:1px solid var(--sl-line-on-ink);padding-left:48px">
+      <p class="eyebrow">Sarau Safado · próxima edição</p>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+        <div><p class="u" style="margin:0;font-size:11px;letter-spacing:.2em;color:var(--sl-text-on-ink-quiet);font-weight:400">Data</p><p class="price" style="margin:6px 0 0;font-size:24px">14 set · 20h</p></div>
+        <div><p class="u" style="margin:0;font-size:11px;letter-spacing:.2em;color:var(--sl-text-on-ink-quiet);font-weight:400">Local</p><p class="price" style="margin:6px 0 0;font-size:24px">SP · centro</p></div>
+        <div><p class="u" style="margin:0;font-size:11px;letter-spacing:.2em;color:var(--sl-text-on-ink-quiet);font-weight:400">Entrada</p><p class="price" style="margin:6px 0 0;font-size:24px">R$ 30,00</p></div>
+      </div>
+      <button class="btn" style="align-self:flex-start;height:48px;padding:0 20px;background:var(--sl-buy);color:var(--sl-text-on-ink);font-size:11px">Garantir ingresso</button>
+    </div>
+  </section>
+</main>
+
+<!-- ============ LOJA ============ -->
+<main class="screen" id="s-loja">
+  <section style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:40px var(--sl-gutter-desktop) 36px;display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <p class="eyebrow">Loja</p>
+      <h1 style="margin:0;font-family:var(--sl-font-head);font-size:60px;line-height:.95;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">28 itens do selo</h1>
+      <p style="margin:0;max-width:52ch;font-size:15px;line-height:1.7;color:var(--sl-text-on-ink-muted)">Livros, edições sonoras, zines, objetos, ingressos e laboratórios — uma mesa de curadoria, não uma vitrine.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex:none">
+      <span class="u" style="display:inline-flex;align-items:center;height:48px;padding:0 16px;border:1px solid var(--sl-line-on-ink-mid);font-size:11px;letter-spacing:.2em">Ordenar · Mais recentes</span>
+      <span class="u" style="display:inline-flex;align-items:center;height:48px;padding:0 16px;border:1px solid var(--sl-line-on-ink-mid);font-size:11px;letter-spacing:.2em">Só disponíveis</span>
+    </div>
+  </section>
+  <div id="tabs" style="background:var(--sl-sand);padding:0 var(--sl-gutter-desktop);display:flex;border-bottom:1px solid rgba(11,11,11,.16)"></div>
+  <section style="padding:40px var(--sl-gutter-desktop) 56px" class="grid4" id="lojaGrid"></section>
+</main>
+
+<!-- ============ PRODUTO ============ -->
+<main class="screen" id="s-produto">
+  <section style="padding:32px var(--sl-gutter-narrow) 48px;display:flex;flex-direction:column;gap:28px">
+    <p style="margin:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--sl-text-soft)"><span data-go="loja" style="cursor:pointer">Loja</span> / Livros / <span style="color:var(--sl-accent)">little fish, big fish</span></p>
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="aspect-ratio:4/3;background:var(--sl-sand);overflow:hidden"><img id="pdpMain" src="../../assets/img/lfbf-cover-full.png" alt="little fish, big fish" style="width:100%;height:100%;object-fit:cover"></div>
+        <div style="display:flex;gap:12px" id="pdpThumbs"></div>
+        <div style="display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--sl-line-hairline);padding-top:24px">
+          <h2 class="price" style="margin:0;font-size:30px">Sobre a edição</h2>
+          <p style="margin:0;max-width:60ch;font-size:17px;line-height:1.8">Poesia que mergulha onde sons e luzes chegam dispersos, onde corpos se confundem com o meio ambiente. Publicado pelo Selo Libertária em edição impressa, com projeto gráfico de capa dupla.</p>
+          <div style="display:flex;flex-direction:column" id="acc"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:28px;display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="u" style="font-size:10px;letter-spacing:.24em;color:var(--sl-text-on-ink-label)">Livro · pré-venda</span>
+            <h1 style="margin:0;font-family:var(--sl-font-head);font-size:40px;line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">little fish, big fish</h1>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:12px"><span class="price" id="pdpPrice" style="font-size:40px">R$ 72,00</span><span style="font-size:13px;color:var(--sl-text-on-ink-soft)">ou 6x de R$ 12,00</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="u" style="font-size:10px;letter-spacing:.24em;color:var(--sl-text-on-ink-label)">Formato</span>
+            <div style="display:flex;gap:8px" id="fmt">
+              <span class="u fmt on" data-price="R$ 72,00" style="display:inline-flex;align-items:center;height:48px;padding:0 18px;font-size:12px;letter-spacing:.18em;cursor:pointer">Impresso</span>
+              <span class="u fmt" data-price="R$ 92,00" style="display:inline-flex;align-items:center;height:48px;padding:0 18px;font-size:12px;letter-spacing:.18em;cursor:pointer">Sonoro +R$ 20</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:end">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span class="u" style="font-size:10px;letter-spacing:.24em;color:var(--sl-text-on-ink-label)">Qtd.</span>
+              <div style="height:52px;border:1px solid var(--sl-line-on-ink-mid);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:16px"><span data-qty="-1" style="cursor:pointer">−</span><span id="qty">1</span><span data-qty="1" style="cursor:pointer">+</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span class="u" style="font-size:10px;letter-spacing:.24em;color:var(--sl-text-on-ink-label)">Frete</span>
+              <div style="display:flex;gap:8px">
+                <span style="flex:1;height:52px;border:1px solid var(--sl-line-on-ink-mid);display:flex;align-items:center;padding:0 14px;font-size:15px;color:var(--sl-text-on-ink-soft)" id="cepVal">CEP</span>
+                <button class="btn" id="calcFrete" style="height:52px;padding:0 16px;border:1px solid var(--sl-paper);color:var(--sl-text-on-ink);font-size:11px;letter-spacing:.2em">Calcular</button>
+              </div>
+              <p id="freteOut" style="margin:0;font-size:13px;color:var(--sl-text-on-ink-soft);display:none">PAC · 5 dias úteis · R$ 21,90</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn btn-buy" data-cart="add-open" style="width:100%">Comprar agora</button>
+            <button class="btn btn-secondary btn-ink" data-cart="add" style="width:100%;border-color:var(--sl-paper)">Adicionar ao carrinho</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--sl-line);background:var(--sl-surface-card);padding:20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:baseline"><span style="color:var(--sl-accent);font-weight:900">✓</span><p style="margin:0;font-size:14px;line-height:1.6">Envio em até 2 dias úteis após 12 set, com rastreio pelo Melhor Envio.</p></div>
+          <div style="display:flex;gap:12px;align-items:baseline"><span style="color:var(--sl-accent);font-weight:900">✓</span><p style="margin:0;font-size:14px;line-height:1.6">Troca ou devolução em até 7 dias após o recebimento.</p></div>
+          <div style="display:flex;gap:12px;align-items:baseline"><span style="color:var(--sl-accent);font-weight:900">✓</span><p style="margin:0;font-size:14px;line-height:1.6">Pagamento processado pelo Mercado Pago — não guardamos dados de cartão.</p></div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--sl-line-hairline);padding-top:28px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between"><h2 class="price" style="margin:0;font-size:30px">Quem levou também levou</h2><span data-go="loja" style="font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-accent);cursor:pointer">Ver a loja</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px" id="related"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ CHECKOUT ============ -->
+<main class="screen" id="s-checkout">
+  <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);height:72px;padding:0 var(--sl-gutter-narrow);display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;overflow:hidden"><img src="../../assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <span class="u" style="font-size:13px;letter-spacing:.28em">Libertária</span>
+    </div>
+    <div class="u" style="display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.22em">
+      <span>1 · Identificação ✓</span><span style="width:24px;height:1px;background:var(--sl-line-on-ink-mid)"></span>
+      <span>2 · Entrega ✓</span><span style="width:24px;height:1px;background:var(--sl-line-on-ink-mid)"></span>
+      <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;background:var(--sl-buy)">3 · Pagamento</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--sl-text-on-ink-muted)">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 7V5.2a3.5 3.5 0 0 1 7 0V7" fill="none" stroke="#F7F4EF" stroke-width="1.6"/><rect x="2.6" y="7" width="10.8" height="7.4" fill="none" stroke="#F7F4EF" stroke-width="1.6"/></svg>
+      <span>Ambiente seguro · SSL</span>
+    </div>
+  </div>
+  <div style="padding:36px var(--sl-gutter-narrow) 48px;display:grid;grid-template-columns:1fr 400px;gap:32px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid var(--sl-line);background:var(--sl-surface-card);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:13px;font-weight:900">✓</span>
+          <div><p class="lbl" style="margin:0;color:var(--sl-text-quiet)">1 · Identificação</p><p style="margin:5px 0 0;font-size:15px">Marcos Vinícius · marcos@exemplo.com · (11) 98••••-••55</p></div>
+        </div>
+        <button class="btn btn-secondary" style="height:44px;padding:0 16px;font-size:11px;letter-spacing:.2em">Editar</button>
+      </div>
+      <div style="border:1px solid var(--sl-line);background:var(--sl-surface-card);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--sl-ink);color:var(--sl-text-on-ink);font-size:13px;font-weight:900">✓</span>
+          <div><p class="lbl" style="margin:0;color:var(--sl-text-quiet)">2 · Entrega</p><p style="margin:5px 0 0;font-size:15px">Av. Paulista 1000, apto 82 — Bela Vista, São Paulo/SP · 01310-000</p><p style="margin:4px 0 0;font-size:14px;color:var(--sl-accent)">PAC · chega até 3 set · R$ 21,90</p></div>
+        </div>
+        <button class="btn btn-secondary" style="height:44px;padding:0 16px;font-size:11px;letter-spacing:.2em">Editar</button>
+      </div>
+      <div style="border:1px solid var(--sl-ink);background:var(--sl-surface-card)">
+        <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:16px 24px;display:flex;align-items:center;gap:14px">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--sl-buy);font-size:13px;font-weight:900">3</span>
+          <p class="u" style="margin:0;font-size:12px;letter-spacing:.24em">Pagamento</p>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px" id="methods">
+            <div class="m on" data-m="pix" style="border:1px solid var(--sl-ink);background:var(--sl-paper);padding:16px;display:flex;flex-direction:column;gap:6px;cursor:pointer"><span class="u" style="font-size:12px;letter-spacing:.2em">Pix</span><span style="font-size:13px;color:var(--sl-text-muted)">Aprovação imediata</span></div>
+            <div class="m" data-m="cartao" style="border:1px solid rgba(11,11,11,.28);padding:16px;display:flex;flex-direction:column;gap:6px;cursor:pointer"><span class="u" style="font-size:12px;letter-spacing:.2em">Cartão</span><span style="font-size:13px;color:var(--sl-text-muted)">Até 6x sem juros</span></div>
+            <div class="m" data-m="boleto" style="border:1px solid rgba(11,11,11,.28);padding:16px;display:flex;flex-direction:column;gap:6px;cursor:pointer"><span class="u" style="font-size:12px;letter-spacing:.2em">Boleto</span><span style="font-size:13px;color:var(--sl-text-muted)">Vence em 3 dias</span></div>
+          </div>
+
+          <div id="pane-pix" class="pane">
+            <div style="display:flex;gap:18px;align-items:flex-start">
+              <div style="width:132px;height:132px;flex:none;border:1px solid var(--sl-ink);background:#fff;background-image:repeating-linear-gradient(90deg,#0B0B0B 0 8px,transparent 8px 16px),repeating-linear-gradient(0deg,#0B0B0B 0 8px,transparent 8px 16px);background-blend-mode:multiply"></div>
+              <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+                <p style="margin:0;font-size:14px;line-height:1.6">Escaneie no app do banco ou copie o código. O pedido é liberado em segundos.</p>
+                <div class="field" style="color:var(--sl-text-soft);font-size:13px;overflow:hidden">00020126580014BR.GOV.BCB…</div>
+                <button class="btn btn-primary" style="width:100%">Copiar código Pix</button>
+                <div style="background:var(--sl-sand);padding:12px 14px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px">Expira em</span><span class="price" style="font-size:22px">29:41</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="pane-cartao" class="pane" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:8px;grid-column:span 2">
+                <span class="lbl">Número do cartão</span>
+                <div class="field" style="border-color:var(--sl-ink);box-shadow:var(--sl-focus-ring)"><span>4111 1111 1111 1111</span><span class="u" style="font-size:11px;letter-spacing:.2em;color:var(--sl-accent)">VISA</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Validade</span><div class="field" style="justify-content:flex-start;color:var(--sl-text-disabled)">MM/AA</div></div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">CVV</span><div class="field" style="color:var(--sl-text-disabled)"><span>•••</span><span style="font-size:12px;color:var(--sl-text-soft)">3 dígitos atrás</span></div></div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Parcelas</span><div class="field"><span>6x de R$ 35,65 sem juros</span><span>▾</span></div></div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span class="lbl" style="color:var(--sl-danger)">CPF do titular</span>
+                <div class="field" style="border-color:var(--sl-danger);background:var(--sl-danger-wash);color:var(--sl-danger);justify-content:flex-start">Informe um CPF válido</div>
+                <p style="margin:0;font-size:13px;color:var(--sl-danger)">11 dígitos, sem pontos. Usamos só para emitir a nota.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="pane-boleto" class="pane" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <p style="margin:0;font-size:14px;line-height:1.6">Vence em 3 dias úteis. O pedido é separado após a confirmação do banco (até 2 dias úteis).</p>
+              <div class="field" style="color:var(--sl-text-soft);font-size:13px;overflow:hidden">34191.79001 01043.510047…</div>
+              <div style="display:flex;gap:8px"><button class="btn btn-primary" style="flex:1">Copiar linha</button><button class="btn btn-secondary" style="flex:1">Baixar PDF</button></div>
+              <p style="margin:0;font-size:12px;color:var(--sl-text-soft)">Itens digitais e ingressos não aceitam boleto — o método some do seletor quando o carrinho só tem digitais.</p>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--sl-line-hairline);padding-top:20px">
+            <button class="btn btn-buy" id="pay" style="width:100%">Pagar R$ 213,90</button>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:var(--sl-text-soft);text-align:center">Ao concluir você concorda com os <a href="#">termos de compra</a>. Cobrança única, sem assinatura.</p>
+            <div id="payState"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid var(--sl-line);background:var(--sl-surface-card)">
+        <div style="background:var(--sl-sand);padding:14px 20px;display:flex;align-items:center;justify-content:space-between"><span class="u" style="font-size:11px;letter-spacing:.24em">Resumo do pedido</span><span style="font-size:12px;color:var(--sl-text-soft)">3 itens</span></div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--sl-line-hairline)" id="sumItems"></div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:9px;font-size:14px;border-bottom:1px solid var(--sl-line-hairline)">
+          <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>R$ 192,00</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Frete · PAC</span><span>R$ 21,90</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:8px;border-top:1px solid rgba(11,11,11,.12)"><span style="font-weight:700">Total</span><span class="price" style="font-size:28px">R$ 213,90</span></div>
+          <p style="margin:0;font-size:12px;color:var(--sl-text-soft)">Valor final. Não há taxas adicionais na próxima etapa.</p>
+        </div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:center"><img src="../../assets/img/icons/mercado-pago.svg" alt="Mercado Pago" style="height:20px;width:auto;flex:none"><p style="margin:0;font-size:13px;line-height:1.55">Pagamento processado pelo <strong>Mercado Pago</strong> — o selo não armazena dados do cartão.</p></div>
+          <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--sl-accent);font-weight:900">✓</span><p style="margin:0;font-size:13px;line-height:1.55">Envio com rastreio pelo Melhor Envio, código por e-mail em 24h.</p></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:6px">
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 9px;border:1px solid var(--sl-line-strong)"><img src="../../assets/img/icons/pix.svg" alt="Pix" style="height:14px;width:auto"></span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 9px;border:1px solid var(--sl-line-strong)"><img src="../../assets/img/icons/visa.svg" alt="Visa" style="height:12px;width:auto"></span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 9px;border:1px solid var(--sl-line-strong)"><img src="../../assets/img/icons/mastercard.svg" alt="Mastercard" style="height:16px;width:auto"></span>
+            <span class="u" style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border:1px solid var(--sl-line-strong);font-size:10px;letter-spacing:.16em">ELO</span>
+            <span class="u" style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border:1px solid var(--sl-line-strong);font-size:10px;letter-spacing:.16em">BOLETO</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);padding:18px 20px;display:flex;flex-direction:column;gap:8px">
+        <p class="eyebrow">Precisa de ajuda?</p>
+        <p style="margin:0;font-size:14px;line-height:1.6">Fale com a gente no WhatsApp ou em <span style="text-decoration:underline">contato@selolibertaria.com.br</span>. Respondemos em até 1 dia útil.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="ftr" style="background:var(--sl-paper);padding:40px var(--sl-gutter-desktop);display:flex;flex-wrap:wrap;gap:48px;justify-content:space-between;border-top:1px solid var(--sl-line-hairline)">
+  <div style="max-width:340px;display:flex;flex-direction:column;gap:12px">
+    <p class="u" style="margin:0;font-size:11px;letter-spacing:.28em;color:var(--sl-text-quiet)">Selo Libertária</p>
+    <p style="margin:0;font-size:14px;line-height:1.7;color:var(--sl-text-muted)">Livros, edições sonoras, zines, objetos e encontros. São Paulo.</p>
+    <div style="display:flex;gap:8px"><span style="flex:1;height:52px;border:1px solid var(--sl-line-strong);display:flex;align-items:center;padding:0 14px;font-size:14px;color:var(--sl-text-disabled)">seu e-mail</span><button class="btn btn-primary" style="height:52px;padding:0 18px">Assinar</button></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,auto);gap:56px;font-size:13px" id="footCols"></div>
+</footer>
+
+<!-- carrinho -->
+<div id="scrim" style="display:none;position:fixed;inset:0;background:rgba(11,11,11,.5)"></div>
+<aside id="cart" style="display:none;position:fixed;top:0;right:0;bottom:0;width:416px;background:var(--sl-paper);border-left:1px solid var(--sl-ink);flex-direction:column;overflow:auto">
+  <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);height:64px;padding:0 20px;display:flex;align-items:center;justify-content:space-between"><span class="price" style="font-size:22px" id="cartTitle">Carrinho · 3 itens</span><span data-cart="close" style="font-size:18px;cursor:pointer">✕</span></div>
+  <div style="background:var(--sl-sand);padding:14px 20px;display:flex;flex-direction:column;gap:8px">
+    <p style="margin:0;font-size:13px;font-weight:700">Faltam R$ 8,00 para o frete grátis <span style="font-weight:400;color:var(--sl-text-soft)">(acima de R$ 200,00)</span></p>
+    <div style="height:8px;background:rgba(11,11,11,.16)"><div style="width:96%;height:8px;background:var(--sl-wine)"></div></div>
+  </div>
+  <div style="padding:0 20px;display:flex;flex-direction:column" id="cartLines"></div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span class="lbl">Frete para 01310-000</span>
+      <div style="border:1px solid var(--sl-ink);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px"><span>PAC · 5 dias úteis</span><span style="font-weight:700">R$ 21,90</span></div>
+      <div style="border:1px solid var(--sl-line-strong);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;color:var(--sl-text-muted)"><span>SEDEX · 2 dias úteis</span><span>R$ 38,40</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:15px;border-top:1px solid var(--sl-line-hairline);padding-top:14px">
+      <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>R$ 192,00</span></div>
+      <div style="display:flex;justify-content:space-between"><span>Frete · PAC</span><span>R$ 21,90</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--sl-line-hairline);padding-top:10px"><span style="font-weight:700">Total</span><span class="price" style="font-size:26px">R$ 213,90</span></div>
+    </div>
+    <button class="btn btn-buy" data-go="checkout" style="width:100%">Finalizar compra</button>
+    <button class="btn btn-secondary" data-cart="close" style="width:100%">Continuar comprando</button>
+    <p style="margin:0;font-size:12px;line-height:1.6;color:var(--sl-text-soft);text-align:center">Pagamento seguro Mercado Pago · Pix, cartão em 6x ou boleto</p>
+  </div>
+</aside>
+
+<script>
+const A = '../../assets/img/';
+const products = [
+  { img:'lfbf-cover-full.png', cat:'Livro', badge:'Pré-venda', badgeTone:'buy', title:'little fish, big fish', blurb:'Natália Nolli Sasso · poesia · 96 páginas.', price:'R$ 72,00', note:'Envio 12 set' },
+  { img:'virus-do-beijo-cover.png', cat:'Livro', badge:'Livro', badgeTone:'ink', title:'Vírus do Beijo', blurb:'Poesia erótica em trânsito pela cidade, com corpo e linguagem em tensão.', price:'R$ 60,00', note:'Em estoque' },
+  { img:'illustration-reader-phone.png', cat:'Edição sonora', badge:'Edição sonora', badgeTone:'ink', title:'Ninfas do Tietê · voz', blurb:'Leitura em voz alta gravada pela autora. Entrega digital imediata.', price:'R$ 35,00', note:'Digital' },
+  { img:'illustration-mermaid-circle.png', cat:'Objeto', badge:'Objeto', badgeTone:'ink', title:'Pôster Ninfas', blurb:'Serigrafia 50×70 assinada, tiragem de 40 exemplares.', price:'R$ 90,00', note:'7 restantes' },
+  { img:'illustration-statue-rider.png', cat:'Ingresso', badge:'Ingresso', badgeTone:'ink', title:'Sarau Safado #13', blurb:'14 set · 20h · São Paulo, centro. Leitura aberta com inscrição na porta.', price:'R$ 30,00', note:'32 vagas' },
+  { img:'illustration-night-figure.png', cat:'Zine', title:'Zine Sarau #12', blurb:'Registro da edição 12 com 14 autoras convidadas.', price:'R$ 20,00', note:'Em estoque' },
+  { img:'illustration-saturn.png', cat:'Laboratório', title:'Escritas dissidentes', blurb:'6 encontros online · out/nov · 12 vagas.', price:'R$ 180,00', note:'3 vagas', action:'Inscrever' },
+  { img:'ninfas-example.png', cat:'Livro', badge:'Esgotado', badgeTone:'paper', title:'Ninfas do Tietê', blurb:'1ª edição encerrada. Reimpressão prevista para outubro.', price:'R$ 48,00', note:'Esgotado', soldOut:true, action:'Avise-me' },
+];
+const toneCss = { buy:'background:var(--sl-buy);color:var(--sl-text-on-ink)', ink:'background:var(--sl-ink);color:var(--sl-text-on-ink)', paper:'background:var(--sl-paper);color:var(--sl-ink);border:1px solid var(--sl-ink)' };
+
+function card(p) {
+  return `<article class="card" data-go="produto">
+    <div class="shot"><img src="${A}${p.img}" alt="">${p.badge ? `<span class="badge" style="${toneCss[p.badgeTone]}">${p.badge}</span>` : ''}</div>
+    <div class="body">
+      <span style="font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:var(--sl-text-quiet)">${p.cat}</span>
+      <h3>${p.title}</h3>
+      <p>${p.blurb}</p>
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <span class="price" style="font-size:22px${p.soldOut ? ';color:var(--sl-text-soft)' : ''}">${p.price}</span>
+        <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:${p.soldOut ? 'var(--sl-text-soft)' : 'var(--sl-accent)'}">${p.note}</span>
+      </div>
+      <span class="btn ${p.soldOut ? 'btn-secondary' : 'btn-primary'}" style="width:100%">${p.action || 'Adicionar'}</span>
+    </div></article>`;
+}
+document.getElementById('homeGrid').innerHTML = products.slice(0, 4).map(card).join('');
+document.getElementById('lojaGrid').innerHTML = products.map(card).join('');
+
+const cats = ['Tudo · 28','Livros · 9','Edições sonoras · 4','Zines & impressos · 6','Objetos · 5','Ingressos · 2','Laboratórios · 2'];
+document.getElementById('tabs').innerHTML = cats.map((c, i) => `<span class="tab${i === 0 ? ' on' : ''}">${c}</span>`).join('');
+document.getElementById('tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  document.querySelectorAll('#tabs .tab').forEach(x => x.classList.remove('on')); t.classList.add('on');
+});
+
+document.getElementById('pdpThumbs').innerHTML = ['lfbf-fish-badge','lfbf-fish-band','lfbf-fish-circle-tight']
+  .map((n, i) => `<div class="thumb" data-src="${A}${n}.png" style="width:84px;height:84px;background:var(--sl-sand);overflow:hidden;cursor:pointer;${i === 0 ? 'border:1px solid var(--sl-ink)' : ''}"><img src="${A}${n}.png" alt="" style="width:100%;height:100%;object-fit:cover"></div>`).join('');
+document.getElementById('pdpThumbs').addEventListener('click', e => {
+  const t = e.target.closest('.thumb'); if (!t) return;
+  document.querySelectorAll('.thumb').forEach(x => x.style.border = 'none');
+  t.style.border = '1px solid var(--sl-ink)';
+  document.getElementById('pdpMain').src = t.dataset.src;
+});
+
+document.getElementById('acc').innerHTML = ['Ficha técnica','Entrega e devolução','Trecho']
+  .map((t, i) => `<div style="border-top:1px solid var(--sl-line-hairline);${i === 2 ? 'border-bottom:1px solid var(--sl-line-hairline);' : ''}height:56px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;cursor:pointer">${t} <span style="color:var(--sl-accent)">+</span></div>`).join('');
+
+document.getElementById('related').innerHTML = [
+  ['virus-do-beijo-cover.png','Livro','Vírus do Beijo','R$ 60,00'],
+  ['illustration-reader-phone.png','Sonora','Ninfas · voz','R$ 35,00'],
+  ['illustration-night-figure.png','Zine','Zine Sarau #12','R$ 20,00'],
+  ['illustration-statue-rider.png','Ingresso','Sarau #13','R$ 30,00'],
+].map(([img, cat, t, pr]) => `<div style="background:var(--sl-surface-card);border:1px solid var(--sl-line-hairline);padding:12px;display:flex;gap:12px;align-items:center"><div style="width:56px;height:56px;background:var(--sl-sand);overflow:hidden;flex:none"><img src="${A}${img}" alt="" style="width:100%;height:100%;object-fit:cover"></div><div><p style="margin:0;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sl-text-quiet)">${cat}</p><p class="price" style="margin:4px 0 0;font-size:16px">${t}</p><p style="margin:2px 0 0;font-size:13px;color:var(--sl-accent)">${pr}</p></div></div>`).join('');
+
+const cartItems = [
+  ['lfbf-cover-full.png','Livro · impresso','little fish, big fish','R$ 72,00','Livro impresso · qtd. 1'],
+  ['illustration-mermaid-circle.png','Objeto · serigrafia','Pôster Ninfas','R$ 90,00','Objeto · serigrafia · qtd. 1'],
+  ['illustration-statue-rider.png','Ingresso · 14 set','Sarau Safado #13','R$ 30,00','Ingresso · 14 set, 20h'],
+];
+document.getElementById('cartLines').innerHTML = cartItems.map(([img, cat, t, pr]) => `
+  <div style="padding:18px 0;border-bottom:1px solid var(--sl-line-hairline);display:flex;gap:14px">
+    <div style="width:64px;height:64px;background:var(--sl-sand);overflow:hidden;flex:none"><img src="${A}${img}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+      <p style="margin:0;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sl-text-quiet)">${cat}</p>
+      <p class="price" style="margin:0;font-size:18px">${t}</p>
+      <div style="display:flex;align-items:center;justify-content:space-between"><div style="height:44px;border:1px solid var(--sl-line-strong);display:flex;align-items:center;gap:14px;padding:0 12px;font-size:15px"><span>−</span><span>1</span><span>+</span></div><span class="price" style="font-size:18px">${pr}</span></div>
+    </div></div>`).join('');
+document.getElementById('sumItems').innerHTML = cartItems.map(([img, , t, pr, meta]) => `
+  <div style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;background:var(--sl-sand);overflow:hidden;flex:none"><img src="${A}${img}" alt="" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:700">${t}</p><p style="margin:3px 0 0;font-size:12px;color:var(--sl-text-soft)">${meta}</p></div><span style="font-size:14px">${pr}</span></div>`).join('');
+
+document.getElementById('footCols').innerHTML = [
+  ['Loja',['Livros','Edições sonoras','Zines e objetos','Ingressos']],
+  ['Selo',['Sobre','Projetos','Sarau Safado','Contato']],
+  ['Ajuda',['Entrega e prazos','Trocas','Perguntas frequentes','Privacidade']],
+].map(([t, links]) => `<div><p class="u" style="margin:0 0 12px;font-size:11px;letter-spacing:.24em;color:var(--sl-text-quiet)">${t}</p><div style="display:flex;flex-direction:column;gap:8px;color:rgba(11,11,11,.75)">${links.map(l => `<span>${l}</span>`).join('')}</div></div>`).join('');
+
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + name));
+  const checkout = name === 'checkout';
+  document.getElementById('hdr').style.display = checkout ? 'none' : 'flex';
+  document.getElementById('ftr').style.display = checkout ? 'none' : 'flex';
+  document.querySelectorAll('#nav [data-nav]').forEach(n => {
+    const on = (name === 'loja' || name === 'produto') && n.dataset.nav === 'Loja';
+    n.style.borderBottom = on ? '2px solid var(--sl-buy)' : '2px solid transparent';
+    n.style.color = on ? 'var(--sl-text-on-ink)' : 'var(--sl-text-on-ink-soft)';
+  });
+  closeCart();
+  window.scrollTo(0, 0);
+}
+function openCart() { document.getElementById('scrim').style.display = 'block'; document.getElementById('cart').style.display = 'flex'; }
+function closeCart() { document.getElementById('scrim').style.display = 'none'; document.getElementById('cart').style.display = 'none'; }
+
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]');
+  const c = e.target.closest('[data-cart]');
+  if (c) {
+    const a = c.dataset.cart;
+    if (a === 'open') openCart();
+    if (a === 'close') closeCart();
+    if (a === 'add' || a === 'add-open') {
+      const el = document.getElementById('cartCount'); el.textContent = (+el.textContent) + 1;
+      if (a === 'add-open') openCart();
+    }
+    return;
+  }
+  if (g) { go(g.dataset.go); return; }
+  const q = e.target.closest('[data-qty]');
+  if (q) { const el = document.getElementById('qty'); el.textContent = Math.max(1, (+el.textContent) + (+q.dataset.qty)); }
+  const fm = e.target.closest('.fmt');
+  if (fm) {
+    document.querySelectorAll('.fmt').forEach(x => x.classList.remove('on'));
+    fm.classList.add('on'); paintFmt();
+    document.getElementById('pdpPrice').textContent = fm.dataset.price;
+  }
+  const m = e.target.closest('.m');
+  if (m) {
+    document.querySelectorAll('.m').forEach(x => { x.classList.remove('on'); x.style.border = '1px solid rgba(11,11,11,.28)'; x.style.background = 'transparent'; });
+    m.classList.add('on'); m.style.border = '1px solid var(--sl-ink)'; m.style.background = 'var(--sl-paper)';
+    document.querySelectorAll('.pane').forEach(p => p.style.display = 'none');
+    document.getElementById('pane-' + m.dataset.m).style.display = 'block';
+  }
+});
+document.getElementById('scrim').addEventListener('click', closeCart);
+document.getElementById('calcFrete').addEventListener('click', () => {
+  document.getElementById('cepVal').textContent = '01310-000';
+  document.getElementById('cepVal').style.color = 'var(--sl-text-on-ink)';
+  document.getElementById('freteOut').style.display = 'block';
+});
+function paintFmt() {
+  document.querySelectorAll('.fmt').forEach(x => {
+    const on = x.classList.contains('on');
+    x.style.background = on ? 'var(--sl-paper)' : 'transparent';
+    x.style.color = on ? 'var(--sl-ink)' : 'var(--sl-text-on-ink)';
+    x.style.border = on ? 'none' : '1px solid var(--sl-line-on-ink-mid)';
+  });
+}
+paintFmt();
+document.getElementById('pay').addEventListener('click', () => {
+  document.getElementById('payState').innerHTML = `<div style="border:1px solid var(--sl-ink);background:var(--sl-ink);color:var(--sl-text-on-ink);padding:16px;display:flex;flex-direction:column;gap:6px;margin-top:12px"><p class="u" style="margin:0;font-size:11px;letter-spacing:.22em;color:var(--sl-text-on-ink-label)">Processando</p><p style="margin:0;font-size:15px">Autorizando com o banco emissor… não feche a página.</p><div style="height:6px;background:rgba(247,244,239,.2)"><div style="width:60%;height:6px;background:var(--sl-buy)"></div></div></div>`;
+  setTimeout(() => {
+    document.getElementById('payState').innerHTML = `<div style="border:1px solid var(--sl-ink);background:var(--sl-surface-card);padding:16px;display:flex;gap:12px;align-items:flex-start;margin-top:12px"><span style="color:var(--sl-accent);font-weight:900;font-size:18px">✓</span><div><p style="margin:0;font-size:15px;font-weight:700">Pagamento aprovado · pedido #1043</p><p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:var(--sl-text-muted)">Comprovante enviado para marcos@exemplo.com. Rastreio em até 24h.</p></div></div>`;
+  }, 1600);
+});
+</script>
+</body>
+</html>

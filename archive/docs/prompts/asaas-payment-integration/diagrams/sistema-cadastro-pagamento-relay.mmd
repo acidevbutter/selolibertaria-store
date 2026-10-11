@@ -1,0 +1,55 @@
+%% Visao de contexto TO-BE: cadastro DevButter, credencial Asaas e checkout Selolibertaria.
+%% Estado em 2026-08-28: o relay esta implementado, mas bloqueado ate o asaas_payment
+%% fornecer ao devbutter_backend uma credencial utilizavel, por rota dedicada e CN restrito.
+flowchart LR
+    Cliente[Cliente]
+    Asaas[(Asaas API)]
+
+    subgraph DevButter[DevButter]
+        Cadastro[Cadastro e confirmacao de conta]
+        DBB[devbutter_backend]
+        Proxy[asaas_payment\nproxy mTLS]
+        Relay[Relay de credencial\nHMAC + TLS + retry]
+        DB[(PostgreSQL DevButter)]
+    end
+
+    subgraph Selo[Selolibertaria]
+        Store[selolibertaria-store\nNext.js]
+        API[backend\nFastAPI]
+        Cred[(Credencial Asaas cifrada)]
+        Pedido[(Pedido e Payment)]
+    end
+
+    Cliente -->|cadastro| Cadastro
+    Cadastro -->|conta confirmada| DBB
+    DBB -->|cria subconta e access token| Proxy
+    Proxy -->|mTLS: cria conta/subconta| Asaas
+    Proxy -->|id, walletId e token ref| DBB
+    DBB --> DB
+    DBB --> Relay
+    Relay -->|POST /integrations/devbutter/subaccounts\nevent_id + HMAC| API
+    API -->|valida assinatura e idempotencia| Cred
+    API -->|202/200 ack| Relay
+
+    Cliente -->|checkout| Store
+    Store -->|POST /payments/asaas/charges| API
+    API -->|decifra somente na requisicao| Cred
+    API -->|cria cliente/cobranca\ncom api_key da subconta| Asaas
+    API --> Pedido
+    API -->|dados seguros de pagamento| Store
+
+    Asaas -->|webhook PAYMENT_*| API
+    API -->|dedupe por event_id| Pedido
+
+    Asaas -.->|401: chave invalida| API
+    API -.->|marca pending_rotation| Cred
+    API -.->|POST rotate-key\nHMAC + TLS| DBB
+    DBB -.->|rotaciona credencial| Proxy
+    DBB -.->|POST key-updated\nevent_id + HMAC| API
+
+    Bloqueio{{Bloqueio atual:\nasaas_payment redige a apiKey\ne o relay nao tem segredo para enviar}}
+    Proxy -.-> Bloqueio
+    Bloqueio -.-> Relay
+
+    classDef blocked fill:#FCE8E6,stroke:#B3261E,color:#601410;
+    class Bloqueio blocked;

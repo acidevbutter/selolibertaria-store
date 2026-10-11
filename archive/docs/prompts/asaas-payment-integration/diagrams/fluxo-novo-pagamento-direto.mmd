@@ -1,0 +1,30 @@
+sequenceDiagram
+%% Fluxo NOVO (TO-BE) - Selolibertaria consumindo a API Asaas DIRETAMENTE do backend FastAPI
+%% Nao passa pelo proxy mTLS asaas_payment do DevButter. Usa a credencial recebida no fluxo de provisionamento/rotacao.
+    participant Loja as selolibertaria-store (Next.js)
+    participant Selo as selolibertaria/backend (FastAPI)
+    participant Cred as asaas_subaccount_credential
+    participant Asaas as Asaas API (api.asaas.com/v3)
+
+    Loja->>Selo: POST /payments/asaas/charges (pedido, valor, forma: PIX, BOLETO ou CREDIT_CARD)
+    Selo->>Cred: le credencial ativa (decifra em memoria da requisicao)
+    alt credencial status = active
+        Selo->>Asaas: POST /v3/customers (se ainda nao existir) + POST /v3/payments
+        Asaas-->>Selo: payment id + status + (qrCode Pix / linha digitavel boleto / etc.)
+        Selo->>Selo: grava Payment(provider=asaas, provider_payment_id, order_id, status)
+        Selo-->>Loja: dados de pagamento (200)
+    else credencial status = pending_rotation
+        Selo-->>Loja: 503 pagamento indisponivel (explicito, nao silencioso)
+        Note right of Selo: dispara fluxo 2b (rotate-key) se ainda nao disparado
+    end
+
+    Asaas-->>Selo: 401 em qualquer chamada acima
+    Note right of Selo: 401 => credencial invalida: aciona fluxo 2b<br/>(diagrams/fluxo-novo-provisionamento-e-rotacao.mmd)
+
+    Asaas-->>Selo: Webhook POST /payments/asaas/webhook<br/>eventos PAYMENT_CREATED / PAYMENT_CONFIRMED / PAYMENT_RECEIVED / PAYMENT_OVERDUE / PAYMENT_REFUNDED / PAYMENT_CHARGEBACK_* / ACCOUNT_STATUS_*
+    Selo->>Selo: valida header asaas-access-token (hmac.compare_digest, constant-time)
+    Selo->>Selo: idempotencia por evento.id (reusa WebhookEvent, mesmo padrao do Mercado Pago)
+    Selo->>Selo: atualiza Payment/Order de forma idempotente
+    Selo-->>Asaas: 200 rapido (processamento pesado e assincrono)
+
+    Note over Selo: Entrega Asaas e at-least-once, eventos ficam disponiveis 14 dias,<br/>payload pode ganhar campos novos - nao falhar em campo desconhecido.

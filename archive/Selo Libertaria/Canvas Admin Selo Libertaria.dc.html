@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#141210;font-family:"Fertigo","Segoe UI",serif}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:96px;padding:80px 80px 160px;background:#141210;border-bottom:1px solid rgba(247,244,239,.18)">
+
+  <div id="1a" style="display:flex;flex-direction:column;gap:40px;max-width:1720px">
+    <div style="display:flex;align-items:flex-start;gap:24px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Turno 1</span>
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">1a</span>
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:56rem">
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:76px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase;color:#F7F4EF">Canvas do admin</h1>
+        <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(247,244,239,.72)">Área logada separada do canvas público: <code style="color:#D8D0C4">/login</code>, <code style="color:#D8D0C4">/user</code> e <code style="color:#D8D0C4">/admin</code> — estado atual e o que precisa mudar para o painel falar a mesma língua da loja.</p>
+        <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.45)">Canvas público: <a href="Canvas Selo Libertaria.dc.html">Canvas Selo Libertária</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;align-items:baseline;gap:18px">
+      <span style="font-family:'DCCAsh',serif;font-size:44px;color:#7A1E22">01</span>
+      <h2 style="margin:0;font-family:'Fertigo',serif;font-size:44px;font-weight:900;letter-spacing:-.05em;text-transform:uppercase;color:#F7F4EF">Conta e admin</h2>
+      <span style="font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.45)">/login · /user · /admin</span>
+    </div>
+    <div style="display:flex;gap:48px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#D8D0C4;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span><span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin · Desktop 1440</span></div>
+        <div style="position:relative;width:1440px;display:flex;background:#f8f3ec;color:#0B0B0B;border:1px solid rgba(247,244,239,.18)">
+          <div style="width:264px;flex:none;background:#0b0b0b;color:#F7F4EF;padding:28px 0;display:flex;flex-direction:column">
+            <div style="padding:0 28px;display:flex;gap:16px;align-items:flex-start"><div style="width:44px;height:44px;border-radius:12px;background:#fffdf8;overflow:hidden;padding:6px;box-sizing:border-box"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div><div><div style="font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fffdf8">Libertária</div><div style="font-size:12px;color:#beb3a8">Painel editorial</div></div></div>
+            <div style="padding:20px 28px 0;display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Gestão</span><span style="font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.42)">Sair</span></div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;background:#f7f1e8;color:#0b0b0b;font-size:14px;font-weight:500"><span style="width:6px;height:6px;border-radius:50%;background:#7a1e22"></span>Painel</div>
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;color:#cfc6bd;font-size:14px"><span style="width:6px;height:6px;border-radius:50%;background:#5c5450"></span>Pedidos</div>
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;color:#cfc6bd;font-size:14px"><span style="width:6px;height:6px;border-radius:50%;background:#5c5450"></span>Produtos</div>
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;color:#cfc6bd;font-size:14px"><span style="width:6px;height:6px;border-radius:50%;background:#5c5450"></span>Editorial</div>
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;color:#cfc6bd;font-size:14px"><span style="width:6px;height:6px;border-radius:50%;background:#5c5450"></span>Usuários</div>
+              <div style="display:flex;align-items:center;gap:12px;border-radius:12px;padding:12px;color:#cfc6bd;font-size:14px"><span style="width:6px;height:6px;border-radius:50%;background:#5c5450"></span>Configurações</div>
+            </div>
+            <div style="margin-top:auto;padding:24px 28px 0"><div style="height:1px;background:#2a2422;margin-bottom:24px"></div><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#9f948c">Sessão</div><div style="margin-top:8px;font-size:14px;font-weight:600;color:#fffdf8">Marcos Vinícius</div><div style="margin-top:4px;font-size:12px;color:#beb3a8">admin@selolibertaria.com.br</div></div>
+          </div>
+          <div style="flex:1;padding:32px;display:flex;flex-direction:column;gap:24px">
+            <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:32px"><p style="margin:0;font-size:11px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:#7A1E22">Painel</p><h1 style="margin:12px 0 0;font-family:'Fertigo',serif;font-size:64px;line-height:.9;font-weight:900;letter-spacing:-.05em">Operação da loja</h1><p style="margin:12px 0 0;max-width:48rem;font-size:16px;line-height:1.75;color:rgba(11,11,11,.62)">Receita, pedidos e falhas de pagamento do período selecionado.</p></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+              <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Receita paga</div><div style="margin-top:16px;font-size:30px;font-weight:600;letter-spacing:-.04em">R$ 4.320,00</div></div>
+              <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Pedidos</div><div style="margin-top:16px;font-size:30px;font-weight:600;letter-spacing:-.04em">58</div></div>
+              <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Falhas</div><div style="margin-top:16px;font-size:30px;font-weight:600;letter-spacing:-.04em">4</div></div>
+              <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Ticket médio</div><div style="margin-top:16px;font-size:30px;font-weight:600;letter-spacing:-.04em">R$ 74,50</div></div>
+            </div>
+            <div style="border:1px solid #e4e4e7;border-radius:12px;background:#fff;padding:24px"><p style="margin:0;font-size:15px;font-weight:600">Receita por dia</p><div style="margin-top:16px;height:140px;background:linear-gradient(180deg,rgba(122,30,34,.18),rgba(122,30,34,0));border-bottom:1px solid #e4e4e7"></div></div>
+            <div style="border:1px solid #e4e4e7;border-radius:12px;background:#fff;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid #e4e4e7;font-size:15px;font-weight:600">Pedidos recentes</div>
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 120px;gap:16px;padding:12px 20px;font-size:12px;color:#71717a;border-bottom:1px solid #e4e4e7"><span>Pedido</span><span>Cliente</span><span>Total</span><span>Status</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 120px;gap:16px;padding:14px 20px;font-size:14px;border-bottom:1px solid #f4f4f5"><span>#1042</span><span>ana@exemplo.com</span><span>R$ 129,90</span><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px">Pago</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 120px;gap:16px;padding:14px 20px;font-size:14px"><span>#1041</span><span>joao@exemplo.com</span><span>R$ 60,00</span><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:12px">Falhou</span></div>
+            </div>
+          </div>
+          <span style="position:absolute;top:420px;left:340px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">20</span>
+          <span style="position:absolute;top:60px;left:20px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">21</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#D8D0C4;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span><span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/login · Mobile 390</span></div>
+        <div style="width:390px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18)">
+          <div style="padding:16px;border-bottom:1px solid #0B0B0B;display:flex;align-items:center;gap:10px"><div style="width:40px;height:40px;border:1px solid #0B0B0B;overflow:hidden"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div><div style="font-size:13px;font-weight:900;letter-spacing:.28em;text-transform:uppercase">Libertária</div></div>
+          <div style="padding:32px 20px;display:flex;flex-direction:column;gap:16px">
+            <h1 style="margin:0;font-family:'Fertigo',serif;font-size:44px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase">Entrar</h1>
+            <span style="height:40px;border:1px solid rgba(11,11,11,.12);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:14px;color:rgba(11,11,11,.4)">Email</span>
+            <span style="height:40px;border:1px solid rgba(11,11,11,.12);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:14px;color:rgba(11,11,11,.4)">Senha</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:#18181b;color:#fff;font-size:14px;font-weight:500">Entrar</span>
+            <div style="display:flex;align-items:center;gap:12px;color:rgba(11,11,11,.45);font-size:12px"><span style="flex:1;height:1px;background:rgba(11,11,11,.12)"></span>ou<span style="flex:1;height:1px;background:rgba(11,11,11,.12)"></span></div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;border:1px solid rgba(11,11,11,.16);border-radius:8px;font-size:14px"><img src="assets/img/icons/instagram.svg" alt="" style="width:16px;height:16px">Continuar com Google</span>
+            <p style="margin:0;font-size:13px;color:rgba(11,11,11,.62)">Não tem conta? <span style="color:#7A1E22;text-decoration:underline">Criar conta</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px"><span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#D8D0C4;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span><span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin · Mobile 390</span></div>
+        <div style="width:390px;background:#f8f3ec;color:#0B0B0B;border:1px solid rgba(247,244,239,.18)">
+          <div style="background:#0b0b0b;color:#F7F4EF;padding:14px 16px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:8px;background:#fffdf8;overflow:hidden;padding:4px"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div><span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Libertária</span></div><svg width="18" height="18" viewBox="0 0 24 24" stroke="#F7F4EF" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></div>
+          <div style="padding:20px 16px;display:flex;flex-direction:column;gap:16px">
+            <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:20px"><p style="margin:0;font-size:10px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Painel</p><h1 style="margin:10px 0 0;font-family:'Fertigo',serif;font-size:34px;line-height:.94;font-weight:900;letter-spacing:-.04em">Operação da loja</h1></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:14px"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Receita</div><div style="margin-top:10px;font-size:20px;font-weight:600">R$ 4.320</div></div><div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:14px"><div style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Pedidos</div><div style="margin-top:10px;font-size:20px;font-weight:600">58</div></div></div>
+            <div style="border:1px solid #e4e4e7;border-radius:12px;background:#fff;overflow:hidden"><div style="padding:12px 14px;border-bottom:1px solid #e4e4e7;font-size:13px;font-weight:600">Pedidos recentes</div><div style="display:flex;justify-content:space-between;padding:12px 14px;font-size:13px;border-bottom:1px solid #f4f4f5"><span>#1042</span><span style="background:#dcfce7;color:#166534;border-radius:999px;padding:2px 8px;font-size:11px">Pago</span></div><div style="display:flex;justify-content:space-between;padding:12px 14px;font-size:13px"><span>#1041</span><span style="background:#fee2e2;color:#991b1b;border-radius:999px;padding:2px 8px;font-size:11px">Falhou</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;width:420px;flex:none">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Conta e admin</p>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">20</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Dois sistemas dentro do painel</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Hero e cartões seguem o Editorial V2 (reto, bege, vinho); logo abaixo, gráficos e tabela usam <code style="color:#D8D0C4">Card</code>/<code style="color:#D8D0C4">Table</code> do shadcn com raio 12px, branco e badges verde/vermelho. Padronizar tabela e badge no vocabulário editorial.</p></div></div></div>
+          <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">21</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Sidebar com raio, público sem raio</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Itens de navegação <code style="color:#D8D0C4">rounded-xl</code> e marca <code style="color:#D8D0C4">rounded-xl</code> contra um site inteiro de cantos retos. É o único ponto onde o admin pode divergir — vale decidir explicitamente, não por herança do fork.</p></div></div></div>
+          <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Login herdado do fork</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Campos de 40px com raio, botão preto arredondado, divisor "ou" — nada da marca. Proposta: mesmo campo editorial de 52px, botão reto, e a capa do último lançamento como painel lateral no desktop.</p></div>
+          <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Conta do cliente sem pedidos em destaque</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)"><code style="color:#D8D0C4">/user</code> e <code style="color:#D8D0C4">/orders</code> são telas separadas; para uma loja de poucos títulos, uma tela só com "meus pedidos + favoritos + dados" basta.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:88px;padding:80px 80px 120px;background:#141210;border-bottom:1px solid rgba(247,244,239,.18)">
+
+  <div style="display:flex;flex-direction:column;gap:28px;max-width:1720px">
+    <div style="display:flex;align-items:flex-start;gap:24px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Turno 2</span>
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:60rem">
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:76px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase;color:#F7F4EF">Correções de consistência</h1>
+        <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(247,244,239,.72)">Quatro bugs confirmados contra o código real do Next.js (Bug #6 a #9 da verificação de QA), desenhados como "Proposto" ao lado dos artboards "Atual" do turno 1 — que ficam intactos para comparação. Nada aqui é reescrita de tela: é troca de token, de fonte de número e de estado. <strong style="color:#F7F4EF">Decisões fechadas por Marcos:</strong> raio zero na sidebar, login social entra, consolidação de conta fica no backlog, atalho de falhas segue aberto.</p>
+        <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.45)">Pronto para código: <a href="#2a">2a</a> · <a href="#2b">2b</a> · <a href="#2c">2c</a> · <a href="#2d">2d</a> · <a href="#2e">2e</a> · <a href="#2g">2g</a> — em aberto: <a href="#2f">2f</a></p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;max-width:1400px">
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(122,30,34,.12);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Confirmado no código</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">4 bugs</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">#6 números sem DCC Ash · #7 badges de biblioteca · #8 filete/hover cinza · #9 raio e "selecionado" da sidebar. Arquivo e linha exatos na verificação de QA.</p>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Não reproduzem — não redesenhar</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">3 achados</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Ícone do provedor no "Continuar com Google", altura do campo de login e estado de erro do login já estão corretos no produto. Desenhar "correção" aqui seria regressão — o artboard de <code style="color:#D8D0C4">/login</code> do turno 1 fica como registro do fork, não como tarefa.</p>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Decidido por Marcos</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">2 fecham · 1 backlog · 1 aberta</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Raio zero na sidebar (Opção A) e login social <strong style="color:#F7F4EF">entram</strong> — vão para código junto com os quatro bugs. Consolidação <code style="color:#D8D0C4">/user</code>+<code style="color:#D8D0C4">/orders</code> fica no backlog. Cartão "Falhas" clicável segue aberto: desenhado, não aprovado.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+
+    <div id="2a" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Proposto</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2a</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin · Desktop 1440 · bugs #6 #7 #8 #9 aplicados · sidebar em raio zero (decidido)</span>
+      </div>
+      <div style="width:1440px;display:flex;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18)">
+        <div style="position:relative;width:264px;flex:none;background:#0B0B0B;color:#F7F4EF;padding:28px 0;display:flex;flex-direction:column">
+          <span style="position:absolute;top:-12px;left:-12px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">9</span>
+          <div style="padding:0 28px;display:flex;gap:16px;align-items:flex-start"><div style="width:44px;height:44px;background:#F7F4EF;overflow:hidden;padding:6px;box-sizing:border-box"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div><div><div style="font-size:13px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF">Libertária</div><div style="margin-top:4px;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Painel editorial</div></div></div>
+          <div style="padding:24px 28px 0;display:flex;justify-content:space-between"><span style="font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Gestão</span><span style="font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Sair</span></div>
+          <div style="padding:14px 0 0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;background:#7A1E22;color:#F7F4EF;font-size:15px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Painel</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;color:rgba(247,244,239,.72);font-size:15px">Pedidos</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;background:rgba(247,244,239,.06);color:#F7F4EF;font-size:15px">Produtos</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;color:rgba(247,244,239,.72);font-size:15px">Editorial</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;color:rgba(247,244,239,.72);font-size:15px">Usuários</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;color:rgba(247,244,239,.72);font-size:15px">Configurações</div>
+          </div>
+          <div style="margin-top:auto;padding:24px 28px 0"><div style="height:1px;background:rgba(247,244,239,.2);margin-bottom:20px"></div><div style="font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Sessão</div><div style="margin-top:10px;font-size:15px;color:#F7F4EF">Marcos Vinícius</div><div style="margin-top:4px;font-size:13px;color:rgba(247,244,239,.66)">admin@selolibertaria.com.br</div></div>
+        </div>
+        <div style="flex:1;padding:32px;display:flex;flex-direction:column;gap:24px">
+          <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:32px"><p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#7A1E22">Painel</p><h1 style="margin:12px 0 0;font-family:'Fertigo',serif;font-size:60px;line-height:.9;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Operação da loja</h1><p style="margin:14px 0 0;max-width:48rem;font-size:16px;line-height:1.75;color:rgba(11,11,11,.66)">Receita, pedidos e falhas de pagamento de 1 a 13 set.</p></div>
+          <div style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+            <span style="position:absolute;top:-14px;left:-14px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">6</span>
+            <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Receita paga</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em">R$ 4.320,00</div></div>
+            <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Pedidos</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em">58</div></div>
+            <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Falhas</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em;color:#7A1E22">4</div></div>
+            <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Ticket médio</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em">R$ 74,50</div></div>
+          </div>
+          <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:24px"><p style="margin:0;font-family:'DCCAsh',serif;font-size:22px">Receita por dia</p><div style="margin-top:16px;height:140px;background:linear-gradient(180deg,rgba(122,30,34,.18),rgba(122,30,34,0));border-bottom:1px solid rgba(11,11,11,.3)"></div></div>
+          <div style="position:relative;border:1px solid rgba(11,11,11,.14);background:#FFFFFF">
+            <span style="position:absolute;top:-14px;left:-14px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">8</span>
+            <span style="position:absolute;top:52px;right:-14px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900">7</span>
+            <div style="padding:18px 20px;border-bottom:1px solid rgba(11,11,11,.3);display:flex;align-items:baseline;justify-content:space-between"><span style="font-family:'DCCAsh',serif;font-size:22px">Pedidos recentes</span><span style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Ver todos</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 140px;gap:16px;padding:10px 20px;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.6);border-bottom:1px solid rgba(11,11,11,.2)"><span>Pedido</span><span>Cliente</span><span>Total</span><span>Status</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 140px;gap:16px;align-items:center;padding:14px 20px;font-size:15px;border-bottom:1px solid rgba(11,11,11,.14)"><span style="font-family:'DCCAsh',serif;font-size:18px">#1042</span><span>ana@exemplo.com</span><span style="font-family:'DCCAsh',serif;font-size:18px">R$ 129,90</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#D8D0C4;color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pago</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 140px;gap:16px;align-items:center;padding:14px 20px;font-size:15px;background:rgba(11,11,11,.04);border-bottom:1px solid rgba(11,11,11,.14)"><span style="font-family:'DCCAsh',serif;font-size:18px">#1041</span><span>joao@exemplo.com</span><span style="font-family:'DCCAsh',serif;font-size:18px">R$ 60,00</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:rgba(122,30,34,.06);border:1px solid rgba(122,30,34,.3);color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Falhou</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr 140px;gap:16px;align-items:center;padding:14px 20px;font-size:15px"><span style="font-family:'DCCAsh',serif;font-size:18px">#1040</span><span>lia@exemplo.com</span><span style="font-family:'DCCAsh',serif;font-size:18px">R$ 213,90</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Enviado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;width:420px;flex:none">
+      <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Estado de cada decisão · handoff</p>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.1);padding:18px">
+        <p style="margin:0;font-size:15px;font-weight:900;color:#F7F4EF">Dois itens entram no mesmo lote dos bugs, um vai para o backlog, um fica aberto</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">As quatro perguntas do plano de pesquisa foram decididas por Marcos sem pesquisa de campo. O que está marcado "Decidido" pode ser implementado; o que está "Aberto" não.</p>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">1</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Raio da sidebar — <strong style="color:#B3282E">Decidido: raio zero</strong> · <a href="#2e">2e</a></p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Opção A entra: logo, item de nav e tabela do painel em canto reto, igual à área pública. A Opção B (raio como exceção em token próprio) está <strong style="color:#F7F4EF">descartada</strong> — não existe <code style="color:#D8D0C4">--sl-radius-admin-nav</code>. Junto vai o "selecionado" como bloco sólido vinho.</p></div></div></div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">2</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Consolidar /user + /orders — <strong style="color:rgba(247,244,239,.55)">Backlog</strong> · <a href="#2f">2f</a></p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Fica para depois. A IA de <code style="color:#D8D0C4">/user</code> e <code style="color:#D8D0C4">/orders</code> <strong style="color:#F7F4EF">não muda neste lote</strong> — as duas telas seguem separadas no código. O desenho consolidado fica registrado em <a href="#2f">2f</a> para quando voltar à mesa.</p></div></div></div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">3</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Login social — <strong style="color:#B3282E">Decidido: entra</strong> · <a href="#2g">2g</a></p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">"Continuar com Google" vira ação <strong style="color:#F7F4EF">secundária</strong> do <code style="color:#D8D0C4">/login</code>: e-mail e senha primeiro, régua "ou", botão em papel branco com o ícone oficial do provedor. Artboard em <a href="#2g">2g</a>. Os três achados que não reproduzem (ícone, altura de campo, estado de erro) seguem como estão no código.</p></div></div></div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">4</span><div><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Card "Falhas" clicável — <strong style="color:#D8D0C4">Aberto</strong> · <a href="#2f">2f</a></p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Sem decisão, então <strong style="color:#F7F4EF">não vai neste lote</strong>: em <a href="#2a">2a</a> o cartão entra estático, igual aos outros três. Quando for decidido, é só trocar o filete de 14% para 20% e ligar o link — nenhuma outra mudança.</p></div></div></div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px">
+        <p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Tokens usados nos artboards propostos</p>
+        <p style="margin:8px 0 0;font-size:13px;line-height:1.8;color:rgba(247,244,239,.66)"><code style="color:#D8D0C4">--sl-font-display</code> (DCC Ash) em todo número · <code style="color:#D8D0C4">--sl-size-hero-md</code> 60px no título · <code style="color:#D8D0C4">--sl-sand</code> + <code style="color:#D8D0C4">--sl-wine</code> no chip "Pago" · <code style="color:#D8D0C4">--sl-danger</code> sobre <code style="color:#D8D0C4">--sl-danger-wash</code> no "Falhou" · <code style="color:#D8D0C4">--sl-line-hairline</code> .14 nas linhas, <code style="color:#D8D0C4">--sl-line</code> .20 no cabeçalho, <code style="color:#D8D0C4">--sl-line-strong</code> .30 na régua de seção · <code style="color:#D8D0C4">--sl-radius</code> 0 · <code style="color:#D8D0C4">--sl-transition</code> 120ms linear. Nenhuma cor nova, nenhum componente novo: <code style="color:#D8D0C4">Chip</code> ganha <code style="color:#D8D0C4">tone="danger"</code> e o item de nav ganha <code style="color:#D8D0C4">selected</code>, ambos já previstos no handoff.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+
+    <div id="2b" style="display:flex;flex-direction:column;gap:12px;width:640px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Bug #6</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2b</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Valor numérico · antes / depois</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">Atual · Fertigo 600</span>
+          <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Receita paga</div><div style="margin-top:16px;font-family:'Fertigo',serif;font-size:30px;font-weight:600;letter-spacing:-.04em;color:#0B0B0B">R$ 4.320,00</div></div>
+          <div style="border:1px solid rgba(11,11,11,.12);background:#fbf7f1;padding:20px"><div style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Ticket médio</div><div style="margin-top:16px;font-family:'Fertigo',serif;font-size:30px;font-weight:600;letter-spacing:-.04em;color:#0B0B0B">R$ 74,50</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#F7F4EF">Proposto · DCC Ash 30px</span>
+          <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Receita paga</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em;color:#0B0B0B">R$ 4.320,00</div></div>
+          <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;padding:20px"><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Ticket médio</div><div style="margin-top:16px;font-family:'DCCAsh',serif;font-size:30px;letter-spacing:-.02em;color:#0B0B0B">R$ 74,50</div></div>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:16px">
+        <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Vale para <strong style="color:#F7F4EF">todo</strong> número da área logada: receita, contagem de pedidos, ticket médio, número de pedido e total de linha da tabela. Corpo e manchete seguem em Fertigo — a troca das duas é o erro que o sistema chama de mais fácil de cometer. O título "Operação da loja" volta para a escala: 60px desktop, 36px mobile.</p>
+      </div>
+    </div>
+
+    <div id="2c" style="display:flex;flex-direction:column;gap:12px;width:560px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Bug #7</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2c</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Badge de status · paleta fechada</span>
+      </div>
+      <div style="background:#F7F4EF;border:1px solid rgba(247,244,239,.18);padding:24px;display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.6)">Atual · verde/vermelho de biblioteca</span>
+          <div style="display:flex;gap:10px"><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px">Pago</span><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:12px">Pendente</span><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#f4f4f5;color:#3f3f46;font-size:12px">Enviado</span><span style="display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:12px">Falhou</span></div>
+        </div>
+        <div style="height:1px;background:rgba(11,11,11,.2)"></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Proposto · Chip, 24px, raio zero</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#D8D0C4;color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pago</span>
+            <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:rgba(11,11,11,.06);color:rgba(11,11,11,.72);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pendente</span>
+            <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Enviado</span>
+            <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:rgba(122,30,34,.06);border:1px solid rgba(122,30,34,.3);color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Falhou</span>
+          </div>
+          <div style="margin-top:6px;display:grid;grid-template-columns:80px 1fr;gap:6px 16px;font-size:13px;line-height:1.6;color:rgba(11,11,11,.72)">
+            <span style="font-weight:900">Pago</span><span>tone="sand" — bege <code>--sl-sand</code> + tinta vinho. Não existe verde no sistema; "sucesso" é a voz da marca, não uma cor nova.</span>
+            <span style="font-weight:900">Pendente</span><span>tinta preta a 6% + texto a 72%. Nenhum cinza de biblioteca.</span>
+            <span style="font-weight:900">Enviado</span><span>bloco sólido preto + papel — mesma lógica de "selecionado".</span>
+            <span style="font-weight:900">Falhou</span><span>tone="danger": <code>--sl-danger-wash</code> + filete e texto em <code>--sl-danger</code>. Na tela de pedido, vem acompanhado da frase de saída ("Nada foi cobrado. Reenviar link de pagamento.") — erro sem ação é bug.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="2d" style="display:flex;flex-direction:column;gap:12px;width:680px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Bug #8</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2d</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Tabela · componente compartilhado</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">Atual · #e4e4e7 e raio 12</span>
+          <div style="border:1px solid #e4e4e7;border-radius:12px;background:#fff;overflow:hidden;color:#0B0B0B">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px;font-size:12px;color:#71717a;border-bottom:1px solid #e4e4e7"><span>Pedido</span><span>Total</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;font-size:14px;border-bottom:1px solid #f4f4f5"><span>#1042</span><span>R$ 129,90</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;font-size:14px;background:#f4f4f5;border-bottom:1px solid #f4f4f5"><span>#1041</span><span>R$ 60,00</span></div>
+            <div style="padding:20px 16px;font-size:13px;color:#a1a1aa;text-align:center">Nenhum resultado</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#F7F4EF">Proposto · tinta em opacidade, raio 0</span>
+          <div style="border:1px solid rgba(11,11,11,.14);background:#FFFFFF;color:#0B0B0B">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:10px 16px;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.6);border-bottom:1px solid rgba(11,11,11,.2)"><span>Pedido</span><span>Total</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;font-size:15px;border-bottom:1px solid rgba(11,11,11,.14)"><span style="font-family:'DCCAsh',serif;font-size:18px">#1042</span><span style="font-family:'DCCAsh',serif;font-size:18px">R$ 129,90</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;font-size:15px;background:rgba(11,11,11,.04);border-bottom:1px solid #0B0B0B"><span style="font-family:'DCCAsh',serif;font-size:18px">#1041</span><span style="font-family:'DCCAsh',serif;font-size:18px">R$ 60,00</span></div>
+            <div style="padding:24px 16px;background:#D8D0C4"><p style="margin:0;font-size:14px;line-height:1.6;color:rgba(11,11,11,.72)">Nenhum pedido de 1 a 13 set. Troque o período ou veja todos os pedidos.</p></div>
+          </div>
+          <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(247,244,239,.55)">Linha em hover: fundo tinta 4% e filete inferior em preto sólido — mesma troca de filete do cartão de produto. Sem elevação, sem escala, 120ms linear.</p>
+        </div>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:16px">
+        <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Esta tabela é <strong style="color:#F7F4EF">um componente só</strong>, consumido por pedidos, produtos e usuários: a correção é no componente compartilhado, não na tela do dashboard. Cabeçalho em micro-label 10px/900/.2em, régua de cabeçalho a 20%, linhas a 14%, vazio no quadro bege com frase de saída — nunca placeholder cinza.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="2e" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Bug #9</span>
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2e</span>
+      <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Sidebar · decidido — raio zero, selecionado sólido</span>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:10px;width:300px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;align-self:flex-start">Decidido · raio zero</span>
+        <div style="width:264px;background:#0B0B0B;color:#F7F4EF;padding:24px 0;border:1px solid rgba(247,244,239,.18)">
+          <div style="padding:0 28px;display:flex;gap:14px;align-items:center"><div style="width:44px;height:44px;background:#F7F4EF;overflow:hidden;padding:6px;box-sizing:border-box"><img src="assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div><div><div style="font-size:13px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF">Libertária</div><div style="margin-top:4px;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.55)">Painel editorial</div></div></div>
+          <div style="padding:18px 0 0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;background:#7A1E22;color:#F7F4EF;font-size:15px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Painel</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;color:rgba(247,244,239,.72);font-size:15px">Pedidos</div>
+            <div style="display:flex;align-items:center;height:44px;padding:0 28px;background:rgba(247,244,239,.06);color:#F7F4EF;font-size:15px">Produtos</div>
+          </div>
+        </div>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(247,244,239,.66)">Logo e item de navegação retos, igual à área pública. Um vocabulário só no produto inteiro; o admin deixa de parecer fork. Item de 44px de altura (alvo mínimo), sem marcador redondo.</p>
+      </div><div style="display:flex;flex-direction:column;gap:10px;width:300px">
+        
+        
+      </div>
+
+      
+
+      <div style="display:flex;flex-direction:column;gap:10px;width:300px;opacity:.4">
+        
+        
+        
+      </div>
+
+      <div style="width:420px;flex:none;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.1);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">1</span><div><p style="margin:0;font-size:15px;font-weight:900;color:#F7F4EF">Decidido: raio zero</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Um vocabulário só no produto inteiro — o painel deixa de parecer fork. Para o código: remover <code style="color:#D8D0C4">rounded-xl</code> / <code style="color:#D8D0C4">rounded-lg</code> do logo, do item de nav, dos cartões e da tabela do admin, e não introduzir token de exceção.</p></div></div></div>
+        <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">O que vai junto na mesma tarefa</p><p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.66)">O <strong style="color:#F7F4EF">selecionado deixa de ser fundo bege suave e vira bloco sólido</strong> — isso é bug independente do raio. Sobre a barra preta, o sólido é vinho com texto em papel (preto sobre preto não lê); é a mesma função de "nav ativa" da área pública. Hover é tinta-papel a 6%, nunca elevação. O marcador redondo cinza sai: hierarquia é tipográfica, e o sistema não tem cinza nem ícone de biblioteca.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="2f" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#D8D0C4;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Backlog · aberto</span>
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2f</span>
+      <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/user + /orders no backlog · card de falhas sem decisão</span>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">Versão separada · como é hoje</span>
+        <div style="display:flex;gap:16px">
+          <div style="width:250px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18);padding:20px;display:flex;flex-direction:column;gap:14px">
+            <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">/user</p>
+            <h3 style="margin:0;font-family:'Fertigo',serif;font-size:36px;line-height:.92;font-weight:900;letter-spacing:-.04em;text-transform:uppercase">Minha conta</h3>
+            <div style="height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:15px;color:rgba(11,11,11,.6)">Nome</div>
+            <div style="height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:15px;color:rgba(11,11,11,.6)">Endereço</div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:48px;background:#0B0B0B;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Salvar</span>
+            <p style="margin:0;font-size:13px;color:#7A1E22">Ver meus pedidos →</p>
+          </div>
+          <div style="width:250px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18);padding:20px;display:flex;flex-direction:column;gap:14px">
+            <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">/orders</p>
+            <h3 style="margin:0;font-family:'Fertigo',serif;font-size:36px;line-height:.92;font-weight:900;letter-spacing:-.04em;text-transform:uppercase">Pedidos</h3>
+            <div style="border-top:1px solid rgba(11,11,11,.2);padding-top:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:'DCCAsh',serif;font-size:18px">#1042</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#D8D0C4;color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pago</span></div>
+            <div style="border-top:1px solid rgba(11,11,11,.14);padding-top:12px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:'DCCAsh',serif;font-size:18px">#1039</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Enviado</span></div>
+            <p style="margin:auto 0 0;font-size:13px;color:#7A1E22">Voltar para minha conta →</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">Versão consolidada · uma tela</span>
+        <div style="width:390px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18);padding:24px;display:flex;flex-direction:column;gap:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">/user</p>
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:36px;line-height:.92;font-weight:900;letter-spacing:-.04em;text-transform:uppercase">Minha conta</h3>
+          <div>
+            <p style="margin:0 0 10px;font-family:'DCCAsh',serif;font-size:22px">Pedidos · 3</p>
+            <div style="border-top:1px solid rgba(11,11,11,.2);padding:12px 0;display:flex;justify-content:space-between;align-items:center"><span style="font-family:'DCCAsh',serif;font-size:18px">#1042</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#D8D0C4;color:#7A1E22;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Pago</span></div>
+            <div style="border-top:1px solid rgba(11,11,11,.14);padding:12px 0;display:flex;justify-content:space-between;align-items:center"><span style="font-family:'DCCAsh',serif;font-size:18px">#1039</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Enviado</span></div>
+          </div>
+          <div>
+            <p style="margin:0 0 10px;font-family:'DCCAsh',serif;font-size:22px">Favoritos · 2</p>
+            <div style="display:flex;gap:12px"><div style="width:72px;height:72px;background:#D8D0C4"></div><div style="width:72px;height:72px;background:#D8D0C4"></div></div>
+          </div>
+          <div>
+            <p style="margin:0 0 10px;font-family:'DCCAsh',serif;font-size:22px">Dados</p>
+            <div style="height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:15px;color:rgba(11,11,11,.6)">Endereço de entrega</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:420px;flex:none;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.1);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">2</span><div><p style="margin:0;font-size:15px;font-weight:900;color:#F7F4EF">Backlog — não implementar agora</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Marcos deixou para depois. As duas telas seguem separadas; a versão consolidada fica aqui como registro. O que <em>vale</em> para <code style="color:#D8D0C4">/user</code> e <code style="color:#D8D0C4">/orders</code> neste lote são os bugs: número em DCC Ash, badge de status na paleta do selo e raio zero — a estrutura é que não muda.</p></div></div></div>
+        <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.1);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">4</span><div><p style="margin:0;font-size:15px;font-weight:900;color:#F7F4EF">Card "Falhas" — aberto, entra estático</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Sem decisão por ora, e <a href="#2a">2a</a> reflete isso: os quatro cartões vão iguais, filete de 14%, sem "Ver →". O valor de falhas em vinho é só cor de token, não afordância. O <code style="color:#D8D0C4">MetricCard</code> já aceita <code style="color:#D8D0C4">href</code> e <code style="color:#D8D0C4">action</code> — quando for decidido, é trocar o filete para 20% e ligar o link, sem retrabalho de layout.</p></div></div></div>
+        <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Ordem de implementação</p><p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.66)"><strong style="color:#F7F4EF">Lote 1 (vai agora):</strong> bugs #6, #7 e #8 — fonte de número, badge de status e tabela compartilhada. <strong style="color:#F7F4EF">Lote 2:</strong> bug #9 completo — raio zero e selecionado sólido na sidebar. <strong style="color:#F7F4EF">Lote 3:</strong> login social em <a href="#2g">2g</a>. <strong style="color:#F7F4EF">Fora:</strong> consolidação de conta (backlog) e link do cartão de falhas (aberto).</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="2g" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Decidido · entra</span>
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">2g</span>
+      <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/login · login social como ação secundária</span>
+    </div>
+    <div style="display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#F7F4EF">Proposto · 480 · repouso</span>
+        <div style="width:480px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18);padding:40px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">Selo Libertária</p>
+            <h3 style="margin:0;font-family:'Fertigo',serif;font-size:44px;line-height:.92;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Entrar</h3>
+            <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(11,11,11,.72);max-width:42ch">Sua conta guarda pedidos, endereços e ingressos. Não publicamos nada em seu nome.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">E-mail</span>
+              <div style="height:52px;border:1px solid rgba(11,11,11,.3);background:#FFFFFF;display:flex;align-items:center;padding:0 14px;font-size:16px;color:rgba(11,11,11,.5)">voce@exemplo.com</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Senha</span>
+              <div style="height:52px;border:1px solid rgba(11,11,11,.3);background:#FFFFFF;display:flex;align-items:center;padding:0 14px;font-size:16px;color:rgba(11,11,11,.5)">••••••••</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;height:48px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Entrar</span>
+            <p style="margin:0;font-size:13px;color:#7A1E22">Esqueci minha senha</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px"><span style="flex:1;height:1px;background:rgba(11,11,11,.2)"></span><span style="font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(11,11,11,.6)">ou</span><span style="flex:1;height:1px;background:rgba(11,11,11,.2)"></span></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <span style="display:flex;align-items:center;justify-content:center;gap:12px;height:48px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase"><span style="width:18px;height:18px;background:#D8D0C4;flex:none"></span>Continuar com Google</span>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Ainda não tem conta? <span style="color:#7A1E22">Criar conta</span> — ou continue como visitante no checkout.</p>
+          </div>
+        </div>
+        <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(247,244,239,.55)">O quadrado bege de 18px é o lugar do <strong style="color:#F7F4EF">arquivo oficial do provedor</strong> (<code style="color:#D8D0C4">assets/img/icons/google.svg</code>), que já existe no código e está correto. O sistema não reconstrói marca alheia em SVG.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#F7F4EF">Estados · foco, erro, carregando</span>
+        <div style="width:400px;background:#F7F4EF;color:#0B0B0B;border:1px solid rgba(247,244,239,.18);padding:24px;display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Campo em foco</span>
+            <div style="height:52px;border:1px solid #0B0B0B;box-shadow:0 0 0 2px rgba(122,30,34,.2);background:#FFFFFF;display:flex;align-items:center;padding:0 14px;font-size:16px">ana@exemplo.com</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Campo em erro</span>
+            <div style="height:52px;border:1px solid rgba(122,30,34,.3);background:rgba(122,30,34,.06);display:flex;align-items:center;padding:0 14px;font-size:16px;color:#0B0B0B">ana@exemplo.com</div>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#7A1E22">E-mail ou senha não conferem. Tente de novo ou redefina a senha — o carrinho fica salvo.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Social em hover · e carregando</span>
+            <span style="display:flex;align-items:center;justify-content:center;gap:12px;height:48px;background:#D8D0C4;border:1px solid rgba(11,11,11,.3);color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase"><span style="width:18px;height:18px;background:#F7F4EF;flex:none"></span>Continuar com Google</span>
+            <span style="display:flex;align-items:center;justify-content:center;height:48px;background:#FFFFFF;border:1px solid rgba(11,11,11,.3);color:rgba(11,11,11,.5);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Abrindo o Google…</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:420px;flex:none;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.1);padding:18px"><div style="display:flex;gap:10px;align-items:baseline"><span style="color:#B3282E;font-weight:900;font-size:14px">3</span><div><p style="margin:0;font-size:15px;font-weight:900;color:#F7F4EF">Decidido: login social entra</p><p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.72)">Sem pesquisa de campo. A hierarquia protege a sensibilidade do catálogo: e-mail e senha continuam sendo o caminho principal, o social é a segunda opção e a frase "Não publicamos nada em seu nome" fica no cabeçalho, não em letra miúda.</p></div></div></div>
+        <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">Especificação</p><p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.66)">Campo 52px com filete de 30% · botão principal preto de 48px · botão social de 48px em papel branco, filete de 30%, ícone de 18px, rótulo "Continuar com Google" em 11px/900/.24em · régua de 20% com o rótulo "ou" · raio zero nos três. Hover do social é fundo bege; carregando troca o rótulo por "Abrindo o Google…" e não gira nada. Foco: filete preto sólido + halo vinho de 2px.</p></div>
+        <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:18px"><p style="margin:0;font-size:15px;font-weight:700;color:#F7F4EF">O que não muda</p><p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.66)">Os três achados que não reproduzem seguem como estão: o ícone do provedor já é o arquivo oficial, a altura do campo já é 52px e o estado de erro já existe. O artboard de estados acima é <strong style="color:#F7F4EF">registro do que o código já faz</strong> — só o raio e o rótulo precisam de conferência.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:72px;padding:80px 80px 120px;background:#141210;border-bottom:1px solid rgba(247,244,239,.18)">
+
+  <div style="display:flex;flex-direction:column;gap:28px;max-width:1720px">
+    <div style="display:flex;align-items:flex-start;gap:24px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Turno 3</span>
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:64rem">
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:76px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase;color:#F7F4EF">O admin como ele é hoje</h1>
+        <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(247,244,239,.72)">Levantamento de estrutura feito na fonte (<code style="color:#D8D0C4">src/app/admin/**</code>), não em memória: 11 itens de menu, 24 rotas, 7 seções no painel e todos os títulos e microtextos transcritos literalmente. Wireframe em cinza de propósito — aqui o assunto é arquitetura de informação, não visual. Os quatro bugs visuais já fechados no <a href="#2a">turno 2</a> não reaparecem como achado.</p>
+        <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.45)">Mapa <a href="#3a">3a</a> · Painel <a href="#3b">3b</a> · Listas <a href="#3c">3c</a> · Editorial <a href="#3d">3d</a> · Promoções <a href="#3e">3e</a> · Bom/ruim <a href="#3f">3f</a></p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;max-width:1400px">
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Menu</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">11 itens</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Lista plana, sem grupos, filtrada por capability.</p>
+      </div>
+      <div style="border:1px solid rgba(247,244,239,.16);background:rgba(247,244,239,.04);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Rotas</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">24 telas</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">13 só dentro de Editorial; 2 fora do menu (categorias, detalhes).</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.12);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Painel</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">7 seções · 32 números</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Contagem de pedidos aparece em três lugares diferentes.</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.12);padding:20px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Achados</p>
+        <p style="margin:10px 0 0;font-family:'DCCAsh',serif;font-size:30px;color:#F7F4EF">7 bons · 12 ruins</p>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(247,244,239,.66)">Ordenados por custo de conserto em <a href="#3f">3f</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="3a" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3a</span>
+      <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Mapa de rotas e permissões · transcrito de nav-config.ts</span>
+    </div>
+    <div style="background:#EDEAE4;color:#2E2A26;border:1px solid rgba(247,244,239,.18);padding:28px">
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px">
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Painel · admin.access</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Pedidos · orders.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/orders<br>/admin/orders/[id]</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Produtos · catalog.write</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/products<br>/admin/products/new<br>/admin/products/[slug]<br>/admin/products/categories <span style="color:#B3282E">← fora do menu</span></p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Editorial · editorial.write</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/editorial + home · products · pagina-do-produto · about · contact · sarau-safado · events (+new, [slug]) · projects (+new, [slug]) · global</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Promoções · promotions.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/promotions</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Pré-venda · presale.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/pre-venda</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Usuários · customers.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/users<br>/admin/users/[id]</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">E-mails · emails.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/emails</p>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Configurações · settings.write</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/settings</p>
+        </div>
+        <div style="border:1px solid #B3282E;background:#F7E9E8;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Modelos de e-mail · settings.write</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/email-templates — mesmo ícone e mesma permissão de Configurações; título interno diz "Modelos de email".</p>
+        </div>
+        <div style="border:1px solid #B3282E;background:#F7E9E8;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Recebimento · webhooks.read</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7">/admin/webhooks — rótulo genérico; título interno diz "Recebimento de webhooks".</p>
+        </div>
+        <div style="border:1px dashed #C9C3BA;background:#E3DED7;padding:16px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#6A635C">Ausente do menu</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:#4A443E">Sem busca global, sem breadcrumb, sem histórico de auditoria consolidado. Único caminho de volta: "Voltar ao site".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+
+    <div id="3b" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3b</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin · painel completo em escala · pinos = achados de 3f</span>
+      </div>
+      <div style="width:1180px;display:flex;background:#EDEAE4;color:#2E2A26;border:1px solid rgba(247,244,239,.18)">
+        <div style="position:relative;width:200px;flex:none;background:#3A3632;color:#EDEAE4;padding:20px 0;display:flex;flex-direction:column;gap:4px">
+          <span style="position:absolute;top:-12px;left:-12px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">1</span>
+          <div style="padding:0 20px 16px;display:flex;gap:10px;align-items:center"><div style="width:32px;height:32px;background:#EDEAE4"></div><div><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Libertária</div><div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(237,234,228,.55)">Painel editorial</div></div></div>
+          <div style="padding:0 20px 8px;display:flex;justify-content:space-between;font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(237,234,228,.45)"><span>Gestão</span><span>Sair</span></div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;background:#EDEAE4;color:#2E2A26;font-size:13px;font-weight:700">Painel</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Pedidos</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Produtos</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Editorial</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Promoções</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Pré-venda</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Usuários</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">E-mails</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Configurações</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Modelos de e-mail</div>
+          <div style="display:flex;align-items:center;height:34px;padding:0 20px;font-size:13px;color:rgba(237,234,228,.72)">Recebimento</div>
+          <div style="margin-top:auto;padding:20px 20px 0"><div style="height:1px;background:rgba(237,234,228,.2);margin-bottom:14px"></div><div style="font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(237,234,228,.45)">Sessão</div><div style="margin-top:6px;font-size:12px">contato@selolibertaria.com.br</div></div>
+        </div>
+
+        <div style="flex:1;min-width:0;padding:22px;display:flex;flex-direction:column;gap:18px">
+          <div style="font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#6A635C">← Voltar ao site</div>
+
+          <div style="border:1px solid #C9C3BA;background:#FFF;padding:20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+              <div><p style="margin:0;font-size:26px;font-weight:900;letter-spacing:-.04em">Painel de operação</p><p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:#6A635C">Acompanhe prioridades, catálogo e andamento da operação.</p></div>
+              <div style="display:flex;gap:8px;flex:none"><span style="display:inline-flex;align-items:center;height:32px;padding:0 14px;border:1px solid #C9C3BA;font-size:12px;font-weight:700">Ver loja</span><span style="display:inline-flex;align-items:center;height:32px;padding:0 14px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:700">Ir para editorial</span></div>
+            </div>
+            <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:12px;display:flex;gap:10px"><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#FFF;border:1px solid #C9C3BA;font-size:12px">Status: todos</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#FFF;border:1px solid #C9C3BA;font-size:12px">Período: 30d</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#FFF;border:1px solid #C9C3BA;font-size:12px">Ordem: data ↓</span></div>
+            <div style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <span style="position:absolute;top:-13px;left:-13px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">2</span>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#6A635C">Pendências</div><div style="margin-top:10px;font-size:28px;font-weight:900">7</div><div style="margin-top:8px;font-size:11px;line-height:1.5;color:#6A635C">Pagamentos em revisão, disputas e pedidos pagos que ainda não seguiram para expedição.</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#6A635C">Pedidos</div><div style="margin-top:10px;font-size:28px;font-weight:900">58</div><div style="margin-top:8px;font-size:11px;line-height:1.5;color:#6A635C">Pedidos dentro do filtro atual.</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#6A635C">Recebimento</div><div style="margin-top:10px;font-size:28px;font-weight:900">2</div><div style="margin-top:8px;font-size:11px;line-height:1.5;color:#6A635C">Falhas e pendências no recebimento de eventos.</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#6A635C">E-mails</div><div style="margin-top:10px;font-size:28px;font-weight:900">3</div><div style="margin-top:8px;font-size:11px;line-height:1.5;color:#6A635C">Envios pendentes ou com falha.</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1.55fr) 280px;gap:16px">
+              <div style="position:relative;border:1px solid #C9C3BA;background:#FFF;padding:16px">
+                <span style="position:absolute;top:-13px;left:-13px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">3</span>
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><div style="font-size:15px;font-weight:900">Fila editorial</div><div style="margin-top:6px;font-size:11px;line-height:1.5;color:#6A635C">Tudo que exige decisão rápida antes de seguir para o site, para o pós-compra ou para a equipe.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 10px;border:1px solid #C9C3BA;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase">Em revisão</span></div>
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                  <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:12px;font-weight:900">Pedidos</div><div style="font-size:11px;color:#6A635C">3 pagamento(s) aguardam confirmação ou troca de método.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #C9C3BA;background:#FFF;font-size:9px;font-weight:900;text-transform:uppercase">Revisar</span></div>
+                  <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:12px;font-weight:900">Expedição</div><div style="font-size:11px;color:#6A635C">4 pedido(s) pagos ainda não entraram no fluxo de expedição.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #C9C3BA;background:#FFF;font-size:9px;font-weight:900;text-transform:uppercase">Atenção</span></div>
+                  <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:12px;font-weight:900">Recebimento</div><div style="font-size:11px;color:#6A635C">1 falha(s) e 1 pendência(s) no recebimento de eventos.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #C9C3BA;background:#FFF;font-size:9px;font-weight:900;text-transform:uppercase">Falha</span></div>
+                  <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:12px;font-weight:900">E-mails</div><div style="font-size:11px;color:#6A635C">1 envio(s) falharam e 2 seguem pendentes.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #C9C3BA;background:#FFF;font-size:9px;font-weight:900;text-transform:uppercase">Checar</span></div>
+                  <div style="border:1px solid #C9C3BA;background:#E8E4DE;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:12px;font-weight:900">Disputas</div><div style="font-size:11px;color:#6A635C">Nenhuma disputa recente neste período.</div></div><span style="flex:none;display:inline-flex;align-items:center;height:20px;padding:0 8px;border:1px solid #C9C3BA;background:#FFF;font-size:9px;font-weight:900;text-transform:uppercase">Em dia</span></div>
+                </div>
+                <div style="margin-top:14px;display:flex;gap:8px"><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:700">Ver pedidos</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid #C9C3BA;font-size:11px;font-weight:700">Ver editorial</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="position:relative;background:#3A3632;color:#EDEAE4;padding:16px">
+                  <span style="position:absolute;top:-13px;right:-13px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">4</span>
+                  <div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(237,234,228,.6)">Prévia da loja</div>
+                  <div style="margin-top:12px;background:#E8E4DE;color:#2E2A26;padding:12px;display:flex;gap:10px"><div style="width:52px;height:78px;flex:none;background:#3A3632"></div><div><div style="font-size:13px;font-weight:900;text-transform:uppercase;line-height:1.05">Ninfas<br>do Tietê</div><div style="margin-top:6px;font-size:10px;line-height:1.4;color:#6A635C">Leitura rápida da loja para checar vitrine e CTA principal.</div><span style="margin-top:8px;display:inline-flex;align-items:center;height:20px;padding:0 10px;background:#7A1E22;color:#F7F4EF;font-size:9px;font-weight:900;text-transform:uppercase">Comprar</span></div></div>
+                  <div style="margin-top:12px;font-size:13px;font-weight:900">Publicação segura</div>
+                  <div style="margin-top:4px;font-size:11px;line-height:1.5;color:rgba(237,234,228,.7)">Use a prévia para validar loja, conteúdo e ritmo antes de mexer em publicação.</div>
+                </div>
+                <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:15px;font-weight:900">Atividade recente</div><div style="margin-top:6px;font-size:11px;line-height:1.5;color:#6A635C">Últimos pedidos do filtro atual para checagem rápida de ritmo e status.</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:10px"><div><div style="font-size:12px;font-weight:700">R$ 129,90 · ana@exemplo.com</div><div style="font-size:10px;color:#6A635C">ord_8f21… · 12/09/2026 18:40</div></div><div><div style="font-size:12px;font-weight:700">R$ 60,00 · joao@exemplo.com</div><div style="font-size:10px;color:#6A635C">ord_8f19… · 12/09/2026 11:02</div></div><div><div style="font-size:12px;font-weight:700">R$ 213,90 · lia@exemplo.com</div><div style="font-size:10px;color:#6A635C">ord_8f11… · 11/09/2026 20:15</div></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:relative;display:flex;flex-direction:column;gap:10px;padding-left:22px">
+            <span style="position:absolute;top:-2px;left:-14px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">5</span>
+            <div><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Resumo financeiro</div><div style="margin-top:4px;font-size:20px;font-weight:900;letter-spacing:-.03em">Sinais centrais da operação</div><div style="font-size:11px;color:#6A635C">Veja receita, volume, desconto e alcance sem atravessar várias telas.</div></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Faturamento pago</div><div style="margin-top:8px;font-size:24px;font-weight:700">R$ 4.320,00</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Ticket médio</div><div style="margin-top:8px;font-size:24px;font-weight:700">R$ 74,50</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Volume de pedidos</div><div style="margin-top:8px;font-size:24px;font-weight:700">58</div><div style="margin-top:6px;font-size:10px;color:#6A635C">41 compradores, 9 pedidos com cupom e 16% de adoção.</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Receita líquida</div><div style="margin-top:8px;font-size:24px;font-weight:700">R$ 4.110,00</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Desconto aplicado</div><div style="margin-top:8px;font-size:20px;font-weight:700">R$ 310,00</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Valor reembolsado</div><div style="margin-top:8px;font-size:20px;font-weight:700">R$ 210,00</div></div>
+              <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Base da loja</div><div style="margin-top:8px;font-size:20px;font-weight:700">412</div></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Pedidos</div><div style="margin-top:4px;font-size:18px;font-weight:900">Funil de pagamento</div><div style="margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Aguardando ação</div><div style="font-size:20px;font-weight:700">3</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Em processamento</div><div style="font-size:20px;font-weight:700">1</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Pago</div><div style="font-size:20px;font-weight:700">48</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Falhou / cancelado</div><div style="font-size:20px;font-weight:700">4</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Reembolsado</div><div style="font-size:20px;font-weight:700">2</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Disputado</div><div style="font-size:20px;font-weight:700">0</div></div></div></div>
+            <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Operação</div><div style="margin-top:4px;font-size:18px;font-weight:900">Fila de expedição</div><div style="margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Recebido</div><div style="font-size:20px;font-weight:700">12</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Produção</div><div style="font-size:20px;font-weight:700">6</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Enviado</div><div style="font-size:20px;font-weight:700">30</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Pago sem avanço</div><div style="font-size:20px;font-weight:700">4</div></div><div style="border:1px solid #C9C3BA;padding:10px"><div style="font-size:10px;color:#6A635C">Enviado sem rastreio</div><div style="font-size:20px;font-weight:700">2</div></div></div></div>
+          </div>
+
+          <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Tendência</div><div style="margin-top:4px;font-size:18px;font-weight:900">Receita paga ao longo do tempo</div><div style="margin-top:12px;border:1px solid #C9C3BA;background:#E8E4DE;padding:12px"><div style="font-size:10px;color:#6A635C">Prévia do período</div><div style="margin-top:8px;height:70px;background:repeating-linear-gradient(90deg,#C9C3BA 0 2px,transparent 2px 14px);border-bottom:1px solid #A9A29A"></div></div><div style="margin-top:10px;height:110px;border:1px solid #C9C3BA;background:repeating-linear-gradient(90deg,#D6D1C8 0 3px,transparent 3px 16px)"></div></div>
+
+          <div style="display:flex;flex-direction:column;gap:10px"><div><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Confiabilidade</div><div style="margin-top:4px;font-size:18px;font-weight:900">Saúde da operação</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Falhas no recebimento</div><div style="font-size:22px;font-weight:700">1</div><div style="margin-top:6px;font-size:10px;color:#6A635C">Ver recebimento</div></div><div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Falhas de e-mail</div><div style="font-size:22px;font-weight:700">1</div><div style="margin-top:6px;font-size:10px;color:#6A635C">Inspecionar e-mails</div></div><div style="border:1px solid #C9C3BA;background:#FFF;padding:14px"><div style="font-size:11px;color:#6A635C">Ações manuais em pedidos</div><div style="font-size:22px;font-weight:700">9</div></div></div></div>
+
+          <div style="position:relative;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,.9fr);gap:12px">
+            <span style="position:absolute;top:-13px;left:-13px;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">6</span>
+            <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:18px;font-weight:900">Compras recentes</div><div style="margin-top:12px;display:grid;grid-template-columns:1.6fr .9fr .9fr 1.2fr 1.4fr .6fr;gap:8px;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#6A635C;border-bottom:1px solid #C9C3BA;padding-bottom:8px"><span>Cliente</span><span>Valor</span><span>Status</span><span>Data</span><span>Pedido</span><span style="text-align:right">Ação</span></div><div style="display:grid;grid-template-columns:1.6fr .9fr .9fr 1.2fr 1.4fr .6fr;gap:8px;padding:10px 0;font-size:11px;border-bottom:1px solid #E0DAD2"><span style="word-break:break-all">ana@exemplo.com</span><span>R$ 129,90</span><span>Pago</span><span>12/09 18:40</span><span style="font-family:monospace;font-size:9px;word-break:break-all">ord_8f21c9d0a4</span><span style="text-align:right">Ver</span></div><div style="display:grid;grid-template-columns:1.6fr .9fr .9fr 1.2fr 1.4fr .6fr;gap:8px;padding:10px 0;font-size:11px"><span style="word-break:break-all">joao@exemplo.com</span><span>R$ 60,00</span><span>Falhou</span><span>12/09 11:02</span><span style="font-family:monospace;font-size:9px;word-break:break-all">ord_8f19b220ff</span><span style="text-align:right">Ver</span></div></div>
+            <div style="border:1px solid #C9C3BA;background:#FFF;padding:16px"><div style="font-size:18px;font-weight:900">Clientes recorrentes</div><div style="margin-top:12px;border:1px solid #C9C3BA;padding:12px"><div style="font-size:12px;word-break:break-all">ana@exemplo.com</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:10px;color:#6A635C"><div>Pedidos<div style="font-size:16px;font-weight:700;color:#2E2A26">4</div></div><div>Pagos<div style="font-size:16px;font-weight:700;color:#2E2A26">4</div></div><div>Total<div style="font-size:13px;font-weight:700;color:#2E2A26">R$ 512,00</div></div></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;width:400px;flex:none">
+      <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#B3282E">Leitura dos pinos de 3b</p>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">1 · Menu de 11 itens sem grupo.</strong> "Modelos de e-mail" é filho de E-mails mas vive na raiz com o ícone de Configurações; "Recebimento" não diz o que é. Navegação por varredura visual, não por hierarquia.</p></div>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">2 · "Pendências" é uma soma de quatro coisas.</strong> Pagamentos em revisão + processamento + disputas + pagos sem expedição viram um número só, e nenhum dos quatro é clicável a partir dele.</p></div>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">3 · "Fila editorial" não tem nada de editorial.</strong> As cinco linhas são Pedidos, Expedição, Recebimento, E-mails e Disputas. É a fila de operação — e é a melhor ideia do painel com o nome errado. As pílulas ("Revisar", "Falha") também não levam a lugar nenhum.</p></div>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.12);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">4 · "Prévia da loja" é maquete fixa no código.</strong> "Ninfas do Tietê" e o botão Comprar são HTML escrito à mão, não a loja. Um card que parece dado e não é corrói a confiança em todos os números ao lado.</p></div>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">5 · Números repetidos.</strong> A contagem de pedidos do filtro aparece como "Pedidos" no topo, "Volume de pedidos" no resumo e "Pago" no funil. Sete seções para uma operação que cabe em três.</p></div>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">6 · Cliente é sempre um e-mail cru.</strong> Em tabela, em "Clientes recorrentes" e em "Atividade recente" — com <code style="color:#D8D0C4">break-all</code> e ID em mono quebrando em três linhas. Nome do cliente existe no banco e não aparece.</p></div>
+      <div style="border:1px solid rgba(247,244,239,.18);background:rgba(247,244,239,.04);padding:16px"><p style="margin:0;font-size:13px;line-height:1.65;color:rgba(247,244,239,.78)"><strong style="color:#F7F4EF">Dois sistemas visuais no mesmo arquivo.</strong> Metade dos cards usa token shadcn (<code style="color:#D8D0C4">bg-card</code>, raio 2xl), metade usa hex cru (<code style="color:#D8D0C4">#fffdf8</code>, <code style="color:#D8D0C4">#ded5ca</code>, raio 18/22px). Mesma tela, duas origens de cor.</p></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap">
+
+    <div id="3c" style="display:flex;flex-direction:column;gap:12px;width:560px;flex:none">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3c</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Quatro listas, quatro padrões diferentes</span>
+      </div>
+      <div style="background:#EDEAE4;color:#2E2A26;border:1px solid rgba(247,244,239,.18);padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px">
+          <div style="font-size:16px;font-weight:900">Pedidos</div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1.6fr .8fr .8fr 1fr 1.2fr;gap:8px;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6A635C;border-bottom:1px solid #C9C3BA;padding-bottom:6px"><span>E-mail do cliente</span><span>Valor</span><span>Status</span><span>Data</span><span>Pedido</span></div>
+          <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr 1fr 1.2fr;gap:8px;padding:8px 0;font-size:11px;border-bottom:1px solid #E0DAD2"><span style="word-break:break-all">ana@exemplo.com</span><span>R$ 129,90</span><span>Pago</span><span>12/09</span><span style="font-family:monospace;font-size:9px;word-break:break-all">ord_8f21c9</span></div>
+          <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr 1fr 1.2fr;gap:8px;padding:8px 0;font-size:11px"><span style="word-break:break-all">joao@exemplo.com</span><span>R$ 60,00</span><span>Falhou</span><span>12/09</span><span style="font-family:monospace;font-size:9px;word-break:break-all">ord_8f19b2</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#B3282E">Mostrando até 50 pedidos. — sem busca, sem filtro na tela, sem paginação</div>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px">
+          <div style="font-size:16px;font-weight:900">Catálogo</div>
+          <div style="margin-top:10px;display:flex;gap:8px"><span style="flex:1;display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid #C9C3BA;font-size:11px;color:#6A635C">Buscar por título, autoria ou formato</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:700">Novo produto</span></div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1.6fr 1fr .7fr .8fr .7fr;gap:8px;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6A635C;border-bottom:1px solid #C9C3BA;padding-bottom:6px"><span>Produto</span><span>Formato</span><span>Variantes</span><span>Preço</span><span>Status</span></div>
+          <div style="display:grid;grid-template-columns:1.6fr 1fr .7fr .8fr .7fr;gap:8px;padding:8px 0;font-size:11px"><span>Ninfas do Tietê</span><span>Livro</span><span>2</span><span>R$ 60,00</span><span>Ativo</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#B3282E">Busca existe, paginação não. "Mapa de categorias" só por URL direta. Fala "livro" no título e "produto" nos botões.</div>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px">
+          <div style="font-size:16px;font-weight:900">Usuários</div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1.6fr 1fr .7fr .7fr;gap:8px;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#6A635C;border-bottom:1px solid #C9C3BA;padding-bottom:6px"><span>E-mail</span><span>Nome</span><span>Papel</span><span>Status</span></div>
+          <div style="display:grid;grid-template-columns:1.6fr 1fr .7fr .7fr;gap:8px;padding:8px 0;font-size:11px"><span style="word-break:break-all">ana@exemplo.com</span><span>Ana</span><span>Cliente</span><span>Verificado</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#B3282E">Sem busca e sem filtro por papel — a coluna existe, o filtro não.</div>
+        </div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:14px">
+          <div style="font-size:16px;font-weight:900">E-mails transacionais</div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:160px;display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid #C9C3BA;font-size:11px;color:#6A635C">cliente@email.com, pedido, tipo…</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid #C9C3BA;font-size:11px">Status: todos</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid #C9C3BA;font-size:11px">Tipo: todos</span><span style="display:inline-flex;align-items:center;height:30px;padding:0 10px;font-size:11px;color:#7A1E22">Limpar</span></div>
+          <div style="margin-top:10px;height:64px;border:1px solid #C9C3BA;background:repeating-linear-gradient(180deg,#F3F0EB 0 16px,#E8E4DE 16px 32px)"></div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;font-size:11px"><span style="color:#23634A">Busca + 2 filtros + Anterior/Próximo — o padrão bom</span><span style="color:#6A635C">Anterior · Próximo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="3d" style="display:flex;flex-direction:column;gap:12px;width:560px;flex:none">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3d</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin/editorial · a melhor parte do admin</span>
+      </div>
+      <div style="background:#EDEAE4;color:#2E2A26;border:1px solid rgba(247,244,239,.18);padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div><div style="font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:#7A1E22">Editorial</div><div style="margin-top:4px;font-size:22px;font-weight:900;letter-spacing:-.03em">Centro editorial público</div><div style="margin-top:6px;font-size:12px;line-height:1.6;color:#6A635C">Escolha o domínio que deseja editar: conteúdo institucional, programação cultural, blocos globais ou operação comercial.</div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:10px;color:#6A635C">Eventos</div><div style="font-size:22px;font-weight:700">6</div><div style="font-size:10px;color:#6A635C">Itens da agenda pública.</div></div><div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:10px;color:#6A635C">Projetos</div><div style="font-size:22px;font-weight:700">4</div></div><div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:10px;color:#6A635C">Páginas publicadas</div><div style="font-size:22px;font-weight:700">7/9</div></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border:1px solid #C9C3BA;background:#FFF;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase">Texto</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border:1px solid #C9C3BA;background:#FFF;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase">Imagem e fundo</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border:1px solid #C9C3BA;background:#FFF;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase">Publicação</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:14px;font-weight:900">Conteúdo institucional</div><div style="font-size:11px;color:#6A635C">Páginas que apresentam o selo, seus canais e seus programas públicos.</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:11px"><div style="border:1px solid #E0DAD2;padding:8px">Página inicial<div style="color:#6A635C;font-size:10px">Hero, manifesto, imagem de apoio, produto, catálogo e programação.</div></div><div style="border:1px solid #E0DAD2;padding:8px">Sobre<div style="color:#6A635C;font-size:10px">Manifesto, autoria, imagem e pilares editoriais.</div></div><div style="border:1px solid #E0DAD2;padding:8px">Contato<div style="color:#6A635C;font-size:10px">Hero, formulário, canais e caminhos comuns.</div></div><div style="border:1px solid #E0DAD2;padding:8px">Sarau Safado<div style="color:#6A635C;font-size:10px">Texto, imagem de fundo do hero, agenda e memória.</div></div></div></div>
+          <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:14px;font-weight:900">Programação e projetos</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:11px"><div style="border:1px solid #E0DAD2;padding:8px">Eventos<div style="color:#6A635C;font-size:10px">Textos da rota /events + agenda publicada.</div></div><div style="border:1px solid #E0DAD2;padding:8px">Projetos<div style="color:#6A635C;font-size:10px">Textos da rota /projects + portfólio.</div></div></div></div>
+          <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:14px;font-weight:900">Conteúdo global · Operação comercial</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px"><div style="border:1px solid #E0DAD2;padding:8px">Newsletter e rodapé</div><div style="border:1px solid #E0DAD2;padding:8px">Vitrine de produtos</div><div style="border:1px solid #E0DAD2;padding:8px">Página do produto</div></div></div>
+        </div>
+        <div style="border:1px solid #23634A;background:#E4EFE9;padding:12px;font-size:11px;line-height:1.6">Prévia ao vivo do formulário + barra de salvar flutuante + estado publicado/rascunho por página. É o único módulo que ensina o que faz — e o padrão que Pedidos e Promoções deveriam herdar.</div>
+        <div style="border:1px solid #B3282E;background:#F7E9E8;padding:12px;font-size:11px;line-height:1.6">Mas: 13 rotas de profundidade 3 (<code>Editorial › Eventos › [slug]</code>) sem breadcrumb algum, e a sidebar marca só "Editorial" como ativo em todas elas.</div>
+      </div>
+    </div>
+
+    <div id="3e" style="display:flex;flex-direction:column;gap:12px;width:480px;flex:none">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span>
+        <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3e</span>
+        <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">/admin/promotions · 27 campos em uma tela</span>
+      </div>
+      <div style="background:#EDEAE4;color:#2E2A26;border:1px solid rgba(247,244,239,.18);padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:20px;font-weight:900">Nova promoção</div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Básicos</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+          <div style="font-size:10px;color:#6A635C">Nome<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div>
+          <div style="font-size:10px;color:#6A635C">Rótulo público<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div>
+          <div style="font-size:10px;color:#6A635C">Descrição<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div>
+          <div style="font-size:10px;color:#6A635C">Tipo: Automática / Cupom<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div>
+          <div style="font-size:10px;color:#6A635C">Status inicial<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div></div></div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Desconto e publicação</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><div style="font-size:10px;color:#6A635C">Escopo: Item / Pedido<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Prioridade<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Tipo de desconto<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Valor · 10 ou 19,90<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Subtotal mínimo<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div></div></div>
+        <div style="border:1px solid #C9C3BA;background:#FFF;padding:12px"><div style="font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Regras e validade</div><div style="margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><div style="font-size:10px;color:#6A635C">Código do cupom · RATO10<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Acumulação<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Início / Fim<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Início / Fim do cupom<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Limite total de uso<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div><div style="font-size:10px;color:#6A635C">Máximo por cliente<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA"></div></div></div><div style="margin-top:8px;font-size:10px;color:#6A635C">☐ Restringir à primeira compra · ☐ Exigir e-mail verificado</div></div>
+        <div style="border:1px solid #B3282E;background:#F7E9E8;padding:12px"><div style="font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#7A1E22">Alvos e alertas</div><div style="margin-top:8px;font-size:10px;color:#6A635C">Slugs de produtos<div style="margin-top:4px;height:28px;border:1px solid #C9C3BA;background:#FFF"></div><span style="color:#B3282E">produto-1, produto-2 — texto livre, sem autocomplete</span></div><div style="margin-top:8px;font-size:10px;color:#6A635C">Slugs de categorias · Variantes específicas (ids colados à mão)</div><div style="margin-top:8px;font-size:10px;color:#6A635C">☐ Gerar alertas para favoritos afetados</div></div>
+        <div style="border:1px solid #B3282E;background:#F7E9E8;padding:12px;font-size:11px;line-height:1.6">Nenhuma prévia de efeito: você configura desconto, escopo, prioridade e acumulação e salva no escuro. É a tela de maior risco financeiro do admin e a que dá menos retorno ao operador.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="3f" style="display:flex;flex-direction:column;gap:20px;max-width:1720px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(247,244,239,.3);color:rgba(247,244,239,.7);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3f</span>
+      <span style="min-width:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55)">Veredito · o que preservar e o que consertar</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
+      <div style="border:1px solid rgba(35,99,74,.6);background:rgba(35,99,74,.12);padding:24px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7FCBA7">O que é bom — não mexer</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Permissão de verdade na navegação.</strong> Cada item do menu carrega uma capability e a sidebar filtra por papel. Vendedor, admin e cliente não veem o mesmo admin — isso é raro e está certo.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Painel orientado a pendência, não a vaidade.</strong> A primeira coisa da tela é o que está travado, com estados "Em dia / Revisar / Atenção / Falha". A intenção está correta; falta ser clicável.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Multi-moeda tratado de frente.</strong> Totais de origens diferentes aparecem em linhas separadas com aviso explícito, em vez de somar errado.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Editorial com prévia ao vivo e barra de salvar.</strong> Agrupado por domínio, com estado de publicação por página e bloco "Como usar" nas telas de criação. É o padrão a exportar para o resto.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Microtexto em português real.</strong> Helpers e vazios escritos ("Nenhum produto encontrado.", "Nenhuma compra encontrada para os filtros selecionados.") em vez de tabela muda.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Mobile de verdade.</strong> Topbar + menu lateral em <em>sheet</em> com a mesma lista filtrada, não uma sidebar escondida.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">Rastro de operação.</strong> Pedido guarda histórico antes/depois e "ações manuais" é métrica; produto tem histórico próprio.</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.6);background:rgba(122,30,34,.12);padding:24px;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#E08C8C">O que é ruim — em ordem de retorno</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">1. A "Prévia da loja" é mentira de código.</strong> Card estático com "Ninfas do Tietê" fingindo dado ao vivo. Remover ou ligar na loja — nesta ordem de urgência.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">2. Diagnóstico sem ação.</strong> "Fila editorial" identifica os cinco gargalos e nenhuma linha é um link. Cada pílula deveria abrir a lista já filtrada (<code style="color:#D8D0C4">/admin/orders?status=awaiting</code>).</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">3. Painel obeso e redundante.</strong> 7 seções, 32 números, pedidos contados em 3 lugares. Cortar para: pendências acionáveis, dinheiro, tendência. O resto vira relatório.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">4. Listas sem padrão comum.</strong> E-mails tem busca + filtros + paginação; Pedidos tem "até 50" e nada; Produtos tem busca sem paginação; Usuários não tem nem filtro por papel. Um só componente de lista resolve os quatro.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">5. Menu plano de 11 itens.</strong> Sem grupos; "Modelos de e-mail" solto na raiz com ícone de Configurações; "Recebimento" batiza webhooks. Três grupos (Operação · Conteúdo · Sistema) e dois renomes.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">6. Promoções salva no escuro.</strong> 27 campos, slugs e ids digitados à mão, zero prévia do desconto resultante. Maior risco financeiro, menor feedback.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">7. Sem breadcrumb em 3 níveis.</strong> Editorial tem 13 subrotas e o único caminho de volta é "Voltar ao site" — que sai do admin.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">8. Clique escurece a tela.</strong> Toda navegação da sidebar cobre a tela com overlay preto e spinner; com <code style="color:#D8D0C4">force-dynamic</code> em tudo, a sensação é de lentidão constante.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">9. Cliente é um e-mail cru.</strong> Nunca o nome, sempre <code style="color:#D8D0C4">break-all</code>, com id de pedido em mono quebrando em três linhas.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">10. Dois sistemas de cor no mesmo arquivo.</strong> Tokens shadcn e hex cru (#fffdf8/#ded5ca) convivendo, com raios 18px, 22px e 2xl na mesma seção.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">11. Vocabulário oscilando.</strong> "livro" e "produto" no mesmo módulo; "E-mails" vs "Modelos de email"; nav "Recebimento" vs título "Recebimento de webhooks".</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)"><strong style="color:#F7F4EF">12. Nada em lote e nada para fora.</strong> Sem seleção múltipla, sem exportar CSV, sem busca global — expedição de 30 pedidos é 30 visitas de tela.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:64px;padding:80px 80px 160px;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:24px">
+    <span style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Turno 4</span>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:62rem">
+      <h1 style="margin:0;font-family:'Fertigo',serif;font-size:72px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase;color:#0B0B0B">Editável como no Wix, sem ser o Wix</h1>
+      <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(11,11,11,.7)">O problema real não é cupom: é que a dona do site não consegue mexer no site. Hoje o editorial tem <strong>cinco botões</strong> de formatação e imagem entra <strong>colando URL</strong> — quem não sabe o que é URL não publica uma foto. Duas telas, na paleta do selo: o editor de texto rico e o campo de imagem.</p>
+      <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.5)">Texto rico <a href="#4a">4a</a> · Imagem <a href="#4b">4b</a> · Blocos <a href="#4c">4c</a></p>
+    </div>
+  </div>
+
+  <div id="4a" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">4a</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Editor de texto rico · hoje são 5 botões, aqui são 14 + estilos do selo</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:640px;border:1px solid rgba(11,11,11,.2);background:#FFFFFF">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;background:#D8D0C4;border-bottom:1px solid rgba(11,11,11,.2)">
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Parágrafo ▾</span>
+          <span style="width:1px;height:34px;background:rgba(11,11,11,.2)"></span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:#0B0B0B;color:#F7F4EF;font-size:15px;font-weight:900">B</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:15px;font-style:italic">I</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:15px;text-decoration:underline">S</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:13px">🔗</span>
+          <span style="width:1px;height:34px;background:rgba(11,11,11,.2)"></span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">• Lista</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">1. Numerada</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">❝ Citação</span>
+          <span style="width:1px;height:34px;background:rgba(11,11,11,.2)"></span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Destaque do selo</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">Imagem</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">Botão</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;background:#FFFFFF;border:1px solid rgba(11,11,11,.2);font-size:12px">Separador</span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;font-size:12px;color:rgba(11,11,11,.55)">↩ Desfazer · ↪ Refazer</span>
+        </div>
+
+        <div style="padding:28px 32px;display:flex;flex-direction:column;gap:18px;min-height:420px">
+          <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:rgba(11,11,11,.45)">Sobre › Manifesto</p>
+          <h2 style="margin:0;font-size:40px;line-height:.98;font-weight:900;letter-spacing:-.04em;text-transform:uppercase;color:#0B0B0B">Um selo que publica o que a cidade cospe</h2>
+          <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.82)">Somos uma editora de <strong>São Paulo</strong> que trata poesia como documento e livro como objeto. Cada título nasce de um sarau, de uma oficina ou de uma conversa que não caberia em outro lugar — e sai impresso do jeito que foi dito, <em>sem verniz</em>.</p>
+          <div style="border-left:4px solid #7A1E22;padding:6px 0 6px 20px">
+            <p style="margin:0;font-size:21px;line-height:1.5;color:#0B0B0B">"A margem não pede licença para falar: ela edita."</p>
+          </div>
+          <div style="background:#D8D0C4;padding:20px;display:flex;flex-direction:column;gap:8px">
+            <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Destaque do selo</p>
+            <p style="margin:0;font-size:16px;line-height:1.7;color:rgba(11,11,11,.85)">Bloco pronto, com a cor e a tipografia da marca. Ela escolhe no menu — não escolhe cor, nem fonte, nem tamanho. O site continua sendo o site.</p>
+          </div>
+          <ul style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.7;color:rgba(11,11,11,.82)">
+            <li>Livro, zine, edição sonora, objeto e ingresso</li>
+            <li>Tiragem curta, autoria local</li>
+            <li>Oficinas abertas todo mês</li>
+          </ul>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px dashed rgba(11,11,11,.25)">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid rgba(11,11,11,.3);font-size:16px;color:rgba(11,11,11,.5)">+</span>
+            <span style="font-size:14px;color:rgba(11,11,11,.5)">Clique para inserir um bloco aqui</span>
+          </div>
+        </div>
+
+        <div style="padding:14px 20px;border-top:1px solid rgba(11,11,11,.2);background:#D8D0C4;display:flex;align-items:center;justify-content:space-between;gap:14px">
+          <span style="font-size:13px;color:rgba(11,11,11,.7)">Rascunho salvo às 14:32 · só vai ao ar quando você publicar</span>
+          <div style="display:flex;gap:10px">
+            <span style="display:inline-flex;align-items:center;height:42px;padding:0 18px;border:1px solid rgba(11,11,11,.35);font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Ver como fica</span>
+            <span style="display:inline-flex;align-items:center;height:42px;padding:0 20px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Publicar</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:14px">
+        <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#7A1E22">Hoje no código</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">O editorial tem <strong>negrito, itálico, H2, H3 e link</strong>. Não tem lista, citação, imagem no meio do texto, botão, separador, desfazer nem "ver como fica". Sem isso, qualquer mudança de estrutura volta para você.</p>
+        </div>
+        <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#0B0B0B">Por que não liberar fonte e cor</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">É o que o Wix faz e é o que destrói a identidade em duas semanas. A saída é dar <em>blocos com a cara do selo</em>: "Destaque", "Citação", "Botão". Ela ganha liberdade de estrutura, não de estilo.</p>
+        </div>
+        <div style="border:1px solid rgba(35,99,74,.5);background:rgba(35,99,74,.08);padding:18px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#23634A">Já existe e serve de base</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">A prévia ao vivo e a barra de salvar do editorial já funcionam. O trabalho é trocar a barra de ferramentas e o campo de imagem — não reescrever o módulo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4b" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">4b</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Imagem · o pior gargalo do editorial hoje</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:20px;align-items:start">
+      <div style="border:1px solid rgba(122,30,34,.45);background:#FFFFFF;padding:22px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Atual</span>
+          <span style="font-size:13px;color:rgba(11,11,11,.6)">/admin/editorial · campo de imagem</span>
+        </div>
+        <p style="margin:0;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(11,11,11,.6)">URL da imagem</p>
+        <div style="height:44px;border:1px solid rgba(11,11,11,.25);display:flex;align-items:center;padding:0 12px;font-size:13px;color:rgba(11,11,11,.4)">https://…</div>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.6)">Cole o endereço público da imagem.</p>
+        <div style="border-top:1px dashed rgba(11,11,11,.25);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+          <p style="margin:0;font-size:14px;line-height:1.7;color:#7A1E22"><strong>O que isso obriga:</strong> abrir outro serviço, subir a foto lá, copiar o link, voltar, colar. Cinco passos fora do admin para publicar uma capa de evento.</p>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.7)">Sem recorte, sem texto alternativo, sem saber se a imagem vai cortar a cabeça de alguém no hero. Se o link cair, a página quebra sozinha.</p>
+        </div>
+      </div>
+
+      <div style="border: 1px solid rgba(11,11,11,.2); background: #FFFFFF; display: flex; flex-direction: column" data-om-label="quadro proposto">
+        <div style="padding:14px 20px;background:#0B0B0B;color:#F7F4EF;display:flex;align-items:center;gap:10px">
+          <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#F7F4EF;color:#0B0B0B;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Proposto</span>
+          <span style="font-size:13px;color:rgba(247,244,239,.75)">Arrastar, recortar no formato certo, escrever a descrição</span>
+        </div>
+        <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+          <div style="border:2px dashed rgba(11,11,11,.3);background:#F7F4EF;padding:28px;display:flex;flex-direction:column;align-items:center;gap:10px">
+            <span style="font-family:'DCCAsh',serif;font-size:34px;color:#7A1E22">+</span>
+            <p style="margin:0;font-size:17px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Arraste a foto aqui</p>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.6);text-align:center">ou <span style="color:#7A1E22;font-weight:700">escolha do computador</span> · JPG ou PNG até 8 MB<br>Se preferir, ainda dá para colar um link.</p>
+          </div>
+
+          <div style="display:flex;gap:18px;align-items:flex-start">
+            <div style="flex:none;width:190px;display:flex;flex-direction:column;gap:8px">
+              <div style="position:relative;width:190px;height:250px;background:#0B0B0B">
+                <span style="position:absolute;inset:0;border:2px solid #F7F4EF;margin:26px 14px"></span>
+                <span style="position:absolute;bottom:8px;left:8px;background:#7A1E22;color:#F7F4EF;font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px">Área visível</span>
+              </div>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.6)">Arraste a moldura para escolher o que aparece.</p>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.6)">Onde esta imagem vai aparecer</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;background:#0B0B0B;color:#F7F4EF;font-size:12px;font-weight:700">Capa do evento · 3:4</span>
+                  <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid rgba(11,11,11,.25);font-size:12px">Faixa larga · 16:9</span>
+                  <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid rgba(11,11,11,.25);font-size:12px">Quadrada · 1:1</span>
+                </div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)">O recorte muda junto: você vê antes de salvar, não depois de publicar.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(11,11,11,.6)">Descreva a imagem</p>
+                <div style="height:42px;border:1px solid rgba(11,11,11,.25);display:flex;align-items:center;padding:0 12px;font-size:13px">Público no Sarau Safado, lotado, mão erguida com livro</div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:rgba(11,11,11,.55)">Serve para quem usa leitor de tela e para o Google achar a página.</p>
+              </div>
+              <div style="background:#D8D0C4;padding:12px 14px">
+                <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.78)"><strong>sarau-14-publico.jpg</strong> · 2,1 MB → comprimida para 240 KB automaticamente. Fica no servidor do selo: o link não cai mais.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:14px 20px;border-top:1px solid rgba(11,11,11,.2);background:#D8D0C4;display:flex;justify-content:flex-end;gap:10px">
+          <span style="display:inline-flex;align-items:center;height:42px;padding:0 18px;border:1px solid rgba(11,11,11,.35);font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Trocar imagem</span>
+          <span style="display:inline-flex;align-items:center;height:42px;padding:0 20px;background:#7A1E22;color:#F7F4EF;font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Usar esta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="4c" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">4c</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Os blocos que ela pode inserir sozinha · o menu do "+"</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:12px"><div style="height:9px;width:70%;background:#0B0B0B"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.25)"></div><div style="height:5px;width:88%;background:rgba(11,11,11,.25)"></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Título e texto</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">O bloco base de qualquer página.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:flex;gap:8px;padding:12px"><div style="width:46%;background:#0B0B0B"></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px"><div style="height:8px;width:80%;background:#0B0B0B"></div><div style="height:5px;width:100%;background:rgba(11,11,11,.25)"></div></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Imagem + texto</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Foto de um lado, história do outro.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#D8D0C4;border:1px solid rgba(11,11,11,.12);display:flex;align-items:center;padding:12px 14px;border-left:4px solid #7A1E22"><div style="display:flex;flex-direction:column;gap:5px;width:100%"><div style="height:7px;width:90%;background:rgba(11,11,11,.45)"></div><div style="height:7px;width:60%;background:rgba(11,11,11,.45)"></div></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Destaque / citação</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Já sai com a cor do selo.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:flex;align-items:center;justify-content:center;padding:12px"><div style="height:30px;width:64%;background:#7A1E22"></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Botão</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Aponta para produto, evento ou link.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:12px"><div style="background:#0B0B0B"></div><div style="background:#0B0B0B"></div><div style="background:#0B0B0B"></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Galeria</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Três a seis fotos do sarau.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:flex;gap:6px;padding:12px"><div style="width:30%;background:#D8D0C4"></div><div style="width:30%;background:#D8D0C4"></div><div style="width:30%;background:#D8D0C4"></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Vitrine de produtos</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Escolhe os títulos por busca.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;background:#F7F4EF;border:1px solid rgba(11,11,11,.12);display:flex;flex-direction:column;gap:6px;padding:12px"><div style="height:18px;background:#D8D0C4"></div><div style="height:18px;background:#D8D0C4"></div><div style="height:18px;background:#D8D0C4"></div></div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Agenda</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.62)">Puxa os eventos publicados.</p></div>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.2);background:#0B0B0B;color:#F7F4EF;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="height:88px;border:1px dashed rgba(247,244,239,.35);display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(247,244,239,.6)">arrastar ⇅</div>
+        <div><p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em">Reordenar</p><p style="margin:6px 0 0;font-size:13px;line-height:1.6;color:rgba(247,244,239,.66)">Todo bloco sobe, desce, duplica e apaga.</p></div>
+      </div>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.2);background:#FFFFFF;padding:20px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.78)"><strong>O limite proposto:</strong> ela escolhe e ordena blocos, troca textos e sobe fotos. Não escolhe fonte, cor, tamanho nem espaçamento — isso fica no design system. É o que separa "mais editável" de "vira outro site em um mês", e é exatamente onde o Wix falha para uma marca com identidade forte.</p>
+    </div>
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1880,&quot;height&quot;:1100}}"></script>
+</body>
+</html>

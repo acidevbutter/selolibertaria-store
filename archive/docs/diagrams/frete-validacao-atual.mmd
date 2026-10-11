@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph Store["Storefront — Selo Libertária"]
+        CART["Carrinho / checkout snapshot\nproductType + format"]
+        NEXT["Next server\nsrc/lib/shipping.ts"]
+        ADMIN["Admin de frete\nbase URL, CEP, dimensões, User-Agent"]
+    end
+
+    subgraph API["FastAPI — cálculo atual"]
+        AUTH["POST /shipping/quote\nchave interna"]
+        GATE{"shippingEnabled?"}
+        ENV["Variáveis de ambiente\ntoken, origem, ambiente, User-Agent"]
+        PACKAGE["Pacote fixo por quantidade\npeso e dimensões fixos"]
+        QUOTES["Ler cotações\ne selecionar menor valor"]
+    end
+
+    PROVIDER["Melhor Envio\n/me/shipment/calculate"]
+    CHECKOUT["Checkout / pedido\nfrete selecionado"]
+
+    CART -->|"envia quantity, product_type, format"| NEXT
+    NEXT --> AUTH
+    AUTH --> GATE
+    GATE -->|"ativo"| ENV
+    ENV --> PACKAGE
+    PACKAGE --> PROVIDER
+    PROVIDER --> QUOTES
+    QUOTES --> NEXT
+    NEXT --> CHECKOUT
+
+    ADMIN -. "persiste settings, mas não é consumido" .-> AUTH
+    CART -. "metadados não são lidos" .-> GAP1
+    QUOTES -. "não identifica Impresso" .-> GAP1
+    GAP1["Lacuna: regra Envio Módico\nsem distinção livro elegível / carrinho misto"]
+    GAP2["Lacuna: Registro Módico\nnão há campo, seleção ou soma"]
+    CART -. "não existe entrada de registro" .-> GAP2
+    GAP2 -. "não altera valor final" .-> CHECKOUT
+
+    classDef current fill:#D8D0C4,stroke:#0B0B0B,color:#0B0B0B;
+    classDef external fill:#F7F4EF,stroke:#7A1E22,color:#0B0B0B;
+    classDef gap fill:#7A1E22,stroke:#0B0B0B,color:#F7F4EF;
+    class CART,NEXT,ADMIN,AUTH,GATE,ENV,PACKAGE,QUOTES,CHECKOUT current;
+    class PROVIDER external;
+    class GAP1,GAP2 gap;

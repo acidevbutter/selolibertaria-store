@@ -1,0 +1,45 @@
+:root {
+  --sl-font-display: "DCCAsh", "Iowan Old Style", Georgia, serif;   /* preços, números, títulos curtos */
+  --sl-font-head:    "Fertigo", "Iowan Old Style", Georgia, serif;  /* manchetes caixa-alta */
+  --sl-font-body:    "Fertigo", "Segoe UI", Georgia, serif;
+
+  /* Escala travada — hero / seção / cartão / corpo / micro */
+  --sl-size-hero-xl: 96px;   /* hero da home, desktop */
+  --sl-size-hero-lg: 76px;   /* capa de documento */
+  --sl-size-hero-md: 60px;   /* cabeçalho de página interna */
+  --sl-size-hero-sm: 40px;   /* hero mobile e painel de compra */
+  --sl-size-section: 56px;
+  --sl-size-section-sm: 44px;
+  --sl-size-section-mobile: 36px;
+  --sl-size-card-title: 22px;
+  --sl-size-card-title-sm: 18px;
+  --sl-size-lead: 17px;
+  --sl-size-body: 16px;
+  --sl-size-body-sm: 15px;
+  --sl-size-meta: 14px;
+  --sl-size-meta-sm: 13px;
+  --sl-size-micro: 12px;
+  --sl-size-label: 11px;
+  --sl-size-label-sm: 10px;
+
+  /* Entrelinhas */
+  --sl-leading-hero: .90;
+  --sl-leading-hero-tight: .84;
+  --sl-leading-section: .98;
+  --sl-leading-body: 1.7;
+  --sl-leading-body-loose: 1.8;
+  --sl-leading-compact: 1.55;
+
+  /* Tracking — manchete fecha, micro-label abre */
+  --sl-track-hero: -.055em;
+  --sl-track-head: -.05em;
+  --sl-track-card: -.02em;
+  --sl-track-label: .24em;
+  --sl-track-label-wide: .28em;
+  --sl-track-label-widest: .34em;
+  --sl-track-label-tight: .20em;
+
+  --sl-weight-head: 900;   /* peso sintético sobre Fertigo Regular */
+  --sl-weight-label: 900;
+  --sl-weight-strong: 700;
+}

@@ -1,0 +1,25 @@
+<!-- @dsCard group="Brand" viewport="700x300" name="Área logada" subtitle="O admin usa o mesmo vocabulário da loja — sem exceções de raio ou cor" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body);padding:20px}
+  .lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-text-label)}
+  .rule{display:grid;grid-template-columns:120px 1fr;gap:8px 16px;font-size:13px;line-height:1.6}
+  .rule b{font-weight:900}
+  .bad{color:var(--sl-danger)}
+</style></head><body>
+<div style="display:flex;flex-direction:column;gap:14px">
+  <span class="lbl">/admin · /user · /login</span>
+  <div class="rule">
+    <b>Raio</b><span>Zero, igual à loja. O <code>rounded-xl</code> herdado do fork sai da sidebar e da tabela. <span class="bad">Não existe token de exceção para o painel.</span></span>
+    <b>Número</b><span>DCC Ash — receita, contagem, ticket, número de pedido, total de linha. Manchete e corpo em Fertigo.</span>
+    <b>Status</b><span>Quatro tons: bege/vinho (Pago) · tinta 6% (Pendente) · preto sólido (Enviado) · lavagem vinho (Falhou). Sem verde, âmbar ou cinza de biblioteca.</span>
+    <b>Filete</b><span>Tinta transparente: 14% divisória, 20% moldura e cabeçalho, preto sólido em hover e selecionado.</span>
+    <b>Selecionado</b><span>Bloco sólido — vinho sobre preto na nav, preto sobre papel no resto. Nunca fundo bege suave.</span>
+    <b>Vazio</b><span>Quadro bege com frase de saída concreta. Nunca placeholder cinza.</span>
+    <b>Login social</b><span>Entra: e-mail primeiro, botão preto "Entrar", régua "ou", "Continuar com Google" em papel branco com ícone oficial do provedor.</span>
+  </div>
+</div>
+</body></html>

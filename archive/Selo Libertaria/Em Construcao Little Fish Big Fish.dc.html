@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+html,body{margin:0;height:100%;overflow:hidden;background:#0B0B0B;font-family:"DCCAsh","Segoe UI",serif}
+a{color:#F2891E;text-decoration:none}
+a:hover{color:#E2461A}
+@keyframes sl-drift{0%{transform:translateY(0)}50%{transform:translateY(-12px)}100%{transform:translateY(0)}}
+@keyframes sl-splash-veil{0%,42%{opacity:1}100%{opacity:0;visibility:hidden}}
+@keyframes sl-splash-mark{0%{transform:scale(.55);opacity:0}18%{transform:scale(1);opacity:1}38%{transform:scale(1);opacity:1}62%{transform:scale(14);opacity:0}100%{transform:scale(14);opacity:0}}
+@keyframes sl-settle{0%,46%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes sl-settle-soft{0%,50%{opacity:0}100%{opacity:1}}
+</style>
+</helmet>
+
+<div style="position:relative;height:100vh;max-height:100vh;display:flex;flex-direction:column;background:#0B0B0B;overflow:hidden;box-sizing:border-box" data-screen-label="Em construção — little fish, big fish">
+
+  <div style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#0B0B0B;pointer-events:none;animation:sl-splash-veil 1.9s cubic-bezier(.7,0,.2,1) forwards">
+    <div style="width:56px;height:56px;border-radius:50%;background:#F2891E;animation:sl-splash-mark 1.9s cubic-bezier(.7,0,.2,1) forwards"></div>
+  </div>
+
+  <div style="position:absolute;width:620px;height:620px;border-radius:50%;background:#F2891E;opacity:.13;filter:blur(28px);top:-240px;left:-170px;pointer-events:none"></div>
+  <div style="position:absolute;width:480px;height:480px;border-radius:50%;background:#E2461A;opacity:.13;filter:blur(28px);bottom:-200px;right:-130px;pointer-events:none"></div>
+
+  <div style="position:relative;flex:none;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px clamp(24px,4vw,64px);border-bottom:1px solid rgba(247,244,239,.12);animation:sl-settle-soft 2.5s ease-out both">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:34px;height:34px;border:1px solid rgba(247,244,239,.3);overflow:hidden;flex-shrink:0"><img src="assets/img/selolibertaria.png" alt="Selo Libertária" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div>
+        <div style="font-size:9px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#F7F4EF">Selo</div>
+        <div style="font-size:13px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#F7F4EF">Libertária</div>
+      </div>
+    </div>
+    <span style="font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.5)">Site em construção</span>
+  </div>
+
+  <div style="position:relative;flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(20px,4vw,56px);align-items:center;padding:clamp(14px,2.4vh,40px) clamp(20px,4vw,64px);box-sizing:border-box">
+
+    <div style="min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(8px,1.5vh,18px)">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.32em;text-transform:uppercase;color:#F2891E;animation:sl-settle 2.25s cubic-bezier(.2,.8,.2,1) both">Em construção · próximo lançamento</p>
+      <h1 style="margin:0;font-family:'Fertigo',serif;font-weight:900;font-size:clamp(40px,5.2vw,80px);line-height:.86;letter-spacing:-.04em;color:#F2891E;animation:sl-settle 2.4s cubic-bezier(.2,.8,.2,1) both">little fish,<br>big fish</h1>
+      <p style="margin:0;font-size:clamp(14px,1.2vw,17px);letter-spacing:.03em;color:rgba(247,244,239,.72);animation:sl-settle 2.55s cubic-bezier(.2,.8,.2,1) both">poesia de Natália Nolli Sasso</p>
+      <p style="margin:0;max-width:52ch;font-size:clamp(12px,1.05vw,16px);line-height:1.55;color:rgba(247,244,239,.78);text-wrap:pretty;animation:sl-settle 2.7s cubic-bezier(.2,.8,.2,1) both">A loja abre junto com o lançamento do terceiro livro da autora.</p>
+
+      <div style="display:flex;flex-direction:column;gap:clamp(7px,1.2vh,14px);padding:clamp(10px,1.8vh,22px);border:1px solid rgba(247,244,239,.2);box-sizing:border-box;animation:sl-settle 2.85s cubic-bezier(.2,.8,.2,1) both">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Contagem regressiva</p>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:clamp(8px,1.2vh,14px) 4px;border:1px solid rgba(242,137,30,.35)">
+            <span style="font-family:'Fertigo',serif;font-size:clamp(24px,2.6vw,38px);line-height:1;font-weight:900;color:#F7F4EF">{{ cdDays }}</span>
+            <span style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">dias</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:clamp(8px,1.2vh,14px) 4px;border:1px solid rgba(242,137,30,.35)">
+            <span style="font-family:'Fertigo',serif;font-size:clamp(24px,2.6vw,38px);line-height:1;font-weight:900;color:#F7F4EF">{{ cdHours }}</span>
+            <span style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">horas</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:clamp(8px,1.2vh,14px) 4px;border:1px solid rgba(242,137,30,.35)">
+            <span style="font-family:'Fertigo',serif;font-size:clamp(24px,2.6vw,38px);line-height:1;font-weight:900;color:#F7F4EF">{{ cdMin }}</span>
+            <span style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">min</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:clamp(8px,1.2vh,14px) 4px;border:1px solid rgba(242,137,30,.35)">
+            <span style="font-family:'Fertigo',serif;font-size:clamp(24px,2.6vw,38px);line-height:1;font-weight:900;color:#F2891E">{{ cdSec }}</span>
+            <span style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.55)">seg</span>
+          </div>
+        </div>
+        <p style="margin:0;font-family:'Fertigo',serif;font-size:12px;line-height:1.5;color:rgba(247,244,239,.6)">Lançamento previsto: {{ launchWindow }}.</p>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;animation:sl-settle 3s cubic-bezier(.2,.8,.2,1) both">
+        <input type="email" placeholder="seu@email.com" style="flex:1 1 170px;min-width:0;height:44px;padding:0 14px;background:#0B0B0B;border:1px solid rgba(247,244,239,.3);color:#F7F4EF;font-family:'DCCAsh',serif;font-size:14px;letter-spacing:.04em;box-sizing:border-box">
+        <button style="height:44px;padding:0 20px;background:#F2891E;border:none;color:#0B0B0B;font-family:'DCCAsh',serif;font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;white-space:nowrap">Avise-me</button>
+        <span style="font-family:'Fertigo',serif;font-size:11px;letter-spacing:.06em;color:rgba(247,244,239,.62);white-space:nowrap">Sem spam.</span>
+      </div>
+    </div>
+
+    <div style="min-width:0;height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;overflow:hidden;animation:sl-settle 2.7s cubic-bezier(.2,.8,.2,1) both">
+      <div style="flex:1;min-height:0;border:1px solid rgba(247,244,239,.14);background:#111;padding:12px;box-sizing:border-box;animation:sl-drift 7s ease-in-out infinite;display:flex;align-items:center;justify-content:center">
+        <img src="assets/img/lfbf-fish-badge.png" alt="Detalhe da capa de little fish, big fish" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block">
+      </div>
+      <div style="flex:none;display:flex;flex-wrap:wrap;gap:20px">
+        <a href="#" style="font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">Instagram →</a>
+        <a href="#" style="font-size:10px;font-weight:900;letter-spacing:.22em;text-transform:uppercase">Outros livros →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position:relative;flex:none;width:100%;height:clamp(48px,9vh,110px);overflow:hidden;animation:sl-settle-soft 3.1s ease-out both">
+    <img src="assets/img/lfbf-fish-band.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;launchDate&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2026-11-06T19:00:00-03:00&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Lançamento&quot;},&quot;launchWindow&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;6 de novembro de 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Lançamento&quot;}}">
+class Component extends DCLogic {
+  state = { now: Date.now() };
+
+  componentDidMount() {
+    this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
+  }
+
+  componentWillUnmount() { clearInterval(this._tick); }
+
+  renderVals() {
+    const pad = n => String(Math.max(0, n)).padStart(2, "0");
+    const iso = this.props.launchDate || "2026-11-06T19:00:00-03:00";
+    const target = new Date(iso).getTime();
+    let diff = Number.isFinite(target) ? Math.max(0, target - this.state.now) : 0;
+    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+    const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+    const m = Math.floor(diff / 60000); diff -= m * 60000;
+    const s = Math.floor(diff / 1000);
+    return {
+      cdDays: pad(d), cdHours: pad(h), cdMin: pad(m), cdSec: pad(s),
+      launchWindow: this.props.launchWindow || "6 de novembro de 2026"
+    };
+  }
+}
+</script>
+</body>
+</html>

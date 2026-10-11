@@ -1,0 +1,46 @@
+<!-- @dsCard group="Components" viewport="760x420" name="Área logada · Sidebar, MetricCard, DataTable" subtitle="Raio zero, número em DCC Ash, status na paleta do selo" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body);padding:20px;display:flex;gap:20px}
+  .lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-text-label)}
+  .nav{display:flex;align-items:center;height:var(--sl-h-nav-item);padding:var(--sl-pad-nav-item);font-size:15px;color:var(--sl-text-on-ink-soft)}
+  .nav.sel{background:var(--sl-nav-selected);color:var(--sl-text-on-ink);font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+  .nav.hov{background:var(--sl-nav-hover-on-ink);color:var(--sl-text-on-ink)}
+  .metric{background:var(--sl-surface-card);border:1px solid var(--sl-line-hairline);padding:var(--sl-pad-metric)}
+  .metric .k{font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--sl-accent)}
+  .metric .v{margin-top:16px;font-family:var(--sl-font-display);font-size:30px;letter-spacing:-.02em}
+  .chip{display:inline-flex;align-items:center;height:var(--sl-h-badge);padding:var(--sl-pad-chip);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+</style></head><body>
+
+<div style="width:230px;flex:none;background:var(--sl-surface-invert);padding:20px 0;display:flex;flex-direction:column;gap:12px">
+  <div style="padding:0 28px" class="lbl" style="color:var(--sl-text-on-ink-quiet)">AdminSidebar</div>
+  <div>
+    <div class="nav sel">Painel</div>
+    <div class="nav">Pedidos</div>
+    <div class="nav hov">Produtos <span style="margin-left:auto;font-size:10px;letter-spacing:.2em;color:var(--sl-text-on-ink-quiet)">HOVER</span></div>
+    <div class="nav">Usuários</div>
+  </div>
+</div>
+
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="metric"><div class="k">Receita paga</div><div class="v">R$ 4.320,00</div></div>
+    <div class="metric" style="border-color:var(--sl-line)"><div class="k" style="display:flex;justify-content:space-between">Falhas <span style="color:var(--sl-text-label)">Ver →</span></div><div class="v" style="color:var(--sl-danger)">4</div></div>
+  </div>
+  <div style="background:var(--sl-surface-card);border:1px solid var(--sl-line-hairline)">
+    <div style="display:grid;grid-template-columns:1fr 1fr 140px;gap:16px;padding:var(--sl-pad-table-head);border-bottom:1px solid var(--sl-line)" class="lbl"><span>Pedido</span><span>Total</span><span>Status</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 140px;gap:16px;align-items:center;padding:var(--sl-pad-table-cell);border-bottom:1px solid var(--sl-line-hairline)"><span style="font-family:var(--sl-font-display);font-size:18px">#1042</span><span style="font-family:var(--sl-font-display);font-size:18px">R$ 129,90</span><span class="chip" style="background:var(--sl-sand);color:var(--sl-wine)">Pago</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 140px;gap:16px;align-items:center;padding:var(--sl-pad-table-cell);background:var(--sl-surface-row-hover);border-bottom:1px solid var(--sl-line-solid)"><span style="font-family:var(--sl-font-display);font-size:18px">#1041</span><span style="font-family:var(--sl-font-display);font-size:18px">R$ 60,00</span><span class="chip" style="background:var(--sl-danger-wash);border:1px solid var(--sl-danger-line);color:var(--sl-danger)">Falhou</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 140px;gap:16px;align-items:center;padding:var(--sl-pad-table-cell)"><span style="font-family:var(--sl-font-display);font-size:18px">#1040</span><span style="font-family:var(--sl-font-display);font-size:18px">R$ 213,90</span><span class="chip" style="background:var(--sl-ink);color:var(--sl-text-on-ink)">Enviado</span></div>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span class="chip" style="background:var(--sl-sand);color:var(--sl-wine)">Pago</span>
+    <span class="chip" style="background:var(--sl-surface-quiet);color:var(--sl-text-muted)">Pendente</span>
+    <span class="chip" style="background:var(--sl-ink);color:var(--sl-text-on-ink)">Enviado</span>
+    <span class="chip" style="background:var(--sl-danger-wash);border:1px solid var(--sl-danger-line);color:var(--sl-danger)">Falhou</span>
+  </div>
+</div>
+</body></html>

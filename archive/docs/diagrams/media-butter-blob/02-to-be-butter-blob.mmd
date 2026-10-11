@@ -1,0 +1,54 @@
+%% TO-BE - file manager via butter_blob, mesmo BFF Next
+%% Preview local so aceita flowchart / graph / stateDiagram-v2
+flowchart LR
+    Admin["Admin browser"]
+    UI["AdminImageUrlList<br/>instant ou on-submit<br/>contrato url e publicId"]
+
+    subgraph nextLayer["Next - nao muda"]
+        NextAPI["POST /api/admin/media/upload"]
+        NextDel["POST /api/admin/media/delete"]
+        Actions["Server Actions<br/>produto e editorial"]
+        Lib["media-upload.ts"]
+    end
+
+    subgraph fastapiLayer["FastAPI MediaService - troca isolada"]
+        Up["POST /media/internal/admin/upload"]
+        Del["POST /media/internal/admin/delete"]
+        Client["ButterBlobClient<br/>namespace selolibertaria"]
+    end
+
+    subgraph blob["butter_blob"]
+        Internal["POST /internal/v1/blobs<br/>visibility public"]
+        Destroy["DELETE /internal/v1/blobs/id"]
+        Public["GET /v1/public/selolibertaria/slug"]
+        Limits["quota MIME compressao"]
+        S3[("S3 / MinIO")]
+    end
+
+    PG[("PostgreSQL Selo<br/>JSON de URLs publicas")]
+    Store["Storefront next/image<br/>remotePatterns do host publico"]
+    %% Public URLs 302 to S3; storefront treats them as unoptimized like legacy CloudFront.
+
+    Admin --> UI
+    UI -->|"instant"| NextAPI
+    UI -->|"on-submit File no save"| Actions
+    NextAPI --> Lib
+    Actions --> Lib
+    Lib --> Up
+    Up --> Client
+    Client --> Internal
+    Internal --> Limits
+    Limits --> S3
+    Internal -->|"201 public_url blob_id"| UI
+    UI --> Actions
+    Actions --> PG
+
+    UI --> NextDel
+    NextDel --> Del
+    Del --> Client
+    Client --> Destroy
+    Destroy --> S3
+
+    PG --> Store
+    Store --> Public
+    Public -->|"302 presigned GET"| S3

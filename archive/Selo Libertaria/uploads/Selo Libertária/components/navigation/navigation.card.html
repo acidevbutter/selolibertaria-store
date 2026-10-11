@@ -1,0 +1,37 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Navegação · SiteHeader, CategoryBar, CheckoutStepper" subtitle="Header preto, abas bege e as três etapas" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--sl-paper);color:var(--sl-text);font-family:var(--sl-font-body);padding:20px}
+  .lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--sl-text-label)}
+  .col{display:flex;flex-direction:column;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:.24em;text-transform:uppercase}
+
+</style></head><body>
+
+<div class="col" style="gap:16px">
+  <div style="background:var(--sl-ink);color:var(--sl-text-on-ink);height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;overflow:hidden"><img src="../../assets/img/selolibertaria.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div class="col" style="gap:0"><span style="font-size:9px;font-weight:900;letter-spacing:.34em;text-transform:uppercase;color:var(--sl-text-on-ink-label)">Selo</span><span style="font-size:13px;font-weight:900;letter-spacing:.28em;text-transform:uppercase">Libertária</span></div>
+    </div>
+    <div style="display:flex;gap:18px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase">
+      <span style="display:inline-flex;align-items:center;height:44px;border-bottom:2px solid var(--sl-buy)">Loja</span>
+      <span style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Sarau Safado</span>
+      <span style="display:inline-flex;align-items:center;height:44px;color:var(--sl-text-on-ink-soft)">Sobre</span>
+    </div>
+    <span class="btn" style="height:44px;padding:0 14px;background:var(--sl-wine);color:var(--sl-text-on-ink);font-size:11px;letter-spacing:.22em;gap:8px">Carrinho <span style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:var(--sl-paper);color:var(--sl-wine);font-size:11px;letter-spacing:0">2</span></span>
+  </div>
+  <div style="background:var(--sl-sand);display:flex;border-bottom:1px solid rgba(11,11,11,.16)">
+    <span class="btn" style="height:56px;padding:0 18px;font-size:11px;letter-spacing:.2em;background:var(--sl-ink);color:var(--sl-text-on-ink)">Tudo · 28</span><span class="btn" style="height:56px;padding:0 18px;font-size:11px;letter-spacing:.2em;color:var(--sl-text-muted)">Livros · 9</span><span class="btn" style="height:56px;padding:0 18px;font-size:11px;letter-spacing:.2em;color:var(--sl-text-muted)">Edições sonoras · 4</span><span class="btn" style="height:56px;padding:0 18px;font-size:11px;letter-spacing:.2em;color:var(--sl-text-muted)">Zines · 6</span><span class="btn" style="height:56px;padding:0 18px;font-size:11px;letter-spacing:.2em;color:var(--sl-text-muted)">Objetos · 5</span>
+  </div>
+  <div style="background:var(--sl-ink);padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:var(--sl-text-on-ink)">
+    <span>1 · Identificação ✓</span><span style="width:24px;height:1px;background:var(--sl-line-on-ink-mid)"></span>
+    <span>2 · Entrega ✓</span><span style="width:24px;height:1px;background:var(--sl-line-on-ink-mid)"></span>
+    <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;background:var(--sl-buy)">3 · Pagamento</span>
+  </div>
+  <p style="margin:0;font-size:12px;color:var(--sl-text-soft)">Breadcrumb: <span style="letter-spacing:.18em;text-transform:uppercase;font-size:11px">Loja / Livros / <span style="color:var(--sl-accent)">little fish, big fish</span></span></p>
+</div>
+</body></html>

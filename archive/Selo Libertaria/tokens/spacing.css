@@ -1,0 +1,42 @@
+:root {
+  /* Passo de 4, com paradas reais tiradas das telas */
+  --sl-space-1: 4px;
+  --sl-space-2: 6px;
+  --sl-space-3: 8px;
+  --sl-space-4: 10px;
+  --sl-space-5: 12px;
+  --sl-space-6: 14px;
+  --sl-space-7: 16px;
+  --sl-space-8: 20px;
+  --sl-space-9: 24px;
+  --sl-space-10: 28px;
+  --sl-space-11: 32px;
+  --sl-space-12: 40px;
+  --sl-space-13: 48px;
+  --sl-space-14: 56px;
+  --sl-space-15: 64px;
+  --sl-space-16: 80px;
+
+  /* Margens de página */
+  --sl-gutter-desktop: 48px;   /* 1440 */
+  --sl-gutter-narrow: 40px;    /* 1152 — checkout e PDP */
+  --sl-gutter-mobile: 16px;    /* 390 */
+
+  /* Grades */
+  --sl-grid-gap: 20px;         /* grade de produtos */
+  --sl-grid-gap-sm: 12px;      /* grade de produtos mobile */
+  --sl-section-gap: 56px;
+
+  /* Larguras de trabalho */
+  --sl-w-desktop: 1440px;
+  --sl-w-narrow: 1152px;
+  --sl-w-mobile: 390px;
+  --sl-w-cart: 416px;
+  --sl-w-buypanel: 420px;
+  --sl-w-summary: 400px;
+
+  /* Medida de leitura */
+  --sl-measure-lead: 44ch;
+  --sl-measure-body: 60ch;
+  --sl-measure-head: 14ch;
+}

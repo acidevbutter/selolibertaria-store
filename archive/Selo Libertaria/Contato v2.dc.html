@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",Georgia,serif;color:#0B0B0B;-webkit-font-smoothing:antialiased}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div data-screen-label="Contato" style="display:flex;flex-direction:column;min-height:100vh;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="background:#0B0B0B;color:rgba(247,244,239,.72);border-bottom:1px dashed rgba(247,244,239,.35)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:14px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid rgba(247,244,239,.35);font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF">Nota</span>
+      <span style="font-size:13px;line-height:1.5">Navbar omitida nesta tela — é a mesma barra de navegação global usada em todo o sistema (componente <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px">SiteHeader</span>).</span>
+    </div>
+  </div>
+
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:56px 16px;box-sizing:border-box;display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:end">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:52ch">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:rgba(247,244,239,.6)">Contato</p>
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(38px,6vw,60px);line-height:.95;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Convites, parcerias, imprensa, livros e Sarau Safado</h1>
+        <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.75;color:rgba(247,244,239,.82)">Um canal direto para falar com o selo, comprar livros, enviar propostas ou acompanhar a programação.</p>
+      </div>
+      <div style="justify-self:end;width:100%;max-width:384px;background:#F7F4EF;color:#0B0B0B;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Email</p>
+        <p style="margin:0;font-family:'DCCAsh',serif;font-size:28px;line-height:1.15;letter-spacing:-.015em;word-break:break-word">contato@selolibertaria.com</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.65)">Resposta em até dois dias úteis.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:64px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+
+    <div style="flex:2 1 420px;background:#fff;border:1px solid rgba(11,11,11,.14);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px;min-width:0">
+      <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px;display:flex;flex-direction:column;gap:10px">
+        <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(28px,4vw,44px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Escreva para o selo</h2>
+        <p style="margin:0;max-width:60ch;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Use o formulário para convites, imprensa, projetos, livros e assuntos editoriais.</p>
+      </div>
+      <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Nome</span>
+          <span style="display:flex;align-items:center;height:52px;padding:0 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:16px;color:rgba(11,11,11,.5)">Como devemos te chamar</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Email</span>
+          <span style="display:flex;align-items:center;height:52px;padding:0 14px;border:1px solid #0B0B0B;background:#fff;box-shadow:0 0 0 2px rgba(122,30,34,.2);font-size:16px">nome@email.com</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Assunto</span>
+        <span style="display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:16px;color:rgba(11,11,11,.5)">Selecione ou escreva<span style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.6)">6 opções</span></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Mensagem</span>
+        <span style="display:block;min-height:176px;padding:12px 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:16px;line-height:1.7;color:rgba(11,11,11,.5)">Conte o que você precisa. Se for proposta de projeto, inclua prazo e cidade.</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px">
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Enviar mensagem</span>
+        <span style="font-size:12px;color:rgba(11,11,11,.65)">Não usamos seu email para newsletter sem pedir.</span>
+      </div>
+    </div>
+
+    <div style="flex:1 1 300px;display:flex;flex-direction:column;gap:20px;min-width:0">
+      <div style="background:#0B0B0B;color:#F7F4EF;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+        <div style="border-bottom:1px solid rgba(247,244,239,.28);padding-bottom:16px;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(24px,3vw,36px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Assuntos de contato</h2>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)">Caminhos recorrentes para livros, manuscritos, projetos, Sarau e imprensa.</p>
+        </div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+          <li style="padding:12px 0;border-bottom:1px solid rgba(247,244,239,.28);font-size:18px">Comprar livro</li>
+          <li style="padding:12px 0;border-bottom:1px solid rgba(247,244,239,.28);font-size:18px">Enviar manuscrito</li>
+          <li style="padding:12px 0;border-bottom:1px solid rgba(247,244,239,.28);font-size:18px">Projetos</li>
+          <li style="padding:12px 0;border-bottom:1px solid rgba(247,244,239,.28);font-size:18px">Sarau Safado</li>
+          <li style="padding:12px 0;border-bottom:1px solid rgba(247,244,239,.28);font-size:18px">Imprensa</li>
+          <li style="padding:12px 0;font-size:18px">Outro</li>
+        </ul>
+      </div>
+      <div style="background:#D8D0C4;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+        <div style="border-bottom:1px solid rgba(11,11,11,.2);padding-bottom:16px;display:flex;flex-direction:column;gap:10px">
+          <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(24px,3vw,36px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Canais diretos</h2>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Pontos de contato editoriais e sociais do selo.</p>
+        </div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+          <li style="display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1px solid rgba(11,11,11,.2)">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Email</span>
+            <a href="#" style="font-size:16px">contato@selolibertaria.com</a>
+          </li>
+          <li style="display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1px solid rgba(11,11,11,.2)">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Instagram</span>
+            <a href="#" style="font-size:16px">@selolibertaria</a>
+          </li>
+          <li style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">YouTube</span>
+            <a href="#" style="font-size:16px">Selo Libertária</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:center">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.6)">Continuar</p>
+        <h2 style="margin:0;max-width:26ch;font-family:'Fertigo',serif;font-size:clamp(26px,3.4vw,44px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Siga pela agenda do Sarau ou pelo catálogo</h2>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start">
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#F7F4EF;color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Projetos</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Sarau Safado</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Loja</span>
+      </div>
+    </div>
+  </section>
+
+  <footer style="margin-top:auto;background:#F7F4EF;border-top:1px solid rgba(11,11,11,.14)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px">
+      <div style="max-width:34ch;display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo Libertária</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Literatura erótica, urbana e dissidente. Livros, edições sonoras, zines, objetos e encontros.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Navegar</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Loja</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sarau Safado</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Projetos</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sobre</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Contato</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Perguntas frequentes</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:260px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Newsletter</p>
+        <div style="display:flex;gap:8px">
+          <span style="flex:1;display:inline-flex;align-items:center;height:52px;padding:0 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:14px;color:rgba(11,11,11,.5)">seu@email.com</span>
+          <span style="display:inline-flex;align-items:center;height:52px;padding:0 18px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Assinar</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:20px 16px;box-sizing:border-box;border-top:1px solid rgba(11,11,11,.14);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(11,11,11,.65)">
+      <span>© 2026 Selo Libertária</span>
+      <span>Conteúdo para maiores de 18 anos</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

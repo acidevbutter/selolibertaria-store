@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:56px;padding:72px 72px 110px;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:22px">
+    <span style="flex:none;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Fase 3</span>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:62rem">
+      <h1 style="margin:0;font-size:70px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase">Promoção em cinco passos</h1>
+      <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(11,11,11,.72)">27 campos numa tela viram um assistente: <strong>o que é → quanto desconta → onde vale → quando → revisar</strong>, com prévia do preço final o tempo todo. Layout aprovado: trilha à esquerda, prévia fixa à direita (<a href="Promocao%20Assistente%20B.dc.html">tela B</a>).</p>
+      <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.5)">Passos <a href="#f3-passos">3.1–3.3</a> · Backend <a href="#f3-back">requisitos</a> · Aceite <a href="#f3-aceite">critérios</a> · <a href="guidelines/admin-design-system.md">Design system</a></p>
+    </div>
+  </div>
+
+  <div id="f3-passos" style="display:flex;flex-direction:column;gap:24px">
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3.1</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Passo 1 · os sete tipos, em linguagem de quem vende o catálogo</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+      <div style="border:2px solid #7A1E22;background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">%</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Cupom de desconto</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Código que você divulga. Ex: RATO10.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.55)">Já funciona hoje</span>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">↓</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Desconto direto</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Preço riscado na vitrine, sem código.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.55)">Já funciona hoje</span>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">◷</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Pré-venda</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Preço especial até a data de lançamento.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.55)">Já funciona hoje</span>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">1ª</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Primeira compra</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Só para quem nunca comprou.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.55)">Já funciona hoje</span>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">◎</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Desconto em evento</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Vale nos títulos ligados a um sarau.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.55)">Já funciona hoje</span>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.07);padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">3×</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Leve 3, pague menos</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">3 títulos da seleção com 20% off.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Precisa de backend</span>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.5);background:rgba(122,30,34,.07);padding:18px;display:flex;flex-direction:column;gap:8px;min-height:150px">
+        <span style="font-family:'DCCAsh',serif;font-size:24px;color:#7A1E22">✉</span>
+        <p style="margin:0;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Cupom de frete grátis</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.65)">Código que zera o frete no carrinho.</p>
+        <span style="margin-top:auto;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22">Precisa de backend</span>
+      </div>
+      <div style="border:1px dashed rgba(11,11,11,.3);background:#F7F4EF;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:8px;min-height:150px">
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Os dois em vermelho aparecem com selo <strong>"em breve"</strong> até o backend existir — e o cartão explica por quê, em vez de simplesmente falhar ao salvar.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3.2</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">O que cada passo pergunta · e o que ele esconde</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'DCCAsh',serif;font-size:22px;color:#7A1E22">01</span>
+        <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">O que é</p>
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Escolhe um dos sete cartões. Nome interno da promoção.</p>
+        <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.5)">Esconde: escopo, tipo técnico, prioridade — o tipo já define.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'DCCAsh',serif;font-size:22px;color:#7A1E22">02</span>
+        <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Quanto desconta</p>
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Porcentagem, valor fixo ou preço final. Código, se for cupom.</p>
+        <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.5)">Um campo de valor com a unidade certa, não dois campos ambíguos.</p>
+      </div>
+      <div style="border:2px solid #7A1E22;background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'DCCAsh',serif;font-size:22px;color:#7A1E22">03</span>
+        <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Onde vale</p>
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Busca e checkbox no catálogo, ou formato inteiro, ou tudo.</p>
+        <p style="margin:0;font-size:12px;line-height:1.55;color:#7A1E22">Mata o pior campo do admin: slugs digitados à mão.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'DCCAsh',serif;font-size:22px;color:#7A1E22">04</span>
+        <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Quando</p>
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Começa agora ou na data. Termina na data ou não termina.</p>
+        <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.5)">Esconde: as duas janelas separadas de promoção e cupom.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'DCCAsh',serif;font-size:22px;color:#7A1E22">05</span>
+        <p style="margin:0;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:#0B0B0B">Revisar</p>
+        <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.7)">Frase inteira + cards dos produtos com preço antes e depois.</p>
+        <p style="margin:0;font-size:12px;line-height:1.55;color:rgba(11,11,11,.5)">"Publicar" e "Salvar como rascunho" só existem aqui.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">3.3</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Passo 5 · a tela que hoje não existe</span>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:26px;display:flex;flex-direction:column;gap:20px">
+      <div style="background:#0B0B0B;color:#F7F4EF;padding:22px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:rgba(247,244,239,.55)">Resumo em uma frase</p>
+        <p style="margin:12px 0 0;font-size:26px;line-height:1.35;font-weight:900;letter-spacing:-.02em">Quem digitar <span style="color:#E08C8C">RATO10</span> leva <span style="color:#E08C8C">10% off</span> em <span style="color:#E08C8C">2 produtos</span>, de <span style="color:#E08C8C">1 a 30 de outubro</span>, limitado a <span style="color:#E08C8C">1 uso por cliente</span>.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+        <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:16px;display:flex;gap:14px;align-items:center">
+          <div style="flex:none;width:58px;height:82px;background:#0B0B0B"></div>
+          <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;line-height:1.1;color:#0B0B0B">Ninfas do Tietê</p><p style="margin:8px 0 0"><span style="font-family:'DCCAsh',serif;font-size:15px;color:rgba(11,11,11,.45);text-decoration:line-through">R$ 60,00</span> <span style="font-family:'DCCAsh',serif;font-size:21px;color:#7A1E22">R$ 54,00</span></p></div>
+        </div>
+        <div style="border:1px solid rgba(11,11,11,.12);background:#F7F4EF;padding:16px;display:flex;gap:14px;align-items:center">
+          <div style="flex:none;width:58px;height:82px;background:#D8D0C4"></div>
+          <div><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;line-height:1.1;color:#0B0B0B">little fish, big fish</p><p style="margin:8px 0 0"><span style="font-family:'DCCAsh',serif;font-size:15px;color:rgba(11,11,11,.45);text-decoration:line-through">R$ 72,00</span> <span style="font-family:'DCCAsh',serif;font-size:21px;color:#7A1E22">R$ 64,80</span></p></div>
+        </div>
+        <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:16px;display:flex;flex-direction:column;gap:8px">
+          <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#7A1E22">Conflito detectado</p>
+          <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.78)">"Ninfas do Tietê" já está na pré-venda. Como este cupom é exclusivo, o cliente vai levar <strong>o maior desconto</strong>, não os dois.</p>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;padding-top:16px;border-top:1px solid rgba(11,11,11,.15)">
+        <p style="margin:0;font-size:13px;color:rgba(11,11,11,.65)">Detecção de conflito é o que falta hoje: duas promoções no mesmo título passam sem aviso.</p>
+        <div style="display:flex;gap:10px">
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 18px;border:1px solid rgba(11,11,11,.35);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Salvar rascunho</span>
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 22px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Publicar promoção</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="f3-back" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Backend</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">O que precisa existir para a Fase 3 rodar</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">1 · Simulação</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Calcular sem salvar</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">A prévia exige uma rota que receba a promoção <strong>não salva</strong> e devolva o preço final de cada produto afetado. Hoje o cálculo só acontece no carrinho.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)"><code>POST /api/admin/promotions/preview</code> → lista de <code>{productId, priceBefore, priceAfter}</code>. Precisa reusar <em>a mesma</em> função do carrinho, senão a prévia mente.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2 · Alvos por id</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Fim do slug em texto</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Os alvos passam a ser vínculos (<code>promotionId</code> + <code>productId</code>/<code>variantId</code>/<code>categoryId</code>), não string separada por vírgula. Slug digitado errado deixa de ser possível.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Migração converte os slugs atuais em vínculos; slug órfão vira aviso, não silêncio.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">3 · Busca de produto</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Autocomplete do catálogo</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)"><code>GET /api/admin/products/search?q=</code> devolvendo id, título, formato, preço e capa. Serve ao passo 3 e, depois, ao bloco "vitrine" da Fase 2.</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">4 · Tipo novo</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Leve 3, pague menos</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Regra por quantidade não existe no modelo. Precisa de <code>minQuantity</code> + escopo "conjunto marcado" e de um cálculo que atue sobre o <strong>carrinho inteiro</strong>, não item a item — inclusive definindo em qual item o desconto cai.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Decisão de produto: desconto no item mais barato (padrão de mercado) ou rateado. Sugestão: o mais barato.</p>
+      </div>
+      <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">5 · Tipo novo</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Frete grátis</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">O desconto hoje incide no produto. Frete grátis exige um alvo novo (<code>target: "shipping"</code>) aplicado <strong>depois</strong> do cálculo de frete, e o total do pedido precisa registrar isso separado — senão o relatório de receita fica errado.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Também toca no checkout e no e-mail de confirmação.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">6 · Conflito</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Quem ganha quando duas valem</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Existe prioridade e acumulação no modelo, mas nenhuma checagem no salvamento. A rota de preview deve devolver os conflitos junto com os preços, para o passo 5 avisar antes.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Regra confirmada: cupom de frete <strong>não acumula</strong> — vale o maior desconto.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="f3-aceite" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Aceite</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">A fase está pronta quando</span>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Criar um cupom de 10% em dois títulos leva <strong>menos de dois minutos</strong> e nenhum campo pede slug.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Antes de publicar, ela <strong>vê o preço final</strong> de cada produto afetado, calculado pela mesma função do carrinho.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Promoção sobreposta gera aviso explícito dizendo qual vale.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Sair no meio não perde nada: o rascunho volta no passo em que parou.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Os dois tipos sem backend aparecem como "em breve" e <strong>não permitem salvar pela metade</strong>.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

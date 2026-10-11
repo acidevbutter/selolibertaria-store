@@ -1,0 +1,37 @@
+sequenceDiagram
+%% Fluxo EXISTENTE (AS-IS) - 2026-08-28
+%% Fonte: devbutter_app/asaas_payment + devbutter_app/devbutter_backend + selolibertaria/backend (código real)
+%% Selolibertaria hoje NAO tem nenhuma integracao com Asaas nem com o devbutter_backend.
+    participant Cliente
+    participant DBB as devbutter_backend
+    participant Proxy as asaas_payment (mTLS)
+    participant Asaas as Asaas API
+    participant Selo as selolibertaria/backend
+
+    Note over DBB,Proxy: mTLS: CN do devbutter_backend validado contra ALLOWED_CLIENT_CNS/ADMIN_CLIENT_CNS
+
+    Cliente->>DBB: Cadastro / abertura de conta
+    DBB->>Proxy: POST /subaccounts (dados da empresa)
+    Proxy->>Asaas: POST /v3/accounts
+    Asaas-->>Proxy: apiKey (uma unica vez) + walletId + id
+    Proxy->>Proxy: cifra apiKey (Fernet) e grava em subaccounts.encrypted_api_key
+    Proxy-->>DBB: resposta SEM apiKey (hide_api_key=True)
+    DBB->>DBB: grava AsaasSubaccountLink(company_id, asaas_account_id, wallet_id, onboarding_status)
+
+    opt geracao de access token dedicado
+        DBB->>Proxy: POST /subaccounts/{id}/access-tokens
+        Proxy->>Asaas: POST /v3/accounts/{id}/accessTokens
+        Asaas-->>Proxy: token em claro (uma unica vez)
+        Proxy->>Proxy: cifra e grava em access_tokens.encrypted_token
+        Proxy-->>DBB: token_id (sem valor em claro)
+    end
+
+    Asaas-->>DBB: Webhook direto (POST /webhooks/asaas)
+    Note right of DBB: valida header asaas-access-token comparando com != em vez de hmac.compare_digest (NAO constant-time, achado B4 do levantamento)
+    DBB->>DBB: grava WebhookEvent, atualiza Invoice (idempotente por id do evento)
+
+    Note over Proxy: Known limitation (README do asaas_payment) - este servico NAO recebe webhook da Asaas.<br/>Decisao real: webhook cai direto no devbutter_backend.
+
+    rect rgb(255,235,235)
+    Note over Selo: Selolibertaria hoje: SEM integracao Asaas.<br/>Usa apenas Mercado Pago (app/payments/mercado_pago_client.py).<br/>Nao existe rota nem client HTTP entre devbutter_backend e selolibertaria/backend.
+    end

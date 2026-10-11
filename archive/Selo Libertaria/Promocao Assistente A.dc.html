@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="width:1280px;min-height:860px;box-sizing:border-box;background:#F7F4EF;display:flex;flex-direction:column">
+
+  <div style="padding:28px 40px 0;display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;align-items:center;gap:10px;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.5)">
+      <span>Promoções</span><span>/</span><span style="color:#7A1E22">Nova promoção</span>
+    </div>
+    <h1 style="margin:0;font-size:46px;line-height:.92;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Cupom de porcentagem</h1>
+    <p style="margin:2px 0 0;font-size:15px;line-height:1.6;color:rgba(11,11,11,.62)">Um código que você divulga e o cliente digita no carrinho. Cinco passos, um por tela.</p>
+  </div>
+
+  <div style="margin-top:22px;padding:0 40px;display:flex;gap:0;border-bottom:1px solid rgba(11,11,11,.18)">
+    <div style="flex:1;padding:0 0 12px;display:flex;align-items:center;gap:10px;border-bottom:3px solid transparent">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#0B0B0B;color:#F7F4EF;font-family:'DCCAsh',serif;font-size:14px">1</span>
+      <span style="font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(11,11,11,.55)">Tipo</span>
+      <span style="font-size:11px;color:#23634A;letter-spacing:.06em;text-transform:uppercase">✓ Cupom %</span>
+    </div>
+    <div style="flex:1;padding:0 0 12px;display:flex;align-items:center;gap:10px;border-bottom:3px solid transparent">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#0B0B0B;color:#F7F4EF;font-family:'DCCAsh',serif;font-size:14px">2</span>
+      <span style="font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(11,11,11,.55)">Desconto</span>
+      <span style="font-size:11px;color:#23634A;letter-spacing:.06em;text-transform:uppercase">✓ 10%</span>
+    </div>
+    <div style="flex:1;padding:0 0 12px;display:flex;align-items:center;gap:10px;border-bottom:3px solid #7A1E22">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#7A1E22;color:#F7F4EF;font-family:'DCCAsh',serif;font-size:14px">3</span>
+      <span style="font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Onde vale</span>
+    </div>
+    <div style="flex:1;padding:0 0 12px;display:flex;align-items:center;gap:10px;border-bottom:3px solid transparent">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid rgba(11,11,11,.3);color:rgba(11,11,11,.45);font-family:'DCCAsh',serif;font-size:14px">4</span>
+      <span style="font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(11,11,11,.4)">Quando</span>
+    </div>
+    <div style="flex:1;padding:0 0 12px;display:flex;align-items:center;gap:10px;border-bottom:3px solid transparent">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid rgba(11,11,11,.3);color:rgba(11,11,11,.45);font-family:'DCCAsh',serif;font-size:14px">5</span>
+      <span style="font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(11,11,11,.4)">Revisar</span>
+    </div>
+  </div>
+
+  <div style="flex:1;padding:32px 40px 0;display:flex;flex-direction:column;gap:24px">
+    <div style="max-width:44rem;display:flex;flex-direction:column;gap:8px">
+      <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">Passo 3 de 5</p>
+      <h2 style="margin:0;font-size:32px;line-height:1;font-weight:900;letter-spacing:-.04em">Em quais produtos o cupom vale?</h2>
+      <p style="margin:0;font-size:15px;line-height:1.65;color:rgba(11,11,11,.62)">Busque pelo nome e marque. Nada de digitar slug: se o produto não aparece na busca, ele não existe no catálogo.</p>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="flex:1;display:flex;align-items:center;height:46px;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.22);font-size:15px;color:rgba(11,11,11,.45)">Buscar por título, autoria ou formato…</div>
+      <div style="display:flex;align-items:center;height:46px;padding:0 16px;background:#FFFFFF;border:1px solid rgba(11,11,11,.22);font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Formato: todos</div>
+      <div style="display:flex;align-items:center;height:46px;padding:0 16px;background:#0B0B0B;color:#F7F4EF;font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase">Vale em todo o catálogo</div>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.18);background:#FFFFFF">
+      <div style="display:grid;grid-template-columns:44px minmax(0,2.2fr) 1fr .9fr 1fr;gap:16px;padding:12px 18px;background:#D8D0C4;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.7)">
+        <span>☑</span><span>Produto</span><span>Formato</span><span>Preço</span><span>Com o cupom</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,2.2fr) 1fr .9fr 1fr;gap:16px;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(11,11,11,.1);background:rgba(122,30,34,.05)">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">✓</span>
+        <span style="font-size:15px;font-weight:700">Ninfas do Tietê</span><span style="font-size:14px;color:rgba(11,11,11,.62)">Livro</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px">R$ 60,00</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px;color:#7A1E22">R$ 54,00</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,2.2fr) 1fr .9fr 1fr;gap:16px;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(11,11,11,.1);background:rgba(122,30,34,.05)">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">✓</span>
+        <span style="font-size:15px;font-weight:700">little fish, big fish</span><span style="font-size:14px;color:rgba(11,11,11,.62)">Livro</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px">R$ 72,00</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px;color:#7A1E22">R$ 64,80</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,2.2fr) 1fr .9fr 1fr;gap:16px;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(11,11,11,.1)">
+        <span style="display:inline-block;width:20px;height:20px;border:1px solid rgba(11,11,11,.4)"></span>
+        <span style="font-size:15px">Vírus do Beijo</span><span style="font-size:14px;color:rgba(11,11,11,.62)">Livro</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px">R$ 48,00</span>
+        <span style="font-size:14px;color:rgba(11,11,11,.35)">—</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,2.2fr) 1fr .9fr 1fr;gap:16px;align-items:center;padding:14px 18px">
+        <span style="display:inline-block;width:20px;height:20px;border:1px solid rgba(11,11,11,.4)"></span>
+        <span style="font-size:15px">Ninfas do Tietê · voz</span><span style="font-size:14px;color:rgba(11,11,11,.62)">Livro</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px">R$ 55,00</span>
+        <span style="font-size:14px;color:rgba(11,11,11,.35)">—</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:stretch">
+      <div style="flex:1;border:1px solid rgba(11,11,11,.18);background:#FFFFFF;padding:20px;display:flex;gap:20px;align-items:center">
+        <div style="flex:none;width:82px;height:118px;background:#0B0B0B"></div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:8px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:#7A1E22">Como o cliente vê</p>
+          <p style="margin:0;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;line-height:1.05">Ninfas do Tietê</p>
+          <div style="display:flex;align-items:baseline;gap:12px">
+            <span style="font-family:'DCCAsh',serif;font-size:20px;color:rgba(11,11,11,.45);text-decoration:line-through">R$ 60,00</span>
+            <span style="font-family:'DCCAsh',serif;font-size:30px;color:#7A1E22">R$ 54,00</span>
+            <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;background:#7A1E22;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase">RATO10 · −10%</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:none;width:300px;background:#0B0B0B;color:#F7F4EF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.55)">Resumo do passo</p>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(247,244,239,.85)"><strong>2 produtos</strong> marcados de 14 no catálogo. Economia média de <strong>R$ 6,60</strong> por item.</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(247,244,239,.6)">Cupom exclusivo: não soma com promoções automáticas.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;padding:18px 40px;border-top:1px solid rgba(11,11,11,.18);background:#D8D0C4;display:flex;align-items:center;justify-content:space-between;gap:16px">
+    <span style="font-size:13px;color:rgba(11,11,11,.7)">Rascunho salvo automaticamente — nada vai ao ar antes do passo 5.</span>
+    <div style="display:flex;gap:10px">
+      <span style="display:inline-flex;align-items:center;height:46px;padding:0 20px;border:1px solid rgba(11,11,11,.35);font-size:14px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Voltar</span>
+      <span style="display:inline-flex;align-items:center;height:46px;padding:0 24px;background:#7A1E22;color:#F7F4EF;font-size:14px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Continuar para Quando</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}"></script>
+</body>
+</html>

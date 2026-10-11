@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",Georgia,serif;color:#0B0B0B;-webkit-font-smoothing:antialiased}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div data-screen-label="Sarau Safado" style="display:flex;flex-direction:column;min-height:100vh;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="background:#0B0B0B;color:rgba(247,244,239,.72);border-bottom:1px dashed rgba(247,244,239,.35)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:14px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid rgba(247,244,239,.35);font-size:9px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF">Nota</span>
+      <span style="font-size:13px;line-height:1.5">Navbar omitida nesta tela — é a mesma barra de navegação global usada em todo o sistema (componente <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px">SiteHeader</span>).</span>
+    </div>
+  </div>
+
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:32px;padding:56px 16px;box-sizing:border-box">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:52ch">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:rgba(247,244,239,.6)">Sarau Safado</p>
+        <h1 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(38px,6vw,60px);line-height:.95;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Um ritual recorrente de leitura, presença e escuta</h1>
+        <p style="margin:0;max-width:48ch;font-size:17px;line-height:1.75;color:rgba(247,244,239,.82)">O Sarau Safado sustenta continuidade, cria público e abre espaço para vozes convidadas dentro de uma linha curatorial nítida.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;padding-top:10px">
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#F7F4EF;color:#0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Próxima edição</span>
+          <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Memória do Sarau</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;flex:none">
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;background:#0B0B0B;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Leitura em voz alta</span>
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Convidadas</span>
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid rgba(247,244,239,.5);color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Entrada franca</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin:0 auto;width:100%;max-width:1440px;padding:64px 16px;box-sizing:border-box;display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#7A1E22">Agenda</p>
+      <div style="border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:20px">
+        <h2 style="margin:0;font-family:'Fertigo',serif;font-size:clamp(28px,4vw,56px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Próxima edição e encontros recentes</h2>
+      </div>
+      <p style="margin:0;max-width:44ch;font-size:16px;line-height:1.7;color:rgba(11,11,11,.72)">Cada edição reforça a circulação entre livros, artistas convidadas, bibliotecas, instituições e leitoras recorrentes.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:grid;gap:12px;grid-template-columns:5.5rem minmax(0,1fr);border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:24px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">14 set · 20h</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Sarau Safado #12 — Corpo e cidade</h3>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Casa Amarela, São Paulo · leitura com três convidadas e escuta aberta ao final.</p>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px;grid-template-columns:5.5rem minmax(0,1fr);border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:24px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">02 ago</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Sarau Safado #11 — Noturno</h3>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Biblioteca Mário de Andrade · edição dedicada a inéditos e primeiras leituras.</p>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px;grid-template-columns:5.5rem minmax(0,1fr);border-bottom:1px solid rgba(11,11,11,.14);padding-bottom:24px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">21 jun</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h3 style="margin:0;font-family:'Fertigo',serif;font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Sarau Safado #10 — Arquivo vivo</h3>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Centro Cultural São Paulo · registro em vídeo e gravação sonora do selo.</p>
+        </div>
+      </div>
+      <span style="align-self:flex-start;display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Ver agenda completa</span>
+    </div>
+  </section>
+
+  <section style="background:#0B0B0B;color:#F7F4EF">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:64px 16px;box-sizing:border-box;display:grid;gap:40px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:center">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:rgba(247,244,239,.6)">Galeria / memória</p>
+        <h2 style="margin:0;max-width:20ch;font-family:'Fertigo',serif;font-size:clamp(28px,4vw,56px);line-height:.98;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Fotos grandes, vídeos, textos e registros</h2>
+        <p style="margin:0;max-width:46ch;font-size:16px;line-height:1.8;color:rgba(247,244,239,.82)">O sarau transforma leitura em acontecimento público e dá corpo ao imaginário cultural do selo — o arquivo é parte da obra, não um álbum de eventos.</p>
+      </div>
+      <div style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;min-height:272px;border:1px solid rgba(247,244,239,.28);padding:20px;box-sizing:border-box">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.72)">Origem</p>
+          <p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)">Nasce da literatura erótica como campo de leitura e encontro, não como tema ornamental.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;min-height:272px;background:#D8D0C4;color:#0B0B0B;padding:20px;box-sizing:border-box">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.6)">Continuidade</p>
+          <p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Doze edições, público recorrente e uma rede de convidadas que retorna e traz outras.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;min-height:272px;border:1px solid rgba(247,244,239,.28);padding:20px;box-sizing:border-box">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.72)">Presença</p>
+          <p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:rgba(247,244,239,.82)">Leitura em voz alta, corpo em cena e escuta coletiva no mesmo espaço.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#D8D0C4">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px">
+      <h2 style="margin:0;max-width:34ch;font-family:'Fertigo',serif;font-size:clamp(26px,3.4vw,44px);line-height:1;font-weight:900;letter-spacing:-.05em;text-transform:uppercase">Eventos vivem aqui como agenda do Sarau</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Ver edições</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Projetos</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 20px;border:1px solid #0B0B0B;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Loja</span>
+      </div>
+    </div>
+  </section>
+
+  <footer style="margin-top:auto;background:#F7F4EF;border-top:1px solid rgba(11,11,11,.14)">
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:48px 16px;box-sizing:border-box;display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px">
+      <div style="max-width:34ch;display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.28em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo Libertária</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.72)">Literatura erótica, urbana e dissidente. Livros, edições sonoras, zines, objetos e encontros.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Navegar</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Loja</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sarau Safado</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Projetos</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Selo</p>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Sobre</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Contato</a>
+        <a href="#" style="font-size:14px;color:rgba(11,11,11,.75)">Perguntas frequentes</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:260px">
+        <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:rgba(11,11,11,.55)">Newsletter</p>
+        <div style="display:flex;gap:8px">
+          <span style="flex:1;display:inline-flex;align-items:center;height:52px;padding:0 14px;border:1px solid rgba(11,11,11,.3);background:#fff;font-size:14px;color:rgba(11,11,11,.5)">seu@email.com</span>
+          <span style="display:inline-flex;align-items:center;height:52px;padding:0 18px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Assinar</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin:0 auto;width:100%;max-width:1440px;padding:20px 16px;box-sizing:border-box;border-top:1px solid rgba(11,11,11,.14);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(11,11,11,.65)">
+      <span>© 2026 Selo Libertária</span>
+      <span>Conteúdo para maiores de 18 anos</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

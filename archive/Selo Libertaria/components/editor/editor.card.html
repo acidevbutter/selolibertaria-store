@@ -1,0 +1,59 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Editor · barra, blocos e arraste" subtitle="EditorToolbar, BlockFrame, BlockToolbar, DropGuide, ShapePicker, BlockOutline, InsertRow" -->
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html,body{margin:0}*{box-sizing:border-box}
+  body{background:var(--ad-desk);color:var(--ad-text);font-family:var(--ad-font-body);padding:18px}
+  .mono{font-family:var(--ad-font-mono)}
+  .ml{font-size:var(--ad-size-micro);font-weight:900;letter-spacing:var(--ad-track-label);text-transform:uppercase;color:var(--ad-text-label)}
+  .eb{margin:0;font-family:var(--ad-font-mono);font-size:var(--ad-size-mono-label);letter-spacing:var(--ad-track-mono);text-transform:uppercase;color:var(--ad-wine)}
+  .sw{display:flex;flex-direction:column;justify-content:flex-end;height:74px;padding:8px;gap:2px}
+  .sw b{font-family:var(--ad-font-mono);font-size:11px;font-weight:400}
+  .sw i{font-size:11px;font-style:normal;opacity:.72}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1}
+  .badge{height:var(--ad-h-badge);display:inline-flex;align-items:center;padding:0 10px;font-family:var(--ad-font-mono);font-size:var(--ad-size-micro);letter-spacing:var(--ad-track-badge);text-transform:uppercase}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:var(--ad-track-button);text-transform:uppercase;font-size:12px}
+</style></head><body>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div style="flex:1;min-width:0;border:1px solid var(--ad-line);background:var(--ad-desk);display:flex;flex-direction:column">
+    <div style="background:var(--ad-sand);border-bottom:1px solid var(--ad-line);padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <span style="height:36px;display:inline-flex;align-items:center;padding:0 10px;background:var(--ad-sheet);border:1px solid var(--ad-line-tool);font-size:13px">Parágrafo ▾</span>
+      <span style="width:1px;height:24px;background:var(--ad-line-tool)"></span>
+      <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:var(--ad-ink);color:var(--ad-on-shell);font-size:15px;font-weight:900">B</span>
+      <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:var(--ad-sheet);border:1px solid var(--ad-line-tool);font-size:15px;font-style:italic">I</span>
+      <span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:var(--ad-sheet);border:1px solid var(--ad-line-tool);font-size:15px;text-decoration:underline">U</span>
+      <span style="width:1px;height:24px;background:var(--ad-line-tool)"></span>
+      <span class="btn" style="height:36px;padding:0 10px;background:var(--ad-wine);color:var(--ad-on-shell);letter-spacing:.14em">Destaque do selo</span>
+      <span style="height:36px;display:inline-flex;align-items:center;padding:0 10px;background:var(--ad-sheet);border:1px solid var(--ad-line-tool);font-size:13px">Imagem</span>
+      <span style="margin-left:auto;display:flex;gap:6px;align-items:center"><span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:var(--ad-sheet);border:1px solid var(--ad-line-tool)">↩</span><span class="mono" style="font-size:11px;color:var(--ad-text-quiet)">10 passos</span></span>
+    </div>
+    <div style="padding:18px;display:flex;justify-content:center">
+      <div style="width:100%;background:var(--ad-sheet);border:1px solid var(--ad-line-sheet);padding:22px;display:flex;flex-direction:column;gap:16px">
+        <div style="position:relative;border:1px solid var(--ad-block-line);padding:8px 10px;margin:-8px -10px">
+          <span class="mono" style="position:absolute;top:-14px;right:-1px;height:28px;background:var(--ad-ink);color:var(--ad-on-shell);display:inline-flex;align-items:center;gap:10px;padding:0 10px;font-size:11px;white-space:nowrap">paragraph<span style="color:rgba(247,244,239,.3)">|</span>Mover ⇅<span style="color:rgba(247,244,239,.3)">|</span>Duplicar<span style="color:rgba(247,244,239,.3)">|</span>Remover</span>
+          <p style="margin:0;font-size:17px;line-height:1.75;color:rgba(11,11,11,.85)">A edição passada lotou antes das nove. Desta vez abrimos a lista às 19h, no balcão.</p>
+        </div>
+        <div style="position:relative;height:2px;background:var(--ad-wine)"><span class="mono" style="position:absolute;left:0;top:-11px;height:20px;background:var(--ad-wine);color:var(--ad-on-shell);display:inline-flex;align-items:center;padding:0 8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Solta aqui</span></div>
+        <div style="border:1px solid var(--ad-line);padding:10px;display:flex;flex-direction:column;gap:8px">
+          <span class="ml">Escolha a forma</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;background:var(--ad-ink);color:var(--ad-on-shell);font-size:12px">Faixa larga</span>
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid var(--ad-line-tool);font-size:12px">Ao lado</span>
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid var(--ad-line-tool);font-size:12px">Centralizada</span>
+            <span style="height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid var(--ad-line-tool);font-size:12px">Galeria</span>
+          </div>
+          <span class="mono" style="font-size:11px;color:var(--ad-text-quiet)">enter confirma · esc mantém faixa larga</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px dashed rgba(11,11,11,.25)"><span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ad-line-strong);font-size:16px;color:rgba(11,11,11,.55)">+</span><span style="font-size:14px;color:var(--ad-text-quiet)">Clique para inserir um bloco aqui</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="flex:none;width:196px;background:var(--ad-sheet);border:1px solid var(--ad-line);display:flex;flex-direction:column">
+    <div class="ml" style="padding:12px 14px;border-bottom:1px solid var(--ad-line)">Blocos da página</div>
+    <div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ad-line-quiet)"><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">01</span><span style="font-size:14px">Título</span></div><div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--ad-wine);color:var(--ad-on-shell)"><span class="mono" style="font-size:11px;color:rgba(247,244,239,.65)">02</span><span style="font-size:14px">Parágrafo</span></div><div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ad-line-quiet)"><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">03</span><span style="font-size:14px">Imagem</span></div><div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ad-line-quiet)"><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">04</span><span style="font-size:14px">Destaque do selo</span></div><div style="height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ad-line-quiet)"><span class="mono" style="font-size:11px;color:var(--ad-text-faint)">05</span><span style="font-size:14px">Agenda</span></div>
+    <div style="margin-top:auto;padding:12px 14px;background:var(--ad-sand);font-size:12px;line-height:1.6;color:var(--ad-text-soft)">Arraste na lista para reordenar sem rolar a página.</div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"DCCAsh";src:url("assets/fonts/DCC-Ash.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Fertigo";src:url("assets/fonts/FertigoPro-Regular.otf") format("opentype");font-display:swap}
+body{margin:0;background:#F7F4EF;font-family:"Fertigo","Iowan Old Style",serif;color:#0B0B0B}
+a{color:#7A1E22;text-decoration:none}
+a:hover{color:#B3282E}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:56px;padding:72px 72px 110px;background:#F7F4EF;color:#0B0B0B">
+
+  <div style="display:flex;align-items:flex-start;gap:22px">
+    <span style="flex:none;display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#7A1E22;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Fase 4</span>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:62rem">
+      <h1 style="margin:0;font-size:70px;line-height:.9;font-weight:900;letter-spacing:-.06em;text-transform:uppercase">Achar as coisas e sair do lugar</h1>
+      <p style="margin:0;font-size:17px;line-height:1.7;color:rgba(11,11,11,.72)">A fase de arrumação: menu de 11 itens soltos em <strong>três grupos</strong>, breadcrumb nas 13 subrotas do editorial, <strong>um</strong> componente de lista para as quatro listas que hoje seguem quatro padrões, e a home de atalhos aprovada (<a href="Home%20Admin%20A.dc.html">tela A</a>). Quase tudo é front — o backend entra só na paginação e na exportação.</p>
+      <p style="margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(11,11,11,.5)">Menu <a href="#f4-menu">4.1</a> · Listas <a href="#f4-listas">4.2</a> · Backend <a href="#f4-back">requisitos</a> · Aceite <a href="#f4-aceite">critérios</a> · <a href="guidelines/admin-design-system.md">Design system</a></p>
+    </div>
+  </div>
+
+  <div id="f4-menu" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">4.1</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Menu em três grupos · e o caminho de volta</span>
+    </div>
+
+    <div style="display:flex;gap:20px;align-items:stretch;flex-wrap:wrap">
+      <div style="flex:none;width:280px;background:#0B0B0B;color:#F7F4EF;padding:22px 0;display:flex;flex-direction:column;gap:2px">
+        <div style="padding:0 22px 18px;display:flex;gap:10px;align-items:center">
+          <div style="width:32px;height:32px;background:#F7F4EF"></div>
+          <div><div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Libertária</div><div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(247,244,239,.55)">Painel editorial</div></div>
+        </div>
+        <div style="padding:10px 22px 6px;font-size:9px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#E08C8C">Conteúdo</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;background:#F7F4EF;color:#0B0B0B;font-size:14px;font-weight:900">Páginas</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Eventos</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Projetos</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Imagens</div>
+        <div style="padding:16px 22px 6px;font-size:9px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#E08C8C">Operação</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Pedidos</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Produtos</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Promoções</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Clientes</div>
+        <div style="padding:16px 22px 6px;font-size:9px;font-weight:900;letter-spacing:.26em;text-transform:uppercase;color:#E08C8C">Sistema</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">E-mails enviados</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Modelos de e-mail</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Pagamentos recebidos</div>
+        <div style="display:flex;align-items:center;height:36px;padding:0 22px;font-size:14px;color:rgba(247,244,239,.78)">Configurações</div>
+      </div>
+
+      <div style="flex:1;min-width:420px;display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Renomes e mudanças</p>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.7;color:rgba(11,11,11,.78)">
+            <p style="margin:0"><strong>Editorial</strong> → <strong>Páginas</strong>, com Eventos e Projetos promovidos a itens próprios: eram os dois destinos mais usados e estavam enterrados em terceiro nível.</p>
+            <p style="margin:0"><strong>Recebimento</strong> → <strong>Pagamentos recebidos</strong>. "Recebimento" não dizia nada; o título interno já falava de webhook.</p>
+            <p style="margin:0"><strong>Usuários</strong> → <strong>Clientes</strong>, e <strong>Imagens</strong> entra novo (biblioteca da Fase 1).</p>
+            <p style="margin:0">Conteúdo vem <strong>primeiro</strong>: é o que você usa todo dia. Operação e Sistema descem.</p>
+          </div>
+        </div>
+        <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">Breadcrumb · as 13 subrotas do editorial</p>
+          <div style="background:#F7F4EF;border:1px solid rgba(11,11,11,.15);padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px">
+            <span style="color:#7A1E22;font-weight:700">Páginas</span><span style="color:rgba(11,11,11,.4)">›</span>
+            <span style="color:#7A1E22;font-weight:700">Eventos</span><span style="color:rgba(11,11,11,.4)">›</span>
+            <span style="color:#0B0B0B;font-weight:900">Sarau Safado #14</span>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Cada nível é link. Hoje o único caminho de volta é "Voltar ao site" — que sai do admin. A sidebar também passa a marcar o item certo em subrota, não só "Editorial".</p>
+          <div style="border:1px solid rgba(122,30,34,.45);background:rgba(122,30,34,.07);padding:12px">
+            <p style="margin:0;font-size:13px;line-height:1.65;color:rgba(11,11,11,.78)"><strong>E o overlay preto:</strong> todo clique na sidebar cobre a tela com spinner. Troca por indicador fino no topo e o item clicado em estado de carregando — a tela anterior fica visível.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="f4-listas" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;border:1px solid rgba(11,11,11,.35);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">4.2</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Um componente de lista para as quatro listas</span>
+    </div>
+
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF">
+      <div style="padding:18px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid rgba(11,11,11,.15)">
+        <div style="flex:1;min-width:240px;height:52px;border:1px solid rgba(11,11,11,.3);display:flex;align-items:center;padding:0 12px;font-size:13px;color:rgba(11,11,11,.45)">Buscar…</div>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Status: todos</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 13px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Período: 30d</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 13px;font-size:12px;color:#7A1E22">Limpar</span>
+        <span style="display:inline-flex;align-items:center;height:48px;padding:0 14px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Exportar CSV</span>
+      </div>
+      <div style="padding:12px 22px;background:#D8D0C4;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">✓</span>
+        <span style="font-size:13px;font-weight:900;color:#0B0B0B">3 selecionados</span>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;background:#0B0B0B;color:#F7F4EF;font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase">Marcar como enviado</span>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:11px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#0B0B0B">Exportar seleção</span>
+        <span style="font-size:12px;color:rgba(11,11,11,.6)">Ação em lote resolve expedição de 30 pedidos sem 30 visitas de tela.</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,1.7fr) 1fr .9fr 1fr .7fr;gap:14px;padding:12px 22px;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.6);border-bottom:1px solid rgba(11,11,11,.15)">
+        <span>☑</span><span>Cliente</span><span>Pedido</span><span>Valor</span><span>Status</span><span style="text-align:right">Ação</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,1.7fr) 1fr .9fr 1fr .7fr;gap:14px;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(11,11,11,.08)">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#7A1E22;color:#F7F4EF;font-size:12px;font-weight:900">✓</span>
+        <span><span style="display:block;font-size:15px;font-weight:700;color:#0B0B0B">Ana Prado</span><span style="display:block;font-size:12px;color:rgba(11,11,11,.55)">ana@exemplo.com</span></span>
+        <span style="font-size:13px;color:rgba(11,11,11,.7)">#8f21</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px;color:#0B0B0B">R$ 129,90</span>
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;background:#D8D0C4;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#0B0B0B;width:fit-content">Pago</span>
+        <span style="text-align:right;font-size:12px;color:#7A1E22;font-weight:700">Abrir</span>
+      </div>
+      <div style="display:grid;grid-template-columns:44px minmax(0,1.7fr) 1fr .9fr 1fr .7fr;gap:14px;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(11,11,11,.08)">
+        <span style="display:inline-block;width:20px;height:20px;border:1px solid rgba(11,11,11,.4)"></span>
+        <span><span style="display:block;font-size:15px;font-weight:700;color:#0B0B0B">João Ribeiro</span><span style="display:block;font-size:12px;color:rgba(11,11,11,.55)">joao@exemplo.com</span></span>
+        <span style="font-size:13px;color:rgba(11,11,11,.7)">#8f19</span>
+        <span style="font-family:'DCCAsh',serif;font-size:17px;color:#0B0B0B">R$ 60,00</span>
+        <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;background:rgba(122,30,34,.12);border:1px solid rgba(122,30,34,.4);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7A1E22;width:fit-content">Falhou</span>
+        <span style="text-align:right;font-size:12px;color:#7A1E22;font-weight:700">Abrir</span>
+      </div>
+      <div style="padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F7F4EF">
+        <span style="font-size:13px;color:rgba(11,11,11,.65)">58 resultados · página 1 de 3</span>
+        <div style="display:flex;gap:8px">
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:rgba(11,11,11,.4)">Anterior</span>
+          <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;border:1px solid rgba(11,11,11,.3);font-size:12px;color:#0B0B0B">Próxima</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:16px"><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;color:#0B0B0B">Pedidos</p><p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.68)">Ganha busca, filtro, paginação, lote e CSV. Hoje: "até 50" e nada.</p></div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:16px"><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;color:#0B0B0B">Produtos</p><p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.68)">Ganha paginação e "Mapa de categorias" no menu — hoje só por URL direta.</p></div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:16px"><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;color:#0B0B0B">Clientes</p><p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.68)">Ganha busca e filtro por papel; nome na frente do e-mail.</p></div>
+      <div style="border:1px solid rgba(11,11,11,.3);background:#D8D0C4;padding:16px"><p style="margin:0;font-size:15px;font-weight:900;text-transform:uppercase;color:#0B0B0B">E-mails</p><p style="margin:8px 0 0;font-size:13px;line-height:1.6;color:rgba(11,11,11,.68)">Já tem busca, dois filtros e paginação. <strong>É a base do componente</strong> — o padrão sai daqui.</p></div>
+    </div>
+  </div>
+
+  <div id="f4-back" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Backend</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">Menor esforço das quatro fases</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">1 · Consultas</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Paginação de verdade</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">As listas buscam registros com limite fixo. Trocar por <code>page</code>/<code>perPage</code> (ou cursor) devolvendo <code>{items, total}</code>, com filtros e ordenação lidos da URL — o filtro passa a ser compartilhável e sobrevive ao F5.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Índices em <code>createdAt</code>, <code>status</code> e no campo de busca de cada lista.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">2 · Lote</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Ação em vários registros</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Rota que recebe uma lista de ids e uma ação, aplica em transação e devolve o que falhou item a item. Cada mudança tem de gravar no histórico do pedido que já existe.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Falha parcial precisa aparecer na tela, não sumir em toast.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">3 · Exportação</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">CSV com os filtros aplicados</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Mesma consulta da tela, em streaming, sem o limite de página. Exporta o que está filtrado — não a tabela inteira.</p>
+      </div>
+      <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <p style="margin:0;font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:#7A1E22">4 · Rotas e permissão</p>
+        <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.02em;text-transform:uppercase">Renomear sem quebrar link</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(11,11,11,.75)">Eventos e Projetos saem de dentro do editorial e viram rota própria: precisa de redirecionamento das URLs antigas. As capabilities continuam as mesmas — só a etiqueta muda.</p>
+        <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(11,11,11,.6)">Também trocar o <code>force-dynamic</code> geral por cache onde a tela não precisa ser sempre fresca: é metade da sensação de lentidão.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="f4-aceite" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;display:inline-flex;align-items:center;height:22px;padding:0 9px;background:#0B0B0B;color:#F7F4EF;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase">Aceite</span>
+      <span style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(11,11,11,.55)">A fase está pronta quando</span>
+    </div>
+    <div style="border:1px solid rgba(11,11,11,.12);background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;max-width:72rem">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— As quatro listas têm <strong>a mesma barra</strong>: busca, filtros, limpar, paginação, seleção e CSV.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Nenhuma tela do admin passa de dois cliques do menu, e toda subrota mostra <strong>caminho de volta</strong>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Filtro aplicado sobrevive ao recarregar e pode ser mandado por link.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Clicar no menu <strong>não escurece a tela</strong>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:rgba(11,11,11,.8)">— Em toda lista o cliente aparece <strong>por nome</strong>, com o e-mail em segunda linha.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

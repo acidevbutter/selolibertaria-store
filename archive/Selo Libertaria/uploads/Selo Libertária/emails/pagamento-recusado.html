@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style="margin:0;padding:0;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="dark light">
+<meta name="supported-color-schemes" content="dark light">
+<meta name="format-detection" content="telephone=no,address=no,email=no,date=no">
+<title>Pagamento não aprovado · {order_number}</title>
+</head>
+<body style="margin:0;padding:0;width:100%;background-color:#141210;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:#141210;">Nada foi cobrado. Seu carrinho está salvo por {cart_hold_hours}h.</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#141210;margin:0;padding:0;">
+<tr><td align="center" style="padding:24px 12px 40px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;background-color:#0B0B0B;border:1px solid rgba(247,244,239,.14);">
+<tr>
+<td style="padding:26px 40px 24px 40px;border-bottom:1px solid rgba(247,244,239,.28);" align="left">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+<td align="left" style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;">
+<a href="{site_url}" style="text-decoration:none;color:#F7F4EF;"><img src="{logo_url}" width="150" height="24" alt="Selo Libertária" style="display:block;border:0;outline:none;height:24px;width:150px;max-width:150px;"></a>
+</td>
+<td align="right" style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;"><span style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:11px;line-height:1.4;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(247,244,239,.45);">{header_tag}</span></td>
+</tr></table>
+</td></tr>
+<tr>
+<td style="padding:44px 40px 34px 40px;background-color:#0B0B0B;">
+<span style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:11px;line-height:1.4;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#F7F4EF;">Pagamento não aprovado</span>
+<div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
+<h1 style="margin:0;font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:38px;line-height:1.02;font-weight:700;letter-spacing:-.03em;text-transform:uppercase;color:#F7F4EF;">Nada<br>foi cobrado</h1>
+<div style="height:20px;line-height:20px;font-size:20px;">&nbsp;</div>
+<p style="margin:0;font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:17px;line-height:1.7;color:rgba(247,244,239,.82);max-width:44ch;">{payment_method} não foi aprovado em {attempted_at}. O motivo informado pelo Mercado Pago foi: {decline_reason}.</p>
+</td></tr><tr><td style="padding:0 40px 34px 40px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid rgba(247,244,239,.28);"><tr>
+<td style="padding:24px 24px 24px 24px;"><div style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:15px;line-height:1.7;color:rgba(247,244,239,.82);">Seu carrinho fica salvo por {cart_hold_hours} horas com os mesmos itens e o mesmo frete. Tente outro cartão ou pague por Pix — a aprovação do Pix é imediata.</div>
+<div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="padding:0 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.6;color:rgba(247,244,239,.60);" width="42%">Pedido</td>
+<td align="right" style="padding:0 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:14px;line-height:1.6;color:#F7F4EF;">{order_number}</td></tr><tr><td style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.6;color:rgba(247,244,239,.60);" width="42%">Valor</td>
+<td align="right" style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:14px;line-height:1.6;color:#F7F4EF;">{total}</td></tr><tr><td style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.6;color:rgba(247,244,239,.60);" width="42%">Tentativa</td>
+<td align="right" style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:14px;line-height:1.6;color:#F7F4EF;">{attempted_at}</td></tr><tr><td style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.6;color:rgba(247,244,239,.60);" width="42%">Carrinho salvo até</td>
+<td align="right" style="padding:11px 0 11px 0;border-bottom:1px solid rgba(247,244,239,.14);font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:14px;line-height:1.6;color:#F7F4EF;">{cart_expires_at}</td></tr></table></td></tr></table>
+</td></tr><tr><td style="padding:6px 40px 38px 40px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td bgcolor="#B3282E" style="background-color:#B3282E;" align="center">
+<a href="{retry_pix_url}" style="display:block;padding:19px 34px;font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:12px;line-height:1;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#F7F4EF;text-decoration:none;">Pagar por Pix</a>
+</td></tr></table>
+<div style="height:14px;line-height:14px;font-size:14px;">&nbsp;</div><div style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.7;color:rgba(247,244,239,.72);">Prefere tentar outro cartão? <a href="{retry_card_url}" style="color:#F7F4EF;text-decoration:underline;">Retomar o checkout</a>. Se você não reconhece esta tentativa, escreva para {support_email}.</div>
+</td></tr>
+<tr>
+<td style="padding:30px 40px 34px 40px;border-top:1px solid rgba(247,244,239,.28);">
+<div style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.7;color:rgba(247,244,239,.72);">Selo Libertária — editora e produtora cultural, São Paulo.<br>Dúvidas sobre este pedido: <a href="mailto:{support_email}" style="color:#F7F4EF;text-decoration:underline;">{support_email}</a></div>
+<div style="height:16px;line-height:16px;font-size:16px;">&nbsp;</div>
+<div style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:12px;line-height:1.7;color:rgba(247,244,239,.45);">Você recebeu este email porque comprou ou se inscreveu em selolibertaria.com.<br><a href="{unsubscribe_url}" style="color:rgba(247,244,239,.45);text-decoration:underline;">Cancelar inscrição</a> &nbsp;·&nbsp; <a href="{preferences_url}" style="color:rgba(247,244,239,.45);text-decoration:underline;">Preferências de email</a></div>
+</td></tr>
+</table>
+<div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
+<div style="font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;font-size:11px;line-height:1.5;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(247,244,239,.30);">Selo Libertária · São Paulo</div>
+</td></tr></table>
+</body>
+</html>
